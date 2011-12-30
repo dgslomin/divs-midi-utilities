@@ -1,0 +1,10 @@
+
+..\..\bin\sendmidi.exe: sendmidi.c
+	cl /nologo /Fe..\..\bin\sendmidi.exe sendmidi.c winmm.lib
+
+clean:
+	@if exist sendmidi.obj del sendmidi.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\sendmidi.exe del ..\..\bin\sendmidi.exe
+

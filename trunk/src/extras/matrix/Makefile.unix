@@ -1,0 +1,13 @@
+
+matrix: matrix.o
+	cc -o matrix matrix.o `pkg-config --libs gtk+-2.0`
+
+matrix.o: matrix.c
+	cc -c matrix.c `pkg-config --cflags gtk+-2.0`
+
+clean:
+	rm -f *.o
+
+reallyclean: clean
+	rm -f matrix
+

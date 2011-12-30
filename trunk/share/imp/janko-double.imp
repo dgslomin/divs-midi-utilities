@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<imp velocity="96">
+
+<!-- A four octave version of Paul von Janko's isomorphic layout can be achieved if you use two typing keyboards side by side. -->
+
+<key name="esc" function="exit" />
+<key name="f1" function="panic" />
+<key name="up" function="velocity" amount="16" />
+<key name="down" function="velocity" amount="-16" />
+<key name="left" function="transpose" amount="-12" />
+<key name="right" function="transpose" amount="12" />
+<key keyboard-number="1" name="space" function="velocity" momentary="1" amount="48" />
+<key keyboard-number="0" name="space" function="controller" controller-number="64" momentary="1" absolute="1" amount="127" />
+
+<key keyboard-number="1" name="`" function="note" note-name="A1" />
+<key keyboard-number="1" name="1" function="note" note-name="B1" />
+<key keyboard-number="1" name="2" function="note" note-name="C#2" />
+<key keyboard-number="1" name="3" function="note" note-name="D#2" />
+<key keyboard-number="1" name="4" function="note" note-name="F2" />
+<key keyboard-number="1" name="5" function="note" note-name="G2" />
+<key keyboard-number="1" name="6" function="note" note-name="A2" />
+<key keyboard-number="1" name="7" function="note" note-name="B2" />
+<key keyboard-number="1" name="8" function="note" note-name="C#3" />
+<key keyboard-number="1" name="9" function="note" note-name="D#3" />
+<key keyboard-number="1" name="0" function="note" note-name="F3" />
+<key keyboard-number="1" name="-" function="note" note-name="G3" />
+<key keyboard-number="1" name="=" function="note" note-name="A3" />
+<key keyboard-number="1" name="backspace" function="note" note-name="B3" />
+
+<key keyboard-number="0" name="`" function="note" note-name="G3" />
+<key keyboard-number="0" name="1" function="note" note-name="A3" />
+<key keyboard-number="0" name="2" function="note" note-name="B3" />
+<key keyboard-number="0" name="3" function="note" note-name="C#4" />
+<key keyboard-number="0" name="4" function="note" note-name="D#4" />
+<key keyboard-number="0" name="5" function="note" note-name="F4" />
+<key keyboard-number="0" name="6" function="note" note-name="G4" />
+<key keyboard-number="0" name="7" function="note" note-name="A4" />
+<key keyboard-number="0" name="8" function="note" note-name="B4" />
+<key keyboard-number="0" name="9" function="note" note-name="C#5" />
+<key keyboard-number="0" name="0" function="note" note-name="D#5" />
+<key keyboard-number="0" name="-" function="note" note-name="F5" />
+<key keyboard-number="0" name="=" function="note" note-name="G5" />
+<key keyboard-number="0" name="backspace" function="note" note-name="A5" />
+
+<key keyboard-number="1" name="tab" function="note" note-name="A#1" />
+<key keyboard-number="1" name="q" function="note" note-name="C2" />
+<key keyboard-number="1" name="w" function="note" note-name="D2" />
+<key keyboard-number="1" name="e" function="note" note-name="E2" />
+<key keyboard-number="1" name="r" function="note" note-name="F#2" />
+<key keyboard-number="1" name="t" function="note" note-name="G#2" />
+<key keyboard-number="1" name="y" function="note" note-name="A#2" />
+<key keyboard-number="1" name="u" function="note" note-name="C3" />
+<key keyboard-number="1" name="i" function="note" note-name="D3" />
+<key keyboard-number="1" name="o" function="note" note-name="E3" />
+<key keyboard-number="1" name="p" function="note" note-name="F#3" />
+<key keyboard-number="1" name="[" function="note" note-name="G#3" />
+<key keyboard-number="1" name="]" function="note" note-name="A#3" />
+<key keyboard-number="1" name="\" function="note" note-name="C4" />
+
+<key keyboard-number="0" name="tab" function="note" note-name="G#3" />
+<key keyboard-number="0" name="q" function="note" note-name="A#3" />
+<key keyboard-number="0" name="w" function="note" note-name="C4" />
+<key keyboard-number="0" name="e" function="note" note-name="D4" />
+<key keyboard-number="0" name="r" function="note" note-name="E4" />
+<key keyboard-number="0" name="t" function="note" note-name="F#4" />
+<key keyboard-number="0" name="y" function="note" note-name="G#4" />
+<key keyboard-number="0" name="u" function="note" note-name="A#4" />
+<key keyboard-number="0" name="i" function="note" note-name="C5" />
+<key keyboard-number="0" name="o" function="note" note-name="D5" />
+<key keyboard-number="0" name="p" function="note" note-name="E5" />
+<key keyboard-number="0" name="[" function="note" note-name="F#5" />
+<key keyboard-number="0" name="]" function="note" note-name="G#5" />
+<key keyboard-number="0" name="\" function="note" note-name="A#5" />
+
+<key keyboard-number="1" name="capslock" function="note" note-name="B1" />
+<key keyboard-number="1" name="a" function="note" note-name="C#2" />
+<key keyboard-number="1" name="s" function="note" note-name="D#2" />
+<key keyboard-number="1" name="d" function="note" note-name="F2" />
+<key keyboard-number="1" name="f" function="note" note-name="G2" />
+<key keyboard-number="1" name="g" function="note" note-name="A2" />
+<key keyboard-number="1" name="h" function="note" note-name="B2" />
+<key keyboard-number="1" name="j" function="note" note-name="C#3" />
+<key keyboard-number="1" name="k" function="note" note-name="D#3" />
+<key keyboard-number="1" name="l" function="note" note-name="F3" />
+<key keyboard-number="1" name=";" function="note" note-name="G3" />
+<key keyboard-number="1" name="'" function="note" note-name="A3" />
+<key keyboard-number="1" name="enter" function="note" note-name="B3" />
+
+<key keyboard-number="0" name="capslock" function="note" note-name="A3" />
+<key keyboard-number="0" name="a" function="note" note-name="B3" />
+<key keyboard-number="0" name="s" function="note" note-name="C#4" />
+<key keyboard-number="0" name="d" function="note" note-name="D#4" />
+<key keyboard-number="0" name="f" function="note" note-name="F4" />
+<key keyboard-number="0" name="g" function="note" note-name="G4" />
+<key keyboard-number="0" name="h" function="note" note-name="A4" />
+<key keyboard-number="0" name="j" function="note" note-name="B4" />
+<key keyboard-number="0" name="k" function="note" note-name="C#5" />
+<key keyboard-number="0" name="l" function="note" note-name="D#5" />
+<key keyboard-number="0" name=";" function="note" note-name="F5" />
+<key keyboard-number="0" name="'" function="note" note-name="G5" />
+<key keyboard-number="0" name="enter" function="note" note-name="A5" />
+
+<key keyboard-number="1" name="lshift" function="note" note-name="C2" />
+<key keyboard-number="1" name="z" function="note" note-name="D2" />
+<key keyboard-number="1" name="x" function="note" note-name="E2" />
+<key keyboard-number="1" name="c" function="note" note-name="F#2" />
+<key keyboard-number="1" name="v" function="note" note-name="G#2" />
+<key keyboard-number="1" name="b" function="note" note-name="A#2" />
+<key keyboard-number="1" name="n" function="note" note-name="C3" />
+<key keyboard-number="1" name="m" function="note" note-name="D3" />
+<key keyboard-number="1" name="," function="note" note-name="E3" />
+<key keyboard-number="1" name="." function="note" note-name="F#3" />
+<key keyboard-number="1" name="/" function="note" note-name="G#3" />
+<key keyboard-number="1" name="rshift" function="note" note-name="A#3" />
+
+<key keyboard-number="0" name="lshift" function="note" note-name="A#3" />
+<key keyboard-number="0" name="z" function="note" note-name="C4" />
+<key keyboard-number="0" name="x" function="note" note-name="D4" />
+<key keyboard-number="0" name="c" function="note" note-name="E4" />
+<key keyboard-number="0" name="v" function="note" note-name="F#4" />
+<key keyboard-number="0" name="b" function="note" note-name="G#4" />
+<key keyboard-number="0" name="n" function="note" note-name="A#4" />
+<key keyboard-number="0" name="m" function="note" note-name="C5" />
+<key keyboard-number="0" name="," function="note" note-name="D5" />
+<key keyboard-number="0" name="." function="note" note-name="E5" />
+<key keyboard-number="0" name="/" function="note" note-name="F#5" />
+<key keyboard-number="0" name="rshift" function="note" note-name="G#5" />
+
+</imp>

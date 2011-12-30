@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/xmltosmf: xmltosmf.o midifile.o
+	$(CC) -o ../../bin/xmltosmf xmltosmf.o midifile.o -lexpat
+
+xmltosmf.o: xmltosmf.c ../midifile/midifile.h
+	$(CC) -I. -I../midifile -c xmltosmf.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f xmltosmf.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/xmltosmf
+

@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/offset-tempo: offset-tempo.o midifile.o
+	$(CC) -o../../bin/offset-tempo offset-tempo.o midifile.o
+
+offset-tempo.o: offset-tempo.c ../midifile/midifile.h
+	$(CC) -I../midifile -c offset-tempo.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f offset-tempo.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/offset-tempo
+

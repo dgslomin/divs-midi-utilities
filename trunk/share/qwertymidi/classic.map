@@ -1,0 +1,58 @@
+
+# upper rank
+
+16	60	# q c
+3	61	# 2 c-sharp
+17	62	# w d
+4	63	# 3 d-sharp
+18	64	# e e
+19	65	# r f
+6	66	# 5 f-sharp
+20	67	# t g
+7	68	# 6 g-sharp
+21	69	# y a
+8	70	# 7 a-sharp
+22	71	# u b
+23	72	# i c
+10	73	# 9 c-sharp
+24	74	# o d
+11	75	# 0 d-sharp
+25	76	# p e
+26	77	# [ f
+13	78	# = f-sharp
+27	79	# ] g
+
+# lower rank
+
+30	44	# a g-sharp
+44	45	# z a
+31	46	# s a-sharp
+45	47	# x b
+46	48	# c c
+33	49	# f c-sharp
+47	50	# v d
+34	51	# g d-sharp
+48	52	# b e
+49	53	# n f
+36	54	# j f-sharp
+50	55	# m g
+37	56	# k g-sharp
+51	57	# , a
+38	58	# l a-sharp
+52	59	# . b
+53	60	# / c
+40	61	# ' c-sharp
+
+# transposition
+
+42	shift-up	# lshift
+54	shift-up	# rshift
+29	shift-down	# ctrl
+59	stay-up	# f1
+60	stay-down	# f2
+
+# other
+
+57	panic	# space
+1	exit	# esc
+

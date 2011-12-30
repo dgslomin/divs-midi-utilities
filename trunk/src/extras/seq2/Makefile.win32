@@ -1,0 +1,26 @@
+
+GTK_HOME=c:\gtk
+# GTK_HOME=c:\program files\common files\gtk\2.0
+GTK_CFLAGS=/I"$(GTK_HOME)\include\gtk-2.0" /I"$(GTK_HOME)\lib\gtk-2.0\include" /I"$(GTK_HOME)\include\atk-1.0" /I"$(GTK_HOME)\include\cairo" /I"$(GTK_HOME)\include\pango-1.0" /I"$(GTK_HOME)\include\glib-2.0" /I"$(GTK_HOME)\lib\glib-2.0\include" /I"$(GTK_HOME)\include\freetype2" /I"$(GTK_HOME)\include"
+GTK_LIBS="$(GTK_HOME)\lib\gtk-win32-2.0.lib" "$(GTK_HOME)\lib\gdk-win32-2.0.lib" gdi32.lib imm32.lib shell32.lib ole32.lib "$(GTK_HOME)\lib\atk-1.0.lib" "$(GTK_HOME)\lib\gdk_pixbuf-2.0.lib" "$(GTK_HOME)\lib\pangowin32-1.0.lib" "$(GTK_HOME)\lib\pangocairo-1.0.lib" "$(GTK_HOME)\lib\cairo.lib" "$(GTK_HOME)\lib\pangoft2-1.0.lib" "$(GTK_HOME)\lib\fontconfig.lib" "$(GTK_HOME)\lib\freetype.lib" "$(GTK_HOME)\lib\z.lib" "$(GTK_HOME)\lib\pango-1.0.lib" "$(GTK_HOME)\lib\gobject-2.0.lib" "$(GTK_HOME)\lib\gmodule-2.0.lib" "$(GTK_HOME)\lib\glib-2.0.lib" "$(GTK_HOME)\lib\intl.lib" "$(GTK_HOME)\lib\iconv.lib" "$(GTK_HOME)\lib\gthread-2.0.lib"
+
+seq2.exe: seq2.obj button-grid.obj scheduler.obj
+	cl /nologo /Feseq2.exe seq2.obj button-grid.obj scheduler.obj $(GTK_LIBS) winmm.lib
+
+seq2.obj: seq2.c ..\button-grid\button-grid.h ..\scheduler\scheduler.h
+	cl /nologo /I. /I..\button-grid /I..\scheduler $(GTK_CFLAGS) /c seq2.c
+
+button-grid.obj: ..\button-grid\button-grid.c ..\button-grid\button-grid.h
+	cl /nologo /I. /I..\button-grid $(GTK_CFLAGS) /c ..\button-grid\button-grid.c
+
+scheduler.obj: ..\scheduler\scheduler.c ..\scheduler\scheduler.h
+	cl /nologo /I. /I..\scheduler $(GTK_CFLAGS) /c ..\scheduler\scheduler.c
+
+clean:
+	@if exist seq2.obj del seq2.obj
+	@if exist button-grid.obj del button-grid.obj
+	@if exist scheduler.obj del scheduler.obj
+
+reallyclean: clean
+	@if exist seq2.exe del seq2.exe
+

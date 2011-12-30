@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/scale-velocity: scale-velocity.o midifile.o
+	$(CC) -o../../bin/scale-velocity scale-velocity.o midifile.o
+
+scale-velocity.o: scale-velocity.c ../midifile/midifile.h
+	$(CC) -I../midifile -c scale-velocity.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f scale-velocity.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/scale-velocity
+

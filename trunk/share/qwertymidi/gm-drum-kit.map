@@ -1,0 +1,45 @@
+
+# Use with the General MIDI drum kit
+
+16	49	q	crash
+17	51	w	ride
+18	46	e	open hat
+19	42	r	closed hat
+20	69	t	shaker
+21	69	y	shaker
+22	42	u	closed hat
+23	46	i	open hat
+24	51	o	ride
+25	57	p	crash
+
+30	36	a	kick
+31	38	s	snare
+32	38	d	snare
+33	38	f	snare
+34	39	g	clap
+35	39	h	clap
+36	38	j	snare
+37	38	k	snare
+38	38	l	snare
+39	36	;	kick
+
+# toms
+
+42	41	lshift
+44	43	z
+45	45	x
+46	47	c
+47	48	v
+48	50	b
+49	50	n
+50	48	m
+51	47	,
+52	45	.
+53	43	/
+54	41	rshift
+
+# control
+
+57	panic	space
+1	exit	esc
+

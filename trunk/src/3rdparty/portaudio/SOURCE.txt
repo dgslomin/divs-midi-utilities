@@ -1,0 +1,4 @@
+
+portaudio version 18.1 is used here in unmodified form.  Its source code can
+be downloaded from <http://www.portaudio.com/>.
+

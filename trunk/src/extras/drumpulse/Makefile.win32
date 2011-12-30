@@ -1,0 +1,10 @@
+
+..\..\bin\drumpulse.exe: drumpulse.c
+	cl /nologo /Fe..\..\bin\drumpulse.exe drumpulse.c winmm.lib
+
+clean:
+	@if exist drumpulse.obj del drumpulse.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\drumpulse.exe del ..\..\bin\drumpulse.exe
+

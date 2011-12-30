@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/scale-tempo: scale-tempo.o midifile.o
+	$(CC) -o../../bin/scale-tempo scale-tempo.o midifile.o
+
+scale-tempo.o: scale-tempo.c ../midifile/midifile.h
+	$(CC) -I../midifile -c scale-tempo.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f scale-tempo.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/scale-tempo
+

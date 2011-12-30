@@ -1,0 +1,10 @@
+
+..\..\bin\pulsar.exe: pulsar.c
+	cl /nologo /Fe..\..\bin\pulsar.exe pulsar.c winmm.lib
+
+clean:
+	@if exist pulsar.obj del pulsar.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\pulsar.exe del ..\..\bin\pulsar.exe
+

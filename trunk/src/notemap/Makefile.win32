@@ -1,0 +1,10 @@
+
+..\..\bin\notemap.exe: notemap.c
+	cl /nologo /Fe..\..\bin\notemap.exe /I..\3rdparty\expat notemap.c winmm.lib ..\3rdparty\expat\libexpat.lib
+
+clean:
+	@if exist notemap.obj del notemap.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\notemap.exe del ..\..\bin\notemap.exe
+

@@ -1,0 +1,94 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <midifile.h>
+
+int main(int argc, char **argv)
+{
+	MidiFile_t midi_file;
+	MidiFileEvent_t midi_file_event;
+	float beat_size = 0.25;
+	float current_beat = 0.0;
+	int number_of_events_in_beat = 0;
+	int i;
+
+	midi_file = MidiFile_load(argv[1]);
+
+	printf("<html>\n");
+	printf("<head>\n");
+	printf("\n");
+	printf("<style type=\"text/css\">\n");
+	printf("body, table { font-size: 9pt; font-family: tahoma }\n");
+	printf("table { border-collapse: collapse; margin-left: auto; margin-right: auto; border: solid 1px #cccccc }\n");
+	printf("tr.beat { border-top: solid 1px #cccccc }\n");
+	printf("td { padding: 0 2ex; text-align: center }\n");
+	printf("</style>\n");
+	printf("\n");
+	printf("</head>\n");
+	printf("<body>\n");
+	printf("\n");
+	printf("<table>\n");
+	printf("\n");
+
+	for (midi_file_event = MidiFile_getFirstEvent(midi_file); midi_file_event != NULL; midi_file_event = MidiFileEvent_getNextEventInFile(midi_file_event))
+	{
+		if (MidiFileEvent_isNoteStartEvent(midi_file_event) && (MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_file_event)) == 1))
+		{
+			float beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(midi_file_event));
+			int track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_file_event));
+			int channel = MidiFileNoteStartEvent_getChannel(midi_file_event) + 1;
+			int note_number = MidiFileNoteStartEvent_getNote(midi_file_event);
+			int velocity = MidiFileNoteStartEvent_getVelocity(midi_file_event);
+
+			while ((current_beat + (beat_size / 2)) < beat)
+			{
+				if (number_of_events_in_beat == 0)
+				{
+					printf("<tr class=\"beat\">\n");
+					printf("<td>%.3f</td>\n", current_beat);
+					printf("<td></td>\n");
+					printf("<td></td>\n");
+					printf("<td></td>\n");
+					printf("<td></td>\n");
+					printf("<td></td>\n");
+					printf("</tr>\n");
+					printf("\n");
+				}
+
+				current_beat += beat_size;
+				number_of_events_in_beat = 0;
+			}
+
+			if (number_of_events_in_beat == 0)
+			{
+				printf("<tr class=\"beat\">\n");
+			}
+			else
+			{
+				printf("<tr>\n");
+			}
+
+			printf("<td>%.3f</td>\n", beat);
+			printf("<td>NoteStart</td>\n");
+			printf("<td>%d</td>\n", track_number);
+			printf("<td>%d</td>\n", channel);
+			printf("<td>%s%d</td>\n", "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0" + ((note_number % 12) * 3), note_number / 12);
+			printf("<td>%d</td>\n", velocity);
+			printf("</tr>\n");
+			printf("\n");
+
+			number_of_events_in_beat++;
+		}
+	}
+
+	printf("</table>\n");
+	printf("\n");
+	printf("</body>\n");
+	printf("</html>\n");
+	printf("\n");
+
+	MidiFile_free(midi_file);
+	return 0;
+}
+

@@ -1,0 +1,21 @@
+
+CC=gcc
+
+../../bin/mish: mish.o midifile.o reader.o
+	$(CC) -o ../../bin/mish mish.o midifile.o reader.o
+
+mish.o: mish.c ../midifile/midifile.h reader.h
+	$(CC) -I../midifile -c mish.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+reader.o: reader.c reader.h
+	$(CC) -c reader.c
+
+clean:
+	rm -f mish.o midifile.o reader.o
+
+reallyclean: clean
+	rm -f ../../bin/mish
+

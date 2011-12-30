@@ -1,0 +1,214 @@
+<html>
+<head>
+
+<title>David G. Slomin - Mish</title>
+<link rel="icon" href="/favicon.ico">
+
+<style type="text/css"><!--
+body { margin: 24pt; font-family: arial, helvetica, sans-serif; font-size: 10pt }
+a { color: #FF6600 }
+p, h1, h2, h3, h4, h5, h6 { margin-top: 15pt }
+code { color: #FF6600 }
+div.BNF { border-style: solid; border-width: 1px; border-color: black; background-color: #FFFBF7; padding: 12pt }
+div.BNF p { margin: 0; font-family: courier new, courier, monospaced }
+--></style>
+
+</head>
+<body>
+
+<h1>Mish</h1>
+
+<h2>Introduction</h2>
+
+<p>Mish (<u>MI</u>DI <u>sh</u>orthand) is a text-based music notation language.  It is not particularly unique in this role, but I designed it to match my own mental model of music very closely, so it's extremely easy for me to use.  Maybe you'll find it useful too.</p>
+
+<p>So why would you want to use a text-based music notation language?  Western music is most often represented using Common Music Notation (CMN), which is what most people think of as sheet music.  Despite its popularity, however, CMN is an awkward language to use on a computer because it is graphical in nature, rather than textual.  Although GUIs are ubiquitous these days, computer interfaces for entering and editing text are simply more mature, more efficient, and more powerful than those for entering graphics.  A picture might be worth a thousand words, but I can type those thousand words far faster than I can draw the picture.</p>
+
+<p>A song represented in Mish is similar to a computer program represented in C.  It is human readable, but needs to be compiled into a binary form, namely a standard MIDI file, before the computer can play it.  Mish can also be written out with pencil and paper, but it is not optimized for a musician to perform from, as he would with CMN.</p>
+
+<h2>Reference</h2>
+
+<h3>General Model</h3>
+
+<p>A Mish file is a sequence of tokens separated by whitespace.  The symbol <code>#</code> indicates that the rest of the line is a comment, which is equivalent to whitespace.</p>
+
+<p>The sequence of tokens is processed in the order encountered.  Tokens may either add MIDI events into the output file, or update the state of the Mish processor, or both.  Events are added in much the same manner as writing on paper with a pen; once you add someting, it cannot be erased or changed, but you can move the pen around at random and add more in any order.</p>
+
+<p>The state of the Mish processor is made up of the following:</p>
+
+<ul>
+<li>current time</li>
+<li>current track</li>
+<li>current channel</li>
+<li>current base note</li>
+<li>current velocity</li>
+<li>current number of beats per measure</li>
+<li>current default articulation</li>
+<li>current note gap</li>
+<li>current minimum note length</li>
+</ul>
+
+<h3>Notes and Chords</h3>
+
+<div class="BNF">
+<p>chord ::= note+ additional_beat* dynamics? articulation?</p>
+<p>note ::= octave_modifier? chromatic_modifier? diatonic</p>
+<p>note ::= "<code>[</code>" ( number | ( "<code>x</code>" hex_number ) ) "<code>]</code>"</p>
+<p>octave_modifier ::= octave_up* | octave_down*</p>
+<p>octave_up ::= "<code>'</code>"</p>
+<p>octave_down ::= "<code>,</code>"</p>
+<p>chromatic_modifier ::= sharp* | flat*</p>
+<p>sharp ::= "<code>+</code>"</p>
+<p>flat ::= "<code>-</code>"</p>
+<p>diatonic ::= do | re | mi | fa | so | la | ti</p>
+<p>do ::= "<code>1</code>"</p>
+<p>re ::= "<code>2</code>"</p>
+<p>mi ::= "<code>3</code>"</p>
+<p>fa ::= "<code>4</code>"</p>
+<p>so ::= "<code>5</code>"</p>
+<p>la ::= "<code>6</code>"</p>
+<p>ti ::= "<code>7</code>"</p>
+<p>additional_beat ::= "<code>-</code>"</p>
+<p>dynamics ::= louder* | softer*</p>
+<p>louder ::= "<code>&lt;</code>"</p>
+<p>softer ::= "<code>&gt;</code>"</p>
+<p>articulation ::=  staccato | legato</p>
+<p>staccato ::= "<code>!</code>"</p>
+<p>legato ::= "<code>~</code>"</p>
+</div>
+
+<p>A chord token indicates that MIDI <i>note on</i> events for each of the specified notes should be added at the <i>current track</i>, <i>channel</i>, and <i>time</i>.  Notes specified in the standard manner have pitches relative to the <i>current base note</i>, while absolute notes are specified by MIDI note number (<code>1</code> to <code>128</code>, or in hex, <code>x00</code> to <code>x7F</code>).  Note velocities are relative to the <i>current velocity</i>.  The chord starts with a duration of one beat, plus the specified number of additional beats, all relative to the <i>current number of beats per measure</i>.  The <i>current time</i> is advanced by the duration of the chord.</p>
+
+<p>The chord token also indicates that MIDI <i>note off</i> events should be added for each of the specified notes, but the time for those events depends on the chord's articulation.  The type of articulation usually depends on the <i>current default articulation</i>, but if the chord is marked with a staccato or legato symbol, that type of articulation is used instead.  If the chord has normal articulation, then MIDI <i>note off</i> events are added after the duration minus the <i>current note gap</i>.  If the chord is legato, then the <i>note off</i> events are added after the full duration.  If the chord is staccato, then the <i>note off</i> events are added after the <i>current minimum note length</i>.</p>
+
+<h3>Rests</h3>
+
+<div class="BNF">
+<p>rest ::= beat+</p>
+<p>beat ::= "<code>-</code>"</p>
+</div>
+
+<p>A rest does not add any events to the output file, but it advances the <i>current time</i> by the specified number of beats, relative to the <i>current number of beats per measure</i>.</p>
+
+<h3>Lyrics</h3>
+
+<div class="BNF">
+<p>lyric ::= "<code>"</code>" text "<code>"</code>"</p>
+</div>
+
+<p>A lyric token indicates that a MIDI <i>lyric</i> event should be added to the <i>current track</i> at the <i>current time</i>, which does not advance.  <code>\"</code> can be used to include a quote inside the lyric.</p>
+
+<h3>State Change Directives</h3>
+
+<h4>Time</h4>
+
+<div class="BNF">
+<p>time_directive ::= "<code>time</code>" "<code>=</code>" number</p>
+<p>time_directive ::= "<code>time</code>" "<code>+</code>" number</p>
+<p>time_directive ::= "<code>time</code>" "<code>-</code>" number</p>
+<p>time_directive ::= "<code>time</code>" "<code>=</code>" "<code>"</code>" text "<code>"</code>"</p>
+</div>
+
+<p>A time directive indicates that the <i>current time</i> should be moved to the value specified in terms of the <i>current number of beats per measure</i>.  If a marker is specified instead of a number, the output file is scanned for the first marker with a matching name, and the <i>current time</i> is set to its time; it is an error to refer to a marker which has not yet been added.</p>
+
+<h4>Track</h4>
+
+<div class="BNF">
+<p>track_directive ::= "<code>track</code>" "<code>=</code>" number</p>
+</div>
+
+<p>A track directive indicates that the <i>current track</i> should be set to the specified number.  Track zero is the conductor track, reserved for tempo changes and such; the first conventional track is one.  Empty tracks will be added as needed.</p>
+
+<h4>Channel</h4>
+
+<div class="BNF">
+<p>channel_directive ::= "<code>chan</code>" "<code>=</code>" ( number | ( "<code>x</code>" hex_number ) )</p>
+</div>
+
+<p>A channel directive indicates that the <i>current channel</i> should be set to the specified number (<code>1</code> to <code>16</code>, or in hex, <code>x0</code> to <code>xF</code>).  Remember that in General MIDI, track ten is reserved for drums.</p>
+
+<h4>Base Note</h4>
+
+<div class="BNF">
+<p>note_directive ::= "<code>note</code>" "<code>=</code>" ( number | ( "<code>x</code>" hex_number ) )</p>
+<p>note_directive ::= "<code>note</code>" "<code>+</code>" number</p>
+<p>note_directive ::= "<code>note</code>" "<code>-</code>" number</p>
+</div>
+
+<p>A note directive indicates that the <i>current base note</i> should be changed, either to an absolute MIDI note number (<code>1</code> to <code>128</code>, or in hex, <code>x00</code> to <code>x7F</code>), or relative to its previous value.</p>
+
+<h4>Velocity</h4>
+
+<p>[ not yet documented ]</p>
+
+<h4>Number of Beats Per Measure</h4>
+
+<div class="BNF">
+<p>beat_directive ::= "<code>beat</code>" "<code>=</code>" number</p>
+<p>beat_directive ::= "<code>beat</code>" "<code>*</code>" number ( "<code>/</code>" number )?</p>
+<p>beat_directive ::= "<code>beat</code>" "<code>/</code>" number</p>
+</div>
+
+<p>A beat directive indicates that the <i>current number of beats per measure</i> should be changed, either to an absolute value, or relative to its previous value.</p>
+
+<h4>Default Articulation</h4>
+
+<div class="BNF">
+<p>articulation_directive ::= "<code>art</code>" "<code>=</code>" "<code>normal</code>"</p>
+<p>articulation_directive ::= "<code>art</code>" "<code>=</code>" "<code>staccato</code>"</p>
+<p>articulation_directive ::= "<code>art</code>" "<code>=</code>" "<code>legato</code>"</p>
+</div>
+
+<p>An articulation directive indicates that the <i>current default articulation</i> should be changed to the specified value.</p>
+
+<h3>MIDI Event Directives</h3>
+
+<h4>Markers</h4>
+
+<div class="BNF">
+<p>marker_directive ::= "<code>mark</code>" "<code>=</code>" "<code>"</code>" text "<code>"</code>"</p>
+</div>
+
+<p>A marker directive indicates that a MIDI <i>marker</i> meta event should be added at the <i>current time</i>.  It can be used for navigation later.</p>
+
+<h4>Tempo Changes</h4>
+
+<div class="BNF">
+<p>tempo_directive ::= ramp? "<code>tempo</code>" "<code>=</code>" number</p>
+<p>tempo_directive ::= ramp? "<code>tempo</code>" "<code>+</code>" number</p>
+<p>tempo_directive ::= ramp? "<code>tempo</code>" "<code>-</code>" number</p>
+<p>tempo_directive ::= ramp? "<code>tempo</code>" "<code>*</code>" number ( "<code>/</code>" number )?</p>
+<p>tempo_directive ::= ramp? "<code>tempo</code>" "<code>/</code>" number</p>
+<p>ramp ::= beat+</p>
+<p>beat ::= "<code>-</code>"</p>
+</div>
+
+<p>A tempo directive indicates that a MIDI <i>tempo</i> meta event should be added at the <i>current time</i>.  The value, which can be either absolute or relative to the previous value, is specified in beats per minute.</p>
+
+<p>If a ramp is specified, then a series of tempo events will be added instead of a single one.  The ramp starts with the most recent tempo at the <i>current time</i>, and progresses linearly to the specified tempo after specified number of beats.  The <i>current time</i> is advanced.</p>
+
+<h4>Control Changes</h4>
+
+<p>[ not yet documented ]</p>
+
+<h4>Program Changes</h4>
+
+<div class="BNF">
+<p>program_change_directive ::= "<code>prog</code>" "<code>=</code>" ( number | ( "<code>x</code>" hex_number ) )</p>
+</div>
+
+<p>A program change directive indicates that a MIDI <i>program change</i> event should be added at the <i>current track</i>, <i>channel</i>, and <i>time</i>.  Its value can range from <code>1</code> to <code>128</code>, or in hex, <code>x00</code> to <code>x7F</code>.</p>
+
+<h4>Pitch Bends</h4>
+
+<p>[ not yet implemented ]</p>
+
+<h4>Aftertouch</h4>
+
+<p>[ not yet implemented ]</p>
+
+<p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
+last modified 2003-08-22</p>
+
+</body>
+</html>

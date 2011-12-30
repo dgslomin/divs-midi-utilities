@@ -1,0 +1,191 @@
+// EventListView.cpp : implementation of the CEventListView class
+//
+
+#include "stdafx.h"
+#include "Sequencer.h"
+
+#include "SequenceDoc.h"
+#include "EventListView.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CEventListView
+
+IMPLEMENT_DYNCREATE(CEventListView, CScrollView)
+
+BEGIN_MESSAGE_MAP(CEventListView, CScrollView)
+	//{{AFX_MSG_MAP(CEventListView)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+		//    DO NOT EDIT what you see in these blocks of generated code!
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CEventListView construction/destruction
+
+CEventListView::CEventListView()
+{
+	// TODO: add construction code here
+}
+
+CEventListView::~CEventListView()
+{
+}
+
+BOOL CEventListView::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// TODO: Modify the Window class or styles here by modifying
+	//  the CREATESTRUCT cs
+
+	return CScrollView::PreCreateWindow(cs);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CEventListView drawing
+
+void CEventListView::OnDraw(CDC* pDC)
+{
+	CSequenceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	// TODO: add draw code for native data here
+
+	CRect clientRect;
+	this->GetClientRect(&clientRect);
+
+	CRect rectClipBox;
+	pDC->GetClipBox(&rectClipBox);
+
+	pDC->SelectStockObject(DEFAULT_GUI_FONT);
+
+	TEXTMETRIC textMetrics;
+	pDC->GetTextMetrics(&textMetrics);
+
+	CSize sizeMeasureBeat = pDC->GetTextExtent(_T("00000:00.000"));
+	CSize sizeEventType = pDC->GetTextExtent(_T("Control Change"));
+	CSize sizeNumber = pDC->GetTextExtent(_T("128"));
+	CSize sizeFloat = pDC->GetTextExtent(_T("00000.000"));
+	CSize sizeColumnGap = pDC->GetTextExtent(_T("  "));
+
+	MidiFileEvent_t pEvent;
+	MidiFileMeasureBeat_t pMeasureBeat = MidiFileMeasureBeat_new(1, 1.0);
+	MidiFileMeasureBeat_t pEndMeasureBeat = MidiFileMeasureBeat_new(1, 1.0);
+	int row_number = 0;
+
+	for (pEvent = MidiFile_getFirstEvent(pDoc->m_pMidiFile); pEvent != NULL; pEvent = MidiFileEvent_getNextEventInFile(pEvent))
+	{
+		if (MidiFileEvent_isNoteStartEvent(pEvent))
+		{
+			CRect rect;
+			CString s;
+
+			rect.top = clientRect.top + (row_number * textMetrics.tmHeight);
+			rect.bottom = rect.top + textMetrics.tmHeight;
+
+			if ((rect.bottom >= rectClipBox.top) && (rect.top <= rectClipBox.bottom))
+			{
+				MidiFile_setMeasureBeatFromTick(pDoc->m_pMidiFile, MidiFileEvent_getTick(pEvent), pMeasureBeat);
+				s.Format("%d:%06.3f", MidiFileMeasureBeat_getMeasure(pMeasureBeat), MidiFileMeasureBeat_getBeat(pMeasureBeat));
+				rect.left = 0;
+				rect.right = sizeMeasureBeat.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+
+				s.Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(pEvent)));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeNumber.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+
+				s.Format("%d", MidiFileNoteStartEvent_getChannel(pEvent) + 1);
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeNumber.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeEventType.cx;
+				pDC->DrawText(_T("Note"), &rect, DT_NOCLIP | DT_LEFT);
+
+				s.Format("%d", MidiFileNoteStartEvent_getNote(pEvent));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeNumber.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+
+				s.Format("%d", MidiFileNoteStartEvent_getVelocity(pEvent));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeNumber.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+
+#if 1
+				MidiFile_setMeasureBeatFromTick(pDoc->m_pMidiFile, MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(pEvent)), pEndMeasureBeat);
+				s.Format("%d:%06.3f", MidiFileMeasureBeat_getMeasure(pEndMeasureBeat), MidiFileMeasureBeat_getBeat(pEndMeasureBeat));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeMeasureBeat.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+#else
+				s.Format("%0.3f", MidiFile_getBeatFromTick(pDoc->m_pMidiFile, MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(pEvent))) - MidiFile_getBeatFromTick(pDoc->m_pMidiFile, MidiFileEvent_getTick(pEvent)));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeFloat.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+#endif
+
+				s.Format("%d", MidiFileNoteEndEvent_getVelocity(MidiFileNoteStartEvent_getNoteEndEvent(pEvent)));
+				rect.left = rect.right + sizeColumnGap.cx;
+				rect.right = rect.left + sizeNumber.cx;
+				pDC->DrawText(s, &rect, DT_NOCLIP | DT_RIGHT);
+			}
+
+			row_number++;
+		}
+	}
+
+	MidiFileMeasureBeat_free(pMeasureBeat);
+	MidiFileMeasureBeat_free(pEndMeasureBeat);
+
+	CSize scrollSizeTotal;
+	scrollSizeTotal.cx = 0;
+	scrollSizeTotal.cy = row_number * textMetrics.tmHeight;
+
+	CSize scrollSizeRow;
+	scrollSizeRow.cx = 0;
+	scrollSizeRow.cy = textMetrics.tmHeight;
+
+	this->SetScrollSizes(MM_TEXT, scrollSizeTotal, sizeDefault, scrollSizeRow);
+}
+
+void CEventListView::OnInitialUpdate()
+{
+	CScrollView::OnInitialUpdate();
+
+	CSize sizeTotal;
+	// TODO: calculate the total size of this view
+
+	sizeTotal.cx = sizeTotal.cy = 0;
+	SetScrollSizes(MM_TEXT, sizeTotal);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CEventListView diagnostics
+
+#ifdef _DEBUG
+void CEventListView::AssertValid() const
+{
+	CScrollView::AssertValid();
+}
+
+void CEventListView::Dump(CDumpContext& dc) const
+{
+	CScrollView::Dump(dc);
+}
+
+CSequenceDoc* CEventListView::GetDocument() // non-debug version is inline
+{
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CSequenceDoc)));
+	return (CSequenceDoc*)m_pDocument;
+}
+#endif //_DEBUG
+
+/////////////////////////////////////////////////////////////////////////////
+// CEventListView message handlers

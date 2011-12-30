@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<imp velocity="96">
+
+<!-- This is the Hayden/Wicki isomorphic layout spread out over two typing keyboards arranged front to back. -->
+
+<key keyboard="back" name="esc" function="exit" />
+<key keyboard="front" name="esc" function="exit" />
+
+<key keyboard="back" name="3" function="note" note-name="Gb5" />
+<key keyboard="back" name="4" function="note" note-name="Ab5" />
+<key keyboard="back" name="5" function="note" note-name="Bb5" />
+<key keyboard="back" name="6" function="note" note-name="C6" />
+<key keyboard="back" name="7" function="note" note-name="D6" />
+<key keyboard="back" name="8" function="note" note-name="E6" />
+<key keyboard="back" name="9" function="note" note-name="F#6" />
+<key keyboard="back" name="0" function="note" note-name="G#6" />
+<key keyboard="back" name="-" function="note" note-name="A#6" />
+
+<key keyboard="back" name="w" function="note" note-name="Cb5" />
+<key keyboard="back" name="e" function="note" note-name="Db5" />
+<key keyboard="back" name="r" function="note" note-name="Eb5" />
+<key keyboard="back" name="t" function="note" note-name="F5" />
+<key keyboard="back" name="y" function="note" note-name="G5" />
+<key keyboard="back" name="u" function="note" note-name="A5" />
+<key keyboard="back" name="i" function="note" note-name="B5" />
+<key keyboard="back" name="o" function="note" note-name="C#6" />
+<key keyboard="back" name="p" function="note" note-name="D#6" />
+<key keyboard="back" name="[" function="note" note-name="E#6" />
+
+<key keyboard="back" name="s" function="note" note-name="Gb4" />
+<key keyboard="back" name="d" function="note" note-name="Ab4" />
+<key keyboard="back" name="f" function="note" note-name="Bb4" />
+<key keyboard="back" name="g" function="note" note-name="C5" />
+<key keyboard="back" name="h" function="note" note-name="D5" />
+<key keyboard="back" name="j" function="note" note-name="E5" />
+<key keyboard="back" name="k" function="note" note-name="F#5" />
+<key keyboard="back" name="l" function="note" note-name="G#5" />
+<key keyboard="back" name=";" function="note" note-name="A#5" />
+
+<key keyboard="back" name="z" function="note" note-name="Cb4" />
+<key keyboard="back" name="x" function="note" note-name="Db4" />
+<key keyboard="back" name="c" function="note" note-name="Eb4" />
+<key keyboard="back" name="v" function="note" note-name="F4" />
+<key keyboard="back" name="b" function="note" note-name="G4" />
+<key keyboard="back" name="n" function="note" note-name="A4" />
+<key keyboard="back" name="m" function="note" note-name="B4" />
+<key keyboard="back" name="," function="note" note-name="C#5" />
+<key keyboard="back" name="." function="note" note-name="D#5" />
+<key keyboard="back" name="/" function="note" note-name="E#5" />
+
+<key keyboard="front" name="3" function="note" note-name="Gb3" />
+<key keyboard="front" name="4" function="note" note-name="Ab3" />
+<key keyboard="front" name="5" function="note" note-name="Bb3" />
+<key keyboard="front" name="6" function="note" note-name="C4" />
+<key keyboard="front" name="7" function="note" note-name="D4" />
+<key keyboard="front" name="8" function="note" note-name="E4" />
+<key keyboard="front" name="9" function="note" note-name="F#4" />
+<key keyboard="front" name="0" function="note" note-name="G#4" />
+<key keyboard="front" name="-" function="note" note-name="A#4" />
+
+<key keyboard="front" name="w" function="note" note-name="Cb3" />
+<key keyboard="front" name="e" function="note" note-name="Db3" />
+<key keyboard="front" name="r" function="note" note-name="Eb3" />
+<key keyboard="front" name="t" function="note" note-name="F3" />
+<key keyboard="front" name="y" function="note" note-name="G3" />
+<key keyboard="front" name="u" function="note" note-name="A3" />
+<key keyboard="front" name="i" function="note" note-name="B3" />
+<key keyboard="front" name="o" function="note" note-name="C#4" />
+<key keyboard="front" name="p" function="note" note-name="D#4" />
+<key keyboard="front" name="[" function="note" note-name="E#4" />
+
+<key keyboard="front" name="s" function="note" note-name="Gb2" />
+<key keyboard="front" name="d" function="note" note-name="Ab2" />
+<key keyboard="front" name="f" function="note" note-name="Bb2" />
+<key keyboard="front" name="g" function="note" note-name="C3" />
+<key keyboard="front" name="h" function="note" note-name="D3" />
+<key keyboard="front" name="j" function="note" note-name="E3" />
+<key keyboard="front" name="k" function="note" note-name="F#3" />
+<key keyboard="front" name="l" function="note" note-name="G#3" />
+<key keyboard="front" name=";" function="note" note-name="A#3" />
+
+<key keyboard="front" name="z" function="note" note-name="Cb2" />
+<key keyboard="front" name="x" function="note" note-name="Db2" />
+<key keyboard="front" name="c" function="note" note-name="Eb2" />
+<key keyboard="front" name="v" function="note" note-name="F2" />
+<key keyboard="front" name="b" function="note" note-name="G2" />
+<key keyboard="front" name="n" function="note" note-name="A2" />
+<key keyboard="front" name="m" function="note" note-name="B2" />
+<key keyboard="front" name="," function="note" note-name="C#3" />
+<key keyboard="front" name="." function="note" note-name="D#3" />
+<key keyboard="front" name="/" function="note" note-name="E#3" />
+
+</imp>

@@ -1,0 +1,17 @@
+
+..\..\bin\tempo-map.exe: tempo-map.obj midifile.obj
+	cl /nologo /Fe..\..\bin\tempo-map.exe tempo-map.obj midifile.obj
+
+tempo-map.obj: tempo-map.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c tempo-map.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist tempo-map.obj del tempo-map.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\tempo-map.exe del ..\..\bin\tempo-map.exe
+

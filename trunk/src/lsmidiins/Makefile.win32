@@ -1,0 +1,10 @@
+
+..\..\bin\lsmidiins.exe: lsmidiins.c
+	cl /nologo /Fe..\..\bin\lsmidiins.exe lsmidiins.c winmm.lib
+
+clean:
+	@if exist lsmidiins.obj del lsmidiins.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\lsmidiins.exe del ..\..\bin\lsmidiins.exe
+

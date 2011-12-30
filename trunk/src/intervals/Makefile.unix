@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/intervals: intervals.o midimsg.o
+	$(CC) -o ../../bin/intervals intervals.o midimsg.o
+
+intervals.o: intervals.c
+	$(CC) -I../midimsg -c intervals.c
+
+midimsg.o: ../midimsg/midimsg.c
+	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+
+clean:
+	rm -f intervals.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f ../../bin/intervals
+

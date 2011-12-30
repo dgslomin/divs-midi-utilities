@@ -1,0 +1,22 @@
+
+MIDI_UTILITIES_HOME=..\..\..
+GTK_HOME=c:\gtk
+GTK_CFLAGS=/I"$(GTK_HOME)\include\gtk-2.0" /I"$(GTK_HOME)\lib\gtk-2.0\include" /I"$(GTK_HOME)\include\atk-1.0" /I"$(GTK_HOME)\include\cairo" /I"$(GTK_HOME)\include\pango-1.0" /I"$(GTK_HOME)\include\glib-2.0" /I"$(GTK_HOME)\lib\glib-2.0\include" /I"$(GTK_HOME)\include\freetype2" /I"$(GTK_HOME)\include"
+GTK_LIBS="$(GTK_HOME)\lib\gtk-win32-2.0.lib" "$(GTK_HOME)\lib\gdk-win32-2.0.lib" gdi32.lib imm32.lib shell32.lib ole32.lib "$(GTK_HOME)\lib\atk-1.0.lib" "$(GTK_HOME)\lib\gdk_pixbuf-2.0.lib" "$(GTK_HOME)\lib\pangowin32-1.0.lib" "$(GTK_HOME)\lib\pangocairo-1.0.lib" "$(GTK_HOME)\lib\cairo.lib" "$(GTK_HOME)\lib\pangoft2-1.0.lib" "$(GTK_HOME)\lib\fontconfig.lib" "$(GTK_HOME)\lib\freetype.lib" "$(GTK_HOME)\lib\z.lib" "$(GTK_HOME)\lib\pango-1.0.lib" "$(GTK_HOME)\lib\gobject-2.0.lib" "$(GTK_HOME)\lib\gmodule-2.0.lib" "$(GTK_HOME)\lib\glib-2.0.lib" "$(GTK_HOME)\lib\intl.lib" "$(GTK_HOME)\lib\iconv.lib" "$(GTK_HOME)\lib\gthread-2.0.lib"
+
+seq.exe: seq.obj midifile.obj
+	cl /nologo /Feseq.exe seq.obj midifile.obj $(GTK_LIBS) winmm.lib
+
+seq.obj: seq.c "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.h"
+	cl /nologo /I. /I"$(MIDI_UTILITIES_HOME)\src\midifile" $(GTK_CFLAGS) /c seq.c
+
+midifile.obj: "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.c"
+	cl /nologo /I"$(MIDI_UTILITIES_HOME)\src\midifile" /c "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.c"
+
+clean:
+	@if exist seq.obj del seq.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist seq.exe del seq.exe
+

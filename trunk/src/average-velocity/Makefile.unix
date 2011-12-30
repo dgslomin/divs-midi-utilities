@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/average-velocity: average-velocity.o midifile.o
+	$(CC) -o../../bin/average-velocity average-velocity.o midifile.o
+
+average-velocity.o: average-velocity.c ../midifile/midifile.h
+	$(CC) -I../midifile -c average-velocity.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f average-velocity.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/average-velocity
+

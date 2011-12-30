@@ -1,0 +1,95 @@
+
+# sudo apt-get install gcc libc6-dev libx11-dev libasound-dev libexpat-dev
+# make -f Makefile.unix HAVE_X11=true HAVE_ALSA=true HAVE_EXPAT=true
+
+HAVE_X11=false
+HAVE_ALSA=false
+HAVE_EXPAT=false
+
+all:
+	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix; fi
+	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix; fi
+	cd average-tempo && make -f Makefile.unix
+	cd average-velocity && make -f Makefile.unix
+	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix; fi
+	cd brainstorm/original && make -f Makefile.unix
+	cd dispmidi && make -f Makefile.unix
+	cd intervals && make -f Makefile.unix
+	cd jumpoctave && make -f Makefile.unix
+	cd metercaster && make -f Makefile.unix
+	cd mish && make -f Makefile.unix
+	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix; fi
+	cd net2pipe && make -f Makefile.unix
+	cd normalizesmf && make -f Makefile.unix
+	cd offset-tempo && make -f Makefile.unix
+	cd offset-velocity && make -f Makefile.unix
+	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix; fi
+	cd pipe2net && make -f Makefile.unix
+	cd rw && make -f Makefile.unix
+	cd scale-tempo && make -f Makefile.unix
+	cd scale-velocity && make -f Makefile.unix
+	cd smftoxml && make -f Makefile.unix
+	cd tempo-map && make -f Makefile.unix
+	cd transpose && make -f Makefile.unix
+	cd verbosify && make -f Makefile.unix
+	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix; fi
+	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix; fi
+
+clean:
+	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix clean; fi
+	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix clean; fi
+	cd average-tempo && make -f Makefile.unix clean
+	cd average-velocity && make -f Makefile.unix clean
+	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix clean; fi
+	cd brainstorm/original && make -f Makefile.unix clean
+	cd dispmidi && make -f Makefile.unix clean
+	cd intervals && make -f Makefile.unix clean
+	cd jumpoctave && make -f Makefile.unix clean
+	cd metercaster && make -f Makefile.unix clean
+	cd mish && make -f Makefile.unix clean
+	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix clean; fi
+	cd net2pipe && make -f Makefile.unix clean
+	cd normalizesmf && make -f Makefile.unix clean
+	cd offset-tempo && make -f Makefile.unix clean
+	cd offset-velocity && make -f Makefile.unix clean
+	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix clean; fi
+	cd pipe2net && make -f Makefile.unix clean
+	cd rw && make -f Makefile.unix clean
+	cd scale-tempo && make -f Makefile.unix clean
+	cd scale-velocity && make -f Makefile.unix clean
+	cd smftoxml && make -f Makefile.unix clean
+	cd tempo-map && make -f Makefile.unix clean
+	cd transpose && make -f Makefile.unix clean
+	cd verbosify && make -f Makefile.unix clean
+	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix clean; fi
+	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix clean; fi
+
+reallyclean:
+	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix reallyclean; fi
+	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix reallyclean; fi
+	cd average-tempo && make -f Makefile.unix reallyclean
+	cd average-velocity && make -f Makefile.unix reallyclean
+	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix reallyclean; fi
+	cd brainstorm/original && make -f Makefile.unix reallyclean
+	cd dispmidi && make -f Makefile.unix reallyclean
+	cd intervals && make -f Makefile.unix reallyclean
+	cd jumpoctave && make -f Makefile.unix reallyclean
+	cd metercaster && make -f Makefile.unix reallyclean
+	cd mish && make -f Makefile.unix reallyclean
+	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix reallyclean; fi
+	cd net2pipe && make -f Makefile.unix reallyclean
+	cd normalizesmf && make -f Makefile.unix reallyclean
+	cd offset-tempo && make -f Makefile.unix reallyclean
+	cd offset-velocity && make -f Makefile.unix reallyclean
+	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix reallyclean; fi
+	cd pipe2net && make -f Makefile.unix reallyclean
+	cd rw && make -f Makefile.unix reallyclean
+	cd scale-tempo && make -f Makefile.unix reallyclean
+	cd scale-velocity && make -f Makefile.unix reallyclean
+	cd smftoxml && make -f Makefile.unix reallyclean
+	cd tempo-map && make -f Makefile.unix reallyclean
+	cd transpose && make -f Makefile.unix reallyclean
+	cd verbosify && make -f Makefile.unix reallyclean
+	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix reallyclean; fi
+	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix reallyclean; fi
+

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<!-- The 31 tone equal temperment generalized keyboard designed for a microtonal organ by Adrianne Fokker.  Also used by a synthesizer called the archiphone, which used a computer keyboard for control... how appropriate! -->
+
+<imp>
+
+<key name="esc" function="exit" />
+<key name="f1" function="panic" />
+<key name="up" function="velocity" amount="16" />
+<key name="down" function="velocity" amount="-16" />
+<key name="left" function="transpose" amount="-12" />
+<key name="right" function="transpose" amount="12" />
+
+<key name="`" function="note" note-name="A1" />
+<key name="1" function="note" note-name="B1" />
+<key name="2" function="note" note-name="C#2" />
+<key name="3" function="note" note-name="D#2" />
+<key name="4" function="note" note-name="F2" />
+<key name="5" function="note" note-name="G2" />
+<key name="6" function="note" note-name="A2" />
+<key name="7" function="note" note-name="B2" />
+<key name="8" function="note" note-name="C#3" />
+<key name="9" function="note" note-name="D#3" />
+<key name="0" function="note" note-name="F3" />
+<key name="-" function="note" note-name="G3" />
+<key name="=" function="note" note-name="A3" />
+<key name="backspace" function="note" note-name="B3" />
+
+<key name="tab" function="note" note-name="A#1" />
+<key name="q" function="note" note-name="C2" />
+<key name="w" function="note" note-name="D2" />
+<key name="e" function="note" note-name="E2" />
+<key name="r" function="note" note-name="F#2" />
+<key name="t" function="note" note-name="G#2" />
+<key name="y" function="note" note-name="A#2" />
+<key name="u" function="note" note-name="C3" />
+<key name="i" function="note" note-name="D3" />
+<key name="o" function="note" note-name="E3" />
+<key name="p" function="note" note-name="F#3" />
+<key name="[" function="note" note-name="G#3" />
+<key name="]" function="note" note-name="A#3" />
+<key name="\" function="note" note-name="C4" />
+
+<key name="capslock" function="note" note-name="B1" />
+<key name="a" function="note" note-name="C#2" />
+<key name="s" function="note" note-name="D#2" />
+<key name="d" function="note" note-name="F2" />
+<key name="f" function="note" note-name="G2" />
+<key name="g" function="note" note-name="A2" />
+<key name="h" function="note" note-name="B2" />
+<key name="j" function="note" note-name="C#3" />
+<key name="k" function="note" note-name="D#3" />
+<key name="l" function="note" note-name="F3" />
+<key name=";" function="note" note-name="G3" />
+<key name="'" function="note" note-name="A3" />
+<key name="enter" function="note" note-name="B3" />
+
+<key name="lshift" function="note" note-name="C2" />
+<key name="z" function="note" note-name="D2" />
+<key name="x" function="note" note-name="E2" />
+<key name="c" function="note" note-name="F#2" />
+<key name="v" function="note" note-name="G#2" />
+<key name="b" function="note" note-name="A#2" />
+<key name="n" function="note" note-name="C3" />
+<key name="m" function="note" note-name="D3" />
+<key name="," function="note" note-name="E3" />
+<key name="." function="note" note-name="F#3" />
+<key name="/" function="note" note-name="G#3" />
+<key name="rshift" function="note" note-name="A#3" />
+
+</imp>

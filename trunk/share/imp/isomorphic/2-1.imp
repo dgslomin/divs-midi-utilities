@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<imp disabled-midi-out-name="MIDI Yoke NT:  1" hotkey-win="1" hotkey-name="i" program-number="7">
+
+<init-controller number="7" amount="127" />
+<init-controller number="74" amount="127" />
+
+<!-- lshift - rshift -->
+<key function="note" scan-code="42" note-number="60" />
+<key function="note" scan-code="44" note-number="62" />
+<key function="note" scan-code="45" note-number="64" />
+<key function="note" scan-code="46" note-number="66" />
+<key function="note" scan-code="47" note-number="68" />
+<key function="note" scan-code="48" note-number="70" />
+<key function="note" scan-code="49" note-number="72" />
+<key function="note" scan-code="50" note-number="74" />
+<key function="note" scan-code="51" note-number="76" />
+<key function="note" scan-code="52" note-number="78" />
+<key function="note" scan-code="53" note-number="80" />
+<key function="note" scan-code="54" note-number="82" />
+
+<!-- caps lock - enter -->
+<key function="note" scan-code="58" note-number="59" />
+<key function="note" scan-code="30" note-number="61" />
+<key function="note" scan-code="31" note-number="63" />
+<key function="note" scan-code="32" note-number="65" />
+<key function="note" scan-code="33" note-number="67" />
+<key function="note" scan-code="34" note-number="69" />
+<key function="note" scan-code="35" note-number="71" />
+<key function="note" scan-code="36" note-number="73" />
+<key function="note" scan-code="37" note-number="75" />
+<key function="note" scan-code="38" note-number="77" />
+<key function="note" scan-code="39" note-number="79" />
+<key function="note" scan-code="40" note-number="81" />
+<key function="note" scan-code="28" note-number="83" />
+
+<!-- tab - backslash -->
+<key function="note" scan-code="15" note-number="58" />
+<key function="note" scan-code="16" note-number="60" />
+<key function="note" scan-code="17" note-number="62" />
+<key function="note" scan-code="18" note-number="64" />
+<key function="note" scan-code="19" note-number="66" />
+<key function="note" scan-code="20" note-number="68" />
+<key function="note" scan-code="21" note-number="70" />
+<key function="note" scan-code="22" note-number="72" />
+<key function="note" scan-code="23" note-number="74" />
+<key function="note" scan-code="24" note-number="76" />
+<key function="note" scan-code="25" note-number="78" />
+<key function="note" scan-code="26" note-number="80" />
+<key function="note" scan-code="27" note-number="82" />
+<key function="note" scan-code="43" note-number="84" />
+
+<!-- backtick - backspace -->
+<key function="note" scan-code="41" note-number="57" />
+<key function="note" scan-code="2" note-number="59" />
+<key function="note" scan-code="3" note-number="61" />
+<key function="note" scan-code="4" note-number="63" />
+<key function="note" scan-code="5" note-number="65" />
+<key function="note" scan-code="6" note-number="67" />
+<key function="note" scan-code="7" note-number="69" />
+<key function="note" scan-code="8" note-number="71" />
+<key function="note" scan-code="9" note-number="73" />
+<key function="note" scan-code="10" note-number="75" />
+<key function="note" scan-code="11" note-number="77" />
+<key function="note" scan-code="12" note-number="79" />
+<key function="note" scan-code="13" note-number="81" />
+<key function="note" scan-code="14" note-number="83" />
+
+<key name="esc" function="exit" />
+<key name="f1" function="transpose" amount="-12" />
+<key name="f2" function="transpose" amount="12" />
+<key name="f3" function="velocity" amount="-16" />
+<key name="f4" function="velocity" amount="16" />
+<key name="f5" function="transpose" momentary="1" amount="-12" />
+<key name="f6" function="transpose" momentary="1" amount="12" />
+<key name="f7" function="velocity" momentary="1" amount="-32" />
+<key name="f8" function="velocity" momentary="1" amount="32" />
+<key name="ins" function="controller" controller-number="7" amount="8" />
+<key name="del" function="controller" controller-number="7" amount="-8" />
+<key name="home" function="controller" controller-number="73" amount="8" />
+<key name="end" function="controller" controller-number="73" amount="-8" />
+<key name="pgup" function="controller" controller-number="72" amount="8" />
+<key name="pgdn" function="controller" controller-number="72" amount="-8" />
+<key name="up" function="controller" controller-number="74" amount="8" />
+<key name="down" function="controller" controller-number="74" amount="-8" />
+<key name="right" function="controller" controller-number="71" amount="8" />
+<key name="left" function="controller" controller-number="71" amount="-8" />
+<key name="space" function="controller" controller-number="64" momentary="1" absolute="1" amount="127" />
+<key name="lctrl" function="panic" />
+
+</imp>
+

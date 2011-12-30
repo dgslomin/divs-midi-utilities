@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<drum-sequencer beats="16" trigger-port="MIDI Yoke NT:  1" trigger-channel="1">
+
+<port name="Microsoft GS Wavetable SW Synth">
+<instrument name="kick" channel="10" note="36" velocity="64" />
+<instrument name="snare" channel="10" note="39" velocity="64" />
+</port>
+
+<pattern name="basic rock beat" steps="16">
+<line instrument="snare">0 0 1 0 | 0 0 1 0 | 0 0 1 0 | 0 0 1 0</line>
+<line instrument="kick" >1 0 0 0 | 1 1 0 0 | 1 0 0 0 | 0 1 0 0</line>
+</pattern>
+
+<pattern name="fill" steps="48">
+<line instrument="snare">000 000 000 000 | 000 000 000 000 | 000 000 000 000 | 000 111 101 101</line>
+<line instrument="kick" >100 000 000 000 | 000 000 000 000 | 000 000 000 000 | 000 000 000 000</line>
+</pattern>
+
+<trigger note="64" pattern="basic rock beat" />
+<trigger note="65" pattern="fill" />
+
+</drum-sequencer>

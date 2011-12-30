@@ -1,0 +1,11 @@
+
+CC=gcc
+
+../../bin/rw: rw.c
+	$(CC) -o ../../bin/rw rw.c
+
+clean:
+
+reallyclean: clean
+	rm -f ../../bin/rw
+

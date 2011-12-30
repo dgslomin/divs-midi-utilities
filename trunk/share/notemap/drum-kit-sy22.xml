@@ -1,0 +1,55 @@
+<notemap default="null" midi-in="9" midi-out="9">
+
+	<!-- Low Snare -->
+	<mapping from="48" to="84" />
+	<mapping from="50" to="84" />
+	<mapping from="52" to="84" />
+	<mapping from="53" to="84" />
+	<mapping from="55" to="84" />
+	<mapping from="57" to="84" />
+
+	<!-- High Snare -->
+	<mapping from="60" to="86" />
+	<mapping from="62" to="86" />
+	<mapping from="64" to="86" />
+	<mapping from="65" to="86" />
+	<mapping from="67" to="86" />
+	<mapping from="69" to="86" />
+
+	<!-- Low Crash -->
+	<mapping from="37" to="58" />
+	<mapping from="39" to="58" />
+
+	<!-- Ride -->
+	<mapping from="42" to="63" />
+	<mapping from="44" to="63" />
+	<mapping from="46" to="63" />
+
+	<!-- Closed Hat -->
+	<mapping from="49" to="57" />
+	<mapping from="51" to="57" />
+
+	<!-- Open Hat -->
+	<mapping from="54" to="59" />
+	<mapping from="56" to="59" />
+	<mapping from="58" to="59" />
+
+	<!-- Clap -->
+	<mapping from="61" to="54" />
+	<mapping from="63" to="54" />
+
+	<!-- Cowbell -->
+	<mapping from="66" to="82" />
+	<mapping from="68" to="82" />
+	<mapping from="70" to="82" />
+
+	<!-- Splash -->
+	<mapping from="85" to="61" />
+	<mapping from="87" to="61" />
+
+	<!-- High Crash -->
+	<mapping from="90" to="60" />
+	<mapping from="92" to="60" />
+	<mapping from="94" to="60" />
+
+</notemap>

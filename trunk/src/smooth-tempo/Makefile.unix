@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/smooth-tempo: smooth-tempo.o midifile.o
+	$(CC) -o../../bin/smooth-tempo smooth-tempo.o midifile.o
+
+smooth-tempo.o: smooth-tempo.c ../midifile/midifile.h
+	$(CC) -I../midifile -c smooth-tempo.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f smooth-tempo.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/smooth-tempo
+

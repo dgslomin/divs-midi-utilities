@@ -1,0 +1,17 @@
+
+..\..\bin\offset-velocity.exe: offset-velocity.obj midifile.obj
+	cl /nologo /Fe..\..\bin\offset-velocity.exe offset-velocity.obj midifile.obj
+
+offset-velocity.obj: offset-velocity.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c offset-velocity.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist offset-velocity.obj del offset-velocity.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\offset-velocity.exe del ..\..\bin\offset-velocity.exe
+

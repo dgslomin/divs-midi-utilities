@@ -1,0 +1,17 @@
+
+..\..\bin\smftoxml.exe: smftoxml.obj midifile.obj
+	cl /nologo /Fe..\..\bin\smftoxml.exe smftoxml.obj midifile.obj
+
+smftoxml.obj: smftoxml.c ..\midifile\midifile.h
+	cl /nologo /I. /I..\midifile /c smftoxml.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist smftoxml.obj del smftoxml.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\smftoxml.exe del ..\..\bin\smftoxml.exe
+

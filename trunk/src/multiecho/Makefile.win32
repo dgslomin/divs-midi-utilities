@@ -1,0 +1,10 @@
+
+..\..\bin\multiecho.exe: multiecho.c
+	cl /nologo /Fe..\..\bin\multiecho.exe /DWIN32 /D_WIN32_WINNT=0x0500 multiecho.c kernel32.lib winmm.lib
+
+clean:
+	@if exist multiecho.obj del multiecho.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\multiecho.exe del ..\..\bin\multiecho.exe
+

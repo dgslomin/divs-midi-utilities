@@ -1,0 +1,17 @@
+
+..\..\..\bin\melodygrep2.exe: melodygrep2.obj midifile.obj
+	cl /nologo /Fe..\..\..\bin\melodygrep2.exe melodygrep2.obj midifile.obj
+
+melodygrep2.obj: melodygrep2.c ..\..\midifile\midifile.h
+	cl /nologo /I. /I..\..\midifile /c melodygrep2.c
+
+midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
+	cl /nologo /I..\..\midifile /c ..\..\midifile\midifile.c
+
+clean:
+	@if exist melodygrep2.obj del melodygrep2.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\melodygrep2.exe del ..\..\..\bin\melodygrep2.exe
+

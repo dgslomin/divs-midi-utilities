@@ -1,0 +1,13 @@
+
+..\..\..\bin\trigger-finger-for-reaper.exe: trigger-finger-for-reaper.obj
+	cl /nologo /Fe..\..\..\bin\trigger-finger-for-reaper.exe trigger-finger-for-reaper.obj winmm.lib
+
+trigger-finger-for-reaper.obj: trigger-finger-for-reaper.c
+	cl /nologo /I. /c trigger-finger-for-reaper.c
+
+clean:
+	@if exist trigger-finger-for-reaper.obj del trigger-finger-for-reaper.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\trigger-finger-for-reaper.exe del ..\..\..\bin\trigger-finger-for-reaper.exe
+

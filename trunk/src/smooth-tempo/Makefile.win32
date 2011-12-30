@@ -1,0 +1,17 @@
+
+..\..\bin\smooth-tempo.exe: smooth-tempo.obj midifile.obj
+	cl /nologo /Fe..\..\bin\smooth-tempo.exe smooth-tempo.obj midifile.obj
+
+smooth-tempo.obj: smooth-tempo.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c smooth-tempo.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist smooth-tempo.obj del smooth-tempo.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\smooth-tempo.exe del ..\..\bin\smooth-tempo.exe
+
