@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<imp midi-out-name="MIDI Yoke NT:  1" hotkey-win="1" hotkey-name="i">
+
+<!-- lshift - rshift -->
+<key function="note" scan-code="42" note-number="60" />
+<key function="note" scan-code="44" note-number="61" />
+<key function="note" scan-code="45" note-number="62" />
+<key function="note" scan-code="46" note-number="63" />
+<key function="note" scan-code="47" note-number="64" />
+<key function="note" scan-code="48" note-number="65" />
+<key function="note" scan-code="49" note-number="66" />
+<key function="note" scan-code="50" note-number="67" />
+<key function="note" scan-code="51" note-number="68" />
+<key function="note" scan-code="52" note-number="69" />
+<key function="note" scan-code="53" note-number="70" />
+<key function="note" scan-code="54" note-number="71" />
+
+<!-- caps lock - enter -->
+<key function="note" scan-code="58" note-number="63" />
+<key function="note" scan-code="30" note-number="64" />
+<key function="note" scan-code="31" note-number="65" />
+<key function="note" scan-code="32" note-number="66" />
+<key function="note" scan-code="33" note-number="67" />
+<key function="note" scan-code="34" note-number="68" />
+<key function="note" scan-code="35" note-number="69" />
+<key function="note" scan-code="36" note-number="70" />
+<key function="note" scan-code="37" note-number="71" />
+<key function="note" scan-code="38" note-number="72" />
+<key function="note" scan-code="39" note-number="73" />
+<key function="note" scan-code="40" note-number="74" />
+<key function="note" scan-code="28" note-number="75" />
+
+<!-- tab - backslash -->
+<key function="note" scan-code="15" note-number="66" />
+<key function="note" scan-code="16" note-number="67" />
+<key function="note" scan-code="17" note-number="68" />
+<key function="note" scan-code="18" note-number="69" />
+<key function="note" scan-code="19" note-number="70" />
+<key function="note" scan-code="20" note-number="71" />
+<key function="note" scan-code="21" note-number="72" />
+<key function="note" scan-code="22" note-number="73" />
+<key function="note" scan-code="23" note-number="74" />
+<key function="note" scan-code="24" note-number="75" />
+<key function="note" scan-code="25" note-number="76" />
+<key function="note" scan-code="26" note-number="77" />
+<key function="note" scan-code="27" note-number="78" />
+<key function="note" scan-code="43" note-number="79" />
+
+<!-- backtick - backspace -->
+<key function="note" scan-code="41" note-number="69" />
+<key function="note" scan-code="2" note-number="70" />
+<key function="note" scan-code="3" note-number="71" />
+<key function="note" scan-code="4" note-number="72" />
+<key function="note" scan-code="5" note-number="73" />
+<key function="note" scan-code="6" note-number="74" />
+<key function="note" scan-code="7" note-number="75" />
+<key function="note" scan-code="8" note-number="76" />
+<key function="note" scan-code="9" note-number="77" />
+<key function="note" scan-code="10" note-number="78" />
+<key function="note" scan-code="11" note-number="79" />
+<key function="note" scan-code="12" note-number="80" />
+<key function="note" scan-code="13" note-number="81" />
+<key function="note" scan-code="14" note-number="82" />
+
+<key function="exit" name="esc" />
+
+</imp>
+

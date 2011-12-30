@@ -1,0 +1,16 @@
+
+..\pp.exe: pp.obj midifile.obj
+	cl /nologo /Fe..\pp.exe pp.obj midifile.obj sdl\lib\SDL.lib sdl\lib\SDL_gfx.lib sdl\lib\SDL_ttf.lib sdl\lib\SDL_image.lib user32.lib
+
+pp.obj: pp.c
+	cl /nologo /I. /Isdl\include /c pp.c
+
+midifile.obj: midifile.c
+	cl /nologo /I. /c midifile.c
+
+clean:
+	-del /q *.obj
+
+reallyclean: clean
+	-del ..\pp.exe
+

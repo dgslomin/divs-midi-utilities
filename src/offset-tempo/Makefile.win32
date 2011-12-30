@@ -1,0 +1,17 @@
+
+..\..\bin\offset-tempo.exe: offset-tempo.obj midifile.obj
+	cl /nologo /Fe..\..\bin\offset-tempo.exe offset-tempo.obj midifile.obj
+
+offset-tempo.obj: offset-tempo.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c offset-tempo.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist offset-tempo.obj del offset-tempo.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\offset-tempo.exe del ..\..\bin\offset-tempo.exe
+

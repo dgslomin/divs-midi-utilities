@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<!--  A mapping of the standard 48 key English concertina for two keyboards.  Each hand gets its own keyboard, turned counterclockwise so that the hand can rest on 1, q, a, and z.  -->
+
+<imp velocity="96">
+
+<key keyboard="left" name="esc" function="exit" />
+<key keyboard="right" name="esc" function="exit" />
+
+<key keyboard="left" name="1" function="note" note-name="Ab3" />
+<key keyboard="left" name="2" function="note" note-name="Eb4" />
+<key keyboard="left" name="3" function="note" note-name="Bb4" />
+<key keyboard="left" name="4" function="note" note-name="F#5" />
+<key keyboard="left" name="5" function="note" note-name="C#6" />
+<key keyboard="left" name="6" function="note" note-name="G#6" />
+
+<key keyboard="left" name="q" function="note" note-name="A3" />
+<key keyboard="left" name="w" function="note" note-name="E4" />
+<key keyboard="left" name="e" function="note" note-name="B4" />
+<key keyboard="left" name="r" function="note" note-name="F5" />
+<key keyboard="left" name="t" function="note" note-name="C6" />
+<key keyboard="left" name="y" function="note" note-name="G6" />
+
+<key keyboard="left" name="a" function="note" note-name="C4" />
+<key keyboard="left" name="s" function="note" note-name="G4" />
+<key keyboard="left" name="d" function="note" note-name="D5" />
+<key keyboard="left" name="f" function="note" note-name="A5" />
+<key keyboard="left" name="g" function="note" note-name="E6" />
+<key keyboard="left" name="h" function="note" note-name="B6" />
+
+<key keyboard="left" name="z" function="note" note-name="C#4" />
+<key keyboard="left" name="x" function="note" note-name="G#4" />
+<key keyboard="left" name="c" function="note" note-name="D#5" />
+<key keyboard="left" name="v" function="note" note-name="Ab5" />
+<key keyboard="left" name="b" function="note" note-name="Eb6" />
+<key keyboard="left" name="n" function="note" note-name="Bb6" />
+
+<key keyboard="right" name="1" function="note" note-name="G#3" />
+<key keyboard="right" name="2" function="note" note-name="D#4" />
+<key keyboard="right" name="3" function="note" note-name="Ab4" />
+<key keyboard="right" name="4" function="note" note-name="Eb5" />
+<key keyboard="right" name="5" function="note" note-name="Bb5" />
+<key keyboard="right" name="6" function="note" note-name="F#6" />
+
+<key keyboard="right" name="q" function="note" note-name="G3" />
+<key keyboard="right" name="w" function="note" note-name="D4" />
+<key keyboard="right" name="e" function="note" note-name="A4" />
+<key keyboard="right" name="r" function="note" note-name="E5" />
+<key keyboard="right" name="t" function="note" note-name="B5" />
+<key keyboard="right" name="y" function="note" note-name="F6" />
+<key keyboard="right" name="u" function="note" note-name="C7" />
+
+<key keyboard="right" name="a" function="note" note-name="B3" />
+<key keyboard="right" name="s" function="note" note-name="F4" />
+<key keyboard="right" name="d" function="note" note-name="C5" />
+<key keyboard="right" name="f" function="note" note-name="G5" />
+<key keyboard="right" name="g" function="note" note-name="D6" />
+<key keyboard="right" name="h" function="note" note-name="A6" />
+
+<key keyboard="right" name="z" function="note" note-name="Bb3" />
+<key keyboard="right" name="x" function="note" note-name="F#4" />
+<key keyboard="right" name="c" function="note" note-name="C#5" />
+<key keyboard="right" name="v" function="note" note-name="G#5" />
+<key keyboard="right" name="b" function="note" note-name="D#6" />
+
+</imp>

@@ -1,0 +1,17 @@
+
+..\..\bin\scale-velocity.exe: scale-velocity.obj midifile.obj
+	cl /nologo /Fe..\..\bin\scale-velocity.exe scale-velocity.obj midifile.obj
+
+scale-velocity.obj: scale-velocity.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c scale-velocity.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist scale-velocity.obj del scale-velocity.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\scale-velocity.exe del ..\..\bin\scale-velocity.exe
+

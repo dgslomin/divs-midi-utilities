@@ -1,0 +1,17 @@
+
+..\..\bin\playsmf.exe: playsmf.obj midifile.obj
+	cl /nologo /Fe..\..\bin\playsmf.exe playsmf.obj midifile.obj winmm.lib kernel32.lib
+
+playsmf.obj: playsmf.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c playsmf.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist playsmf.obj del playsmf.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\playsmf.exe del ..\..\bin\playsmf.exe
+

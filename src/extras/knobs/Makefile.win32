@@ -1,0 +1,10 @@
+
+..\..\..\bin\knobs.exe: knobs.c
+	cl /nologo /Fe..\..\..\bin\knobs.exe knobs.c winmm.lib msvcrt.lib
+
+clean:
+	@if exist knobs.obj del knobs.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\knobs.exe del ..\..\..\bin\knobs.exe
+

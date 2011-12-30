@@ -1,0 +1,17 @@
+
+..\..\bin\xmltosmf.exe: xmltosmf.obj midifile.obj
+	cl /nologo /Fe..\..\bin\xmltosmf.exe xmltosmf.obj midifile.obj ..\3rdparty\expat\libexpat.lib
+
+xmltosmf.obj: xmltosmf.c ..\midifile\midifile.h
+	cl /nologo /I. /I..\midifile /I..\3rdparty\expat /c xmltosmf.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist xmltosmf.obj del xmltosmf.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\xmltosmf.exe del ..\..\bin\xmltosmf.exe
+

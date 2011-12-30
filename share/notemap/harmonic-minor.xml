@@ -1,0 +1,55 @@
+<notemap default="null" midi-in="8" midi-out="8">
+	<mapping from="36" to="36" />
+	<mapping from="37" to="37" />
+	<mapping from="38" to="38" />
+	<mapping from="39" to="40" />
+	<mapping from="40" to="39" />
+	<mapping from="41" to="41" />
+	<mapping from="42" to="42" />
+	<mapping from="43" to="43" />
+	<mapping from="44" to="45" />
+	<mapping from="45" to="44" />
+	<mapping from="46" to="46" />
+	<mapping from="47" to="47" />
+
+	<mapping from="48" to="48" />
+	<mapping from="49" to="49" />
+	<mapping from="50" to="50" />
+	<mapping from="51" to="52" />
+	<mapping from="52" to="51" />
+	<mapping from="53" to="53" />
+	<mapping from="54" to="54" />
+	<mapping from="55" to="55" />
+	<mapping from="56" to="57" />
+	<mapping from="57" to="56" />
+	<mapping from="58" to="58" />
+	<mapping from="59" to="59" />
+
+	<mapping from="60" to="60" />
+	<mapping from="61" to="61" />
+	<mapping from="62" to="62" />
+	<mapping from="63" to="64" />
+	<mapping from="64" to="63" />
+	<mapping from="65" to="65" />
+	<mapping from="66" to="66" />
+	<mapping from="67" to="67" />
+	<mapping from="68" to="69" />
+	<mapping from="69" to="68" />
+	<mapping from="70" to="70" />
+	<mapping from="71" to="71" />
+
+	<mapping from="72" to="72" />
+	<mapping from="73" to="73" />
+	<mapping from="74" to="74" />
+	<mapping from="75" to="76" />
+	<mapping from="76" to="75" />
+	<mapping from="77" to="77" />
+	<mapping from="78" to="78" />
+	<mapping from="79" to="79" />
+	<mapping from="80" to="81" />
+	<mapping from="81" to="80" />
+	<mapping from="82" to="82" />
+	<mapping from="83" to="83" />
+
+	<mapping from="84" to="84" />
+</notemap>

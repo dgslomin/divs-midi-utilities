@@ -1,0 +1,19 @@
+
+MIDI_UTILITIES_HOME=..\..\..
+
+seq.exe: seq.obj midifile.obj
+	cl /nologo /Feseq.exe seq.obj midifile.obj
+
+seq.obj: seq.c "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.h"
+	cl /nologo /I. /I"$(MIDI_UTILITIES_HOME)\src\midifile" /c seq.c
+
+midifile.obj: "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.c"
+	cl /nologo /I"$(MIDI_UTILITIES_HOME)\src\midifile" /c "$(MIDI_UTILITIES_HOME)\src\midifile\midifile.c"
+
+clean:
+	@if exist seq.obj del seq.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist seq.exe del seq.exe
+

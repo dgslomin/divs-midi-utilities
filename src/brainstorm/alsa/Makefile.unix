@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../../bin/abrainstorm: abrainstorm.o midifile.o
+	$(CC) -o ../../../bin/abrainstorm -lasound abrainstorm.o midifile.o
+
+abrainstorm.o: abrainstorm.c
+	$(CC) -I../../midifile -c abrainstorm.c
+
+midifile.o: ../../midifile/midifile.c
+	$(CC) -I../../midifile -c ../../midifile/midifile.c
+
+clean:
+	rm -f abrainstorm.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../../bin/abrainstorm
+

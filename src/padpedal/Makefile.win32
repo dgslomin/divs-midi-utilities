@@ -1,0 +1,10 @@
+
+..\..\bin\padpedal.exe: padpedal.c
+	cl /nologo /Fe..\..\bin\padpedal.exe padpedal.c winmm.lib
+
+clean:
+	@if exist padpedal.obj del padpedal.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\padpedal.exe del ..\..\bin\padpedal.exe
+

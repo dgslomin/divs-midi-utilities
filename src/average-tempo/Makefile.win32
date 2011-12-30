@@ -1,0 +1,17 @@
+
+..\..\bin\average-tempo.exe: average-tempo.obj midifile.obj
+	cl /nologo /Fe..\..\bin\average-tempo.exe average-tempo.obj midifile.obj
+
+average-tempo.obj: average-tempo.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c average-tempo.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist average-tempo.obj del average-tempo.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\average-tempo.exe del ..\..\bin\average-tempo.exe
+

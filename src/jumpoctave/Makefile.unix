@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/jumpoctave: jumpoctave.o midimsg.o
+	$(CC) -o ../../bin/jumpoctave jumpoctave.o midimsg.o
+
+jumpoctave.o: jumpoctave.c
+	$(CC) -I../midimsg -c jumpoctave.c
+
+midimsg.o: ../midimsg/midimsg.c
+	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+
+clean:
+	rm -f jumpoctave.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f ../../bin/jumpoctave
+

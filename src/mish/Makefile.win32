@@ -1,0 +1,21 @@
+
+..\..\bin\mish.exe: mish.obj reader.obj midifile.obj
+	cl /nologo /Fe..\..\bin\mish.exe mish.obj reader.obj midifile.obj
+
+mish.obj: mish.c reader.h ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c mish.c
+
+reader.obj: reader.c reader.h
+	cl /nologo /c reader.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist mish.obj del mish.obj
+	@if exist reader.obj del reader.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\mish.exe del ..\..\bin\mish.exe
+

@@ -1,0 +1,13 @@
+
+..\..\..\bin\mciplaysmf.exe: mciplaysmf.obj
+	cl /nologo /Fe..\..\..\bin\mciplaysmf.exe mciplaysmf.obj winmm.lib kernel32.lib
+
+mciplaysmf.obj: mciplaysmf.c
+	cl /nologo /c mciplaysmf.c
+
+clean:
+	@if exist mciplaysmf.obj del mciplaysmf.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\mciplaysmf.exe del ..\..\..\bin\mciplaysmf.exe
+

@@ -1,0 +1,14 @@
+
+CSC=c:\windows\Microsoft.NET\Framework\v2.0.50727\csc.exe
+
+..\..\bin\imp2.exe: imp2.cs keyboard.png keyboard.tsv
+	$(CSC) /out:..\..\bin\imp2.exe /target:winexe /resource:keyboard.png /resource:keyboard.tsv /debug /nologo imp2.cs
+
+help:
+	$(CSC) /help
+
+clean:
+
+reallyclean: clean
+	if exist ..\..\bin\imp2.exe del ..\..\bin\imp2.exe
+

@@ -1,0 +1,17 @@
+
+..\..\bin\normalizesmf.exe: normalizesmf.obj midifile.obj
+	cl /nologo /Fe..\..\bin\normalizesmf.exe normalizesmf.obj midifile.obj
+
+normalizesmf.obj: normalizesmf.c ..\midifile\midifile.h
+	cl /nologo /I. /I..\midifile /c normalizesmf.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist normalizesmf.obj del normalizesmf.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\normalizesmf.exe del ..\..\bin\normalizesmf.exe
+

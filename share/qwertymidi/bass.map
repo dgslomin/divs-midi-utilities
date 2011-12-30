@@ -1,0 +1,66 @@
+
+A mapping of the bass guitar fretboard as viewed from above (horizontal
+interval of a half-step, vertical interval of a forth).
+
+42	40	lshift	e
+44	41	z	f
+45	42	x	f-sharp
+46	43	c	g
+47	44	v	g-sharp
+48	45	b	a
+49	46	n	a-sharp
+50	47	m	b
+51	48	comma	c
+52	49	period	c-sharp
+53	50	slash	d
+54	51	rshift	d-sharp
+
+58	45	caps lock	a
+30	46	a	a-sharp
+31	47	s	b
+32	48	d	c
+33	49	f	c-sharp
+34	50	g	d
+35	51	h	d-sharp
+36	52	j	e
+37	53	k	f
+38	54	l	f-sharp
+39	55	semicolon	g
+40	56	apostrophe	g-sharp
+28	57	enter	a
+
+15	50	tab	d
+16	51	q	d-sharp
+17	52	w	e
+18	53	e	f
+19	54	r	f-sharp
+20	55	t	g
+21	56	y	g-sharp
+22	57	u	a
+23	58	i	a-sharp
+24	59	o	b
+25	60	p	c
+26	61	lbracket	c-sharp
+27	62	rbracket	d
+43	63	backslash	d-sharp
+
+41	55	backtick	g
+2	56	1	g-sharp
+3	57	2	a
+4	58	3	a-sharp
+5	59	4	b
+6	60	5	c
+7	61	6	c-sharp
+8	62	7	d
+9	63	8	d-sharp
+10	64	9	e
+11	65	0	f
+12	66	minus	f-sharp
+13	67	equals	g
+14	68	backspace	g-sharp
+
+59	stay-down	f1
+60	stay-up	f2
+57	panic	space
+1	exit	esc
+

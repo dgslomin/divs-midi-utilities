@@ -1,0 +1,15 @@
+
+WXDIR=c:\wxWindows-2.4.2
+
+..\..\..\bin\loopseq.exe: loopseq.obj
+	cl /nologo /Fe..\..\..\bin\loopseq.exe loopseq.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXDIR)\lib\wxmswd.lib
+
+loopseq.obj: loopseq.cpp
+	cl /nologo /MDd /I$(WXDIR)\include /I$(WXDIR)\lib\mswd /c loopseq.cpp
+
+clean:
+	@if exist loopseq.obj del loopseq.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\loopseq.exe del ..\..\..\bin\loopseq.exe
+

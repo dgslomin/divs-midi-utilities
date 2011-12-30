@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/normalizesmf: normalizesmf.o midifile.o
+	$(CC) -o../../bin/normalizesmf normalizesmf.o midifile.o
+
+normalizesmf.o: normalizesmf.c ../midifile/midifile.h
+	$(CC) -I../midifile -c normalizesmf.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f normalizesmf.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/normalizesmf
+

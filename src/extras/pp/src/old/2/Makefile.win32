@@ -1,0 +1,13 @@
+
+..\pp.exe: pp.obj
+	cl /nologo /Fe..\pp.exe pp.obj sdl\lib\SDL.lib sdl\lib\SDL_ttf.lib sdl\lib\SDL_image.lib opengl32.lib glu32.lib
+
+pp.obj: pp.c
+	cl /nologo /Isdl\include /c pp.c
+
+clean:
+	-del /q *.obj
+
+reallyclean: clean
+	-del ..\pp.exe
+

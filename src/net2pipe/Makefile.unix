@@ -1,0 +1,11 @@
+
+CC=gcc
+
+../../bin/net2pipe: net2pipe.c
+	$(CC) -o ../../bin/net2pipe net2pipe.c
+
+clean:
+
+reallyclean: clean
+	rm -f ../../bin/net2pipe
+

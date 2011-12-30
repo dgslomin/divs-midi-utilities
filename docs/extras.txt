@@ -1,0 +1,13 @@
+
+The programs in the src/extras directory aren't built by default, as they're
+either obsolete or incomplete.  They're included in the package primarily so
+that I don't lose track of them, but there's useful code to borrow in there,
+and I may return to working on some of them if there's enough demand.
+
+Noteable inclusions:  Piano Protagonist, a MIDI take on the game Guitar Hero;
+melodygrep, a heuristic-based utility for identifying unlabeled MIDI files
+which contain a specified melody; and several attempts to build a full
+linear or step-based sequencer using different GUI toolkits.  This last is
+something of a quixotic quest for me which has been going on for many years,
+and most of my standalone utilities are actually spin-offs from that project.
+

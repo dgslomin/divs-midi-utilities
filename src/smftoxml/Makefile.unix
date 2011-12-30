@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/smftoxml: smftoxml.o midifile.o
+	$(CC) -o ../../bin/smftoxml smftoxml.o midifile.o
+
+smftoxml.o: smftoxml.c ../midifile/midifile.h
+	$(CC) -I. -I../midifile -c smftoxml.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f smftoxml.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/smftoxml
+

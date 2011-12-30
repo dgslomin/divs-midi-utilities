@@ -1,0 +1,17 @@
+
+..\..\bin\average-velocity.exe: average-velocity.obj midifile.obj
+	cl /nologo /Fe..\..\bin\average-velocity.exe average-velocity.obj midifile.obj
+
+average-velocity.obj: average-velocity.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c average-velocity.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist average-velocity.obj del average-velocity.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\average-velocity.exe del ..\..\bin\average-velocity.exe
+

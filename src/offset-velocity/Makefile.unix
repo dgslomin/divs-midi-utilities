@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/offset-velocity: offset-velocity.o midifile.o
+	$(CC) -o../../bin/offset-velocity offset-velocity.o midifile.o
+
+offset-velocity.o: offset-velocity.c ../midifile/midifile.h
+	$(CC) -I../midifile -c offset-velocity.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f offset-velocity.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/offset-velocity
+

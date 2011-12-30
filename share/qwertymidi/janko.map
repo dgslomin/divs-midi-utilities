@@ -1,0 +1,96 @@
+
+# Paul von Janko's alternative layout for the piano keyboard is based on the
+# whole tone scale, and makes the positioning of intervals self-consistent.
+
+# Even notes
+
+15	56	# tab --> g-sharp
+
+42	58	# lshift --> a-sharp
+16	58	# q --> a-sharp
+
+44	60	# z --> c
+17	60	# w --> c
+
+45	62	# x --> d
+18	62	# e --> d
+
+46	64	# c --> e
+19	64	# r --> e
+
+47	66	# v --> f-sharp
+20	66	# t --> f-sharp
+
+48	68	# b --> g-sharp
+21	68	# y --> g-sharp
+
+49	70	# n --> a-sharp
+22	70	# u --> a-sharp
+
+50	72	# m --> c
+23	72	# i --> c
+
+51	74	# comma --> d
+24	74	# o --> d
+
+52	76	# period --> e
+25	76	# p --> e
+
+53	78	# slash --> f-sharp
+26	78	# lbracket --> f-sharp
+
+54	80	# rshift --> g-sharp
+27	80	# rbracket --> g-sharp
+
+43	82	# backslash --> a-sharp
+
+# Odd notes
+
+41	55	# backtick --> g
+
+58	57	# caps lock --> a
+2	57	# 1 --> a
+
+30	59	# a --> b
+3	59	# 2 --> b
+
+31	61	# s --> c-sharp
+4	61	# 3 --> c-sharp
+
+32	63	# d --> d-sharp
+5	63	# 4 --> d-sharp
+
+33	65	# f --> f
+6	65	# 5 --> f
+
+34	67	# g --> g
+7	67	# 6 --> g
+
+35	69	# h --> a
+8	69	# 7 --> a
+
+36	71	# j --> b
+9	71	# 8 --> b
+
+37	73	# k --> c-sharp
+10	73	# 9 --> c-sharp
+
+38	75	# l --> d-sharp
+11	75	# 0 --> d-sharp
+
+39	77	# semicolon --> f
+12	77	# minus --> f
+
+40	79	# apostrophe --> g
+13	79	# equals --> g
+
+28	81	# enter --> a
+14	81	# backspace --> a
+
+# Transposition and control
+
+59	stay-down	# f1
+60	stay-up	# f2
+57	panic	# space
+1	exit	# esc
+

@@ -1,0 +1,10 @@
+
+..\..\..\bin\sysexdump.exe: sysexdump.c
+	cl /nologo /Fe..\..\..\bin\sysexdump.exe sysexdump.c winmm.lib
+
+clean:
+	@if exist sysexdump.obj del sysexdump.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\sysexdump.exe del ..\..\..\bin\sysexdump.exe
+

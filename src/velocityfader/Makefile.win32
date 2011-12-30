@@ -1,0 +1,10 @@
+
+..\..\bin\velocityfader.exe: velocityfader.c
+	cl /nologo /Fe..\..\bin\velocityfader.exe velocityfader.c winmm.lib
+
+clean:
+	@if exist velocityfader.obj del velocityfader.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\velocityfader.exe del ..\..\bin\velocityfader.exe
+

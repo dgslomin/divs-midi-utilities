@@ -1,0 +1,5 @@
+
+#define WIN_SEQER_ID_ICON 1000
+
+WIN_SEQER_ID_ICON ICON "seqer.ico"
+

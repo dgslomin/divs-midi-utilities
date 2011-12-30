@@ -1,0 +1,13 @@
+
+build:
+	./setup.py build
+
+clean:
+	./setup.py clean
+	rm -f *.pyc
+
+reallyclean: clean
+	rm -rf build
+
+.PHONY: build clean reallyclean
+

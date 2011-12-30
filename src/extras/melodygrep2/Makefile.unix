@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../../bin/melodygrep2: melodygrep2.o midifile.o
+	$(CC) -o ../../../bin/melodygrep2 melodygrep2.o midifile.o
+
+melodygrep2.o: melodygrep2.c ../../midifile/midifile.h
+	$(CC) -I. -I../../midifile -c melodygrep2.c
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) -I../../midifile -c ../../midifile/midifile.c
+
+clean:
+	rm -f melodygrep2.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../../bin/melodygrep2
+

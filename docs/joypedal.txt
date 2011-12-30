@@ -1,0 +1,50 @@
+
+Joypedal monitors the PC joystick port for signals on one of its analog
+directional channels, and converts these signals into MIDI controller
+messages.  It was not designed to be used with a real joystick (although
+that would not cause any harm).  Rather, it was intended to be used with an
+organ style volume/expression pedal connected to the joystick port with a 
+custom adapter.  The following instructions will help you build such an
+adapter.
+
+   ATTEMPT THIS OR ANY OTHER CUSTOM HARDWARE PROJECT AT YOUR OWN RISK.
+   UNDER NO CIRCUMSTANCE SHALL I, DAVID G. SLOMIN, BE HELD LIABLE FOR 
+   ANY POTENTIAL INJURY OR DAMAGE CAUSED TO YOU OR YOUR EQUIPMENT.
+
+That said, this is extremely simple and there shouldn't be any problem.
+Parts shouldn't cost you more than 5 USD.
+
+1.  Find an appropriate pedal.  I use a Yamaha EP-1.
+<http://www.yamaha.com/cgi-win/webcgi.exe/DsplyModel/?gEKS00001EP-1>
+
+2.  Find a matching jack for the pedal's plug.  This differs depending 
+on the brand and model of pedal, but female RCA and female mono 1/4in 
+are the two most common.  Radio Shack carries both of them.
+
+3.  Find a male 15 pin D shell plug, to match the joystick port.  Radio
+Shack tends not to have them in stock, but you can find them online.
+
+4.  Connect one lead/shield of the pedal jack to pin 3 of the joystick 
+plug.  It doesn't matter which lead/shield of the pedal jack you choose, 
+since volume pedals are just variable resistors (which have no polarity).
+
+5.  Connect the other lead/shield of the pedal jack to pins 1 and 6 
+(shorted together) of the joystick plug.
+
+6.  That's all.  Plug it in and try it out.  Build a case or wrap it in 
+heat shrink if you want.
+
+                              ,----------------------------.
+                             |                              |
+                        ,----+----.                         |
+                       /           \                        |
+      ,---------------/-------------\-------.            ,- | -.
+      \    8   7   6 / 5   4   3   2 \ 1    /           /   |   \
+       \   o   o   o'  o   o   o   o  `o   /           /    |    \
+        \                      |          /           |     O     |
+         \   o   o   o   o   o | o   o   /             \         /
+          \ 15  14  13  12  11 | 10  9  /               \       /
+           `-------------------|-------'                 `--+--'
+                               |                            |
+                                `--------------------------'
+

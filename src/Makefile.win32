@@ -1,0 +1,123 @@
+
+HAVE_DIRECTSOUND=0
+
+all:
+	cd average-tempo && nmake -f Makefile.win32 /nologo
+	cd average-velocity && nmake -f Makefile.win32 /nologo
+!IF $(HAVE_DIRECTSOUND)
+	cd beatbox && nmake -f Makefile.win32 /nologo
+!ENDIF
+	cd brainstorm/win32 && nmake -f Makefile.win32 /nologo
+	cd delta && nmake -f Makefile.win32 /nologo
+	cd fakesustain && nmake -f Makefile.win32 /nologo
+	cd imp && nmake -f Makefile.win32 /nologo
+	cd joycc && nmake -f Makefile.win32 /nologo
+	cd joypedal && nmake -f Makefile.win32 /nologo
+	cd lsmidiins && nmake -f Makefile.win32 /nologo
+	cd lsmidiouts && nmake -f Makefile.win32 /nologo
+	cd metercaster && nmake -f Makefile.win32 /nologo
+	cd midimon && nmake -f Makefile.win32 /nologo
+	cd midithru && nmake -f Makefile.win32 /nologo
+	cd mish && nmake -f Makefile.win32 /nologo
+	cd multiecho && nmake -f Makefile.win32 /nologo
+	cd netmidic && nmake -f Makefile.win32 /nologo
+	cd netmidid && nmake -f Makefile.win32 /nologo
+	cd normalizesmf && nmake -f Makefile.win32 /nologo
+	cd notemap && nmake -f Makefile.win32 /nologo
+	cd offset-tempo && nmake -f Makefile.win32 /nologo
+	cd offset-velocity && nmake -f Makefile.win32 /nologo
+	cd onmessage && nmake -f Makefile.win32 /nologo
+	cd onpedal && nmake -f Makefile.win32 /nologo
+	cd padpedal && nmake -f Makefile.win32 /nologo
+	cd pedalnote && nmake -f Makefile.win32 /nologo
+	cd playsmf && nmake -f Makefile.win32 /nologo
+	cd pulsar && nmake -f Makefile.win32 /nologo
+	cd qwertymidi && nmake -f Makefile.win32 /nologo
+	cd scale-tempo && nmake -f Makefile.win32 /nologo
+	cd scale-velocity && nmake -f Makefile.win32 /nologo
+	cd sendmidi && nmake -f Makefile.win32 /nologo
+	cd smftoxml && nmake -f Makefile.win32 /nologo
+	cd tempo-map && nmake -f Makefile.win32 /nologo
+	cd velocityfader && nmake -f Makefile.win32 /nologo
+	cd xmltosmf && nmake -f Makefile.win32 /nologo
+
+clean:
+	cd average-tempo && nmake -f Makefile.win32 /nologo clean
+	cd average-velocity && nmake -f Makefile.win32 /nologo clean
+!IF $(HAVE_DIRECTSOUND)
+	cd beatbox && nmake -f Makefile.win32 /nologo clean
+!ENDIF
+	cd brainstorm/win32 && nmake -f Makefile.win32 /nologo clean
+	cd delta && nmake -f Makefile.win32 /nologo clean
+	cd fakesustain && nmake -f Makefile.win32 /nologo clean
+	cd imp && nmake -f Makefile.win32 /nologo clean
+	cd joycc && nmake -f Makefile.win32 /nologo clean
+	cd joypedal && nmake -f Makefile.win32 /nologo clean
+	cd lsmidiins && nmake -f Makefile.win32 /nologo clean
+	cd lsmidiouts && nmake -f Makefile.win32 /nologo clean
+	cd metercaster && nmake -f Makefile.win32 /nologo clean
+	cd midimon && nmake -f Makefile.win32 /nologo clean
+	cd midithru && nmake -f Makefile.win32 /nologo clean
+	cd mish && nmake -f Makefile.win32 /nologo clean
+	cd multiecho && nmake -f Makefile.win32 /nologo clean
+	cd netmidic && nmake -f Makefile.win32 /nologo clean
+	cd netmidid && nmake -f Makefile.win32 /nologo clean
+	cd normalizesmf && nmake -f Makefile.win32 /nologo clean
+	cd notemap && nmake -f Makefile.win32 /nologo clean
+	cd offset-tempo && nmake -f Makefile.win32 /nologo clean
+	cd offset-velocity && nmake -f Makefile.win32 /nologo clean
+	cd onmessage && nmake -f Makefile.win32 /nologo clean
+	cd onpedal && nmake -f Makefile.win32 /nologo clean
+	cd padpedal && nmake -f Makefile.win32 /nologo clean
+	cd pedalnote && nmake -f Makefile.win32 /nologo clean
+	cd playsmf && nmake -f Makefile.win32 /nologo clean
+	cd pulsar && nmake -f Makefile.win32 /nologo clean
+	cd qwertymidi && nmake -f Makefile.win32 /nologo clean
+	cd scale-tempo && nmake -f Makefile.win32 /nologo clean
+	cd scale-velocity && nmake -f Makefile.win32 /nologo clean
+	cd sendmidi && nmake -f Makefile.win32 /nologo clean
+	cd smftoxml && nmake -f Makefile.win32 /nologo clean
+	cd tempo-map && nmake -f Makefile.win32 /nologo clean
+	cd velocityfader && nmake -f Makefile.win32 /nologo clean
+	cd xmltosmf && nmake -f Makefile.win32 /nologo clean
+
+reallyclean:
+	cd average-tempo && nmake -f Makefile.win32 /nologo reallyclean
+	cd average-velocity && nmake -f Makefile.win32 /nologo reallyclean
+!IF $(HAVE_DIRECTSOUND)
+	cd beatbox && nmake -f Makefile.win32 /nologo reallyclean
+!ENDIF
+	cd brainstorm/win32 && nmake -f Makefile.win32 /nologo reallyclean
+	cd delta && nmake -f Makefile.win32 /nologo reallyclean
+	cd fakesustain && nmake -f Makefile.win32 /nologo reallyclean
+	cd imp && nmake -f Makefile.win32 /nologo reallyclean
+	cd joycc && nmake -f Makefile.win32 /nologo reallyclean
+	cd joypedal && nmake -f Makefile.win32 /nologo reallyclean
+	cd lsmidiins && nmake -f Makefile.win32 /nologo reallyclean
+	cd lsmidiouts && nmake -f Makefile.win32 /nologo reallyclean
+	cd metercaster && nmake -f Makefile.win32 /nologo reallyclean
+	cd midimon && nmake -f Makefile.win32 /nologo reallyclean
+	cd midithru && nmake -f Makefile.win32 /nologo reallyclean
+	cd mish && nmake -f Makefile.win32 /nologo reallyclean
+	cd multiecho && nmake -f Makefile.win32 /nologo reallyclean
+	cd netmidic && nmake -f Makefile.win32 /nologo reallyclean
+	cd netmidid && nmake -f Makefile.win32 /nologo reallyclean
+	cd normalizesmf && nmake -f Makefile.win32 /nologo reallyclean
+	cd notemap && nmake -f Makefile.win32 /nologo reallyclean
+	cd offset-tempo && nmake -f Makefile.win32 /nologo reallyclean
+	cd offset-velocity && nmake -f Makefile.win32 /nologo reallyclean
+	cd onmessage && nmake -f Makefile.win32 /nologo reallyclean
+	cd onpedal && nmake -f Makefile.win32 /nologo reallyclean
+	cd padpedal && nmake -f Makefile.win32 /nologo reallyclean
+	cd pedalnote && nmake -f Makefile.win32 /nologo reallyclean
+	cd playsmf && nmake -f Makefile.win32 /nologo reallyclean
+	cd pulsar && nmake -f Makefile.win32 /nologo reallyclean
+	cd qwertymidi && nmake -f Makefile.win32 /nologo reallyclean
+	cd scale-tempo && nmake -f Makefile.win32 /nologo reallyclean
+	cd scale-velocity && nmake -f Makefile.win32 /nologo reallyclean
+	cd sendmidi && nmake -f Makefile.win32 /nologo reallyclean
+	cd smftoxml && nmake -f Makefile.win32 /nologo reallyclean
+	cd tempo-map && nmake -f Makefile.win32 /nologo reallyclean
+	cd velocityfader && nmake -f Makefile.win32 /nologo reallyclean
+	cd xmltosmf && nmake -f Makefile.win32 /nologo reallyclean
+

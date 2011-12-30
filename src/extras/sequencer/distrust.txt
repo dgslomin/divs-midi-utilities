@@ -1,0 +1,17 @@
+
+I deeply distrust the code-emitting wizards used in MFC, so I'm keeping a log of everything I add into its generated code:
+
+Remove the ability to hide the status bar from the view menu in the resource editor.
+
+CSequencerApp::InitInstance() - SetRegistryKey()
+
+CSequenceDoc.m_pMidiFile
+CSequenceDoc::CSequenceDoc()
+CSequenceDoc::~CSequenceDoc()
+CSequenceDoc::OnNewDocument()
+CSequenceDoc::OnOpenDocument()
+CSequenceDoc::OnSaveDocument()
+
+CEventListView::OnDraw()
+
+indicators in CMainFrame

@@ -1,0 +1,10 @@
+
+..\..\bin\midithru.exe: midithru.c
+	cl /nologo /Fe..\..\bin\midithru.exe midithru.c winmm.lib
+
+clean:
+	@if exist midithru.obj del midithru.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\midithru.exe del ..\..\bin\midithru.exe
+

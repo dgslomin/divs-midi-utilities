@@ -1,0 +1,17 @@
+
+..\..\bin\scale-tempo.exe: scale-tempo.obj midifile.obj
+	cl /nologo /Fe..\..\bin\scale-tempo.exe scale-tempo.obj midifile.obj
+
+scale-tempo.obj: scale-tempo.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c scale-tempo.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist scale-tempo.obj del scale-tempo.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\scale-tempo.exe del ..\..\bin\scale-tempo.exe
+
