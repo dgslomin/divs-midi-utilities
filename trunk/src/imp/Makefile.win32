@@ -30,7 +30,7 @@ clean:
 	@if exist keynames.obj del keynames.obj
 	@if exist ..\..\bin\keynames.ilk del ..\..\bin\keynames.ilk
 	@if exist ..\..\bin\keynames.pdb del ..\..\bin\keynames.pdb
-	@if exist vc60.pdb del vc60.pdb
+	@if exist vc90.pdb del vc90.pdb
 
 reallyclean: clean
 	@if exist ..\..\bin\imp.exe del ..\..\bin\imp.exe

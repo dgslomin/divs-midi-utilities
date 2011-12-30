@@ -11,7 +11,7 @@ simplealarm.obj: ..\..\simplealarm\simplealarm.c ..\..\simplealarm\simplealarm.h
 clean:
 	@if exist drum-sequencer.obj del drum-sequencer.obj
 	@if exist simplealarm.obj del simplealarm.obj
-	@if exist vc60.pdb del vc60.pdb
+	@if exist vc90.pdb del vc90.pdb
 
 reallyclean: clean
 	@if exist ..\..\..\bin\drum-sequencer.exe del ..\..\..\bin\drum-sequencer.exe
