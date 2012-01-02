@@ -1,5 +1,6 @@
 
 #include <wx/wx.h>
+#include <wx/grid.h>
 
 class Seqer: public wxApp
 {
@@ -8,6 +9,7 @@ public:
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnExit(wxCommandEvent& event);
 	wxFrame* main_window;
+	wxGrid* main_grid;
 };
 
 IMPLEMENT_APP(Seqer)
@@ -43,6 +45,9 @@ bool Seqer::OnInit()
 	wxMenu* help_menu = new wxMenu();
 	menu_bar->Append(help_menu, "&Help");
 	help_menu->Append(wxID_ABOUT, "&About Seqer");
+
+	this->main_grid = new wxGrid(this->main_window, -1); 
+	this->main_grid->CreateGrid(128, 16);
 
 	this->main_window->CreateStatusBar();
 
