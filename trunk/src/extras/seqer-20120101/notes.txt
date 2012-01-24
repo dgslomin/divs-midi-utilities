@@ -1,0 +1,15 @@
+
+Current plans for the sequencer project ("Seqer"), as of 2012-01-07:
+
+An interface centered around an event list view which is heavily influenced by the interface of a spreadsheet.  This is intended to be suitable as the primary or sole editing interface, instead of a last ditch alternative to a piano roll.  Its description may seem superficially similar to a tracker, but this is a design for a linear sequencer with no notion of patterns or enforced quantization.
+
+Each cell in the spreadsheet-like grid corresponds to a single event.  The cell display indicates the type of the event and the key parts of the data inside it.  When a cell is focussed, a properties editor outside the grid (much like the formula editor in a spreadsheet) allows the user to see and edit all aspects of the event data.
+
+The event properties editor should not gain keyboard focus automatically when the cell is clicked upon.  Instead, the cell itself gains the focus, and responds to shortcut entry mechanisms.  For instance, a/b/c/d/e/f/g adds a note event and sets its note number to the corresponding pitch.  The octave of that pitch, the velocity, and the duration would be based on those of the most recently focussed event.  The accidental of the pitch would be based on the current key signature.  Ctrl+left/ctrl+right would decrement/increment pitch by semitone, and ctrl+down/ctrl+up would decrement/increment pitch by octave.  If a controller event was focussed, ctrl+left/ctrl+right would decrement/increment value by one, and ctrl+down/ctrl+up would decrement/increment value by 16.
+
+Columns correspond to track, but do not have any effect on playback or formatting; they are solely a way for the user to group events as he sees fit.  In particular, tracks/columns do not imply routing to output ports; output port is an editable property of each event, just like channel.  This can be stored in standards compliant MIDI files by repeating the "port" meta event within a track as needed.  Mute/solo and selected/unselected can be represented in a similar manner and saved (if desired) using "vendor" meta events in the file.
+
+Rows correspond to time, increasing non-linearly downward.  Time is grouped into "steps", where each step is a specified (fractional) number of beats or seconds.  Each step will take up at least one row, even if no event occurs in it.  If there is more than one event in a column which occurs in the same step, the step will take up extra rows.  Events within the step are sorted into rows by time order.  When the user creates a new event (through the qwerty keyboard or mouse), it will be quantized, by default, to the start of the step.
+
+Note that steps have no effect on the data itself, only its display.  They are meant to balance the goals of having a visual overview of where events are clustered in time, ease of entry, support for simultaneous events, and infinitessimal resolution.  Toggling between beat-based steps and second-based steps will be useful when meter-casting.
+
