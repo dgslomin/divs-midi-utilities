@@ -3,7 +3,11 @@
 #include <wx/grid.h>
 #include <midifile.h>
 
-#define ID_ENSURE_GRID_SIZE_FOR_INFINITE_SCROLLING wxID_HIGHEST + 1
+#define EVT_SCROLLWIN_INFINITE wxEVT_USER_FIRST
+
+#define ID_ZOOM (wxID_HIGHEST + 1)
+#define ID_FILTER (wxID_HIGHEST + 2)
+#define ID_EDIT_FILTERED_EVENTS (wxID_HIGHEST + 3)
 
 class Seqer: public wxApp
 {
@@ -13,7 +17,7 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnGridScroll(wxScrollWinEvent& event);
-	void OnEnsureGridSizeForInfiniteScrolling(wxCommandEvent& event);
+	void OnGridInfiniteScroll(wxScrollWinEvent& event);
 	void RedrawGrid();
 	MidiFile_t midi_file;
 	wxFrame* main_window;
@@ -51,10 +55,19 @@ bool Seqer::OnInit()
 	edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X");
 	edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C");
 	edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V");
+	edit_menu->AppendSeparator();
+	edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 	wxMenu* view_menu = new wxMenu();
 	menu_bar->Append(view_menu, "&View");
+	view_menu->Append(ID_ZOOM, "&Zoom...");
+	view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
+	view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
+	view_menu->AppendSeparator();
+	view_menu->Append(ID_FILTER, "&Filter...");
+	view_menu->AppendCheckItem(ID_EDIT_FILTERED_EVENTS, "&Edit Filtered Events");
 	wxMenu* help_menu = new wxMenu();
 	menu_bar->Append(help_menu, "&Help");
+	help_menu->Append(wxID_HELP_CONTENTS, "&Help Topics");
 	help_menu->Append(wxID_ABOUT, "&About Seqer");
 
 	this->main_grid = new wxGrid(this->main_window, -1); 
@@ -76,11 +89,11 @@ bool Seqer::OnInit()
 		}
 	}
 
-	this->Connect(ID_ENSURE_GRID_SIZE_FOR_INFINITE_SCROLLING, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnEnsureGridSizeForInfiniteScrolling));
 	this->main_grid->Connect(wxEVT_SCROLLWIN_BOTTOM, wxScrollWinEventHandler(Seqer::OnGridScroll));
 	this->main_grid->Connect(wxEVT_SCROLLWIN_LINEDOWN, wxScrollWinEventHandler(Seqer::OnGridScroll));
 	this->main_grid->Connect(wxEVT_SCROLLWIN_PAGEDOWN, wxScrollWinEventHandler(Seqer::OnGridScroll));
 	this->main_grid->Connect(wxEVT_SCROLLWIN_THUMBRELEASE, wxScrollWinEventHandler(Seqer::OnGridScroll));
+	this->Connect(EVT_SCROLLWIN_INFINITE, wxScrollWinEventHandler(Seqer::OnGridInfiniteScroll));
 
 	this->main_window->CreateStatusBar();
 
@@ -115,25 +128,25 @@ void Seqer::OnExit(wxCommandEvent& WXUNUSED(event))
 void Seqer::OnGridScroll(wxScrollWinEvent& event)
 {
 	event.Skip();
-	wxCommandEvent resize_grid_event(wxEVT_COMMAND_MENU_SELECTED, ID_ENSURE_GRID_SIZE_FOR_INFINITE_SCROLLING);
-	this->AddPendingEvent(resize_grid_event);
+	this->main_grid->AddPendingEvent(wxScrollWinEvent(EVT_SCROLLWIN_INFINITE));
 }
 
-void Seqer::OnEnsureGridSizeForInfiniteScrolling(wxCommandEvent& WXUNUSED(event))
+void Seqer::OnGridInfiniteScroll(wxScrollWinEvent& WXUNUSED(event))
 {
 	int scroll_width = this->main_grid->GetScrollRange(wxHORIZONTAL) - this->main_grid->GetScrollThumb(wxHORIZONTAL);
-	int scroll_height = this->main_grid->GetScrollRange(wxVERTICAL) - this->main_grid->GetScrollThumb(wxVERTICAL);
 	int scroll_x = this->main_grid->GetScrollPos(wxHORIZONTAL);
-	int scroll_y = this->main_grid->GetScrollPos(wxVERTICAL);
 	int client_width = this->main_grid->GetClientSize().x;
-	int client_height = this->main_grid->GetClientSize().y;
 	int cell_width = this->main_grid->GetDefaultColSize();
-	int cell_height = this->main_grid->GetDefaultRowSize();
 	int virtual_width = this->main_grid->GetNumberCols() * cell_width;
-	int virtual_height = this->main_grid->GetNumberRows() * cell_height;
 	int virtual_x = scroll_x * virtual_width / scroll_width;
-	int virtual_y = scroll_y * virtual_height / scroll_height;
 	if (virtual_x > virtual_width - client_width) this->main_grid->AppendCols((virtual_x - (virtual_width - client_width)) / cell_width);
+
+	int scroll_height = this->main_grid->GetScrollRange(wxVERTICAL) - this->main_grid->GetScrollThumb(wxVERTICAL);
+	int scroll_y = this->main_grid->GetScrollPos(wxVERTICAL);
+	int client_height = this->main_grid->GetClientSize().y;
+	int cell_height = this->main_grid->GetDefaultRowSize();
+	int virtual_height = this->main_grid->GetNumberRows() * cell_height;
+	int virtual_y = scroll_y * virtual_height / scroll_height;
 	if (virtual_y > virtual_height - client_height) this->main_grid->AppendRows((virtual_y - (virtual_height - client_height)) / cell_height);
 }
 
