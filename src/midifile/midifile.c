@@ -645,48 +645,48 @@ int MidiFile_save(MidiFile_t midi_file, const char* filename)
 			{
 				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 				{
-					fputc((0x80 | MidiFileNoteOffEvent_getChannel(event)) & 0x0F, out);
+					fputc(0x80 | (MidiFileNoteOffEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileNoteOffEvent_getNote(event) & 0x7F, out);
 					fputc(MidiFileNoteOffEvent_getVelocity(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 				{
-					fputc((0x90 | MidiFileNoteOnEvent_getChannel(event)) & 0x0F, out);
+					fputc(0x90 | (MidiFileNoteOnEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileNoteOnEvent_getNote(event) & 0x7F, out);
 					fputc(MidiFileNoteOnEvent_getVelocity(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 				{
-					fputc((0xA0 | MidiFileKeyPressureEvent_getChannel(event)) & 0x0F, out);
+					fputc(0xA0 | (MidiFileKeyPressureEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileKeyPressureEvent_getNote(event) & 0x7F, out);
 					fputc(MidiFileKeyPressureEvent_getAmount(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 				{
-					fputc((0xB0 | MidiFileControlChangeEvent_getChannel(event)) & 0x0F, out);
+					fputc(0xB0 | (MidiFileControlChangeEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileControlChangeEvent_getNumber(event) & 0x7F, out);
 					fputc(MidiFileControlChangeEvent_getValue(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 				{
-					fputc((0xC0 | MidiFileProgramChangeEvent_getChannel(event)) & 0x0F, out);
+					fputc(0xC0 | (MidiFileProgramChangeEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileProgramChangeEvent_getNumber(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 				{
-					fputc((0xD0 | MidiFileChannelPressureEvent_getChannel(event)) & 0x0F, out);
+					fputc(0xD0 | (MidiFileChannelPressureEvent_getChannel(event) & 0x0F), out);
 					fputc(MidiFileChannelPressureEvent_getAmount(event) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 				{
 					int value = MidiFilePitchWheelEvent_getValue(event);
-					fputc((0xE0 | MidiFilePitchWheelEvent_getChannel(event)) & 0x0F, out);
+					fputc(0xE0 | (MidiFilePitchWheelEvent_getChannel(event) & 0x0F), out);
 					fputc((value >> 7) & 0x7F, out);
 					fputc(value & 0x7F, out);
 					break;
