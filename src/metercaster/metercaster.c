@@ -249,9 +249,9 @@ int main(int argc, char **argv)
 
 	if (verbose)
 	{
-		printf("Info: Found left adjustment point at tick %d.\n", left_tick);
-		printf("Info: Found old right adjustment point at tick %d.\n", old_right_tick);
-		printf("Info: Found new right adjustment point at tick %d.\n", new_right_tick);
+		printf("Info: Found left adjustment point at tick %ld.\n", left_tick);
+		printf("Info: Found old right adjustment point at tick %ld.\n", old_right_tick);
+		printf("Info: Found new right adjustment point at tick %ld.\n", new_right_tick);
 	}
 
 	for (track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))

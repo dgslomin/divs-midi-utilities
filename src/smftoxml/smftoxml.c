@@ -16,44 +16,44 @@ static void display_events(MidiFileEvent_t event, void *user_data)
 	{
 		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 		{
-			printf("\t\t<NoteOffEvent Tick=\"%d\" Channel=\"%d\" Note=\"%d\" Velocity=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
+			printf("\t\t<NoteOffEvent Tick=\"%ld\" Channel=\"%d\" Note=\"%d\" Velocity=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 		{
-			printf("\t\t<NoteOnEvent Tick=\"%d\" Channel=\"%d\" Note=\"%d\" Velocity=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
+			printf("\t\t<NoteOnEvent Tick=\"%ld\" Channel=\"%d\" Note=\"%d\" Velocity=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 		{
-			printf("\t\t<KeyPressureEvent Tick=\"%d\" Channel=\"%d\" Note=\"%d\" Amount=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
+			printf("\t\t<KeyPressureEvent Tick=\"%ld\" Channel=\"%d\" Note=\"%d\" Amount=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 		{
-			printf("\t\t<ControlChangeEvent Tick=\"%d\" Channel=\"%d\" Number=\"%d\" Value=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
+			printf("\t\t<ControlChangeEvent Tick=\"%ld\" Channel=\"%d\" Number=\"%d\" Value=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 		{
-			printf("\t\t<ProgramChangeEvent Tick=\"%d\" Channel=\"%d\" Number=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
+			printf("\t\t<ProgramChangeEvent Tick=\"%ld\" Channel=\"%d\" Number=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 		{
-			printf("\t\t<ChannelPressureEvent Tick=\"%d\" Channel=\"%d\" Amount=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
+			printf("\t\t<ChannelPressureEvent Tick=\"%ld\" Channel=\"%d\" Amount=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 		{
-			printf("\t\t<PitchWheelEvent Tick=\"%d\" Channel=\"%d\" Value=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
+			printf("\t\t<PitchWheelEvent Tick=\"%ld\" Channel=\"%d\" Value=\"%d\"/>\n", MidiFileEvent_getTick(event), MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_SYSEX:
 		{
 			int i, data_length = MidiFileSysexEvent_getDataLength(event);
 			unsigned char *data = MidiFileSysexEvent_getData(event);
-			printf("\t\t<SysexEvent Tick=\"%d\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileSysexEvent_getDataLength(event));
+			printf("\t\t<SysexEvent Tick=\"%ld\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileSysexEvent_getDataLength(event));
 			for (i = 0; i < data_length; i++) printf("%s%02X", ((i == 0) ? "" : " "), data[i]);
 			printf("\"/>\n");
 			break;
@@ -62,7 +62,7 @@ static void display_events(MidiFileEvent_t event, void *user_data)
 		{
 			int i, data_length = MidiFileMetaEvent_getDataLength(event);
 			unsigned char *data = MidiFileMetaEvent_getData(event);
-			printf("\t\t<MetaEvent Tick=\"%d\" Number=\"%d\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileMetaEvent_getNumber(event), MidiFileMetaEvent_getDataLength(event));
+			printf("\t\t<MetaEvent Tick=\"%ld\" Number=\"%d\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileMetaEvent_getNumber(event), MidiFileMetaEvent_getDataLength(event));
 			for (i = 0; i < data_length; i++) printf("%s%02X", ((i == 0) ? "" : " "), data[i]);
 			printf("\"/>\n");
 			break;
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 
 	for (track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
 	{
-		printf("\t<Track EndTick=\"%d\">\n", MidiFileTrack_getEndTick(track));
+		printf("\t<Track EndTick=\"%ld\">\n", MidiFileTrack_getEndTick(track));
 		MidiFileTrack_visitEvents(track, display_events, NULL);
 		printf("\t</Track>\n");
 	}
