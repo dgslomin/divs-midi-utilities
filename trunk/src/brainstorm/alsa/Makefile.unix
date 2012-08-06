@@ -2,7 +2,7 @@
 CC=gcc
 
 ../../../bin/abrainstorm: abrainstorm.o midifile.o
-	$(CC) -o ../../../bin/abrainstorm -lasound abrainstorm.o midifile.o
+	$(CC) -o ../../../bin/abrainstorm abrainstorm.o midifile.o -lasound
 
 abrainstorm.o: abrainstorm.c
 	$(CC) -I../../midifile -c abrainstorm.c

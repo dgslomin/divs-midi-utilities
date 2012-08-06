@@ -2,7 +2,7 @@
 CC=gcc
 
 ../../bin/net2alsamidi: net2alsamidi.o
-	$(CC) -o ../../bin/net2alsamidi -lasound net2alsamidi.o
+	$(CC) -o ../../bin/net2alsamidi net2alsamidi.o -lasound
 
 net2alsamidi.o: net2alsamidi.c
 	$(CC) -c net2alsamidi.c

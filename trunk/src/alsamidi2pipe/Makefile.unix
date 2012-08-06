@@ -2,7 +2,7 @@
 CC=gcc
 
 ../../bin/alsamidi2pipe: alsamidi2pipe.o
-	$(CC) -o ../../bin/alsamidi2pipe -lasound alsamidi2pipe.o
+	$(CC) -o ../../bin/alsamidi2pipe alsamidi2pipe.o -lasound
 
 alsamidi2pipe.o: alsamidi2pipe.c
 	$(CC) -c alsamidi2pipe.c
