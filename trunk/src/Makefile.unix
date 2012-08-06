@@ -13,7 +13,8 @@ all:
 	cd average-velocity && make -f Makefile.unix
 	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix; fi
 	cd brainstorm/original && make -f Makefile.unix
-	cd dispmidi && make -f Makefile.unix
+	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix; fi
+	cd dispmidi/original && make -f Makefile.unix
 	cd intervals && make -f Makefile.unix
 	cd jumpoctave && make -f Makefile.unix
 	cd metercaster && make -f Makefile.unix
@@ -42,7 +43,8 @@ clean:
 	cd average-velocity && make -f Makefile.unix clean
 	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix clean; fi
 	cd brainstorm/original && make -f Makefile.unix clean
-	cd dispmidi && make -f Makefile.unix clean
+	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix clean; fi
+	cd dispmidi/original && make -f Makefile.unix clean
 	cd intervals && make -f Makefile.unix clean
 	cd jumpoctave && make -f Makefile.unix clean
 	cd metercaster && make -f Makefile.unix clean
@@ -71,7 +73,8 @@ reallyclean:
 	cd average-velocity && make -f Makefile.unix reallyclean
 	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix reallyclean; fi
 	cd brainstorm/original && make -f Makefile.unix reallyclean
-	cd dispmidi && make -f Makefile.unix reallyclean
+	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix reallyclean; fi
+	cd dispmidi/original && make -f Makefile.unix reallyclean
 	cd intervals && make -f Makefile.unix reallyclean
 	cd jumpoctave && make -f Makefile.unix reallyclean
 	cd metercaster && make -f Makefile.unix reallyclean
