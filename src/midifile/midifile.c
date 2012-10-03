@@ -516,7 +516,7 @@ MidiFile_t MidiFile_load(char *filename)
 					{
 						int channel = status & 0x0F;
 						int value = fgetc(in);
-						value = (value << 7) | fgetc(in);
+						value = (fgetc(in) << 7) | value;
 						MidiFileTrack_createPitchWheelEvent(track, tick, channel, value);
 						break;
 					}
@@ -687,8 +687,8 @@ int MidiFile_save(MidiFile_t midi_file, const char* filename)
 				{
 					int value = MidiFilePitchWheelEvent_getValue(event);
 					fputc(0xE0 | (MidiFilePitchWheelEvent_getChannel(event) & 0x0F), out);
-					fputc((value >> 7) & 0x7F, out);
 					fputc(value & 0x7F, out);
+					fputc((value >> 7) & 0x7F, out);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_SYSEX:
@@ -2896,8 +2896,8 @@ unsigned long MidiFileVoiceEvent_getData(MidiFileEvent_t event)
 			u;
 
 			u.data_as_bytes[0] = 0xE0 | MidiFilePitchWheelEvent_getChannel(event);
-			u.data_as_bytes[1] = MidiFilePitchWheelEvent_getValue(event) >> 7;
-			u.data_as_bytes[2] = MidiFilePitchWheelEvent_getValue(event) & 0x0F;
+			u.data_as_bytes[1] = MidiFilePitchWheelEvent_getValue(event) & 0x0F;
+			u.data_as_bytes[2] = MidiFilePitchWheelEvent_getValue(event) >> 7;
 			u.data_as_bytes[3] = 0;
 			return u.data_as_uint32;
 		}
@@ -2973,7 +2973,7 @@ int MidiFileVoiceEvent_setData(MidiFileEvent_t event, unsigned long data)
 		{
 			event->type = MIDI_FILE_EVENT_TYPE_PITCH_WHEEL;
 			event->u.pitch_wheel.channel = u.data_as_bytes[0] & 0x0F;
-			event->u.pitch_wheel.value = (u.data_as_bytes[1] << 7) | u.data_as_bytes[2];
+			event->u.pitch_wheel.value = (u.data_as_bytes[2] << 7) | u.data_as_bytes[1];
 			return 0;
 		}
 		default:
