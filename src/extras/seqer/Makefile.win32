@@ -1,30 +1,29 @@
 
-..\..\..\bin\seqer.exe: winseqer.res winseqer.obj seqer.obj simple-collections.obj midifile.obj
-	cl /nologo /Zi /Fe..\..\..\bin\seqer.exe winseqer.res winseqer.obj seqer.obj simple-collections.obj midifile.obj user32.lib gdi32.lib comctl32.lib comdlg32.lib /link /machine:x86
+WXDIR=c:\wxWidgets-2.9.3
+WXLIBDIR=$(WXDIR)\lib\vc_lib
+WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
+WXLIBS=$(WXLIBDIR)\wxbase29ud.lib $(WXLIBDIR)\wxmsw29ud_core.lib $(WXLIBDIR)\wxmsw29ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
+FLAGS=/Zi /EHsc /MDd
 
-winseqer.res: winseqer.rc
-	rc /r /fo winseqer.res winseqer.rc
+seqer.exe: seqer.obj midifile.obj
+	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
+	del seqer.exe.manifest
 
-winseqer.obj: winseqer.c seqer.h ..\..\simple-collections\simple-collections.h ..\..\midifile\midifile.h
-	cl /nologo /Zi /I. /I..\..\simple-collections /I..\..\midifile /c winseqer.c
-
-seqer.obj: seqer.c seqer.h ..\..\simple-collections\simple-collections.h ..\..\midifile\midifile.h
-	cl /nologo /Zi /I. /I..\..\simple-collections /I..\..\midifile /c seqer.c
-
-simple-collections.obj: ..\..\simple-collections\simple-collections.c ..\..\simple-collections\simple-collections.h
-	cl /nologo /Zi /I..\..\simple-collections /D_CRT_SECURE_NO_DEPRECATE /wd4996 /c ..\..\simple-collections\simple-collections.c
+seqer.obj: seqer.cpp ..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
 
 midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
-	cl /nologo /Zi /I..\..\midifile /D_CRT_SECURE_NO_DEPRECATE /wd4996 /c ..\..\midifile\midifile.c
+	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
 
 clean:
-	@if exist winseqer.res del winseqer.res
-	@if exist winseqer.obj del winseqer.obj
 	@if exist seqer.obj del seqer.obj
-	@if exist simple-collections.obj del simple-collections.obj
 	@if exist midifile.obj del midifile.obj
-	@if exist vc90.pdb del vc90.pdb
+	@if exist seqer.ilk del seqer.ilk
+	@if exist seqer.pdb del seqer.pdb
+	@if exist seqer.suo del seqer.suo
+	@if exist vc100.pdb del vc100.pdb
 
 reallyclean: clean
-	@if exist ..\..\..\bin\seqer.exe del ..\..\..\bin\seqer.exe
+	@if exist seqer.exe del seqer.exe
 
