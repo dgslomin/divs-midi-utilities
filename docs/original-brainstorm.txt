@@ -1,6 +1,6 @@
 
 Brainstorm
-Copyright 2000-2006 David G. Slomin
+Copyright 2000-2012 David G. Slomin
 Brainstorm is Free Software provided under terms of the BSD licence
 
 Brainstorm is a small program for recording MIDI data.  It has no user

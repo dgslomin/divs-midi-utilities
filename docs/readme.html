@@ -23,13 +23,13 @@ a { color: #FF6600 }
 
 <p>Most of the Unix utilities work on raw MIDI streams, so they should be compatible with just about everything, including ALSA, OpenSound, and MacOS/X.  They communicate via the standard Unix file interface, so they can read and write directly to a device, to anonymous pipes, or to named FIFOs.  The standard tee(1) and mkfifo(1) utilities will come in very useful when working with them.</p>
 
-<p>Only a few of the Unix utilities have dependencies beyond the standard C library, and they are built conditionally.  A few are ALSA-specific, and thus require the ALSA library and headers to be installed.  Another interacts with X Windows (although it has no visible GUI), so it requires Xlib to be installed.</p>
+<p>Only a few of the Unix utilities have dependencies beyond the standard C library, and they are built conditionally.  A few are ALSA-specific, and thus require the ALSA library and headers to be installed.  Another interacts with X Windows (although it has no visible GUI), so it requires <em>Xlib</em> to be installed.</p>
 
 <h2>License</h2>
 
 <p>These utilities are free and open source, provided under terms of the <a href="http://www.opensource.org/licenses/bsd-license.php">BSD license</a>.  Specifically:</p>
 
-<p>&copy; Copyright 1998-2008 David G. Slomin, all rights reserved.</p>
+<p>&copy; Copyright 1998-2012 David G. Slomin, all rights reserved.</p>
 
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
 
@@ -42,6 +42,8 @@ a { color: #FF6600 }
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
 <h2>News</h2>
+
+<p>2012-10-06 - Added <em>onmessage</em>.  Added miscellaneous bug fixes and tweaks.  Merged many of my other experimental MIDI software projects of various vintages into the "extras" directory (no prebuilt binaries provided), including several incomplete attempts at writing sequencers using different widget kits.</p>
 
 <p>2008-09-13 - Added <em>alsamidi2pipe</em>, <em>pipe2alsamidi</em>, <em>alsamidi2net</em>, and <em>net2alsamidi</em>.  Added more options to <em>playsmf</em>.</p>
 
@@ -69,39 +71,39 @@ a { color: #FF6600 }
 
 <h2>The Utilities</h2>
 
-<h3>alsamidi2net (Unix)</h3>
+<h3>alsamidi2pipe (Unix) and pipe2alsamidi (Unix)</h3>
 
-<p>This command line utility acts as a bridge between the pipe-based utilities and NetMIDI; it is a NetMIDI client.</p>
-
-<p>Usage: alsamidi2net --server &lt;hostname&gt; &lt;port&gt; [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
-
-<h3>alsamidi2pipe (Unix)</h3>
-
-<p>This command line utility acts as a bridge between ALSA and the pipe-based utilities.</p>
+<p>These utilities act as bridges between ALSA and the pipe-based utilities.</p>
 
 <p>Usage: alsamidi2pipe [ --fifo &lt;fifo&gt;  ] [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
 
-<h3>average-tempo (Windows, Unix)</h3>
+<p>Usage: pipe2alsamidi [ --fifo &lt;fifo&gt;  ] [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
 
-<p>This command line utility is useful in conjunction with <em>scale-tempo</em> and <em>offset-tempo</em> for patching up multiple takes of a song to match one another.  It tells you the average tempo over the specified section of a song.  This is particularly useful if the tempo varies frequently, as is the case when the song has been through <em>tempo-map</em> or <em>metercaster</em>.</p>
+<h3>average-tempo (Windows, Unix), scale-tempo (Windows, Unix), offset-tempo (Windows, Unix), average-velocity (Windows, Unix), scale-velocity (Windows, Unix), and offset-velocity (Windows, Unix)</h3>
+
+<p>These command line utilities can be used together for patching up multiple takes of a song to match one another.  The ability to analyze a specified section of a song is particularly useful if the tempo varies frequently, as is the case when the song has been through <em>tempo-map</em> or <em>metercaster</em>.</p>
 
 <p>Usage: average-tempo [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] &lt;filename.mid&gt;</p>
 
-<h3>average-velocity (Windows, Unix)</h3>
+<p>Usage: scale-tempo [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
-<p>Similarly, this command line utility is useful in conjunction with <em>scale-velocity</em> and <em>offset-velocity</em>.  It tells you the average note velocity over the specified section of a song.</p>
+<p>Usage: offset-tempo [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
 <p>Usage: average-velocity [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] [ --track &lt;n&gt; ] &lt;filename.mid&gt;</p>
 
+<p>Usage: scale-velocity [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] [ --track &lt;n&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+
+<p>Usage: offset-velocity [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] [ --track &lt;n&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+
 <h3>beatbox (Windows)</h3>
 
-<p>This command line utility is a very simple, percussion-oriented sampler.  It plays prerecorded audio files (WAV, AIFF, or AU) in response to MIDI note events.  I do plan to make a pattern sequencer which, combined with this, will be equivalent to a drum machine, but for now you'll have to generate the events on your own.</p>
+<p>This command line utility is a very simple, percussion-oriented sampler.  It plays prerecorded audio files (WAV, AIFF, or AU) in response to MIDI note events.  This is most useful when combined with a pattern sequencer, but none is provided here at present.</p>
 
 <p>Usage: beatbox [ --in &lt;n&gt; ] [ --voices &lt;n&gt; ] ( [ --config &lt;filename&gt; ] ) ...</p>
 
 <h3>brainstorm (Windows, Unix)</h3>
 
-<p>This command line utility functions as a dictation machine for MIDI.  It listens for incoming MIDI events and saves them to a new MIDI file every time you pause in your playing for a few seconds.  The filenames are generated automatically based on the current time, so it requires no interaction.  I find it useful for recording brainstorming sessions, hence the name.</p>
+<p>This command line utility functions as a dictation machine for MIDI.  It listens for incoming MIDI events and saves them to a new MIDI file every time you pause in your playing for a few seconds.  The filenames are generated automatically based on the current time, so it requires no interaction.  I find it useful for recording brainstorming sessions, hence the name, and use it more than all the other utilities put together.</p>
 
 <p>Usage (Windows version): brainstorm [ --in &lt;device id&gt; ] [ --timeout &lt;seconds&gt; ] [ --extra-time &lt;seconds&gt; ] [ --prefix &lt;filename prefix&gt; ] [ --verbose ]</p>
 
@@ -113,29 +115,11 @@ a { color: #FF6600 }
 
 <p>The confirmation option allows you to specify a command to execute whenever a file is saved, so that you know your music is safe.  I use it to play a short audio file, in keeping with brainstorm's "interfaceless" design, but you can get fairly elaborate if you want.  The filename will be substituted for each <code>%s</code> in the command.</p>
 
-<h3>delta (Windows)</h3>
-
-<p>This is a fun to play, monophonic variation on <em>qwertymidi</em> which maps keys on the computer keyboard to relative intervals instead of absolute pitches.  It was inspired by an <a href="http://www.samchillian.com/">unusual MIDI controller</a> I read about online.  It also supports custom keyboard mappings.</p>
-
-<p>Usage: delta [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --program &lt;n&gt; ] [ --velocity &lt;n&gt; ] [ --map &lt;str&gt; ]</p>
-
-<h3>dispmidi (Unix)</h3>
-
-<p>Like <em>midimon</em> for Windows, this utility pretty-prints incoming MIDI messages.  Why two different names?  The answer is lost to history.</p>
-
-<p>Usage: dispmidi &lt;input fifo&gt;</p>
-
 <h3>fakesustain (Windows)</h3>
 
 <p>This command line utility pre-applies sustain to note events.  It is useful for software-based synthesizers which have incomplete MIDI implementations that don't respond to real sustain messages.  (VST is a good idea, but can be frustrating in practice.)</p> 
 
 <p>Usage: fakesustain [ --in &lt;n&gt; ] [ --out &lt;n&gt; ]</p>
-
-<h3>imp (Windows)</h3>
-
-<p>This true GUI program requires Windows XP or newer because it uses Microsoft's new "rawinput" API.  This allows it to distinguish amongst multiple USB keyboards plugged into the same computer at the same time.  You can use it to achieve the same effect as <em>qwertymidi</em>, but with larger and more complex mappings.  Beware that this is currently a preview release, and its interface and file format will most likely change.</p>
-
-<p>Usage: imp [ &lt;filename&gt; ]</p>
 
 <h3>intervals (Unix)</h3>
 
@@ -143,17 +127,15 @@ a { color: #FF6600 }
 
 <p>Usage: intervals &lt;input_fifo&gt; &lt;output_fifo&gt; &lt;interval 1&gt; &lt;interval 2&gt; ...</p>
 
-<h3>joycc (Windows)</h3>
+<h3>joypedal (Windows) and joycc (Windows)</h3>
 
-<p>This command line utility is functionally similar to <em>joypedal</em>, but is designed to work with real joysticks.  Up to three directional axes and four buttons on each of two joysticks can be mapped to separate MIDI controllers.</p>
+<p><em>Joypedal</em> is a command line/text mode interactive utility which requires custom hardware.  It looks for an organ style volume/expression pedal attached to the computer's joystick port, and translates its value into MIDI controller messages.  I wrote this because one of my old synthesizers hardwired its expression pedal to control volume, rather than making it assignable through MIDI.  Extremely simple instructions for building the joystick port adapter (for around 5 USD in parts) are included, but ATTEMPT THIS OR ANY OTHER CUSTOM HARDWARE PROJECT AT YOUR OWN RISK.</p>
 
-<p>Usage: joycc [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --x1 &lt;n&gt; ] [ --y1 &lt;n&gt; ] [ --z1 &lt;n&gt; ] [ --a1 &lt;n&gt; ] [ --b1 &lt;n&gt; ] [ --c1 &lt;n&gt; ] [ --d1 &lt;n&gt; ] [ --x2 &lt;n&gt; ] [ --y2 &lt;n&gt; ] [ --z2 &lt;n&gt; ] [ --a2 &lt;n&gt; ] [ --b2 &lt;n&gt; ] [ --c2 &lt;n&gt; ] [ --d2 &lt;n&gt; ]</p>
-
-<h3>joypedal (Windows)</h3>
-
-<p>This command line/text mode interactive utility requires custom hardware.  It looks for an organ style volume/expression pedal attached to the computer's joystick port, and translates its value into MIDI controller messages.  I wrote this because my synthesizer hardwires its expression pedal to control volume, rather than making it assignable through MIDI.  Extremely simple instructions for building the joystick port adapter (for around 5 USD in parts) are included, but ATTEMPT THIS OR ANY OTHER CUSTOM HARDWARE PROJECT AT YOUR OWN RISK.</p>
+<p><em>Joycc</em> is a command line utility which is functionally similar to <em>joypedal</em>, but is designed to work with real joysticks.  Up to three directional axes and four buttons on each of two joysticks can be mapped to separate MIDI controllers.</p>
 
 <p>Usage: joypedal [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --controller &lt;n&gt; ] [ --graph ]</p>
+
+<p>Usage: joycc [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --x1 &lt;n&gt; ] [ --y1 &lt;n&gt; ] [ --z1 &lt;n&gt; ] [ --a1 &lt;n&gt; ] [ --b1 &lt;n&gt; ] [ --c1 &lt;n&gt; ] [ --d1 &lt;n&gt; ] [ --x2 &lt;n&gt; ] [ --y2 &lt;n&gt; ] [ --z2 &lt;n&gt; ] [ --a2 &lt;n&gt; ] [ --b2 &lt;n&gt; ] [ --c2 &lt;n&gt; ] [ --d2 &lt;n&gt; ]</p>
 
 <h3>jumpoctave (Unix)</h3>
 
@@ -161,29 +143,33 @@ a { color: #FF6600 }
 
 <p>Usage: jumpoctave &lt;input fifo&gt; &lt;output fifo&gt;</p>
 
-<h3>lsmidiins (Windows)</h3>
+<h3>lsmidiins (Windows) and lsmidiouts (Windows)</h3>
 
-<p>This command line utility displays a numbered list of the Windows MIDI input ports.  Most of the other Windows utilities here refer to ports by number.</p>
+<p>These command line utilities display a numbered list of the Windows MIDI input and output ports.  Most of the other Windows utilities here refer to ports by number.</p>
 
 <p>Usage: lsmidiins</p>
 
-<h3>lsmidiouts (Windows)</h3>
-
-<p>This command line utility displays a numbered list of the Windows MIDI output ports.</p>
-
 <p>Usage: lsmidiouts</p>
 
-<h3>metercaster (Windows, Unix)</h3>
+<h3>metercaster (Windows, Unix) and tempo-map (Windows, Unix)</h3>
 
-<p>This command line utility implements a brand new, unique algorithm for adjusting the timing of a MIDI sequence.  Unlike conventional quantization, meter casting does not replace the human characteristics of your playing with a mechanistic feel.  Instead, you place waypoints in the sequence to tell <em>metercaster</em> what the proper time should be for events of your choosing, and it interpolates among them, coming up with the proper times for the rest of the events.  This version is meant to be used iteratively, as you specify a single waypoint per invocation.  <em>Metercaster</em> is especially useful in conjunction with <em>brainstorm</em>, whose interfaceless design makes a metronome inappropriate.</p>
+<p><em>Metercaster</em> is a command line utility which implements a brand new, unique algorithm for adjusting the timing of a MIDI sequence.  Unlike conventional quantization, meter casting does not replace the human characteristics of your playing with a mechanistic feel.  Instead, you place waypoints in the sequence to tell <em>metercaster</em> what the proper time should be for events of your choosing, and it interpolates among them, coming up with the proper times for the rest of the events.  This version is meant to be used iteratively, as you specify a single waypoint per invocation.  <em>Metercaster</em> is especially useful in conjunction with <em>brainstorm</em>, whose interfaceless design makes a metronome inappropriate.</p>
+
+<p><em>Tempo-map</em> is a command line utility can be used to acheive a similar effect to <em>metercaster</em>, but is far faster and more intuitive to use.  Inspired by, but more powerful than the "fit to improvisation" feature in Cakewalk, it expects the following usage model:  First, you record your performance without a metronome, as with <em>brainstorm</em>.  Next, ignoring any beat markers your sequencer might display, you add a click track consisting of one note per beat, synchronized with your performance.  <em>Tempo-map</em> then processes the file, adjusting the timestamps of existing events and inserting new tempo events so that performance sounds the same when played back, but the notes will line up with beats when displayed in the sequencer.  You can then selectively delete the inserted tempo events, resulting in a steady but still completely nuanced recording.</p>
 
 <p>Usage: metercaster [ --left ( marker &lt;name&gt; | cc &lt;number&gt; &lt;value&gt; ) ] [ --old-right ( marker &lt;name&gt; | cc &lt;number&gt; &lt;value&gt; ) ] [ --new-right ( marker &lt;name&gt; | cc &lt;number&gt; &lt;value&gt; ) ] [ --verbose ] &lt;filename&gt;</p>
 
-<h3>midimon (Windows)</h3>
+<p>Usage: tempo-map --click-track &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
-<p>This command line utility pretty-prints incoming MIDI messages from any number of Windows MIDI input ports.  It can be useful for debugging complex MIDI setups, but there's nothing special about it.</p>
+<h3>midimon (Windows) and dispmidi (Unix)</h3>
 
-<p>Usage: midimon [ --in &lt;n&gt; ] ...</p>
+<p>This command line utility pretty-prints incoming MIDI messages.  It can be useful for debugging complex MIDI setups, but there's nothing special about it.  The name differs by platform for historical reasons, but it works the same, regardless.</p>
+
+<p>Usage (Windows version): midimon [ --in &lt;n&gt; ] ...</p>
+
+<p>Usage (original Unix version): dispmidi &lt;input fifo&gt;</p>
+
+<p>Usage (ALSA-specific version): adispmidi [ --connect &lt;client name or number&gt; &lt;port number&gt; ]</p>
 
 <h3>midithru (Windows)</h3>
 
@@ -203,35 +189,31 @@ a { color: #FF6600 }
 
 <p>Usage: multiecho [ --in &lt;n&gt; ] [ --out &lt;n&gt; ] [ --echo &lt;delay in ms&gt; &lt;note interval&gt; &lt;velocity percent&gt; ... ]</p>
 
-<h3>net2alsamidi (Unix)</h3>
+<h3>netmidic (Windows), pipe2net (Unix), alsamidi2net (Unix), netmidid (Windows), net2pipe (Unix), and net2alsamidi (Unix)</h3>
 
-<p>This utility provides the inverse of alsamidi2net; it is a NetMIDI server.</p>
+<p>These utilities all speak NetMIDI, a trivial network protocol I created which sends standard MIDI messages over a TCP/IP connection as fast as possible.  They can be used to connect up the MIDI systems on two different machines over a network connection, even if they are running different operating systems.  The clients forward messages from the local MIDI system to a NetMIDI server.  The servers forward messages sent by the clients to the local MIDI system.  Note that <em>pipe2net</em> and <em>net2pipe</em> are not actually MIDI specific, and are essentially the same thing as the standard <em>netcat</em> utility, but I didn't know that when I wrote them.</p>
 
-<p>Usage: net2alsamidi --port &lt;port&gt; [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
+<p>Usage (Windows version of the client): netmidic [ --in &lt;n&gt; ] [ --hostname &lt;name&gt; ] [ --port &lt;n&gt; ]</p>
 
-<h3>netmidic (Windows)</h3>
+<p>Usage (original Unix version of the client): pipe2net [ &lt;input fifo&gt; ] &lt;hostname&gt; &lt;port&gt;</p>
 
-<p>This command line utility is a client for the NetMIDI protocol.  It forwards messages from a Windows MIDI input port to a NetMIDI server.  NetMIDI can be used to connect up the MIDI systems on two different machines over TCP/IP, even if they are running different operating systems.</p>
+<p>Usage (ALSA-specific version of the client): alsamidi2net --server &lt;hostname&gt; &lt;port&gt; [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
 
-<p>Usage: netmidic [ --in &lt;n&gt; ] [ --hostname &lt;name&gt; ] [ --port &lt;n&gt; ]</p>
+<p>Usage (Windows version of the server): netmidid [ --out &lt;n&gt; ] [ --port &lt;n&gt; ]</p>
 
-<h3>netmidid (Windows)</h3>
+<p>Usage (original Unix version of the server): net2pipe &lt;port&gt; [ &lt;output fifo&gt; ]</p>
 
-<p>This command line utility is a daemon (server) for the NetMIDI protocol.  It forwards messages from NetMIDI clients to a Windows MIDI output port.</p>
+<p>Usage (ALSA-specific version of the server): net2alsamidi --port &lt;port&gt; [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
 
-<p>Usage: netmidid [ --out &lt;n&gt; ] [ --port &lt;n&gt; ]</p>
+<h3>normalizesmf (Windows, Unix) and verbosify (Unix)</h3>
 
-<h3>net2pipe (Unix)</h3>
+<p><em>Normalizesmf</em> is a command line utility which provides a minimal demonstration of the <em>midifile</em> library.  It reads in a MIDI file, then writes it out again.  If your sequencer complains that a file is invalid, this normalizer might make it more palatable.</p>
 
-<p>Most of the other Unix utilities here communicate over FIFOs, but this utility can be used to bridge them to NetMIDI.  Actually, this utility will copy any data from a TCP connection to a FIFO, so it is not MIDI specific; it is similar to netcat (which I didn't know about at the time I wrote this).</p>
-
-<p>Usage: net2pipe &lt;port&gt; [ &lt;output fifo&lt; ]</p>
-
-<h3>normalizesmf (Windows, Unix)</h3>
-
-<p>This command line utility is a minimal demonstration of the <em>midifile</em> library.  It reads in a MIDI file, then writes it out again.  If your sequencer complains that a file is invalid, this normalizer might make it more palatable.</p>
+<p><em>Verbosify</em> is a filter-style utility which normalizes incoming MIDI messages to a canonical form, like a realtime equivalent to <em>normalizesmf</em>.  It should not change the way things sound, but may make it easier to postprocess the stream.</p>
 
 <p>Usage: normalizesmf &lt;filename&gt;</p>
+
+<p>Usage: verbosify &lt;input fifo&gt; &lt;output fifo&gt;</p>
 
 <h3>notemap (Windows)</h3>
 
@@ -239,23 +221,15 @@ a { color: #FF6600 }
 
 <p>Usage: notemap &lt;filename&gt;.xml</p>
 
-<h3>offset-tempo (Windows, Unix)</h3>
+<h3>onpedal (Windows) and onmessage (Windows)</h3>
 
-<p>This command line utility adds a constant amount to each tempo event in the specified section of a song.</p>
+<p><em>Onpedal</em> is a command line utility which runs a program or script every time you press the sustain pedal.  If you hold down the pedal for more time, it runs a second program.  I use it for turning pages in scanned copies of sheet music displayed on screen.  (If you have more than one pedal, you don't have to give up sustain.)</p>
 
-<p>Usage: offset-tempo [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
-
-<h3>offset-velocity (Windows, Unix)</h3>
-
-<p>Similarly, this command line utility adds a constant amount to the velocity of each note in the specified section of a song.</p>
-
-<p>Usage: offset-velocity [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] [ --track &lt;n&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
-
-<h3>onpedal (Windows)</h3>
-
-<p>This command line utility runs a program or script every time you press the sustain pedal.  If you hold down the pedal for more time, it runs a second program.  I use it for turning pages in scanned copies of sheet music displayed on screen (I have more than one pedal, so I don't have to give up sustain).</p>
+<p><em>Onmessage</em> is similar, but it lets you assign different commands to different note and controller events.</p>
 
 <p>Usage: onpedal --in &lt;n&gt; --command &lt;str&gt; [ --hold-length &lt;n&gt; ] [ --hold-command &lt;str&gt; ]</p>
+
+<p>Usage: onmessage --in &lt;n&gt; ( --note-command &lt;number&gt; &lt;command&gt; | --note-down-command &lt;number&gt; &lt;command&gt; | --note-up-command &lt;number&gt; &lt;command&gt; | --controller-commmand &lt;number&gt; &lt;command&gt; | --controller-down-command &lt;number&gt; &lt;command&gt; | --controller-up-command &lt;number&gt; &lt;command&gt; | --program-command &lt;number&gt; &lt;command&gt; ) ...</p>
 
 <h3>padpedal (Windows)</h3>
 
@@ -269,18 +243,6 @@ a { color: #FF6600 }
 
 <p>Usage: pedalnote [ --in &lt;n&gt; ] [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --note &lt;n&gt; ] [ --velocity &lt;n&gt; ]</p>
 
-<h3>pipe2alsamidi (Unix)</h3>
-
-<p>This utility provides the inverse of alsamidi2pipe.</p>
-
-<p>Usage: pipe2alsamidi [ --fifo &lt;fifo&gt;  ] [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
-
-<h3>pipe2net (Unix)</h3>
-
-<p>As you could probably tell from its name, this utility provides the inverse of <em>net2pipe</em>.</p>
-
-<p>Usage: pipe2net [ &lt;input fifo&lt; ] &lt;hostname&gt; &lt;port&gt;</p>
-
 <h3>playsmf (Windows)</h3>
 
 <p>This command line utility is a generic MIDI file player.  Nothing special, but it gets along well with the other utilities.  Now based on the <em>midifile</em> library, this replaces the older <em>mciplaysmf</em>.</p>
@@ -293,11 +255,19 @@ a { color: #FF6600 }
 
 <p>Usage: pulsar [ --in &lt;n&gt; ] [ --out &lt;n&gt; ] [ --pulse &lt;time before pulse&gt; &lt;length of pulse&gt; &lt;time after pulse&gt; ] ...</p>
 
-<h3>qwertymidi (Windows)</h3>
+<h3>qwertymidi (Windows), delta (Windows), and imp (Windows)</h3>
 
-<p>This command line/text mode interactive utility lets you use your computer keyboard as if it were a synthesizer keyboard.  It supports custom mapping of the keyboard layout by means of a config file.  A <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vccore98/HTML/_langref_key_scan_codes.asp">list of keyboard scan codes</a> will be useful for configuring the mapping.  Sample maps are included for the common piano-like tracker keyboard layout, the experimental von Janko piano keyboard layout from the 1850's, the Hayden accordian button layout, and a General MIDI drum kit.</p>
+<p><em>Qwertymidi</em> is a command line/text mode interactive utility lets you use your computer keyboard as if it were a synthesizer keyboard.  It supports custom mapping of the keyboard layout by means of a config file.  A <a href="http://msdn.microsoft.com/en-us/library/aa299374%28v=VS.60%29.aspx">list of keyboard scan codes</a> will be useful for configuring the mapping.  Sample maps are included for the common piano-like tracker keyboard layout, the experimental von Janko piano keyboard layout from the 1850's, the Hayden concertina button layout, and a General MIDI drum kit.</p>
+
+<p><em>Delta</em> is a fun to play, monophonic variation on <em>qwertymidi</em> which maps keys on the computer keyboard to relative intervals instead of absolute pitches.  It was inspired by the unusual <a href="http://www.samchillian.com/">Samchillian</a> MIDI controller I read about online.  It also supports custom keyboard mappings.</p>
+
+<p><em>Imp</em> (<u>i</u>nput <u>m</u>apping <u>p</u>rogram) is a rudimentary but usable attempt to create a more powerful successor to <em>qwertymidi</em>.  It is implemented as a true GUI program in order to use newer Microsoft APIs which distinguish amongst multiple USB keyboards plugged into the same computer at the same time.</p>
 
 <p>Usage: qwertymidi [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --program &lt;n&gt; ] [ --velocity &lt;n&gt; ] [ --map &lt;str&gt; ]</p>
+
+<p>Usage: delta [ --out &lt;n&gt; ] [ --channel &lt;n&gt; ] [ --program &lt;n&gt; ] [ --velocity &lt;n&gt; ] [ --map &lt;str&gt; ]</p>
+
+<p>Usage: imp [ &lt;filename&gt; ]</p>
 
 <h3>rw (Unix)</h3>
 
@@ -305,35 +275,19 @@ a { color: #FF6600 }
 
 <p>Usage: rw &lt;device file&gt; &lt;input fifo&gt; &lt;output fifo&gt;</p>
 
-<h3>scale-tempo (Windows, Unix)</h3>
-
-<p>This command line utility multiples each tempo event in the specified section of a song by a constant amount.</p>
-
-<p>Usage: scale-tempo [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
-
-<h3>scale-velocity (Windows, Unix)</h3>
-
-<p>Similarly, this command line utility multiples the velocity of each note in the specified section of a song by a constant amount.</p>
-
-<p>Usage: scale-velocity [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from &lt;time&gt; ] [ --to &lt;time&gt; ] [ --track &lt;n&gt; ] --amount &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
-
 <h3>sendmidi (Windows)</h3>
 
 <p>This command line utility sends a single specified MIDI message.  It can be used for scripting, or as a poor man's knob box.</p>
 
 <p>Usage: sendmidi [ --out &lt;port&gt; ] ( --note-off &lt;channel&gt; &lt;pitch&gt; &lt;velocity&gt; | --note-on &lt;channel> &lt;pitch&gt; &lt;velocity&gt; | --key-pressure &lt;channel&gt; &lt;pitch&gt; &lt;amount&gt; | --control-change &lt;channel&gt; &lt;number&gt; &lt;value&gt; | --program-change &lt;channel&gt; &lt;number&gt; | --channel-pressure &lt;channel&gt; &lt;amount&gt; | --pitch-wheel &lt;channel&gt; &lt;amount&gt; )</p>
 
-<h3>smftoxml (Windows, Unix)</h3>
+<h3>smftoxml (Windows, Unix) and xmltosmf (Windows, Unix)</h3>
 
-<p>This command line utility is another demonstration of the <em>midifile</em> library.  It converts a MIDI file into an ad hoc XML equivalent.  This can be useful for seeing exactly what is in the file, and how it is arranged in the data structures of midifilelib.</p>
+<p>These command line utilities convert a MIDI file into an ad hoc XML equivalent and back.  This can be useful for seeing exactly what is in the file, and how it is arranged in the data structures of the <em>midifile</em> library.  Using the two utilities together, you can modify MIDI files with a text editor or even with XSLT.</p>
 
 <p>Usage: smftoxml &lt;filename&gt;</p>
 
-<h3>tempo-map (Windows, Unix)</h3>
-
-<p>This command line utility can be used to acheive a similar effect to <em>metercaster</em>, but is far faster and more intuitive to use.  Inspired by, but more powerful than the "fit to improvisation" feature in Cakewalk, it expects the following usage model:  First, you record your performance without a metronome, as with <em>brainstorm</em>.  Next, ignoring any beat markers your sequencer might display, you add a click track consisting of one note per beat, synchronized with your performance.  <em>Tempo-map</em> then processes the file, adjusting the timestamps of existing events and inserting new tempo events so that performance sounds the same when played back, but the notes will line up with beats when displayed in the sequencer.  You can then selectively delete the inserted tempo events, resulting in a steady but still completely nuanced recording.</p>
-
-<p>Usage: tempo-map --click-track &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+<p>Usage: xmltosmf &lt;filename&gt;.xml &lt;filename&gt;.mid</p>
 
 <h3>transpose (Unix)</h3>
 
@@ -347,23 +301,11 @@ a { color: #FF6600 }
 
 <p>Usage: velocityfader [ --in &lt;n&gt; ] [ --out &lt;n&gt; ] [ --controller &lt;n&gt; ] [ --inverted ]</p>
 
-<h3>verbosify (Unix)</h3>
-
-<p>This filter-style utility normalizes incoming MIDI messages to a canonical form, like a realtime equivalent to <em>normalizesmf</em>.  It should not change the way things sound, but may make it easier to postprocess the stream.</p>
-
-<p>Usage: verbosify &lt;input fifo&gt; &lt;output fifo&gt;</p>
-
 <h3>xmidiqwerty (Unix)</h3>
 
 <p>This is an experimental, partially completed program which lets you use a MIDI keyboard as a chording text keyboard in X11.  It runs as a standard program sending synthetic keyboard events rather than an IME, so it does not require any complex installation nor disrupt the use of your normal keyboard.</p>
 
 <p>Usage: xmidiqwerty (reads from standard input)</p>
-
-<h3>xmltosmf (Windows, Unix)</h3>
-
-<p>This command line utility converts the ad hoc XML format emitted from <em>smftoxml</em> back into a valid MIDI file.  By combining the two of them, you can modify MIDI files with a text editor or even with XSLT.</p>
-
-<p>Usage: xmltosmf &lt;filename&gt;.xml &lt;filename&gt;.mid</p>
 
 <h2>Useful Libraries Also Provided</h2>
 
@@ -379,12 +321,10 @@ a { color: #FF6600 }
 
 <p>You can find the latest version of these utilities on my <a href="http://www.sreal.com:8000/~div/midi-utilities/">website</a>.</p>
 
-<p>On Windows, a MIDI loopback utility is necessary to get the most out of these programs.  It will provide extra Windows MIDI ports which allow you to wire multiple MIDI programs together instead of speaking directly to your sound card or synthesizer.  While several such programs exist, both free and commercial, I have had good luck with the free <a href="http://www.midiox.com/">MIDI Yoke</a>.  Make sure you download the correct version, as there are separate ones for Windows 95/98/ME and NT/2000/XP.</p>
-
-<p><a href="http://linux-sound.org/">Dave Phillips</a> maintains the central directory of sound and MIDI software for Linux.  If you're using that platform, anything else you might need is either there, or you'll have to write it yourself.  &#x263A;</p>
+<p>On Windows, a MIDI loopback utility is necessary to get the most out of these programs.  It will provide extra Windows MIDI ports which allow you to wire multiple MIDI programs together instead of speaking directly to your sound card or synthesizer.  While several such programs exist, both free and commercial, I am currently using Tobias Erichsen's free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2008-09-13</p>
+last modified 2012-10-06</p>
 
 </body>
 </html>
