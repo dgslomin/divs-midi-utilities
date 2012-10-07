@@ -1,0 +1,30 @@
+
+seqer.exe: winseqer.res winseqer.obj seqer.obj simple-collections.obj midifile.obj
+	cl /nologo /Zi /Feseqer.exe winseqer.res winseqer.obj seqer.obj simple-collections.obj midifile.obj user32.lib gdi32.lib comctl32.lib comdlg32.lib /link /machine:x86
+
+winseqer.res: winseqer.rc
+	rc /r /fo winseqer.res winseqer.rc
+
+winseqer.obj: winseqer.c seqer.h ..\..\..\..\simple-collections\simple-collections.h ..\..\..\..\midifile\midifile.h
+	cl /nologo /Zi /I. /I..\..\..\..\simple-collections /I..\..\..\..\midifile /c winseqer.c
+
+seqer.obj: seqer.c seqer.h ..\..\..\..\simple-collections\simple-collections.h ..\..\..\..\midifile\midifile.h
+	cl /nologo /Zi /I. /I..\..\..\..\simple-collections /I..\..\..\..\midifile /c seqer.c
+
+simple-collections.obj: ..\..\..\..\simple-collections\simple-collections.c ..\..\..\..\simple-collections\simple-collections.h
+	cl /nologo /Zi /I..\..\..\..\simple-collections /D_CRT_SECURE_NO_DEPRECATE /wd4996 /c ..\..\..\..\simple-collections\simple-collections.c
+
+midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
+	cl /nologo /Zi /I..\..\..\..\midifile /D_CRT_SECURE_NO_DEPRECATE /wd4996 /c ..\..\..\..\midifile\midifile.c
+
+clean:
+	@if exist winseqer.res del winseqer.res
+	@if exist winseqer.obj del winseqer.obj
+	@if exist seqer.obj del seqer.obj
+	@if exist simple-collections.obj del simple-collections.obj
+	@if exist midifile.obj del midifile.obj
+	@if exist vc90.pdb del vc90.pdb
+
+reallyclean: clean
+	@if exist seqer.exe del seqer.exe
+

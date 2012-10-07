@@ -1,0 +1,21 @@
+
+seqer.exe: seqer.obj simple-collections.obj midifile.obj
+	cl /nologo /Feseqer.exe seqer.obj simple-collections.obj midifile.obj user32.lib gdi32.lib comctl32.lib
+
+seqer.obj: seqer.c ..\..\..\..\simple-collections\simple-collections.h ..\..\..\..\midifile\midifile.h
+	cl /nologo /I. /I..\..\..\..\simple-collections /I..\..\..\..\midifile /c seqer.c
+
+simple-collections.obj: ..\..\..\..\simple-collections\simple-collections.c ..\..\..\..\simple-collections\simple-collections.h
+	cl /nologo /I..\..\..\..\simple-collections /c ..\..\..\..\simple-collections\simple-collections.c
+
+midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
+	cl /nologo /I..\..\..\..\midifile /c ..\..\..\..\midifile\midifile.c
+
+clean:
+	@if exist seqer.obj del seqer.obj
+	@if exist simple-collections.obj del simple-collections.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist seqer.exe del seqer.exe
+
