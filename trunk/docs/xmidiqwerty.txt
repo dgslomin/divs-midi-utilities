@@ -1,6 +1,6 @@
 
 xmidiqwerty - an unusual utility/toy for X windows
-Copyright 1998-2006 by David Slomin, All Rights Reserved.
+Copyright 1998-2012 by David Slomin, All Rights Reserved.
 Released under the BSD licence.
 
 Chording computer keyboards have been available for a number of years.  
