@@ -6,7 +6,7 @@
 #
 
 ..\..\bin\beatbox.exe: beatbox-pa.obj beatbox.obj
-	cl /nologo /MT /Fe..\..\bin\beatbox.exe beatbox-pa.obj beatbox.obj ..\3rdparty\sndfile\libsndfile.lib ..\3rdparty\expat\libexpat.lib ..\3rdparty\portaudio\PAStaticDS.lib dsound.lib winmm.lib user32.lib
+	cl /nologo /MT /Fe..\..\bin\beatbox.exe beatbox-pa.obj beatbox.obj ..\3rdparty\sndfile\libsndfile.lib ..\3rdparty\expat\libexpat.lib ..\3rdparty\portaudio\PAStaticDS.lib dsound.lib winmm.lib user32.lib /link /NODEFAULTLIB:libc.lib 
 
 beatbox-pa.obj: beatbox-pa.c beatbox.h
 	cl /nologo /c /DWIN32 /I..\3rdparty\portaudio beatbox-pa.c
