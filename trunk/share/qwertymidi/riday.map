@@ -1,65 +1,69 @@
 
-# Richard Riday's isomorphic (1, -2) keyboard, patent 5323679
+# Richard Riday's isomorphic 1/-2 keyboard, patent 5323679
 
-42	59	# lshift
-44	60	# z
-45	61	# x
-46	62	# c
-47	63	# v
-48	64	# b
-49	65	# n
-50	66	# m
-51	67	# comma
-52	68	# period
-53	69	# slash
-54	70	# rshift
+42	59	# lshift	b
+44	60	# z	c
+45	61	# x	c#
+46	62	# c	d
+47	63	# v	d#
+48	64	# b	e
+49	65	# n	f
+50	66	# m	f#
+51	67	# comma	g
+52	68	# period	g#
+53	69	# slash	a
+54	70	# rshift	a#
 
-58	56	# caps lock
-30	57	# a
-31	58	# s
-32	59	# d
-33	60	# f
-34	61	# g
-35	62	# h
-36	63	# j
-37	64	# k
-38	65	# l
-39	66	# semicolon
-40	67	# apostrophe
-28	68	# enter
+58	56	# caps lock	g#
+30	57	# a	a
+31	58	# s	a#
+32	59	# d	b
+33	60	# f	c
+34	61	# g	c#
+35	62	# h	d
+36	63	# j	d#
+37	64	# k	e
+38	65	# l	f
+39	66	# semicolon	f#
+40	67	# apostrophe	g
+28	68	# enter	g#
 
-15	53	# tab
-16	54	# q
-17	55	# w
-18	56	# e
-19	57	# r
-20	58	# t
-21	59	# y
-22	60	# u
-23	61	# i
-24	62	# o
-25	63	# p
-26	64	# lbracket
-27	65	# rbracket
-43	66	# backslash
+15	53	# tab	f
+16	54	# q	f#
+17	55	# w	g
+18	56	# e	g#
+19	57	# r	a
+20	58	# t	a#
+21	59	# y	b
+22	60	# u	c
+23	61	# i	c#
+24	62	# o	d
+25	63	# p	d#
+26	64	# lbracket	e
+27	65	# rbracket	f
+43	66	# backslash	f#
 
-41	50	# backtick
-2	51	# 1
-3	52	# 2
-4	53	# 3
-5	54	# 4
-6	55	# 5
-7	56	# 6
-8	57	# 7
-9	58	# 8
-10	59	# 9
-11	60	# 0
-12	61	# minus
-13	62	# equals
-14	63	# backspace
+41	50	# backtick	d
+2	51	# 1	d#
+3	52	# 2	e
+4	53	# 3	f
+5	54	# 4	f#
+6	55	# 5	g
+7	56	# 6	g#
+8	57	# 7	a
+9	58	# 8	a#
+10	59	# 9	b
+11	60	# 0	c
+12	61	# minus	c#
+13	62	# equals	d
+14	63	# backspace	d#
 
-59	stay-down	# f1
-60	stay-up	# f2
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
 57	panic	# space
 1	exit	# esc
 

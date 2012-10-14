@@ -1,0 +1,68 @@
+
+# The treble side of a B system chromatic button accordion or bayan
+# (isomorphic 3/2).
+
+42	50	# lshift	d
+44	53	# z	f
+45	56	# x	g#
+46	59	# c	b
+47	62	# v	d
+48	65	# b	f
+49	68	# n	g#
+50	71	# m	b
+51	74	# comma	d
+52	77	# period	f
+53	80	# slash	g#
+54	83	# rshift	b
+
+58	49	# caps lock	c#
+30	52	# a	e
+31	55	# s	g
+32	58	# d	a#
+33	61	# f	c#
+34	64	# g	e
+35	67	# h	g
+36	70	# j	a#
+37	73	# k	c#
+38	76	# l	e
+39	79	# semicolon	g
+40	82	# apostrophe	a#
+28	85	# enter	c#
+
+15	48	# tab	c
+16	51	# q	d#
+17	54	# w	f#
+18	57	# e	a
+19	60	# r	c
+20	63	# t	d#
+21	66	# y	f#
+22	69	# u	a
+23	72	# i	c
+24	75	# o	d#
+25	78	# p	f#
+26	81	# lbracket	a
+27	84	# rbracket	c
+43	87	# backslash	d#
+
+41	47	# backtick	b
+2	50	# 1	d
+3	53	# 2	f
+4	56	# 3	g#
+5	59	# 4	b
+6	62	# 5	d
+7	65	# 6	f
+8	68	# 7	g#
+9	71	# 8	b
+10	74	# 9	d
+11	77	# 0	f
+12	80	# minus	g#
+13	83	# equals	b
+14	86	# backspace	d
+
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+

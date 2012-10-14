@@ -1,0 +1,73 @@
+
+# A mapping of the violin or mandolin fingerboard, or viola, cello, mandola,
+# mandocello, or tenor banjo if you transpose (isomorphic 1/5).  Follows the
+# diagonals of the computer keyboard to the right, which makes for a better
+# hand position, but means that there are extra notes above the nut for some
+# strings.
+
+42	55	# lshift	g
+44	56	# z	g#
+45	57	# x	a
+46	58	# c	a#
+47	59	# v	b
+48	60	# b	c
+49	61	# n	c#
+50	62	# m	d
+51	63	# comma	d#
+52	64	# period	e
+53	65	# slash	f
+54	66	# rshift	f#
+
+58	61	# caps lock	c#
+30	62	# a	d
+31	63	# s	d#
+32	64	# d	e
+33	65	# f	f
+34	66	# g	f#
+35	67	# h	g
+36	68	# j	g#
+37	69	# k	a
+38	70	# l	a#
+39	71	# semicolon	b
+40	72	# apostrophe	c
+28	73	# enter	c#
+
+15	67	# tab	g
+16	68	# q	g#
+17	69	# w	a
+18	70	# e	a#
+19	71	# r	b
+20	72	# t	c
+21	73	# y	c#
+22	74	# u	d
+23	75	# i	d#
+24	76	# o	e
+25	77	# p	f
+26	78	# lbracket	f#
+27	79	# rbracket	g
+43	80	# backslash	g#
+
+41	73	# backtick	c#
+2	74	# 1	d
+3	75	# 2	d#
+4	76	# 3	e
+5	77	# 4	f
+6	78	# 5	f#
+7	79	# 6	g
+8	80	# 7	g#
+9	81	# 8	a
+10	82	# 9	a#
+11	83	# 0	b
+12	84	# minus	c
+13	85	# equals	c#
+14	86	# backspace	d
+
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+

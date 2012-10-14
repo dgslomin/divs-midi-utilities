@@ -1,67 +1,69 @@
 
-# lshift - rshift
-42	44
-44	48
-45	52
-46	56
-47	60
-48	64
-49	68
-50	72
-51	76
-52	80
-53	84
-54	88
+# A four row equivalent of the C system bayan (isomorphic 4/1).
 
-# a - enter
-30	45
-31	49
-32	53
-33	57
-34	61
-35	65
-36	69
-37	73
-38	77
-39	81
-40	85
-28	89
+42	44	# lshift	g#
+44	48	# z	c
+45	52	# x	e
+46	56	# c	g#
+47	60	# v	c
+48	64	# b	e
+49	68	# n	g#
+50	72	# m	c
+51	76	# comma	e
+52	80	# period	g#
+53	84	# slash	c
+54	88	# rshift	e
 
-# q - right bracket
-16	46
-17	50
-18	54
-19	58
-20	62
-21	66
-22	70
-23	74
-24	78
-25	82
-26	86
-27	90
+58	41	# caps lock	f
+30	45	# a	a
+31	49	# s	c#
+32	53	# d	f
+33	57	# f	a
+34	61	# g	c#
+35	65	# h	f
+36	69	# j	a
+37	73	# k	c#
+38	77	# l	f
+39	81	# semicolon	a
+40	85	# apostrophe	c#
+28	89	# enter	f
 
-# 2 - backspace
-3	47
-4	51
-5	55
-6	59
-7	63
-8	67
-9	71
-10	75
-11	79
-12	83
-13	87
-14	91
+15	38	# tab	d
+16	42	# q	f#
+17	46	# w	a#
+18	50	# e	d
+19	54	# r	f#
+20	58	# t	a#
+21	62	# y	d
+22	66	# u	f#
+23	70	# i	a#
+24	74	# o	d
+25	78	# p	f#
+26	82	# lbracket	a#
+27	86	# rbracket	d
+43	90	# backslash	f#
 
-# page up, page down, up, down
-73	stay-up-octave
-81	stay-down-octave
-72	stay-up-note
-80	stay-down-note
+41	35	# backtick	g
+2	39	# 1	d#
+3	43	# 2	g
+4	47	# 3	b
+5	51	# 4	d#
+6	55	# 5	g
+7	59	# 6	b
+8	63	# 7	d#
+9	67	# 8	g
+10	71	# 9	b
+11	75	# 0	d#
+12	79	# minus	g
+13	83	# equals	b
+14	87	# backspace	d#
 
-# space, escape
-57	panic
-1	exit
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
 

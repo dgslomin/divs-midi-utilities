@@ -1,72 +1,76 @@
 
-# Brian Hayden derived a layout for the concertina (button accordion) from the
-# Janko piano keyboard layout.  Decades earlier, Kaspar Wicki independently
-# created the same layout for an instrument called the bandoneon.  Like the
+# Brian Hayden derived a layout for the concertina from the Janko piano
+# keyboard layout.  Decades earlier, Kaspar Wicki independently created the
+# same layout for the bandoneon, another accordion-like instrument.  Like the
 # Janko, the Hayden consists of multiple whole-tone rows, but adjacent rows are
-# offset by a fifth instead of a half step.  This is intended to make common
-# chords easier to play, although I find it makes accidentals feel somewhat
-# awkward.  Also, additional rows beyond the first two are used for octaves
-# instead of alternate fingerings.
+# offset by a fifth instead of a half step (isomorphic 2/5).  This is intended
+# to make common chords easier to play, although I find it makes accidentals
+# feel somewhat awkward.  Also, additional rows beyond the first two are used
+# for octaves instead of alternate fingerings.
 
-42	58	# lshift --> a-sharp
-44	60	# z --> c
-45	62	# x --> d
-46	64	# c --> e
-47	66	# v --> f-sharp
-48	68	# b --> g-sharp
-49	70	# n --> a-sharp
-50	72	# m --> c
-51	74	# comma --> d
-52	76	# period --> e
-53	78	# slash --> f-sharp
-54	80	# rshift --> g-sharp
+42	58	# lshift	a#
+44	60	# z	c
+45	62	# x	d
+46	64	# c	e
+47	66	# v	f#
+48	68	# b	g#
+49	70	# n	a#
+50	72	# m	c
+51	74	# comma	d
+52	76	# period	e
+53	78	# slash	f#
+54	80	# rshift	g#
 
-58	63	# caps lock --> d-sharp
-30	65	# a --> f
-31	67	# s --> g
-32	69	# d --> a
-33	71	# f --> b
-34	73	# g --> c-sharp
-35	75	# h --> d-sharp
-36	77	# j --> f
-37	79	# k --> g
-38	81	# l --> a
-39	83	# semicolon --> b
-40	85	# apostrophe --> c-sharp
-28	87	# enter --> d-sharp
+58	63	# caps lock	d#
+30	65	# a	f
+31	67	# s	g
+32	69	# d	a
+33	71	# f	b
+34	73	# g	c#
+35	75	# h	d#
+36	77	# j	f
+37	79	# k	g
+38	81	# l	a
+39	83	# semicolon	b
+40	85	# apostrophe	c#
+28	87	# enter	d#
 
-15	68	# tab --> g-sharp
-16	70	# q --> a-sharp
-17	72	# w --> c
-18	74	# e --> d
-19	76	# r --> e
-20	78	# t --> f-sharp
-21	80	# y --> g-sharp
-22	82	# u --> a-sharp
-23	84	# i --> c
-24	86	# o --> d
-25	88	# p --> e
-26	90	# lbracket --> f-sharp
-27	92	# rbracket --> g-sharp
-43	94	# backslash --> a-sharp
+15	68	# tab	g#
+16	70	# q	a#
+17	72	# w	c
+18	74	# e	d
+19	76	# r	e
+20	78	# t	f#
+21	80	# y	g#
+22	82	# u	a#
+23	84	# i	c
+24	86	# o	d
+25	88	# p	e
+26	90	# lbracket	f#
+27	92	# rbracket	g#
+43	94	# backslash	a#
 
-41	73	# backtick --> c-sharp
-2	75	# 1 --> d-sharp
-3	77	# 2 --> f
-4	79	# 3 --> g
-5	81	# 4 --> a
-6	83	# 5 --> b
-7	85	# 6 --> c-sharp
-8	87	# 7 --> d-sharp
-9	89	# 8 --> f
-10	91	# 9 --> g
-11	93	# 0 --> a
-12	95	# minus --> b
-13	97	# equals --> c-sharp
-14	99	# backspace --> d-sharp
+41	73	# backtick	c#
+2	75	# 1	d#
+3	77	# 2	f
+4	79	# 3	g
+5	81	# 4	a
+6	83	# 5	b
+7	85	# 6	c#
+8	87	# 7	d#
+9	89	# 8	f
+10	91	# 9	g
+11	93	# 0	a
+12	95	# minus	b
+13	97	# equals	c#
+14	99	# backspace	d#
 
-59	stay-down	# f1
-60	stay-up	# f2
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
 57	panic	# space
 1	exit	# esc
 
