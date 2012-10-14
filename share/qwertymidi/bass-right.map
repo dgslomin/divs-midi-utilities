@@ -1,0 +1,57 @@
+
+# A mapping of the bass guitar fretboard (isomorphic 1/4).  Follows the
+# diagonals of the computer keyboard to the right, which makes for a better
+# hand position, but means that there are extra notes above the nut for some
+# strings.
+
+42	40	# lshift	e
+44	41	# z	f
+45	42	# x	f#
+46	43	# c	g
+47	44	# v	g#
+48	45	# b	a
+49	46	# n	a#
+50	47	# m	b
+51	48	# comma	c
+52	49	# period	c#
+53	50	# slash	d
+54	51	# rshift	d#
+
+58	46	# caps lock	a#
+30	47	# a	b
+31	48	# s	c
+32	49	# d	c#
+33	50	# f	d
+34	51	# g	d#
+35	52	# h	e
+36	53	# j	f
+37	54	# k	f#
+38	55	# l	g
+39	56	# semicolon	g#
+40	57	# apostrophe	a
+28	58	# enter	a#
+
+15	53	# tab	e
+16	54	# q	f#
+17	55	# w	g
+18	56	# e	g#
+19	57	# r	a
+20	58	# t	a#
+21	59	# y	b
+22	60	# u	c
+23	61	# i	c#
+24	62	# o	d
+25	63	# p	d#
+26	64	# lbracket	e
+27	65	# rbracket	f
+43	66	# backslash	f#
+
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+

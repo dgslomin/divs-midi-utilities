@@ -1,58 +1,58 @@
 
-# upper rank
+# Conventional piano keyboard.
 
-16	60	# q c
-3	61	# 2 c-sharp
-17	62	# w d
-4	63	# 3 d-sharp
-18	64	# e e
-19	65	# r f
-6	66	# 5 f-sharp
-20	67	# t g
-7	68	# 6 g-sharp
-21	69	# y a
-8	70	# 7 a-sharp
-22	71	# u b
-23	72	# i c
-10	73	# 9 c-sharp
-24	74	# o d
-11	75	# 0 d-sharp
-25	76	# p e
-26	77	# [ f
-13	78	# = f-sharp
-27	79	# ] g
+41	58	# backtick	a#
+15	59	# tab	b
+16	60	# q	c
+3	61	# 2	c#
+17	62	# w	d
+4	63	# 3	d#
+18	64	# e	e
+19	65	# r	f
+6	66	# 5	f#
+20	67	# t	g
+7	68	# 6	g#
+21	69	# y	a
+8	70	# 7	a#
+22	71	# u	b
+23	72	# i	c
+10	73	# 9	c#
+24	74	# o	d
+11	75	# 0	d#
+25	76	# p	e
+26	77	# lbracket	f
+13	78	# equals	f#
+27	79	# rbracket	g
+14	80	# backspace	g#
+43	81	# backslash	a
 
-# lower rank
+42	43	# lshift	g
+30	44	# a	g#
+44	45	# z	a
+31	46	# s	a#
+45	47	# x	b
+46	48	# c	c
+33	49	# f	c#
+47	50	# v	d
+34	51	# g	d#
+48	52	# b	e
+49	53	# n	f
+36	54	# j	f#
+50	55	# m	g
+37	56	# k	g#
+51	57	# comma	a
+38	58	# l	a#
+52	59	# period	b
+53	60	# slash	c
+40	61	# apostrophe	c#
+54	62	# rshift	d
 
-30	44	# a g-sharp
-44	45	# z a
-31	46	# s a-sharp
-45	47	# x b
-46	48	# c c
-33	49	# f c-sharp
-47	50	# v d
-34	51	# g d-sharp
-48	52	# b e
-49	53	# n f
-36	54	# j f-sharp
-50	55	# m g
-37	56	# k g-sharp
-51	57	# , a
-38	58	# l a-sharp
-52	59	# . b
-53	60	# / c
-40	61	# ' c-sharp
-
-# transposition
-
-42	shift-up	# lshift
-54	shift-up	# rshift
-29	shift-down	# ctrl
-59	stay-up	# f1
-60	stay-down	# f2
-
-# other
-
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
 57	panic	# space
 1	exit	# esc
 
