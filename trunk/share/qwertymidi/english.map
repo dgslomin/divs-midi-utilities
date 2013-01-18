@@ -1,0 +1,82 @@
+
+#
+# English concertina
+#
+#                         |
+#   D#  Ab  Eb  Bb  F#  C#| D#  G#  C#  F#  Bb  Eb
+#   `   1   2   3   4   5 | 6   7   8   9   0   -
+#                         |        
+#   D   A   E   B   F   C | D   G   C   F   B   E   C#
+#  tab  q   w   e   r   t | y   u   i   o   p   [   ]
+#                          \      
+#     F   C   G   D   A   E | F   B   E   A   D   G   C
+#    cap  a   s   d   f   g | h   j   k   l   ;   '  ret
+#                           |    
+#     F#  C#  G#  D#  Ab  Eb| F#  Bb  Eb  Ab  D#  G#
+#    sft  z   x   c   v   b | n   m   ,   .   /  sft
+#                           |
+#
+
+42	54	# lshift	f#
+44	61	# z	c#
+45	68	# x	g#
+46	75	# c	d#
+47	80	# v	ab
+48	87	# b	eb
+49	90	# n	f#
+50	82	# m	bb
+51	75	# comma	eb
+52	68	# period	ab
+53	63	# slash	d#
+54	56	# rshift	g#
+
+58	53	# caps lock	f
+30	60	# a	c
+31	67	# s	g
+32	74	# d	d
+33	81	# f	a
+34	88	# g	e
+35	89	# h	f
+36	83	# j	b
+37	76	# k	e
+38	69	# l	a
+39	62	# semicolon	d
+40	55	# apostrophe	g
+28	48	# enter	c
+
+15	50	# tab	d
+16	57	# q	a
+17	64	# w	e
+18	71	# e	b
+19	77	# r	f
+20	84	# t	c
+21	86	# y	d
+22	79	# u	g
+23	72	# i	c
+24	65	# o	f
+25	59	# p	b
+26	52	# lbracket	e
+27	49	# rbracket	c#
+
+41	51	# backtick	d#
+2	56	# 1	ab
+3	63	# 2	eb
+4	70	# 3	bb
+5	78	# 4	f#
+6	85	# 5	c#
+7	87	# 6	d#
+8	80	# 7	g#
+9	73	# 8	c#
+10	66	# 9	f#
+11	58	# 0	bb
+12	51	# minus	eb
+
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+
