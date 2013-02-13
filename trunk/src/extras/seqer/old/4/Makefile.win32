@@ -10,11 +10,11 @@ seqer.exe: seqer.obj midifile.obj
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
-seqer.obj: seqer.cpp ..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
+seqer.obj: seqer.cpp ..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\midifile /c seqer.cpp
 
-midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
+midifile.obj: ..\..\..\midifile\midifile.c ..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) /I..\..\..\midifile /c ..\..\..\midifile\midifile.c
 
 clean:
 	@if exist seqer.obj del seqer.obj
