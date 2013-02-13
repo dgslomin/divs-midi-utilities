@@ -1,0 +1,9 @@
+
+Current plans for the sequencer project ("Seqer"), as of 2013-02-13:
+
+This generation of Seqer is centered around a single megawidget, which combines aspects of an event list and a piano roll.  The event list portion is traditional in its columns, but its rows are worth discussion.
+
+There is one row for each event.  Rows are grouped into "steps" of a configurable time unit.  Events don't have to occur at the start of a step.  If no event occurs during a particular step, an empty row is displayed.  If more than one event occurs during a step, additional rows are displayed, stretching the vertical axis out of its normal, linear scale.
+
+A vertical piano roll functions as an additional, graphical column in the table, with time mapped into a vertical position by interpolating between the vertical positions where successive steps start (ignoring individual rows).
+
