@@ -20,7 +20,7 @@ static void emit_events(MidiFileEvent_t event, void *user_data)
 		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('note_off', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('note_off', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
@@ -31,13 +31,13 @@ static void emit_events(MidiFileEvent_t event, void *user_data)
 			if (note_end_event == NULL)
 			{
 				char sql_command[1024];
-				sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('note_on', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
+				sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('note_on', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
 				sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			}
 			else
 			{
 				char sql_command[1024];
-				sprintf(sql_command, "INSERT INTO midi_events (type, tick, duration, track, channel, number, value) VALUES ('note_on', %d, %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileEvent_getTick(note_end_event) - MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
+				sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, duration, track, channel, number, value) VALUES ('note_on', %d, %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileEvent_getTick(note_end_event) - MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
 				sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			}
 			break;
@@ -45,35 +45,35 @@ static void emit_events(MidiFileEvent_t event, void *user_data)
 		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('key_pressure', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('key_pressure', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('control_change', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, number, value) VALUES ('control_change', %d, %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, number) VALUES ('program_change', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, number) VALUES ('program_change', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, value) VALUES ('channel_pressure', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, value) VALUES ('channel_pressure', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
 		case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 		{
 			char sql_command[1024];
-			sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, channel, value) VALUES ('pitch_wheel', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
+			sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, channel, value) VALUES ('pitch_wheel', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
 			sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			break;
 		}
@@ -87,7 +87,19 @@ static void emit_events(MidiFileEvent_t event, void *user_data)
 			if (MidiFileEvent_isTempoEvent(event))
 			{
 				char sql_command[1024];
-				sprintf(sql_command, "INSERT INTO midi_events (type, tick, track, float_value) VALUES ('tempo', %d, %d, %f);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileTempoEvent_getTempo(event));
+				sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, float_value) VALUES ('tempo', %d, %d, %f);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileTempoEvent_getTempo(event));
+				sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
+			}
+			else if (MidiFileEvent_isTimeSignatureEvent(event))
+			{
+				char sql_command[1024];
+				sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, number, value) VALUES ('time_signature', %d, %d, %d, %d);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileTimeSignatureEvent_getNumerator(event), MidiFileTimeSignatureEvent_getDenominator(event));
+				sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
+			}
+			else if (MidiFileEvent_isMarkerEvent(event))
+			{
+				char sql_command[1024];
+				sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, tick, track, text) VALUES ('marker', %d, %d, %Q);", MidiFileEvent_getTick(event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)), MidiFileMarkerEvent_getText(event));
 				sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 			}
 			else
@@ -182,7 +194,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		sprintf(sql_command, "INSERT INTO midi_events (type, text, value) VALUES ('midi_file', '%s', %d);", division_type, MidiFile_getResolution(midi_file));
+		sqlite3_snprintf(1024, sql_command, "INSERT INTO midi_events (type, text, value) VALUES ('midi_file', %Q, %d);", division_type, MidiFile_getResolution(midi_file));
 		sqlite3_exec(sqlite_connection, sql_command, NULL, NULL, NULL);
 	}
 
