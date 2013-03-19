@@ -1,0 +1,23 @@
+
+CC=gcc
+
+../../../bin/smftosqlite: smftosqlite.o midifile.o sqlite3.o
+	$(CC) -o ../../../bin/smftosqlite smftosqlite.o midifile.o sqlite3.o
+
+smftosqlite.o: smftosqlite.c ../../midifile/midifile.h $(SQLITE_DIR)/sqlite3.h
+	$(CC) -I. -I../../midifile -I$(SQLITE_DIR) -c smftosqlite.c
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) -I../../midifile -c ../../midifile/midifile.c
+
+sqlite3.o: $(SQLITE_DIR)\sqlite3.c
+	$(CC) -c $(SQLITE_DIR)\sqlite3.c
+
+clean:
+	rm -f smftosqlite.o
+	rm -f midifile.o
+	rm -f sqlite3.o
+
+reallyclean: clean
+	rm -f ../../../bin/smftosqlite
+
