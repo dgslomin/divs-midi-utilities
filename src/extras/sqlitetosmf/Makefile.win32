@@ -1,0 +1,21 @@
+
+..\..\..\bin\sqlitetosmf.exe: sqlitetosmf.obj midifile.obj sqlite3.obj
+	cl /nologo /Fe..\..\..\bin\sqlitetosmf.exe sqlitetosmf.obj midifile.obj sqlite3.obj
+
+sqlitetosmf.obj: sqlitetosmf.c ..\..\midifile\midifile.h $(SQLITE_DIR)\sqlite3.h
+	cl /nologo /I. /I..\..\midifile /I$(SQLITE_DIR) /c sqlitetosmf.c
+
+midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
+	cl /nologo /I..\..\midifile /c ..\..\midifile\midifile.c
+
+sqlite3.obj: $(SQLITE_DIR)\sqlite3.c
+	cl /nologo /c $(SQLITE_DIR)\sqlite3.c
+
+clean:
+	@if exist sqlitetosmf.obj del sqlitetosmf.obj
+	@if exist midifile.obj del midifile.obj
+	@if exist sqlite3.obj del sqlite3.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\sqlitetosmf.exe del ..\..\..\bin\sqlitetosmf.exe
+
