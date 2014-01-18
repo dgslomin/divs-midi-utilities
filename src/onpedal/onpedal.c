@@ -12,6 +12,7 @@ int hold_length = 500;
 char *hold_command = NULL;
 SimpleAlarm_t alarm = NULL;
 HMIDIIN midi_in = 0;
+int is_pressed = 0;
 int alarm_rang = 0;
 
 void usage(char *app_name)
@@ -43,22 +44,32 @@ void CALLBACK midi_in_handler(HMIDIIN midi_in, UINT msg_type, DWORD user_data, D
 		{
 			if (u.bData[2] >= 64)
 			{
-				if (hold_command != NULL)
+				if (!is_pressed)
 				{
-					alarm_rang = 0;
-					SimpleAlarm_set(alarm, hold_length, alarm_handler, NULL);
-				}
-				else
-				{
-					system(command);
+					is_pressed = 1;
+
+					if (hold_command != NULL)
+					{
+						alarm_rang = 0;
+						SimpleAlarm_set(alarm, hold_length, alarm_handler, NULL);
+					}
+					else
+					{
+						system(command);
+					}
 				}
 			}
 			else
 			{
-				if ((hold_command != NULL) && !alarm_rang)
+				if (is_pressed)
 				{
-					SimpleAlarm_cancel(alarm);
-					system(command);
+					is_pressed = 0;
+
+					if ((hold_command != NULL) && !alarm_rang)
+					{
+						SimpleAlarm_cancel(alarm);
+						system(command);
+					}
 				}
 			}
 		}
