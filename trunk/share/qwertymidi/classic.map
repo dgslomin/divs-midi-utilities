@@ -4,11 +4,13 @@
 41	58	# backtick	a#
 15	59	# tab	b
 16	60	# q	c
+2	60	# 1	c
 3	61	# 2	c#
 17	62	# w	d
 4	63	# 3	d#
 18	64	# e	e
 19	65	# r	f
+5	65	# 4	f
 6	66	# 5	f#
 20	67	# t	g
 7	68	# 6	g#
@@ -16,27 +18,32 @@
 8	70	# 7	a#
 22	71	# u	b
 23	72	# i	c
+9	72	# 8	c
 10	73	# 9	c#
 24	74	# o	d
 11	75	# 0	d#
 25	76	# p	e
 26	77	# lbracket	f
+12	77	# minus	f
 13	78	# equals	f#
 27	79	# rbracket	g
 14	80	# backspace	g#
 43	81	# backslash	a
 
+58	42	# capslock	f#
 42	43	# lshift	g
 30	44	# a	g#
 44	45	# z	a
 31	46	# s	a#
 45	47	# x	b
 46	48	# c	c
+32	48	# d	c
 33	49	# f	c#
 47	50	# v	d
 34	51	# g	d#
 48	52	# b	e
 49	53	# n	f
+35	53	# h	f
 36	54	# j	f#
 50	55	# m	g
 37	56	# k	g#
@@ -44,8 +51,10 @@
 38	58	# l	a#
 52	59	# period	b
 53	60	# slash	c
+39	60	# semicolon	c
 40	61	# apostrophe	c#
 54	62	# rshift	d
+28	63	# enter	d#
 
 29	shift-up-octave	# ctrl
 56	shift-down-octave	# alt
