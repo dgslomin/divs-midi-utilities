@@ -1,0 +1,24 @@
+
+WX_CONFIG=$(HOME)/opt/wxWidgets-3.0.1/bin/wx-config
+CC=`$(WX_CONFIG) --cc`
+CFLAGS=`$(WX_CONFIG) --cflags`
+CXX=`$(WX_CONFIG) --cxx`
+CXXFLAGS=`$(WX_CONFIG) --cxxflags`
+LD=`$(WX_CONFIG) --ld`
+LIBS=`$(WX_CONFIG) --libs`
+
+Seqer: seqer.o midifile.o
+	$(LD) Seqer seqer.o midifile.o $(LIBS)
+
+seqer.o: seqer.cpp ../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
+
+clean:
+	rm -f seqer.o midifile.o
+
+reallyclean: clean
+	rm -f seqer
+
