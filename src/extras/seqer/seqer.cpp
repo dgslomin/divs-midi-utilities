@@ -31,7 +31,7 @@ public:
     SequenceView(wxWindow* parent): wxScrolledCanvas(parent)
     {
         wxClientDC dc(this);
-        this->SetScrollbars(dc.GetCharWidth(), dc.GetCharHeight(), 0, 100 * dc.GetCharHeight());
+        this->SetScrollbars(dc.GetCharWidth(), dc.GetCharHeight(), 0, 100);
     }
 
     void OnDraw(wxDC& dc)

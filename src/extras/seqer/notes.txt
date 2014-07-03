@@ -7,3 +7,19 @@ There is one row for each event.  Rows are grouped into "steps" of a configurabl
 
 A vertical piano roll functions as an additional, graphical column in the table, with time mapped into a vertical position by interpolating between the vertical positions where successive steps start (ignoring individual rows).
 
+
+
+
+
+
+
+What should the columns be?
+
+cakewalk: track, hmsf time, mbt time, channel, type, note, velocity, duration
+cubase: type, time, end time, duration, note, velocity, release velocity, channel, comment
+logic: time, type, channel, note, velocity, duration
+dp: time, note, velocity, release velocity, duration
+reaper: index, time, duration, channel, type, note, velocity
+
+seqer: type, time, track, channel, note, velocity, release velocity, duration
+
