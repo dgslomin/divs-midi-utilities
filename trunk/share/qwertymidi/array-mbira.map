@@ -1,0 +1,87 @@
+
+#
+# Array mbira
+#
+#  101  96 103  98 105 100 107 102 109 104 111 106 113 108
+#   F   C   G   D   A   E   B   F#  C#  G#  Eb  Bb  F   C
+#   `   1   2   3   4   5   6   7   8   9   0   -   =  bsp
+#                                  
+#    89  84  91  86  93  88  95  90  97  92  99  94 101  96
+#    F   C   G   D   A   E   B   F#  C#  G#  Eb  Bb  F   C
+#   tab  q   w   e   r   t   y   u   i   o   p   [   ]   \
+#                                 
+#     77  72  79  74  81  76  83  78  73  80  75  82  77
+#     F   C   G   D   A   E   B   F#  C#  G#  Eb  Bb  F
+#    cap  a   s   d   f   g   h   j   k   l   ;   '  ret
+#                                
+#      65  60  67  62  69  64  71  66  61  68  63  70
+#      F   C   G   D   A   E   B   F#  C#  G#  Eb  Bb
+#     sft  z   x   c   v   b   n   m   ,   .   /  sft
+#                            
+
+42	55	# lshift	g
+44	56	# z	g#
+45	57	# x	a
+46	58	# c	a#
+47	59	# v	b
+48	60	# b	c
+49	61	# n	c#
+50	62	# m	d
+51	63	# comma	d#
+52	64	# period	e
+53	65	# slash	f
+54	66	# rshift	f#
+
+58	62	# caps lock	d
+30	63	# a	d#
+31	64	# s	e
+32	65	# d	f
+33	66	# f	f#
+34	67	# g	g
+35	68	# h	g#
+36	69	# j	a
+37	70	# k	a#
+38	71	# l	b
+39	72	# semicolon	c
+40	73	# apostrophe	c#
+28	74	# enter	d
+
+15	69	# tab	a
+16	70	# q	a#
+17	71	# w	b
+18	72	# e	c
+19	73	# r	c#
+20	74	# t	d
+21	75	# y	d#
+22	76	# u	e
+23	77	# i	f
+24	78	# o	f#
+25	79	# p	g
+26	80	# lbracket	g#
+27	81	# rbracket	a
+43	82	# backslash	a#
+
+41	76	# backtick	e
+2	77	# 1	f
+3	78	# 2	f#
+4	79	# 3	g
+5	80	# 4	g#
+6	81	# 5	a
+7	82	# 6	a#
+8	83	# 7	b
+9	84	# 8	c
+10	85	# 9	c#
+11	86	# 0	d
+12	87	# minus	d#
+13	88	# equals	e
+14	89	# backspace	f
+
+29	shift-up-octave	# ctrl
+56	shift-down-octave	# alt
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+
