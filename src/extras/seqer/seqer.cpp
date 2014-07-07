@@ -2,6 +2,34 @@
 #include <wx/wx.h>
 #include <midifile.h>
 
+class Application: public wxApp
+{
+public:
+	bool OnInit();
+};
+
+class Window: public wxFrame
+{
+public:
+	MidiFile_t midi_file;
+	class Canvas* canvas;
+
+    Window();
+	void OnMenuHighlight(wxMenuEvent& event);
+	void OnFileOpen(wxCommandEvent& event);
+	void OnExit(wxCommandEvent& event);
+	void OnAbout(wxCommandEvent& event);
+};
+
+class Canvas: public wxScrolledCanvas
+{
+public:
+	class Window* window;
+
+	Canvas(Window* window);
+	void OnDraw(wxDC& dc);
+};
+
 enum
 {
 	SEQER_ID_SELECT_CURRENT = wxID_HIGHEST + 1,
@@ -44,44 +72,29 @@ enum
 	SEQER_ID_HIGHEST
 };
 
-class Seqer: public wxApp
+IMPLEMENT_APP(Application)
+
+bool Application::OnInit()
 {
-public:
-	MidiFile_t midi_file;
-	wxFrame* window;
-	class Canvas* canvas;
+	Window* window = new Window();
+	this->SetTopWindow(window);
+	window->Show(true);
+	return true;
+}
 
-	bool OnInit();
-	void OnMenuHighlight(wxMenuEvent& event);
-	void OnFileOpen(wxCommandEvent& event);
-	void OnExit(wxCommandEvent& event);
-};
-
-class Canvas: public wxScrolledCanvas
-{
-public:
-	class Seqer* seqer;
-
-	Canvas(Seqer* seqer);
-	void OnDraw(wxDC& dc);
-};
-
-bool Seqer::OnInit()
+Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
 	this->midi_file = NULL;
 
-	this->window = new wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSize(640, 480));
-	this->SetTopWindow(this->window);
-
 	wxMenuBar* menu_bar = new wxMenuBar();
-	this->window->SetMenuBar(menu_bar);
-	this->window->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Seqer::OnMenuHighlight));
+	this->SetMenuBar(menu_bar);
+	this->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Window::OnMenuHighlight));
 
 	wxMenu* file_menu = new wxMenu();
 	menu_bar->Append(file_menu, "&File");
 	file_menu->Append(wxID_NEW, "&New\tCtrl+N");
 	file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O");
-	this->Connect(wxID_OPEN, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnFileOpen));
+	this->Connect(wxID_OPEN, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnFileOpen));
 	file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
 	file_menu->Append(wxID_SAVEAS, "Save &As...");
 	file_menu->Append(wxID_REVERT, "&Revert");
@@ -94,7 +107,7 @@ bool Seqer::OnInit()
 #elif defined(__WXOSX__)
     // MacOS automatically creates a quit item in the application menu.
 #endif
-	this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnExit));
+	this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 
 	wxMenu* edit_menu = new wxMenu();
 	menu_bar->Append(edit_menu, "&Edit");
@@ -170,23 +183,21 @@ bool Seqer::OnInit()
 	menu_bar->Append(help_menu, "&Help");
 	help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 	help_menu->Append(wxID_ABOUT, "&About");
+	this->Connect(wxID_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnAbout));
 
 	this->canvas = new Canvas(this);
 
-	this->window->CreateStatusBar();
-
-	this->window->Show(true);
-	return true;
+	this->CreateStatusBar();
 }
 
-void Seqer::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
+void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
 {
 	// This prevents the default behavior of showing unhelpful help text in the status bar when the user navigates the menu.
 }
 
-void Seqer::OnFileOpen(wxCommandEvent& WXUNUSED(event))
+void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 {
-	wxFileDialog* file_dialog = new wxFileDialog(this->window, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	wxFileDialog* file_dialog = new wxFileDialog(this, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (file_dialog->ShowModal() == wxID_OK)
 	{
@@ -205,14 +216,19 @@ void Seqer::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 	delete file_dialog;
 }
 
-void Seqer::OnExit(wxCommandEvent& WXUNUSED(event))
+void Window::OnExit(wxCommandEvent& WXUNUSED(event))
 {
-	this->window->Close(true);
+	this->Close(true);
 }
 
-Canvas::Canvas(Seqer* seqer): wxScrolledCanvas(seqer->window)
+void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
-	this->seqer = seqer;
+    wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK | wxICON_INFORMATION);
+}
+
+Canvas::Canvas(Window* window): wxScrolledCanvas(window)
+{
+	this->window = window;
 	wxClientDC dc(this);
 	this->SetScrollbars(dc.GetCharWidth(), dc.GetCharHeight(), 0, 100);
 }
@@ -221,6 +237,4 @@ void Canvas::OnDraw(wxDC& dc)
 {
 	dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, 0);
 }
-
-IMPLEMENT_APP(Seqer)
 
