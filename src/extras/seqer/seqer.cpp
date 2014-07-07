@@ -13,7 +13,7 @@ class Window: public wxFrame
 {
 public:
 	MidiFile_t midi_file;
-	std::vector<MidiFileEvent_t> rows;
+	std::vector<class Row> rows;
 	class Canvas* canvas;
 
 	Window();
@@ -21,6 +21,15 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+};
+
+class Row
+{
+public:
+	int step;
+	MidiFileEvent_t event;
+
+	Row(int step, MidiFileEvent_t event);
 };
 
 class Canvas: public wxScrolledCanvas
@@ -213,10 +222,20 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 
 		if (this->midi_file != NULL)
 		{
+			int last_step = 0;
 			for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
 			{
 				float beat = MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event));
-				this->rows.push_back(midi_event);
+				int step = (int)(beat);
+
+				while (last_step < step - 1)
+				{
+					this->rows.push_back(Row(last_step, NULL));
+					last_step++;
+				}
+
+				this->rows.push_back(Row(step, midi_event));
+				last_step = step;
 			}
 		}
 	}
@@ -232,6 +251,12 @@ void Window::OnExit(wxCommandEvent& WXUNUSED(event))
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
+}
+
+Row::Row(int step, MidiFileEvent_t event)
+{
+	this->step = step;
+	this->event = event;
 }
 
 Canvas::Canvas(Window* window): wxScrolledCanvas(window)
