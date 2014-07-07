@@ -1,4 +1,5 @@
 
+#include <vector>
 #include <wx/wx.h>
 #include <midifile.h>
 
@@ -12,9 +13,10 @@ class Window: public wxFrame
 {
 public:
 	MidiFile_t midi_file;
+	std::vector<MidiFileEvent_t> rows;
 	class Canvas* canvas;
 
-    Window();
+	Window();
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
@@ -100,12 +102,12 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 	file_menu->Append(wxID_REVERT, "&Revert");
 #if defined(__WXMSW__)
 	file_menu->AppendSeparator();
-	file_menu->Append(wxID_EXIT, "E&xit");
+	file_menu->Append(wxID_EXIT, "E&xit\tAlt+F4");
 #elif defined(__WXGTK__)
-    file_menu->AppendSeparator();
-    file_menu->Append(wxID_EXIT, "&Quit");
+	file_menu->AppendSeparator();
+	file_menu->Append(wxID_EXIT, "&Quit\tCtrl+Q");
 #elif defined(__WXOSX__)
-    // MacOS automatically creates a quit item in the application menu.
+	// MacOS automatically creates a quit item in the application menu.
 #endif
 	this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 
@@ -201,16 +203,22 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 
 	if (file_dialog->ShowModal() == wxID_OK)
 	{
-		if (this->midi_file != NULL) MidiFile_free(this->midi_file);
+		if (this->midi_file != NULL)
+		{
+			MidiFile_free(this->midi_file);
+			this->rows.clear();
+		}
+
 		this->midi_file = MidiFile_load((char*)(file_dialog->GetPath().ToStdString().c_str()));
 
-        if (this->midi_file != NULL)
-        {
-            for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
-            {
-                float beat = MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event));
-            }
-        }
+		if (this->midi_file != NULL)
+		{
+			for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
+			{
+				float beat = MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event));
+				this->rows.push_back(midi_event);
+			}
+		}
 	}
 
 	delete file_dialog;
@@ -223,7 +231,7 @@ void Window::OnExit(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
-    wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK | wxICON_INFORMATION);
+	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
 }
 
 Canvas::Canvas(Window* window): wxScrolledCanvas(window)
