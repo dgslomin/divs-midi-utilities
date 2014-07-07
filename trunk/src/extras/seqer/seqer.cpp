@@ -79,36 +79,38 @@ bool Seqer::OnInit()
 
 	wxMenu* file_menu = new wxMenu();
 	menu_bar->Append(file_menu, "&File");
-	file_menu->Append(wxID_NEW, "&New\tCtrl+N");
-	file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O");
+	file_menu->Append(wxID_NEW);
+	file_menu->Append(wxID_OPEN);
 	this->Connect(wxID_OPEN, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnFileOpen));
-	file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
-	file_menu->Append(wxID_SAVEAS, "Save &As...");
+	file_menu->Append(wxID_SAVE);
+	file_menu->Append(wxID_SAVEAS);
 	file_menu->Append(wxID_REVERT, "&Revert");
-#ifndef __WXOSX__
-	file_menu->AppendSeparator();
-	file_menu->Append(wxID_EXIT, "E&xit");
+#if defined(__WXOSX__)
+    // MacOS automatically creates a quit item in the application menu.
+#else
+    file_menu->AppendSeparator();
+    file_menu->Append(wxID_EXIT);
 #endif
 	this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnExit));
 
 	wxMenu* edit_menu = new wxMenu();
 	menu_bar->Append(edit_menu, "&Edit");
-	edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z");
-	edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Shift+Z");
+	edit_menu->Append(wxID_UNDO);
+	edit_menu->Append(wxID_REDO);
 	edit_menu->AppendSeparator();
-	edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X");
-	edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C");
-	edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V");
-	edit_menu->Append(wxID_DELETE, "&Delete\tDel");
+	edit_menu->Append(wxID_CUT);
+	edit_menu->Append(wxID_COPY);
+	edit_menu->Append(wxID_PASTE);
+	edit_menu->Append(wxID_DELETE);
 	edit_menu->AppendSeparator();
-	edit_menu->Append(SEQER_ID_SELECT_CURRENT, "Select Current\tShift+Right");
+	edit_menu->Append(SEQER_ID_SELECT_CURRENT, "Se&lect Current\tShift+Right");
 	edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 	edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
 	edit_menu->AppendSeparator();
 	edit_menu->Append(SEQER_ID_SMALL_INCREASE, "Small &Increase\t]");
-	edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small &Decrease\t[");
+	edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small D&ecrease\t[");
 	edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large &Increase\tShift+]");
-	edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large &Decrease\tShift+[");
+	edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
 
 	wxMenu* view_menu = new wxMenu();
 	menu_bar->Append(view_menu, "&View");
@@ -164,7 +166,7 @@ bool Seqer::OnInit()
 	wxMenu* help_menu = new wxMenu();
 	menu_bar->Append(help_menu, "&Help");
 	help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
-	help_menu->Append(wxID_ABOUT, "&About");
+	help_menu->Append(wxID_ABOUT);
 
 	this->canvas = new Canvas(this);
 
@@ -187,6 +189,14 @@ void Seqer::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 	{
 		if (this->midi_file != NULL) MidiFile_free(this->midi_file);
 		this->midi_file = MidiFile_load((char*)(file_dialog->GetPath().ToStdString().c_str()));
+
+        if (this->midi_file != NULL)
+        {
+            for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
+            {
+                float beat = MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event));
+            }
+        }
 	}
 
 	delete file_dialog;
