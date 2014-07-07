@@ -4,18 +4,24 @@
 
 enum
 {
-	SEQER_ID_SELECT_NONE = wxID_HIGHEST + 1,
+	SEQER_ID_SELECT_CURRENT = wxID_HIGHEST + 1,
+	SEQER_ID_SELECT_NONE,
 	SEQER_ID_SMALL_INCREASE,
 	SEQER_ID_SMALL_DECREASE,
 	SEQER_ID_LARGE_INCREASE,
 	SEQER_ID_LARGE_DECREASE,
 	SEQER_ID_ZOOM,
 	SEQER_ID_FILTER,
-	SEQER_ID_INSERT_NOTE,
+	SEQER_ID_INSERT_NOTE_A,
+	SEQER_ID_INSERT_NOTE_B,
+	SEQER_ID_INSERT_NOTE_C,
+	SEQER_ID_INSERT_NOTE_D,
+	SEQER_ID_INSERT_NOTE_E,
+	SEQER_ID_INSERT_NOTE_F,
+	SEQER_ID_INSERT_NOTE_G,
 	SEQER_ID_INSERT_CONTROL_CHANGE,
 	SEQER_ID_INSERT_PROGRAM_CHANGE,
 	SEQER_ID_INSERT_AFTERTOUCH,
-	SEQER_ID_INSERT_CHANNEL_PRESSURE,
 	SEQER_ID_INSERT_PITCH_BEND,
 	SEQER_ID_INSERT_SYSTEM_EXCLUSIVE,
 	SEQER_ID_INSERT_LYRIC,
@@ -26,6 +32,14 @@ enum
 	SEQER_ID_PLAY,
 	SEQER_ID_RECORD,
 	SEQER_ID_STOP,
+	SEQER_ID_STEP_RECORD,
+	SEQER_ID_NEXT_MARKER,
+	SEQER_ID_PREVIOUS_MARKER,
+	SEQER_ID_GO_TO_MARKER,
+	SEQER_ID_PORTS,
+	SEQER_ID_RECORD_MACRO,
+	SEQER_ID_MACROS,
+	SEQER_ID_EXTERNAL_UTILITY,
 	SEQER_ID_HIGHEST
 };
 
@@ -70,30 +84,30 @@ bool Seqer::OnInit()
 	file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
 	file_menu->Append(wxID_SAVEAS, "Save &As...");
 	file_menu->Append(wxID_REVERT, "&Revert");
+#ifndef __WXOSX__
 	file_menu->AppendSeparator();
 	file_menu->Append(wxID_EXIT, "E&xit");
+#endif
 	this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Seqer::OnExit));
 
 	wxMenu* edit_menu = new wxMenu();
 	menu_bar->Append(edit_menu, "&Edit");
 	edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z");
-#ifdef __WXMSW__
-	edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Y");
-#else
 	edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Shift+Z");
-#endif
 	edit_menu->AppendSeparator();
 	edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X");
 	edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C");
 	edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V");
+	edit_menu->Append(wxID_DELETE, "&Delete\tDel");
 	edit_menu->AppendSeparator();
+	edit_menu->Append(SEQER_ID_SELECT_CURRENT, "Select Current\tShift+Right");
 	edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 	edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
 	edit_menu->AppendSeparator();
-	edit_menu->Append(SEQER_ID_SMALL_INCREASE, "Small Increase\t]");
-	edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small Decrease\t[");
-	edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large Increase\tShift+]");
-	edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large Decrease\tShift+[");
+	edit_menu->Append(SEQER_ID_SMALL_INCREASE, "Small &Increase\t]");
+	edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small &Decrease\t[");
+	edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large &Increase\tShift+]");
+	edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large &Decrease\tShift+[");
 
 	wxMenu* view_menu = new wxMenu();
 	menu_bar->Append(view_menu, "&View");
@@ -105,33 +119,50 @@ bool Seqer::OnInit()
 
 	wxMenu* insert_menu = new wxMenu();
 	menu_bar->Append(insert_menu, "&Insert");
-	insert_menu->Append(SEQER_ID_INSERT_NOTE, "&Note");
-	insert_menu->Append(SEQER_ID_INSERT_CONTROL_CHANGE, "&Control Change");
-	insert_menu->Append(SEQER_ID_INSERT_PROGRAM_CHANGE, "&Program Change");
-	insert_menu->Append(SEQER_ID_INSERT_AFTERTOUCH, "&Aftertouch");
-	insert_menu->Append(SEQER_ID_INSERT_CHANNEL_PRESSURE, "Channel P&ressure");
-	insert_menu->Append(SEQER_ID_INSERT_PITCH_BEND, "Pitch &Bend");
-	insert_menu->Append(SEQER_ID_INSERT_SYSTEM_EXCLUSIVE, "&System Exclusive");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_A, "&Note A\tA");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_B, "&Note B\tB");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_C, "&Note C\tC");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_D, "&Note D\tD");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_E, "&Note E\tE");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_F, "&Note F\tF");
+	insert_menu->Append(SEQER_ID_INSERT_NOTE_G, "&Note G\tG");
 	insert_menu->AppendSeparator();
-	insert_menu->Append(SEQER_ID_INSERT_LYRIC, "&Lyric");
-	insert_menu->Append(SEQER_ID_INSERT_MARKER, "&Marker");
-	insert_menu->Append(SEQER_ID_INSERT_TEMPO, "&Tempo");
-	insert_menu->Append(SEQER_ID_INSERT_TIME_SIGNATURE, "T&ime Signature");
-	insert_menu->Append(SEQER_ID_INSERT_KEY_SIGNATURE, "&Key Signature");
+	insert_menu->Append(SEQER_ID_INSERT_CONTROL_CHANGE, "&Control Change\tShift+C");
+	insert_menu->Append(SEQER_ID_INSERT_PROGRAM_CHANGE, "&Program Change\tShift+P");
+	insert_menu->Append(SEQER_ID_INSERT_AFTERTOUCH, "&Aftertouch\tShift+A");
+	insert_menu->Append(SEQER_ID_INSERT_PITCH_BEND, "Pitch &Bend\tShift+B");
+	insert_menu->Append(SEQER_ID_INSERT_SYSTEM_EXCLUSIVE, "&System Exclusive\tShift+S");
+	insert_menu->AppendSeparator();
+	insert_menu->Append(SEQER_ID_INSERT_LYRIC, "&Lyric\tShift+L");
+	insert_menu->Append(SEQER_ID_INSERT_MARKER, "&Marker\tShift+M");
+	insert_menu->Append(SEQER_ID_INSERT_TEMPO, "&Tempo\tShift+T");
+	insert_menu->Append(SEQER_ID_INSERT_TIME_SIGNATURE, "T&ime Signature\tShift+I");
+	insert_menu->Append(SEQER_ID_INSERT_KEY_SIGNATURE, "&Key Signature\tShift+K");
 
 	wxMenu* transport_menu = new wxMenu();
 	menu_bar->Append(transport_menu, "Trans&port");
 	transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
 	transport_menu->Append(SEQER_ID_RECORD, "&Record\tCtrl+R");
 	transport_menu->Append(SEQER_ID_STOP, "&Stop\tEsc");
+	transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
+	transport_menu->AppendSeparator();
+	transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+]");
+	transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+[");
+	transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go To &Marker...\tCtrl+M");
+	transport_menu->AppendSeparator();
+	transport_menu->Append(SEQER_ID_PORTS, "P&orts...");
 
 	wxMenu* tools_menu = new wxMenu();
 	menu_bar->Append(tools_menu, "&Tools");
+	tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+Shift+M");
+	tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
+	tools_menu->AppendSeparator();
+	tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
 
 	wxMenu* help_menu = new wxMenu();
 	menu_bar->Append(help_menu, "&Help");
-	help_menu->Append(wxID_HELP_CONTENTS, "&Help Topics");
-	help_menu->Append(wxID_ABOUT, "&About Seqer");
+	help_menu->Append(wxID_HELP_CONTENTS, "&Manual");
+	help_menu->Append(wxID_ABOUT, "&About");
 
 	this->canvas = new Canvas(this);
 
