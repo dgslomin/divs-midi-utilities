@@ -1,11 +1,12 @@
 
-WX_CONFIG=$(HOME)/opt/wxWidgets-3.0.1/bin/wx-config
-CC=`$(WX_CONFIG) --cc`
-CFLAGS=`$(WX_CONFIG) --cflags`
-CXX=`$(WX_CONFIG) --cxx`
-CXXFLAGS=`$(WX_CONFIG) --cxxflags`
-LD=`$(WX_CONFIG) --ld`
-LIBS=`$(WX_CONFIG) --libs`
+WXDIR=$(HOME)/opt/wxWidgets-3.0.1
+WXCONFIG=$(WXDIR)/bin/wx-config
+CC=`$(WXCONFIG) --cc`
+CFLAGS=`$(WXCONFIG) --cflags`
+CXX=`$(WXCONFIG) --cxx`
+CXXFLAGS=`$(WXCONFIG) --cxxflags`
+LD=`$(WXCONFIG) --ld`
+LIBS=`$(WXCONFIG) --libs`
 
 Seqer: seqer.o midifile.o
 	$(LD) Seqer seqer.o midifile.o $(LIBS)
