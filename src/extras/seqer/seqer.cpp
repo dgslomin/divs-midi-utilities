@@ -26,6 +26,7 @@ enum
 	SEQER_ID_INSERT_SYSTEM_EXCLUSIVE,
 	SEQER_ID_INSERT_LYRIC,
 	SEQER_ID_INSERT_MARKER,
+	SEQER_ID_INSERT_PORT,
 	SEQER_ID_INSERT_TEMPO,
 	SEQER_ID_INSERT_TIME_SIGNATURE,
 	SEQER_ID_INSERT_KEY_SIGNATURE,
@@ -135,6 +136,7 @@ bool Seqer::OnInit()
 	insert_menu->AppendSeparator();
 	insert_menu->Append(SEQER_ID_INSERT_LYRIC, "&Lyric\tShift+L");
 	insert_menu->Append(SEQER_ID_INSERT_MARKER, "&Marker\tShift+M");
+	insert_menu->Append(SEQER_ID_INSERT_PORT, "P&ort\tShift+O");
 	insert_menu->Append(SEQER_ID_INSERT_TEMPO, "&Tempo\tShift+T");
 	insert_menu->Append(SEQER_ID_INSERT_TIME_SIGNATURE, "T&ime Signature\tShift+I");
 	insert_menu->Append(SEQER_ID_INSERT_KEY_SIGNATURE, "&Key Signature\tShift+K");
@@ -161,7 +163,7 @@ bool Seqer::OnInit()
 
 	wxMenu* help_menu = new wxMenu();
 	menu_bar->Append(help_menu, "&Help");
-	help_menu->Append(wxID_HELP_CONTENTS, "&Manual");
+	help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 	help_menu->Append(wxID_ABOUT, "&About");
 
 	this->canvas = new Canvas(this);
