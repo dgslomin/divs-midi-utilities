@@ -21,6 +21,7 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void PrepareRows();
 };
 
 class Row
@@ -174,14 +175,14 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 	menu_bar->Append(transport_menu, "Trans&port");
 	transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
 	transport_menu->Append(SEQER_ID_RECORD, "&Record\tCtrl+R");
-	transport_menu->Append(SEQER_ID_STOP, "&Stop\tEsc");
+	transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 	transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 	transport_menu->AppendSeparator();
 	transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+]");
 	transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+[");
 	transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go To &Marker...\tCtrl+M");
 	transport_menu->AppendSeparator();
-	transport_menu->Append(SEQER_ID_PORTS, "P&orts...");
+	transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
 
 	wxMenu* tools_menu = new wxMenu();
 	menu_bar->Append(tools_menu, "&Tools");
@@ -199,6 +200,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 	this->canvas = new Canvas(this);
 
 	this->CreateStatusBar();
+	this->PrepareRows();
 }
 
 void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
@@ -212,32 +214,9 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 
 	if (file_dialog->ShowModal() == wxID_OK)
 	{
-		if (this->midi_file != NULL)
-		{
-			MidiFile_free(this->midi_file);
-			this->rows.clear();
-		}
-
+		if (this->midi_file != NULL) MidiFile_free(this->midi_file);
 		this->midi_file = MidiFile_load((char*)(file_dialog->GetPath().ToStdString().c_str()));
-
-		if (this->midi_file != NULL)
-		{
-			int last_step = 0;
-			for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
-			{
-				float beat = MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event));
-				int step = (int)(beat);
-
-				while (last_step < step - 1)
-				{
-					this->rows.push_back(Row(last_step, NULL));
-					last_step++;
-				}
-
-				this->rows.push_back(Row(step, midi_event));
-				last_step = step;
-			}
-		}
+		this->PrepareRows();
 	}
 
 	delete file_dialog;
@@ -253,6 +232,35 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
 }
 
+void Window::PrepareRows()
+{
+	this->rows.clear();
+
+	if (this->midi_file != NULL)
+	{
+		int last_step = 0;
+
+		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+		{
+			int step = (int)(MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event)));
+
+			while (last_step < step - 1)
+			{
+				this->rows.push_back(Row(last_step, NULL));
+				last_step++;
+			}
+
+			this->rows.push_back(Row(step, midi_event));
+			last_step = step;
+		}
+	}
+
+	wxClientDC dc(this->canvas);
+	this->row_height = dc.GetCharHeight();
+	this->char_width = dc.GetCharWidth();
+	this->canvas->SetScrollbars(0, this->row_height, 0, this->rows.size());
+}
+
 Row::Row(int step, MidiFileEvent_t event)
 {
 	this->step = step;
@@ -262,12 +270,13 @@ Row::Row(int step, MidiFileEvent_t event)
 Canvas::Canvas(Window* window): wxScrolledCanvas(window)
 {
 	this->window = window;
-	wxClientDC dc(this);
-	this->SetScrollbars(dc.GetCharWidth(), dc.GetCharHeight(), 0, 100);
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, 0);
+	for (int row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, row_number * this->row_height);
+	}
 }
 
