@@ -15,6 +15,8 @@ public:
 	MidiFile_t midi_file;
 	std::vector<class Row> rows;
 	class Canvas* canvas;
+	int row_height;
+	int char_width;
 
 	Window();
 	void OnMenuHighlight(wxMenuEvent& event);
@@ -274,9 +276,9 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window)
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	for (int row_number = 0; row_number < this->rows.size(); row_number++)
+	for (int row_number = 0; row_number < this->window->rows.size(); row_number++)
 	{
-		dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, row_number * this->row_height);
+		dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, row_number * this->window->row_height);
 	}
 }
 
