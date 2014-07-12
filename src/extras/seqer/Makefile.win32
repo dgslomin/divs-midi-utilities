@@ -1,8 +1,8 @@
 
-WXDIR=c:\wxWidgets-2.9.3
+WXDIR=c:\wxWidgets-3.0.1
 WXLIBDIR=$(WXDIR)\lib\vc_lib
 WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
-WXLIBS=$(WXLIBDIR)\wxbase29ud.lib $(WXLIBDIR)\wxmsw29ud_core.lib $(WXLIBDIR)\wxmsw29ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
+WXLIBS=$(WXLIBDIR)\wxbase30ud.lib $(WXLIBDIR)\wxmsw30ud_core.lib $(WXLIBDIR)\wxmsw30ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
 seqer.exe: seqer.obj midifile.obj
