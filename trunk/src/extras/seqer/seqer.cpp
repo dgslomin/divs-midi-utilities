@@ -52,6 +52,7 @@ enum
 	SEQER_ID_SMALL_DECREASE,
 	SEQER_ID_LARGE_INCREASE,
 	SEQER_ID_LARGE_DECREASE,
+	SEQER_ID_ENTER_VALUE,
 	SEQER_ID_ZOOM,
 	SEQER_ID_FILTER,
 	SEQER_ID_INSERT_NOTE_A,
@@ -141,6 +142,8 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 	edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small D&ecrease\t[");
 	edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large &Increase\tShift+]");
 	edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
+	edit_menu->AppendSeparator();
+	edit_menu->Append(SEQER_ID_ENTER_VALUE, "Enter &Value\tEnter");
 
 	wxMenu* view_menu = new wxMenu();
 	menu_bar->Append(view_menu, "&View");
