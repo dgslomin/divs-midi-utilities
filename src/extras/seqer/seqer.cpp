@@ -15,8 +15,8 @@ public:
 	MidiFile_t midi_file;
 	std::vector<class Row> rows;
 	class Canvas* canvas;
-	int row_height;
-	int char_width;
+	long row_height;
+	long char_width;
 
 	Window();
 	void OnMenuHighlight(wxMenuEvent& event);
@@ -46,13 +46,15 @@ public:
 
 enum
 {
-	SEQER_ID_SELECT_CURRENT = wxID_HIGHEST + 1,
+	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
+	SEQER_ID_SELECT_CURRENT,
 	SEQER_ID_SELECT_NONE,
+	SEQER_ID_ENTER_VALUE,
 	SEQER_ID_SMALL_INCREASE,
 	SEQER_ID_SMALL_DECREASE,
 	SEQER_ID_LARGE_INCREASE,
 	SEQER_ID_LARGE_DECREASE,
-	SEQER_ID_ENTER_VALUE,
+	SEQER_ID_QUANTIZE,
 	SEQER_ID_ZOOM,
 	SEQER_ID_FILTER,
 	SEQER_ID_VIEW_COLUMN_1,
@@ -113,15 +115,16 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Window::OnMenuHighlight));
 		wxMenu* file_menu = new wxMenu(); menu_bar->Append(file_menu, "&File");
 			file_menu->Append(wxID_NEW, "&New\tCtrl+N");
+			file_menu->Append(SEQER_ID_NEW_WINDOW, "New &Window\tCtrl+Shift+N");
 			file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O"); this->Connect(wxID_OPEN, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnFileOpen));
 			file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
 			file_menu->Append(wxID_SAVEAS, "Save &As...");
 			file_menu->Append(wxID_REVERT, "&Revert");
-#if defined(__WXMSW__)
 			file_menu->AppendSeparator();
+			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W");
+#if defined(__WXMSW__)
 			file_menu->Append(wxID_EXIT, "E&xit\tAlt+F4"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #elif defined(__WXGTK__)
-			file_menu->AppendSeparator();
 			file_menu->Append(wxID_EXIT, "&Quit\tCtrl+Q"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #elif defined(__WXOSX__)
 			// MacOS automatically creates a quit item in the application menu.
@@ -140,12 +143,12 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 			edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
 			edit_menu->AppendSeparator();
+			edit_menu->Append(SEQER_ID_ENTER_VALUE, "Enter &Value\tEnter");
 			edit_menu->Append(SEQER_ID_SMALL_INCREASE, "Small &Increase\t]");
 			edit_menu->Append(SEQER_ID_SMALL_DECREASE, "Small D&ecrease\t[");
 			edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large &Increase\tShift+]");
 			edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
-			edit_menu->AppendSeparator();
-			edit_menu->Append(SEQER_ID_ENTER_VALUE, "Enter &Value\tEnter");
+			edit_menu->Append(SEQER_ID_QUANTIZE, "&Quantize\t=");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
 			view_menu->Append(SEQER_ID_ZOOM, "&Zoom...\tCtrl+Shift+M");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
@@ -275,7 +278,13 @@ Row::Row(int step, MidiFileEvent_t event)
 	this->event = event;
 }
 
-Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SUNKEN)
+#if defined(__WXOSX__)
+#define CANVAS_BORDER wxBORDER_DEFAULT
+#else
+#define CANVAS_BORDER wxBORDER_THEME
+#endif
+
+Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
 	this->DisableKeyboardScrolling();
@@ -283,10 +292,10 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, 
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	for (int row_number = 0; row_number < this->window->rows.size(); row_number++)
+	for (long row_number = 0; row_number < this->window->rows.size(); row_number++)
 	{
 		wxString text;
-		text.Printf("%d of %d", row_number, this->window->rows.size());
+		text.Printf("%ld of %ld", row_number, this->window->rows.size());
 		dc.DrawText(text, 0, row_number * this->window->row_height);
 	}
 }
