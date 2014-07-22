@@ -275,16 +275,19 @@ Row::Row(int step, MidiFileEvent_t event)
 	this->event = event;
 }
 
-Canvas::Canvas(Window* window): wxScrolledCanvas(window)
+Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SUNKEN)
 {
 	this->window = window;
+	this->DisableKeyboardScrolling();
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
 	for (int row_number = 0; row_number < this->window->rows.size(); row_number++)
 	{
-		dc.DrawText("The quick brown fox jumps over the lazy dog.", 0, row_number * this->window->row_height);
+		wxString text;
+		text.Printf("%d of %d", row_number, this->window->rows.size());
+		dc.DrawText(text, 0, row_number * this->window->row_height);
 	}
 }
 
