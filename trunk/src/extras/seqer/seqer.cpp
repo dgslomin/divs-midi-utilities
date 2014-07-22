@@ -21,6 +21,7 @@ public:
 	Window();
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
+	void OnClose(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void PrepareRows();
@@ -121,13 +122,13 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			file_menu->Append(wxID_SAVEAS, "Save &As...");
 			file_menu->Append(wxID_REVERT, "&Revert");
 			file_menu->AppendSeparator();
-			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W");
 #if defined(__WXMSW__)
-			file_menu->Append(wxID_EXIT, "E&xit\tAlt+F4"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
+			file_menu->Append(wxID_EXIT, "E&xit\tAlt+F4"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
 #elif defined(__WXGTK__)
-			file_menu->Append(wxID_EXIT, "&Quit\tCtrl+Q"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
+			file_menu->Append(wxID_EXIT, "&Quit\tCtrl+Q"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
 #elif defined(__WXOSX__)
-			// MacOS automatically creates a quit item in the application menu.
+			// MacOS distinguishes close and quit, but automatically creates a quit item in the application menu.
+			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
 			this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #endif
 		wxMenu* edit_menu = new wxMenu(); menu_bar->Append(edit_menu, "&Edit");
@@ -233,9 +234,14 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 	delete file_dialog;
 }
 
-void Window::OnExit(wxCommandEvent& WXUNUSED(event))
+void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
+}
+
+void Window::OnExit(wxCommandEvent& WXUNUSED(event))
+{
+	this->Close(false);
 }
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
