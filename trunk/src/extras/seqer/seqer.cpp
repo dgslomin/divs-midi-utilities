@@ -123,11 +123,13 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			file_menu->Append(wxID_REVERT, "&Revert");
 			file_menu->AppendSeparator();
 #if defined(__WXMSW__)
-			file_menu->Append(wxID_EXIT, "E&xit\tAlt+F4"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
+			file_menu->Append(wxID_CLOSE, "&Close\tAlt+F4"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
+			file_menu->Append(wxID_EXIT, "E&xit"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #elif defined(__WXGTK__)
-			file_menu->Append(wxID_EXIT, "&Quit\tCtrl+Q"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
+			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+Q"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
+			file_menu->Append(wxID_EXIT, "&Quit"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #elif defined(__WXOSX__)
-			// MacOS distinguishes close and quit, but automatically creates a quit item in the application menu.
+			// MacOS automatically creates a quit item in the application menu.
 			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
 			this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
 #endif
