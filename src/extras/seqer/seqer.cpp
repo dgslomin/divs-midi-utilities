@@ -22,7 +22,6 @@ public:
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
-	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void PrepareRows();
 };
@@ -122,17 +121,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			file_menu->Append(wxID_SAVEAS, "Save &As...");
 			file_menu->Append(wxID_REVERT, "&Revert");
 			file_menu->AppendSeparator();
-#if defined(__WXMSW__)
-			file_menu->Append(wxID_CLOSE, "&Close\tAlt+F4"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
-			file_menu->Append(wxID_EXIT, "E&xit"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
-#elif defined(__WXGTK__)
-			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+Q"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
-			file_menu->Append(wxID_EXIT, "&Quit"); this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
-#elif defined(__WXOSX__)
-			// MacOS automatically creates a quit item in the application menu.
 			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
-			this->Connect(wxID_EXIT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnExit));
-#endif
 		wxMenu* edit_menu = new wxMenu(); menu_bar->Append(edit_menu, "&Edit");
 			edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z");
 			edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Shift+Z");
@@ -239,11 +228,6 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
-}
-
-void Window::OnExit(wxCommandEvent& WXUNUSED(event))
-{
-	this->Close(false);
 }
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
