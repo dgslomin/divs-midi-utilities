@@ -270,10 +270,10 @@ Row::Row(int step, MidiFileEvent_t event)
 	this->event = event;
 }
 
-#if defined(__WXOSX__)
-#define CANVAS_BORDER wxBORDER_DEFAULT
-#else
+#if defined(__WXMSW__)
 #define CANVAS_BORDER wxBORDER_THEME
+#else
+#define CANVAS_BORDER wxBORDER_DEFAULT
 #endif
 
 Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
