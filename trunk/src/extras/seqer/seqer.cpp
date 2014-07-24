@@ -284,10 +284,72 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, 
 
 void Canvas::OnDraw(wxDC& dc)
 {
+	wxString text;
+
 	for (long row_number = 0; row_number < this->window->rows.size(); row_number++)
 	{
-		wxString text;
-		text.Printf("%ld of %ld", row_number, this->window->rows.size());
+		Row row = this->window->rows[row_number];
+
+		if (row.event == NULL)
+		{
+			text.Printf("step %d", row.step);
+		}
+		else
+		{
+			switch(MidiFileEvent_getType(row.event))
+			{
+				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+				{
+					text.Printf("step %d, note off, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOffEvent_getChannel(row.event), MidiFileNoteOffEvent_getNote(row.event), MidiFileNoteOffEvent_getVelocity(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+				{
+					text.Printf("step %d, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+				{
+					text.Printf("step %d, key pressure, tick %ld, trk %d, ch %d, note %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileKeyPressureEvent_getChannel(row.event), MidiFileKeyPressureEvent_getNote(row.event), MidiFileKeyPressureEvent_getAmount(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
+				{
+					text.Printf("step %d, control change, tick %ld, trk %d, ch %d, num %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileControlChangeEvent_getChannel(row.event), MidiFileControlChangeEvent_getNumber(row.event), MidiFileControlChangeEvent_getValue(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
+				{
+					text.Printf("step %d, program change, tick %ld, trk %d, ch %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileProgramChangeEvent_getChannel(row.event), MidiFileProgramChangeEvent_getNumber(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+				{
+					text.Printf("step %d, channel pressure, tick %ld, trk %d, ch %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileChannelPressureEvent_getChannel(row.event), MidiFileChannelPressureEvent_getAmount(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
+				{
+					text.Printf("step %d, pitch wheel, tick %ld, trk %d, ch %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFilePitchWheelEvent_getChannel(row.event), MidiFilePitchWheelEvent_getValue(row.event));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_SYSEX:
+				{
+					text.Printf("step %d, sysex, tick %ld, trk %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_META:
+				{
+					text.Printf("step %d, meta, tick %ld, trk %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileMetaEvent_getNumber(row.event));
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+		}
+
 		dc.DrawText(text, 0, row_number * this->window->row_height);
 	}
 }
