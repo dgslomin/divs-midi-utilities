@@ -142,7 +142,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
 			edit_menu->Append(SEQER_ID_QUANTIZE, "&Quantize\t=");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(SEQER_ID_ZOOM, "&Zoom...\tCtrl+Shift+M");
+			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
 			view_menu->AppendSeparator();
@@ -190,7 +190,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+[");
 			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go To &Marker...\tCtrl+M");
 			transport_menu->AppendSeparator();
-			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+P");
+			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
 		wxMenu* tools_menu = new wxMenu(); menu_bar->Append(tools_menu, "&Tools");
 			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+Shift+Q");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
