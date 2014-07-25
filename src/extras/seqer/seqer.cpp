@@ -14,6 +14,7 @@ class Window: public wxFrame
 public:
 	MidiFile_t midi_file;
 	std::vector<class Row> rows;
+	wxFont font;
 	class Canvas* canvas;
 	long row_height;
 	long char_width;
@@ -202,6 +203,12 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 
 	this->canvas = new Canvas(this);
 
+#if defined(__WXOSX__)
+	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
+#else
+	this->font = wxNORMAL_FONT;
+#endif
+
 	this->CreateStatusBar();
 	this->PrepareRows();
 }
@@ -259,6 +266,7 @@ void Window::PrepareRows()
 	}
 
 	wxClientDC dc(this->canvas);
+	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 	this->char_width = dc.GetCharWidth();
 	this->canvas->SetScrollbars(0, this->row_height, 0, this->rows.size());
@@ -284,6 +292,8 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, 
 
 void Canvas::OnDraw(wxDC& dc)
 {
+	dc.SetFont(this->window->font);
+
 	wxString text;
 
 	for (long row_number = 0; row_number < this->window->rows.size(); row_number++)
