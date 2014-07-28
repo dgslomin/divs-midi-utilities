@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <vector>
 #include <wx/wx.h>
 #include <midifile.h>
@@ -294,11 +295,13 @@ void Canvas::OnDraw(wxDC& dc)
 {
 	dc.SetFont(this->window->font);
 
-	wxString text;
+	long first_row_number = this->GetViewStart().y;
+	long last_row_number = std::min((long)(first_row_number + (this->GetClientSize().GetHeight() / this->window->row_height)), (long)(this->window->rows.size()));
 
-	for (long row_number = 0; row_number < this->window->rows.size(); row_number++)
+	for (long row_number = first_row_number; row_number < last_row_number; row_number++)
 	{
 		Row row = this->window->rows[row_number];
+		wxString text;
 
 		if (row.event == NULL)
 		{
