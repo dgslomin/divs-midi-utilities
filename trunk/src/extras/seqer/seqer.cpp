@@ -206,7 +206,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 #if defined(__WXOSX__)
 	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else
-	this->font = wxNORMAL_FONT;
+	this->font = *wxNORMAL_FONT;
 #endif
 
 	this->CreateStatusBar();
