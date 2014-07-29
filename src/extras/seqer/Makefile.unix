@@ -8,11 +8,14 @@ CXXFLAGS=`$(WXCONFIG) --cxxflags`
 LD=`$(WXCONFIG) --ld`
 LIBS=`$(WXCONFIG) --libs`
 
-Seqer: seqer.o midifile.o
-	$(LD) Seqer seqer.o midifile.o $(LIBS)
+Seqer: seqer.o color.o midifile.o
+	$(LD) Seqer seqer.o color.o midifile.o $(LIBS)
 
 seqer.o: seqer.cpp ../../midifile/midifile.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
+
+color.o: color.cpp
+	$(CXX) $(CXXFLAGS) -c color.cpp
 
 midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c

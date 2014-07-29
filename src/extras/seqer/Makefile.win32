@@ -5,19 +5,23 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase30ud.lib $(WXLIBDIR)\wxmsw30ud_core.lib $(WXLIBDIR)\wxmsw30ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: seqer.obj midifile.obj
-	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: seqer.obj color.obj midifile.obj
+	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj color.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
 seqer.obj: seqer.cpp ..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
 
+color.obj: color.cpp
+	cl /nologo $(FLAGS) $(WXINCLUDES) /c color.cpp
+
 midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
 
 clean:
 	@if exist seqer.obj del seqer.obj
+	@if exist color.obj del color.obj
 	@if exist midifile.obj del midifile.obj
 	@if exist seqer.ilk del seqer.ilk
 	@if exist seqer.pdb del seqer.pdb

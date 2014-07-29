@@ -3,6 +3,7 @@
 #include <vector>
 #include <wx/wx.h>
 #include <midifile.h>
+#include "color.h"
 
 class Application: public wxApp
 {
@@ -293,6 +294,31 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, 
 
 void Canvas::OnDraw(wxDC& dc)
 {
+	{
+		wxColour white_key_color = *wxWHITE;
+		wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+		wxColour black_key_color = ColorShade(button_color, 230 * 100 / 255);
+		wxColour lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
+		wxColour darker_line_color = ColorShade(button_color, 205 * 100 / 255);
+		wxPen pens[] = {wxPen(darker_line_color), wxPen(lighter_line_color)};
+		wxBrush brushes[] = {wxBrush(white_key_color), wxBrush(black_key_color)};
+		int key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
+		int key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
+
+		long key_width = 3;
+		long width = this->GetClientSize().GetWidth();
+		long height = this->GetClientSize().GetHeight();
+		long x = width - (128 * key_width);
+		long y = this->GetViewStart().y * this->window->row_height;
+
+		for (int note = 0; note < 128; note++)
+		{
+			dc.SetPen(pens[key_pens[note % 12]]);
+			dc.SetBrush(brushes[key_brushes[note % 12]]);
+			dc.DrawRectangle(x + (note * key_width), y - 1, key_width + 1, height + 2);
+		}
+	}
+
 	dc.SetFont(this->window->font);
 
 	long first_row_number = this->GetViewStart().y;
@@ -358,6 +384,7 @@ void Canvas::OnDraw(wxDC& dc)
 				}
 				default:
 				{
+					text.Empty();
 					break;
 				}
 			}
