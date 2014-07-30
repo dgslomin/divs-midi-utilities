@@ -32,10 +32,10 @@ public:
 class Row
 {
 public:
-	int step;
+	long step;
 	MidiFileEvent_t event;
 
-	Row(int step, MidiFileEvent_t event);
+	Row(long step, MidiFileEvent_t event);
 };
 
 class Canvas: public wxScrolledCanvas
@@ -58,6 +58,7 @@ enum
 	SEQER_ID_LARGE_INCREASE,
 	SEQER_ID_LARGE_DECREASE,
 	SEQER_ID_QUANTIZE,
+	SEQER_ID_PIANO_ROLL,
 	SEQER_ID_ZOOM,
 	SEQER_ID_FILTER,
 	SEQER_ID_VIEW_COLUMN_1,
@@ -145,6 +146,8 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
 			edit_menu->Append(SEQER_ID_QUANTIZE, "&Quantize\t=");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
+			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll...");
+			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
@@ -250,11 +253,11 @@ void Window::PrepareRows()
 
 	if (this->midi_file != NULL)
 	{
-		int last_step = 0;
+		long last_step = 0;
 
 		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 		{
-			int step = (int)(MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event)));
+			long step = (long)(MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event)));
 
 			while (last_step < step - 1)
 			{
@@ -274,7 +277,7 @@ void Window::PrepareRows()
 	this->canvas->SetScrollbars(0, this->row_height, 0, this->rows.size());
 }
 
-Row::Row(int step, MidiFileEvent_t event)
+Row::Row(long step, MidiFileEvent_t event)
 {
 	this->step = step;
 	this->event = event;
@@ -294,6 +297,10 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, 
 
 void Canvas::OnDraw(wxDC& dc)
 {
+	long first_note = 21; // default to standard piano range
+	long last_note = 108;
+	long key_width = 3;
+
 	{
 		wxColour white_key_color = *wxWHITE;
 		wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
@@ -302,20 +309,18 @@ void Canvas::OnDraw(wxDC& dc)
 		wxColour darker_line_color = ColorShade(button_color, 205 * 100 / 255);
 		wxPen pens[] = {wxPen(darker_line_color), wxPen(lighter_line_color)};
 		wxBrush brushes[] = {wxBrush(white_key_color), wxBrush(black_key_color)};
-		int key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
-		int key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
+		long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
+		long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
 
-		long key_width = 3;
 		long width = this->GetClientSize().GetWidth();
 		long height = this->GetClientSize().GetHeight();
-		long x = width - (128 * key_width);
 		long y = this->GetViewStart().y * this->window->row_height;
 
-		for (int note = 0; note < 128; note++)
+		for (long note = first_note; note <= last_note; note++)
 		{
 			dc.SetPen(pens[key_pens[note % 12]]);
 			dc.SetBrush(brushes[key_brushes[note % 12]]);
-			dc.DrawRectangle(x + (note * key_width), y - 1, key_width + 1, height + 2);
+			dc.DrawRectangle((note - first_note) * key_width - 1, y - 1, key_width + 1, height + 2);
 		}
 	}
 
@@ -331,7 +336,7 @@ void Canvas::OnDraw(wxDC& dc)
 
 		if (row.event == NULL)
 		{
-			text.Printf("step %d", row.step);
+			text.Printf("step %ld", row.step);
 		}
 		else
 		{
@@ -339,47 +344,50 @@ void Canvas::OnDraw(wxDC& dc)
 			{
 				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 				{
-					text.Printf("step %d, note off, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOffEvent_getChannel(row.event), MidiFileNoteOffEvent_getNote(row.event), MidiFileNoteOffEvent_getVelocity(row.event));
+					text.Printf("step %ld, note off, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOffEvent_getChannel(row.event), MidiFileNoteOffEvent_getNote(row.event), MidiFileNoteOffEvent_getVelocity(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 				{
-					text.Printf("step %d, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
+					text.Printf("step %ld, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
+					dc.SetPen(*wxBLACK_PEN);
+					dc.SetBrush(wxNullBrush);
+					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - first_note) * key_width - 1, row_number * this->window->row_height, key_width + 1, this->window->row_height);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 				{
-					text.Printf("step %d, key pressure, tick %ld, trk %d, ch %d, note %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileKeyPressureEvent_getChannel(row.event), MidiFileKeyPressureEvent_getNote(row.event), MidiFileKeyPressureEvent_getAmount(row.event));
+					text.Printf("step %ld, key pressure, tick %ld, trk %d, ch %d, note %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileKeyPressureEvent_getChannel(row.event), MidiFileKeyPressureEvent_getNote(row.event), MidiFileKeyPressureEvent_getAmount(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 				{
-					text.Printf("step %d, control change, tick %ld, trk %d, ch %d, num %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileControlChangeEvent_getChannel(row.event), MidiFileControlChangeEvent_getNumber(row.event), MidiFileControlChangeEvent_getValue(row.event));
+					text.Printf("step %ld, control change, tick %ld, trk %d, ch %d, num %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileControlChangeEvent_getChannel(row.event), MidiFileControlChangeEvent_getNumber(row.event), MidiFileControlChangeEvent_getValue(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 				{
-					text.Printf("step %d, program change, tick %ld, trk %d, ch %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileProgramChangeEvent_getChannel(row.event), MidiFileProgramChangeEvent_getNumber(row.event));
+					text.Printf("step %ld, program change, tick %ld, trk %d, ch %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileProgramChangeEvent_getChannel(row.event), MidiFileProgramChangeEvent_getNumber(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 				{
-					text.Printf("step %d, channel pressure, tick %ld, trk %d, ch %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileChannelPressureEvent_getChannel(row.event), MidiFileChannelPressureEvent_getAmount(row.event));
+					text.Printf("step %ld, channel pressure, tick %ld, trk %d, ch %d, amt %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileChannelPressureEvent_getChannel(row.event), MidiFileChannelPressureEvent_getAmount(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 				{
-					text.Printf("step %d, pitch wheel, tick %ld, trk %d, ch %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFilePitchWheelEvent_getChannel(row.event), MidiFilePitchWheelEvent_getValue(row.event));
+					text.Printf("step %ld, pitch wheel, tick %ld, trk %d, ch %d, val %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFilePitchWheelEvent_getChannel(row.event), MidiFilePitchWheelEvent_getValue(row.event));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_SYSEX:
 				{
-					text.Printf("step %d, sysex, tick %ld, trk %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					text.Printf("step %ld, sysex, tick %ld, trk %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_META:
 				{
-					text.Printf("step %d, meta, tick %ld, trk %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileMetaEvent_getNumber(row.event));
+					text.Printf("step %ld, meta, tick %ld, trk %d, num %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileMetaEvent_getNumber(row.event));
 					break;
 				}
 				default:
@@ -390,7 +398,7 @@ void Canvas::OnDraw(wxDC& dc)
 			}
 		}
 
-		dc.DrawText(text, 0, row_number * this->window->row_height);
+		dc.DrawText(text, key_width * (last_note - first_note + 1) + 1, row_number * this->window->row_height);
 	}
 }
 
