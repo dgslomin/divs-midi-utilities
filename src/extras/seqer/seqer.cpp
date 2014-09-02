@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <wx/wx.h>
+#include <wx/aboutdlg.h>
 #include <midifile.h>
 #include "color.h"
 
@@ -14,19 +15,36 @@ public:
 class Window: public wxFrame
 {
 public:
-	MidiFile_t midi_file;
-	std::vector<class Row> rows;
-	wxFont font;
 	class Canvas* canvas;
-	long row_height;
-	long char_width;
 
 	Window();
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
-	void PrepareRows();
+};
+
+class Canvas: public wxScrolledCanvas
+{
+public:
+	class Window* window;
+	wxFont font;
+	long first_note;
+	long last_note;
+	long key_width;
+	MidiFile_t midi_file;
+	std::vector<class Row> rows;
+	long row_height;
+	long char_width;
+	wxColour darker_line_color;
+	wxColour lighter_line_color;
+	wxColour white_key_color;
+	wxColour black_key_color;
+
+	Canvas(Window* window);
+	bool Load(char* filename);
+	void Prepare();
+	void OnDraw(wxDC& dc);
 };
 
 class Row
@@ -36,15 +54,6 @@ public:
 	MidiFileEvent_t event;
 
 	Row(long step, MidiFileEvent_t event);
-};
-
-class Canvas: public wxScrolledCanvas
-{
-public:
-	class Window* window;
-
-	Canvas(Window* window);
-	void OnDraw(wxDC& dc);
 };
 
 enum
@@ -114,8 +123,6 @@ bool Application::OnInit()
 
 Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
-	this->midi_file = NULL;
-
 	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Window::OnMenuHighlight));
 		wxMenu* file_menu = new wxMenu(); menu_bar->Append(file_menu, "&File");
 			file_menu->Append(wxID_NEW, "&New\tCtrl+N");
@@ -207,15 +214,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			help_menu->Append(wxID_ABOUT, "&About"); this->Connect(wxID_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnAbout));
 
 	this->canvas = new Canvas(this);
-
-#if defined(__WXOSX__)
-	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
-#else
-	this->font = *wxNORMAL_FONT;
-#endif
-
 	this->CreateStatusBar();
-	this->PrepareRows();
 }
 
 void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
@@ -229,9 +228,10 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 
 	if (file_dialog->ShowModal() == wxID_OK)
 	{
-		if (this->midi_file != NULL) MidiFile_free(this->midi_file);
-		this->midi_file = MidiFile_load((char*)(file_dialog->GetPath().ToStdString().c_str()));
-		this->PrepareRows();
+		if (!this->canvas->Load((char*)(file_dialog->GetPath().ToStdString().c_str())))
+		{
+			wxMessageBox("Cannot open the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
+		}
 	}
 
 	delete file_dialog;
@@ -247,7 +247,41 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
 }
 
-void Window::PrepareRows()
+#if defined(__WXMSW__)
+#define CANVAS_BORDER wxBORDER_THEME
+#else
+#define CANVAS_BORDER wxBORDER_DEFAULT
+#endif
+
+Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
+{
+	this->window = window;
+
+#if defined(__WXOSX__)
+	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
+#else
+	this->font = *wxNORMAL_FONT;
+#endif
+
+	this->first_note = 21; // default to standard piano range
+	this->last_note = 108;
+	this->key_width = 3;
+	this->midi_file = NULL;
+	this->DisableKeyboardScrolling();
+	this->Prepare();
+}
+
+bool Canvas::Load(char* filename)
+{ 
+	MidiFile_t new_midi_file = MidiFile_load(filename);
+	if (new_midi_file == NULL) return false;
+	if (this->midi_file != NULL) MidiFile_free(this->midi_file);
+	this->midi_file = new_midi_file;
+	this->Prepare();
+	return true;
+}
+
+void Canvas::Prepare()
 {
 	this->rows.clear();
 
@@ -270,68 +304,44 @@ void Window::PrepareRows()
 		}
 	}
 
-	wxClientDC dc(this->canvas);
+	wxClientDC dc(this);
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 	this->char_width = dc.GetCharWidth();
-	this->canvas->SetScrollbars(0, this->row_height, 0, this->rows.size());
-}
-
-Row::Row(long step, MidiFileEvent_t event)
-{
-	this->step = step;
-	this->event = event;
-}
-
-#if defined(__WXMSW__)
-#define CANVAS_BORDER wxBORDER_THEME
-#else
-#define CANVAS_BORDER wxBORDER_DEFAULT
-#endif
-
-Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
-{
-	this->window = window;
-	this->DisableKeyboardScrolling();
+	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
+	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
+	this->white_key_color = *wxWHITE;
+	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
+	this->SetScrollbars(0, this->row_height, 0, this->rows.size());
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	long first_note = 21; // default to standard piano range
-	long last_note = 108;
-	long key_width = 3;
+	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
+	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
+	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
+	long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
 
+	long width = this->GetClientSize().GetWidth();
+	long height = this->GetClientSize().GetHeight();
+	long y = this->GetViewStart().y * this->row_height;
+
+	for (long note = this->first_note; note <= this->last_note; note++)
 	{
-		wxColour white_key_color = *wxWHITE;
-		wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-		wxColour black_key_color = ColorShade(button_color, 230 * 100 / 255);
-		wxColour lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
-		wxColour darker_line_color = ColorShade(button_color, 205 * 100 / 255);
-		wxPen pens[] = {wxPen(darker_line_color), wxPen(lighter_line_color)};
-		wxBrush brushes[] = {wxBrush(white_key_color), wxBrush(black_key_color)};
-		long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
-		long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
-
-		long width = this->GetClientSize().GetWidth();
-		long height = this->GetClientSize().GetHeight();
-		long y = this->GetViewStart().y * this->window->row_height;
-
-		for (long note = first_note; note <= last_note; note++)
-		{
-			dc.SetPen(pens[key_pens[note % 12]]);
-			dc.SetBrush(brushes[key_brushes[note % 12]]);
-			dc.DrawRectangle((note - first_note) * key_width - 1, y - 1, key_width + 1, height + 2);
-		}
+		dc.SetPen(pens[key_pens[note % 12]]);
+		dc.SetBrush(brushes[key_brushes[note % 12]]);
+		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, y - 1, this->key_width + 1, height + 2);
 	}
 
-	dc.SetFont(this->window->font);
+	dc.SetFont(this->font);
 
 	long first_row_number = this->GetViewStart().y;
-	long last_row_number = std::min((long)(first_row_number + (this->GetClientSize().GetHeight() / this->window->row_height)), (long)(this->window->rows.size()));
+	long last_row_number = std::min((long)(first_row_number + (this->GetClientSize().GetHeight() / this->row_height)), (long)(this->rows.size()));
 
 	for (long row_number = first_row_number; row_number < last_row_number; row_number++)
 	{
-		Row row = this->window->rows[row_number];
+		Row row = this->rows[row_number];
 		wxString text;
 
 		if (row.event == NULL)
@@ -352,7 +362,7 @@ void Canvas::OnDraw(wxDC& dc)
 					text.Printf("step %ld, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
 					dc.SetPen(*wxBLACK_PEN);
 					dc.SetBrush(wxNullBrush);
-					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - first_note) * key_width - 1, row_number * this->window->row_height, key_width + 1, this->window->row_height);
+					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - this->first_note) * this->key_width - 1, row_number * this->row_height, this->key_width + 1, this->row_height);
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
@@ -398,7 +408,13 @@ void Canvas::OnDraw(wxDC& dc)
 			}
 		}
 
-		dc.DrawText(text, key_width * (last_note - first_note + 1) + 1, row_number * this->window->row_height);
+		dc.DrawText(text, this->key_width * (this->last_note - this->first_note + 1) + 1, row_number * this->row_height);
 	}
+}
+
+Row::Row(long step, MidiFileEvent_t event)
+{
+	this->step = step;
+	this->event = event;
 }
 
