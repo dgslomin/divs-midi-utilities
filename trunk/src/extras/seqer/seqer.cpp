@@ -67,17 +67,17 @@ enum
 	SEQER_ID_LARGE_INCREASE,
 	SEQER_ID_LARGE_DECREASE,
 	SEQER_ID_QUANTIZE,
-	SEQER_ID_PIANO_ROLL,
-	SEQER_ID_ZOOM,
+	SEQER_ID_EDIT_COLUMN_1,
+	SEQER_ID_EDIT_COLUMN_2,
+	SEQER_ID_EDIT_COLUMN_3,
+	SEQER_ID_EDIT_COLUMN_4,
+	SEQER_ID_EDIT_COLUMN_5,
+	SEQER_ID_EDIT_COLUMN_6,
+	SEQER_ID_EDIT_COLUMN_7,
+	SEQER_ID_EDIT_COLUMN_8,
 	SEQER_ID_FILTER,
-	SEQER_ID_VIEW_COLUMN_1,
-	SEQER_ID_VIEW_COLUMN_2,
-	SEQER_ID_VIEW_COLUMN_3,
-	SEQER_ID_VIEW_COLUMN_4,
-	SEQER_ID_VIEW_COLUMN_5,
-	SEQER_ID_VIEW_COLUMN_6,
-	SEQER_ID_VIEW_COLUMN_7,
-	SEQER_ID_VIEW_COLUMN_8,
+	SEQER_ID_ZOOM,
+	SEQER_ID_PIANO_ROLL,
 	SEQER_ID_INSERT_NOTE_A,
 	SEQER_ID_INSERT_NOTE_B,
 	SEQER_ID_INSERT_NOTE_C,
@@ -152,24 +152,24 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 			edit_menu->Append(SEQER_ID_LARGE_INCREASE, "Large &Increase\tShift+]");
 			edit_menu->Append(SEQER_ID_LARGE_DECREASE, "Large D&ecrease\tShift+[");
 			edit_menu->Append(SEQER_ID_QUANTIZE, "&Quantize\t=");
+			edit_menu->AppendSeparator();
+			wxMenu* edit_column_menu = new wxMenu(); edit_menu->AppendSubMenu(edit_column_menu, "&Columns");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_1, "Column &1\tCtrl+1");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_2, "Column &2\tCtrl+2");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_3, "Column &3\tCtrl+3");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_4, "Column &4\tCtrl+4");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_5, "Column &5\tCtrl+5");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_6, "Column &6\tCtrl+6");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
+				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_8, "Column &8\tCtrl+8");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll...");
+			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F");
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
 			view_menu->AppendSeparator();
-			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F");
-			view_menu->AppendSeparator();
-			wxMenu* view_column_menu = new wxMenu(); view_menu->AppendSubMenu(view_column_menu, "&Columns");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_1, "Column &1\tCtrl+1");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_2, "Column &2\tCtrl+2");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_3, "Column &3\tCtrl+3");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_4, "Column &4\tCtrl+4");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_5, "Column &5\tCtrl+5");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_6, "Column &6\tCtrl+6");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_7, "Column &7\tCtrl+7");
-				view_column_menu->Append(SEQER_ID_VIEW_COLUMN_8, "Column &8\tCtrl+8");
+			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll...");
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
 			wxMenu* insert_note_menu = new wxMenu(); insert_menu->AppendSubMenu(insert_note_menu, "&Notes");
 				insert_note_menu->Append(SEQER_ID_INSERT_NOTE_A, "Note &A\tA");
