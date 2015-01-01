@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
    }
 
    input_fd  = ((strcmp(argv[1], "-") == 0) ? 0 : open(argv[1], O_RDONLY));
+	setbuf(stdout, NULL);
 
    while (True)
    {
