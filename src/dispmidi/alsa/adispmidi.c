@@ -69,6 +69,8 @@ int main(int argc, char **argv)
 			snd_seq_connect_from(seq, port, connect_client_id, connect_port);
 		}
 
+		setbuf(stdout, NULL);
+
 		{
 			snd_seq_event_t *event;
 
