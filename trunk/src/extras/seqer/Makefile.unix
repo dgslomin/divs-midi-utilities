@@ -21,8 +21,8 @@ midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
 
 clean:
-	rm -f seqer.o midifile.o
+	rm -f seqer.o color.o midifile.o
 
 reallyclean: clean
-	rm -f seqer
+	rm -f Seqer
 
