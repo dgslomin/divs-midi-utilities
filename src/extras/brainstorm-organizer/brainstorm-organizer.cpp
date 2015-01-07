@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include <wx/dir.h>
 #include <wx/regex.h>
 #include <wx/wx.h>
@@ -184,28 +185,52 @@ void Application::OnRename(wxCommandEvent& WXUNUSED(event))
 	this->timeLabel->SendSizeEventToParent();
 }
 
+int CompareFilenames(const wxString& first, const wxString& second)
+{
+	wxRegEx regex("(\\d{14})\\.mid$", wxRE_ADVANCED);
+    long firstDate = 0;
+    long secondDate = 0;
+
+    if (regex.Matches(first))
+    {
+        firstDate = atol(regex.GetMatch(first, 1));
+    }
+
+    if (regex.Matches(second))
+    {
+        secondDate = atol(regex.GetMatch(second, 1));
+    }
+
+    return firstDate < secondDate ? -1 : firstDate > secondDate ? 1 : 0;
+}
+
 void Application::ListFiles()
 {
    wxDir dir(this->dir);
 
 	if (dir.IsOpened())
 	{
-		this->filesListBox->Clear();
-
-		wxRegEx filenamePattern("\\d{14}\\.mid$", wxRE_ADVANCED);
+        wxArrayString filenames;
+		wxRegEx regex("\\d{14}\\.mid$", wxRE_ADVANCED);
 		wxString filename;
 
 		for (bool hasMoreFiles = dir.GetFirst(&filename, "", wxDIR_FILES); hasMoreFiles; hasMoreFiles = dir.GetNext(&filename))
 		{
-			if (filenamePattern.Matches(filename))
+			if (regex.Matches(filename))
 			{
-				this->filesListBox->Append(filename);
+				filenames.Add(filename);
 			}
 		}
 
-		if (this->filesListBox->GetCount() > 0)
+        filenames.Sort(CompareFilenames);
+		this->filesListBox->Clear();
+		this->filesListBox->Append(filenames);
+
+        int count = this->filesListBox->GetCount();
+
+        if (count > 0)
 		{
-			this->filesListBox->SetSelection(0);
+			this->filesListBox->SetSelection(count - 1);
 		}
 	}
 }
