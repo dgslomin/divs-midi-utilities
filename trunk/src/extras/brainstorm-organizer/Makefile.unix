@@ -1,0 +1,25 @@
+
+WXDIR=$(HOME)/opt/wxWidgets-3.0.2
+WXCONFIG=$(WXDIR)/bin/wx-config
+CC=`$(WXCONFIG) --cc`
+CFLAGS=`$(WXCONFIG) --cflags`
+CXX=`$(WXCONFIG) --cxx`
+CXXFLAGS=`$(WXCONFIG) --cxxflags`
+LD=`$(WXCONFIG) --ld`
+LIBS=`$(WXCONFIG) --libs`
+
+brainstorm-organizer: brainstorm-organizer.o midifile.o
+	$(LD) brainstorm-organizer brainstorm-organizer.o midifile.o $(LIBS)
+
+brainstorm-organizer.o: brainstorm-organizer.cpp ../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -c brainstorm-organizer.cpp
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
+
+clean:
+	rm -f brainstorm-organizer.o midifile.o
+
+reallyclean: clean
+	rm -f brainstorm-organizer
+
