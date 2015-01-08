@@ -1,5 +1,7 @@
 
 #include <stdlib.h>
+#include <algorithm>
+#include <vector>
 #include <wx/dir.h>
 #include <wx/regex.h>
 #include <wx/wx.h>
@@ -26,6 +28,15 @@ public:
 	void OnForward(wxCommandEvent& event);
 	void OnRename(wxCommandEvent& event);
 	void ListFiles();
+};
+
+class File
+{
+public:
+	wxString filename;
+	long date;
+
+	File(wxString filename, long date) { this->filename = filename; this->date = date; }
 };
 
 IMPLEMENT_APP(Application)
@@ -185,23 +196,9 @@ void Application::OnRename(wxCommandEvent& WXUNUSED(event))
 	this->timeLabel->SendSizeEventToParent();
 }
 
-int CompareFilenames(const wxString& first, const wxString& second)
+bool CompareFiles(File* first, File* second)
 {
-	wxRegEx regex("(\\d{14})\\.mid$", wxRE_ADVANCED);
-    long firstDate = 0;
-    long secondDate = 0;
-
-    if (regex.Matches(first))
-    {
-        firstDate = atol(regex.GetMatch(first, 1));
-    }
-
-    if (regex.Matches(second))
-    {
-        secondDate = atol(regex.GetMatch(second, 1));
-    }
-
-    return firstDate < secondDate ? -1 : firstDate > secondDate ? 1 : 0;
+	return first->date < second->date;
 }
 
 void Application::ListFiles()
@@ -210,25 +207,29 @@ void Application::ListFiles()
 
 	if (dir.IsOpened())
 	{
-        wxArrayString filenames;
-		wxRegEx regex("\\d{14}\\.mid$", wxRE_ADVANCED);
+		std::vector<File*> files;
+		wxRegEx regex("(\\d{14})\\.mid$", wxRE_ADVANCED);
 		wxString filename;
 
 		for (bool hasMoreFiles = dir.GetFirst(&filename, "", wxDIR_FILES); hasMoreFiles; hasMoreFiles = dir.GetNext(&filename))
 		{
 			if (regex.Matches(filename))
 			{
-				filenames.Add(filename);
+				files.push_back(new File(filename, atol(regex.GetMatch(filename, 1))));
 			}
 		}
 
-        filenames.Sort(CompareFilenames);
+		std::sort(files.begin(), files.end(), CompareFiles);
 		this->filesListBox->Clear();
-		this->filesListBox->Append(filenames);
 
-        int count = this->filesListBox->GetCount();
+		for (std::vector<File*>::iterator file = files.begin(); file != files.end(); file++)
+		{
+			this->filesListBox->Append((*file)->filename);
+		}
 
-        if (count > 0)
+		int count = this->filesListBox->GetCount();
+
+		if (count > 0)
 		{
 			this->filesListBox->SetSelection(count - 1);
 		}
