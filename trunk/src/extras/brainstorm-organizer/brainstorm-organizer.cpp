@@ -15,9 +15,11 @@ private:
 	wxStaticText* timeLabel;
 	wxTextCtrl* nameTextBox;
 	std::string dir;
+    wxString oldName;
 
 public:
 	bool OnInit();
+	void OnSelect(wxCommandEvent& event);
 	void OnOpen(wxCommandEvent& event);
 	void OnRefresh(wxCommandEvent& event);
 	void OnUp(wxCommandEvent& event);
@@ -28,6 +30,7 @@ public:
 	void OnForward(wxCommandEvent& event);
 	void OnRename(wxCommandEvent& event);
 	void ListFiles();
+	void SelectFile();
 };
 
 class File
@@ -52,6 +55,7 @@ bool Application::OnInit()
 	this->window->SetSizer(outerSizer);
 
 	this->filesListBox = new wxListBox(this->window, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE | wxLB_ALWAYS_SB);
+	this->filesListBox->Bind(wxEVT_LISTBOX, &Application::OnSelect, this);
 	outerSizer->Add(this->filesListBox, 1, wxEXPAND | wxALL, 4);
 
 	wxBoxSizer* rightSizer = new wxBoxSizer(wxVERTICAL);
@@ -112,6 +116,11 @@ bool Application::OnInit()
 	return true;
 }
 
+void Application::OnSelect(wxCommandEvent& WXUNUSED(event))
+{
+    this->SelectFile();
+}
+
 void Application::OnOpen(wxCommandEvent& WXUNUSED(event))
 {
 	wxDirDialog dialog(this->window, wxDirSelectorPromptStr, "", wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
@@ -144,6 +153,7 @@ void Application::OnUp(wxCommandEvent& WXUNUSED(event))
 	if ((selection >= 0) && (this->filesListBox->GetCount() > 0))
 	{
 		this->filesListBox->SetSelection(selection);
+        this->SelectFile();
 	}
 }
 
@@ -163,6 +173,7 @@ void Application::OnDown(wxCommandEvent& WXUNUSED(event))
 	if (selection < this->filesListBox->GetCount())
 	{
 		this->filesListBox->SetSelection(selection);
+        this->SelectFile();
 	}
 }
 
@@ -192,8 +203,13 @@ void Application::OnForward(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnRename(wxCommandEvent& WXUNUSED(event))
 {
-	this->timeLabel->SetLabelText("rename");
-	this->timeLabel->SendSizeEventToParent();
+    wxRegEx regex("\\d{14}.mid$", wxRE_ADVANCED);
+
+    if (regex.Matches(this->oldName))
+    {
+        wxString newName = this->nameTextBox->GetValue() + regex.GetMatch(this->oldName, 0);
+        wxMessageBox("Rename " + this->oldName + " to " + newName);
+    }
 }
 
 bool CompareFiles(File* first, File* second)
@@ -232,7 +248,25 @@ void Application::ListFiles()
 		if (count > 0)
 		{
 			this->filesListBox->SetSelection(count - 1);
+            this->SelectFile();
 		}
 	}
+}
+
+void Application::SelectFile()
+{
+    int selectedFileNumber = this->filesListBox->GetSelection();
+
+    if (selectedFileNumber != wxNOT_FOUND)
+    {
+        wxString selectedFile = this->filesListBox->GetString(selectedFileNumber);
+		wxRegEx regex("^(.*)\\d{14}\\.mid$", wxRE_ADVANCED);
+
+        if (regex.Matches(selectedFile))
+        {
+            this->nameTextBox->SetValue(regex.GetMatch(selectedFile, 1));
+            this->oldName = selectedFile;
+        }
+    }
 }
 
