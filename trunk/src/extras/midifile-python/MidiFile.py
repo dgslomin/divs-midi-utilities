@@ -708,7 +708,7 @@ def _wrap_event(_event):
 	event = _event_wrappers.get(_event, None)
 
 	if event == None:
-		event = Track(_event = _event)
+		event = Event(_event = _event)
 		_event_wrappers[_event] = event
 
 	return event
