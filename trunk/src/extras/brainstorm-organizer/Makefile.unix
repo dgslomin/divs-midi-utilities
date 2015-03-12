@@ -8,17 +8,23 @@ CXXFLAGS=`$(WXCONFIG) --cxxflags`
 LD=`$(WXCONFIG) --ld`
 LIBS=`$(WXCONFIG) --libs`
 
-brainstorm-organizer: brainstorm-organizer.o midifile.o
-	$(LD) brainstorm-organizer brainstorm-organizer.o midifile.o $(LIBS)
+brainstorm-organizer: brainstorm-organizer.o midifile.o midifile-player.o midifile-player-support-unix.o
+	$(LD) brainstorm-organizer brainstorm-organizer.o midifile.o midifile-player.o midifile-player-support-unix.o $(LIBS)
 
-brainstorm-organizer.o: brainstorm-organizer.cpp ../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../midifile -c brainstorm-organizer.cpp
+brainstorm-organizer.o: brainstorm-organizer.cpp ../../midifile/midifile.h ../midifile-player/midifile-player.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -I../midifile-player -c brainstorm-organizer.cpp
 
 midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
 
+midifile-player.o: ../midifile-player/midifile-player.c ../midifile-player/midifile-player.h ../midifile-player/midifile-player-support.h
+	$(CC) $(CFLAGS) -I../../midifile -I../midifile-player -c ../midifile-player/midifile-player.c
+
+midifile-player-support-unix.o: ../midifile-player/midifile-player-support-unix.c ../midifile-player/midifile-player-support.h
+	$(CC) $(CFLAGS) -I../midifile-player -c ../midifile-player/midifile-player-support-unix.c
+
 clean:
-	rm -f brainstorm-organizer.o midifile.o
+	rm -f brainstorm-organizer.o midifile.o midifile-player.o midifile-player-support-unix.o
 
 reallyclean: clean
 	rm -f brainstorm-organizer
