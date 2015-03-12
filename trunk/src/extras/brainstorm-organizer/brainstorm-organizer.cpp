@@ -15,7 +15,7 @@ private:
 	wxStaticText* timeLabel;
 	wxTextCtrl* nameTextBox;
 	std::string dir;
-    wxString oldName;
+	wxString oldName;
 
 public:
 	bool OnInit();
@@ -29,6 +29,7 @@ public:
 	void OnBack(wxCommandEvent& event);
 	void OnForward(wxCommandEvent& event);
 	void OnRename(wxCommandEvent& event);
+	void OnNameTextBoxClick(wxMouseEvent& event);
 	void ListFiles();
 	void SelectFile();
 };
@@ -37,9 +38,13 @@ class File
 {
 public:
 	wxString filename;
-	long date;
+	long timestamp;
 
-	File(wxString filename, long date) { this->filename = filename; this->date = date; }
+	File(wxString filename, long timestamp)
+	{
+		this->filename = filename;
+		this->timestamp = timestamp;
+	}
 };
 
 IMPLEMENT_APP(Application)
@@ -103,7 +108,8 @@ bool Application::OnInit()
 
 	this->nameTextBox = new wxTextCtrl(this->window, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	this->nameTextBox->Bind(wxEVT_TEXT_ENTER, &Application::OnRename, this);
-	outerSizer->Add(this->nameTextBox, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxLEFT, 4);
+	this->nameTextBox->Bind(wxEVT_LEFT_DOWN, &Application::OnNameTextBoxClick, this);
+	outerSizer->Add(this->nameTextBox, 0, wxEXPAND | wxRIGHT | wxBOTTOM | wxLEFT, 4);
 
 	wxButton* renameButton = new wxButton(this->window, wxID_ANY, "Re&name");
 	renameButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnRename, this);
@@ -118,7 +124,7 @@ bool Application::OnInit()
 
 void Application::OnSelect(wxCommandEvent& WXUNUSED(event))
 {
-    this->SelectFile();
+	this->SelectFile();
 }
 
 void Application::OnOpen(wxCommandEvent& WXUNUSED(event))
@@ -143,7 +149,7 @@ void Application::OnUp(wxCommandEvent& WXUNUSED(event))
 
 	if (selection == wxNOT_FOUND)
 	{
-		selection = 0;
+		selection = this->filesListBox->GetCount() - 1;
 	}
 	else
 	{
@@ -153,7 +159,7 @@ void Application::OnUp(wxCommandEvent& WXUNUSED(event))
 	if ((selection >= 0) && (this->filesListBox->GetCount() > 0))
 	{
 		this->filesListBox->SetSelection(selection);
-        this->SelectFile();
+		this->SelectFile();
 	}
 }
 
@@ -173,7 +179,7 @@ void Application::OnDown(wxCommandEvent& WXUNUSED(event))
 	if (selection < this->filesListBox->GetCount())
 	{
 		this->filesListBox->SetSelection(selection);
-        this->SelectFile();
+		this->SelectFile();
 	}
 }
 
@@ -203,18 +209,34 @@ void Application::OnForward(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnRename(wxCommandEvent& WXUNUSED(event))
 {
-    wxRegEx regex("\\d{14}.mid$", wxRE_ADVANCED);
+	this->nameTextBox->SetFocus();
+	wxRegEx regex("\\d{14}.mid$", wxRE_ADVANCED);
 
-    if (regex.Matches(this->oldName))
-    {
-        wxString newName = this->nameTextBox->GetValue() + regex.GetMatch(this->oldName, 0);
-        wxMessageBox("Rename " + this->oldName + " to " + newName);
-    }
+	if (regex.Matches(this->oldName))
+	{
+		wxString newName = this->nameTextBox->GetValue() + regex.GetMatch(this->oldName, 0);
+		wxRenameFile(this->dir + "/" + this->oldName, this->dir + "/" + newName);
+		this->filesListBox->SetString(this->filesListBox->GetSelection(), newName);
+		this->SelectFile();
+	}
+}
+
+void Application::OnNameTextBoxClick(wxMouseEvent& event)
+{
+	if (this->nameTextBox->HasFocus())
+	{
+		event.Skip();
+	}
+	else
+	{
+		this->nameTextBox->SetFocus();
+		this->nameTextBox->SelectAll();
+	}
 }
 
 bool CompareFiles(File* first, File* second)
 {
-	return first->date < second->date;
+	return first->timestamp < second->timestamp;
 }
 
 void Application::ListFiles()
@@ -248,25 +270,26 @@ void Application::ListFiles()
 		if (count > 0)
 		{
 			this->filesListBox->SetSelection(count - 1);
-            this->SelectFile();
+			this->SelectFile();
 		}
 	}
 }
 
 void Application::SelectFile()
 {
-    int selectedFileNumber = this->filesListBox->GetSelection();
+	int selectedFileNumber = this->filesListBox->GetSelection();
 
-    if (selectedFileNumber != wxNOT_FOUND)
-    {
-        wxString selectedFile = this->filesListBox->GetString(selectedFileNumber);
+	if (selectedFileNumber != wxNOT_FOUND)
+	{
+		wxString selectedFile = this->filesListBox->GetString(selectedFileNumber);
 		wxRegEx regex("^(.*)\\d{14}\\.mid$", wxRE_ADVANCED);
 
-        if (regex.Matches(selectedFile))
-        {
-            this->nameTextBox->SetValue(regex.GetMatch(selectedFile, 1));
-            this->oldName = selectedFile;
-        }
-    }
+		if (regex.Matches(selectedFile))
+		{
+			this->nameTextBox->SetValue(regex.GetMatch(selectedFile, 1));
+			this->nameTextBox->SelectAll();
+			this->oldName = selectedFile;
+		}
+	}
 }
 
