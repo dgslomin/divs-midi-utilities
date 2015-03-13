@@ -16,6 +16,8 @@ private:
 	wxTextCtrl* nameTextBox;
 	std::string dir;
 	wxString oldName;
+	MidiFile_t midiFile;
+	int midiFileLength;
 
 public:
 	bool OnInit();
@@ -114,6 +116,8 @@ bool Application::OnInit()
 	wxButton* renameButton = new wxButton(this->window, wxID_ANY, "Re&name");
 	renameButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnRename, this);
 	outerSizer->Add(renameButton, 0, wxEXPAND | wxRIGHT | wxBOTTOM, 4);
+
+	this->midiFile = NULL;
 
 	this->dir = ".";
 	this->ListFiles();
@@ -289,6 +293,15 @@ void Application::SelectFile()
 			this->nameTextBox->SetValue(regex.GetMatch(selectedFile, 1));
 			this->nameTextBox->SelectAll();
 			this->oldName = selectedFile;
+
+			if (this->midiFile != NULL) MidiFile_free(this->midiFile);
+			this->midiFile = MidiFile_load((char *)(static_cast<const char *>((this->dir + "/" + this->oldName).c_str())));
+			this->midiFileLength = (int)(MidiFile_getTimeFromTick(this->midiFile, MidiFileEvent_getTick(MidiFile_getLastEvent(this->midiFile))));
+
+			wxString timeLabelText;
+			timeLabelText.Printf("0 of %d s", this->midiFileLength);
+			this->timeLabel->SetLabelText(timeLabelText);
+			this->timeLabel->SendSizeEventToParent();
 		}
 	}
 }
