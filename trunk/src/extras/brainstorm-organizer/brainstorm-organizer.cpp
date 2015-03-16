@@ -6,6 +6,9 @@
 #include <wx/regex.h>
 #include <wx/wx.h>
 #include <midifile.h>
+#include <midifile-player.h>
+
+#define SKIP_TIME 5
 
 class Application: public wxApp
 {
@@ -16,8 +19,10 @@ private:
 	wxTextCtrl* nameTextBox;
 	std::string dir;
 	wxString oldName;
+	MidiFilePlayer_t midiFilePlayer;
 	MidiFile_t midiFile;
 	int midiFileLength;
+	int midiFileCurrentTime;
 
 public:
 	bool OnInit();
@@ -32,8 +37,11 @@ public:
 	void OnForward(wxCommandEvent& event);
 	void OnRename(wxCommandEvent& event);
 	void OnNameTextBoxClick(wxMouseEvent& event);
+	void OnUpdateTimeLabel(wxThreadEvent& event);
+	static void OnMidiFileEvent(MidiFileEvent_t event, void *user_data);
 	void ListFiles();
 	void SelectFile();
+	void UpdateTimeLabel();
 };
 
 class File
@@ -49,6 +57,7 @@ public:
 	}
 };
 
+wxDEFINE_EVENT(wxEVT_COMMAND_UPDATE_TIME_LABEL, wxThreadEvent);
 IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
@@ -117,6 +126,9 @@ bool Application::OnInit()
 	renameButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnRename, this);
 	outerSizer->Add(renameButton, 0, wxEXPAND | wxRIGHT | wxBOTTOM, 4);
 
+	this->Bind(wxEVT_COMMAND_UPDATE_TIME_LABEL, &Application::OnUpdateTimeLabel, this);
+
+	this->midiFilePlayer = MidiFilePlayer_new(&Application::OnMidiFileEvent, this);
 	this->midiFile = NULL;
 
 	this->dir = ".";
@@ -189,26 +201,32 @@ void Application::OnDown(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnPlay(wxCommandEvent& WXUNUSED(event))
 {
-	this->timeLabel->SetLabelText("play");
-	this->timeLabel->SendSizeEventToParent();
+	MidiFilePlayer_play(this->midiFilePlayer);
 }
 
 void Application::OnStop(wxCommandEvent& WXUNUSED(event))
 {
-	this->timeLabel->SetLabelText("stop");
-	this->timeLabel->SendSizeEventToParent();
+	MidiFilePlayer_pause(this->midiFilePlayer);
 }
 
 void Application::OnBack(wxCommandEvent& WXUNUSED(event))
 {
-	this->timeLabel->SetLabelText("back");
-	this->timeLabel->SendSizeEventToParent();
+	float current_time = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
+	float new_time = current_time - SKIP_TIME;
+
+	if (new_time >= 0)
+	{
+		MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, new_time));
+		this->UpdateTimeLabel();
+	}
 }
 
 void Application::OnForward(wxCommandEvent& WXUNUSED(event))
 {
-	this->timeLabel->SetLabelText("forward");
-	this->timeLabel->SendSizeEventToParent();
+	float current_time = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
+	float new_time = current_time + SKIP_TIME;
+	MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, new_time));
+	this->UpdateTimeLabel();
 }
 
 void Application::OnRename(wxCommandEvent& WXUNUSED(event))
@@ -235,6 +253,23 @@ void Application::OnNameTextBoxClick(wxMouseEvent& event)
 	{
 		this->nameTextBox->SetFocus();
 		this->nameTextBox->SelectAll();
+	}
+}
+
+void Application::OnUpdateTimeLabel(wxThreadEvent& WXUNUSED(event))
+{
+	this->UpdateTimeLabel();
+}
+
+void Application::OnMidiFileEvent(MidiFileEvent_t event, void* userData)
+{
+	Application* application = static_cast<Application*>(userData);
+	int eventTime = (int)(MidiFile_getTimeFromTick(application->midiFile, MidiFileEvent_getTick(event)));
+
+	if (eventTime != application->midiFileCurrentTime)
+	{
+		application->midiFileCurrentTime = eventTime;
+		wxQueueEvent(application, new wxThreadEvent(wxEVT_COMMAND_UPDATE_TIME_LABEL));
 	}
 }
 
@@ -296,13 +331,19 @@ void Application::SelectFile()
 
 			if (this->midiFile != NULL) MidiFile_free(this->midiFile);
 			this->midiFile = MidiFile_load((char *)(static_cast<const char *>((this->dir + "/" + this->oldName).c_str())));
+			MidiFilePlayer_setMidiFile(this->midiFilePlayer, this->midiFile);
 			this->midiFileLength = (int)(MidiFile_getTimeFromTick(this->midiFile, MidiFileEvent_getTick(MidiFile_getLastEvent(this->midiFile))));
-
-			wxString timeLabelText;
-			timeLabelText.Printf("0 of %d s", this->midiFileLength);
-			this->timeLabel->SetLabelText(timeLabelText);
-			this->timeLabel->SendSizeEventToParent();
+			this->midiFileCurrentTime = 0;
+			this->UpdateTimeLabel();
 		}
 	}
+}
+
+void Application::UpdateTimeLabel()
+{
+	wxString timeLabelText;
+	timeLabelText.Printf("%d of %d s", this->midiFileCurrentTime, this->midiFileLength);
+	this->timeLabel->SetLabelText(timeLabelText);
+	this->timeLabel->SendSizeEventToParent();
 }
 
