@@ -40,6 +40,7 @@ static void *thread_main(void *arg)
 		}
 	}
 
+    player->relative_start_time = MidiFilePlayer_getCurrentTime() - player->absolute_start_time;
 	player->is_running = 0;
 	player->should_shutdown = 0;
 	return NULL;
@@ -96,6 +97,12 @@ int MidiFilePlayer_pause(MidiFilePlayer_t player)
 	player->should_shutdown = 1;
 	MidiFilePlayerWaitLock_notify(player->wait_lock);
 	return 0;
+}
+
+int MidiFilePlayer_isRunning(MidiFilePlayer_t player)
+{
+	if (player == NULL) return 0;
+	return player->is_running;
 }
 
 long MidiFilePlayer_getTick(MidiFilePlayer_t player)

@@ -8,7 +8,7 @@
 #include <midifile.h>
 #include <midifile-player.h>
 
-#define SKIP_TIME 5
+#define SKIP_TIME 10
 
 class Application: public wxApp
 {
@@ -201,31 +201,40 @@ void Application::OnDown(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnPlay(wxCommandEvent& WXUNUSED(event))
 {
-	MidiFilePlayer_play(this->midiFilePlayer);
+	if (MidiFilePlayer_isRunning(this->midiFilePlayer))
+	{
+		MidiFilePlayer_pause(this->midiFilePlayer);
+	}
+	else
+	{
+		MidiFilePlayer_play(this->midiFilePlayer);
+	}
 }
 
 void Application::OnStop(wxCommandEvent& WXUNUSED(event))
 {
 	MidiFilePlayer_pause(this->midiFilePlayer);
+	MidiFilePlayer_setTick(this->midiFilePlayer, 0);
+    this->midiFileCurrentTime = 0;
+    this->UpdateTimeLabel();
 }
 
 void Application::OnBack(wxCommandEvent& WXUNUSED(event))
 {
-	float current_time = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
-	float new_time = current_time - SKIP_TIME;
-
-	if (new_time >= 0)
-	{
-		MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, new_time));
-		this->UpdateTimeLabel();
-	}
+	float currentTime = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
+	float newTime = currentTime - SKIP_TIME;
+	if (newTime < 0) newTime = 0;
+	MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, newTime));
+	this->midiFileCurrentTime = (int)(newTime);
+	this->UpdateTimeLabel();
 }
 
 void Application::OnForward(wxCommandEvent& WXUNUSED(event))
 {
-	float current_time = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
-	float new_time = current_time + SKIP_TIME;
-	MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, new_time));
+	float currentTime = MidiFile_getTimeFromTick(this->midiFile, MidiFilePlayer_getTick(this->midiFilePlayer));
+	float newTime = currentTime + SKIP_TIME;
+	MidiFilePlayer_setTick(this->midiFilePlayer, MidiFile_getTickFromTime(this->midiFile, newTime));
+	this->midiFileCurrentTime = (int)(newTime);
 	this->UpdateTimeLabel();
 }
 
