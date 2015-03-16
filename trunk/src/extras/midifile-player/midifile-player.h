@@ -18,6 +18,7 @@ MidiFile_t MidiFilePlayer_getMidiFile(MidiFilePlayer_t player);
 
 int MidiFilePlayer_play(MidiFilePlayer_t player);
 int MidiFilePlayer_pause(MidiFilePlayer_t player);
+int MidiFilePlayer_isRunning(MidiFilePlayer_t player);
 
 long MidiFilePlayer_getTick(MidiFilePlayer_t player);
 int MidiFilePlayer_setTick(MidiFilePlayer_t player, long tick);
