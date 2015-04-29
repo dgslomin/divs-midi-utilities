@@ -7,27 +7,17 @@
 #include <wx/wx.h>
 #include <midifile.h>
 #include <midifile-player.h>
+#include <brainstorm-organizer-support.h>
 
 #define SKIP_TIME 10
 
 class Application: public wxApp
 {
-private:
-	wxFrame* window;
-	wxListBox* filesListBox;
-	wxStaticText* timeLabel;
-	wxTextCtrl* nameTextBox;
-	std::string dir;
-	wxString oldName;
-	MidiFilePlayer_t midiFilePlayer;
-	MidiFile_t midiFile;
-	int midiFileLength;
-	int midiFileCurrentTime;
-
 public:
 	bool OnInit();
 	void OnSelect(wxCommandEvent& event);
-	void OnOpen(wxCommandEvent& event);
+	void OnMidiConfig(wxCommandEvent& event);
+	void OnOpenDirectory(wxCommandEvent& event);
 	void OnRefresh(wxCommandEvent& event);
 	void OnUp(wxCommandEvent& event);
 	void OnDown(wxCommandEvent& event);
@@ -42,6 +32,19 @@ public:
 	void ListFiles();
 	void SelectFile();
 	void UpdateTimeLabel();
+
+private:
+    MidiSystem* midiSystem;
+	wxFrame* window;
+	wxListBox* filesListBox;
+	wxStaticText* timeLabel;
+	wxTextCtrl* nameTextBox;
+	std::string dir;
+	wxString oldName;
+	MidiFilePlayer_t midiFilePlayer;
+	MidiFile_t midiFile;
+	int midiFileLength;
+	int midiFileCurrentTime;
 };
 
 class File
@@ -50,11 +53,7 @@ public:
 	wxString filename;
 	long timestamp;
 
-	File(wxString filename, long timestamp)
-	{
-		this->filename = filename;
-		this->timestamp = timestamp;
-	}
+	File(wxString filename, long timestamp);
 };
 
 wxDEFINE_EVENT(wxEVT_COMMAND_UPDATE_TIME_LABEL, wxThreadEvent);
@@ -62,6 +61,8 @@ IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
 {
+    this->midiSystem = new MidiSystem();
+
 	this->window = new wxFrame((wxFrame*)(NULL), wxID_ANY, "Brainstorm Organizer", wxDefaultPosition, wxSize(640, 480));
 	this->SetTopWindow(this->window);
 
@@ -77,9 +78,13 @@ bool Application::OnInit()
 	wxBoxSizer* rightSizer = new wxBoxSizer(wxVERTICAL);
 	outerSizer->Add(rightSizer, 0, wxEXPAND);
 
-	wxButton* openButton = new wxButton(this->window, wxID_ANY, "&Open");
-	openButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnOpen, this);
-	rightSizer->Add(openButton, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 4);
+	wxButton* midiConfigButton = new wxButton(this->window, wxID_ANY, "&MIDI");
+	midiConfigButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnMidiConfig, this);
+	rightSizer->Add(midiConfigButton, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 4);
+
+	wxButton* openDirectoryButton = new wxButton(this->window, wxID_ANY, "Direct&ory");
+	openDirectoryButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnOpenDirectory, this);
+	rightSizer->Add(openDirectoryButton, 0, wxEXPAND | wxRIGHT | wxBOTTOM, 4);
 
 	wxButton* refreshButton = new wxButton(this->window, wxID_ANY, "&Refresh");
 	refreshButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Application::OnRefresh, this);
@@ -143,7 +148,12 @@ void Application::OnSelect(wxCommandEvent& WXUNUSED(event))
 	this->SelectFile();
 }
 
-void Application::OnOpen(wxCommandEvent& WXUNUSED(event))
+void Application::OnMidiConfig(wxCommandEvent& WXUNUSED(event))
+{
+    this->midiSystem->DisplayConfigDialog();
+}
+
+void Application::OnOpenDirectory(wxCommandEvent& WXUNUSED(event))
 {
 	wxDirDialog dialog(this->window, wxDirSelectorPromptStr, "", wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 
@@ -273,6 +283,7 @@ void Application::OnUpdateTimeLabel(wxThreadEvent& WXUNUSED(event))
 void Application::OnMidiFileEvent(MidiFileEvent_t event, void* userData)
 {
 	Application* application = static_cast<Application*>(userData);
+    application->midiSystem->SendMessage(event);
 	int eventTime = (int)(MidiFile_getTimeFromTick(application->midiFile, MidiFileEvent_getTick(event)));
 
 	if (eventTime != application->midiFileCurrentTime)
@@ -354,5 +365,11 @@ void Application::UpdateTimeLabel()
 	timeLabelText.Printf("%d of %d s", this->midiFileCurrentTime, this->midiFileLength);
 	this->timeLabel->SetLabelText(timeLabelText);
 	this->timeLabel->SendSizeEventToParent();
+}
+
+File::File(wxString filename, long timestamp)
+{
+	this->filename = filename;
+	this->timestamp = timestamp;
 }
 
