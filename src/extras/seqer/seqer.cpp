@@ -12,9 +12,16 @@ public:
 	bool OnInit();
 };
 
+class Sequence
+{
+public:
+	MidiFile_t midi_file;
+};
+
 class Window: public wxFrame
 {
 public:
+    class Sequence* sequence;
 	class Canvas* canvas;
 
 	Window();
@@ -28,23 +35,34 @@ class Canvas: public wxScrolledCanvas
 {
 public:
 	class Window* window;
-	wxFont font;
-	long first_note;
-	long last_note;
-	long key_width;
-	MidiFile_t midi_file;
-	std::vector<class Row> rows;
-	long row_height;
-	long char_width;
-	wxColour darker_line_color;
-	wxColour lighter_line_color;
-	wxColour white_key_color;
-	wxColour black_key_color;
+    class PianoRoll* piano_roll;
+    class EventList* event_list;
 
 	Canvas(Window* window);
 	bool Load(char* filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+};
+
+class PianoRoll
+{
+public:
+	long first_note;
+	long last_note;
+	long key_width;
+	wxColour darker_line_color;
+	wxColour lighter_line_color;
+	wxColour white_key_color;
+	wxColour black_key_color;
+};
+
+class EventList
+{
+public:
+	wxFont font;
+	std::vector<class Row> rows;
+	long row_height;
+	long char_width;
 };
 
 class Row
@@ -256,16 +274,8 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
-
-#if defined(__WXOSX__)
-	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
-#else
-	this->font = *wxNORMAL_FONT;
-#endif
-
-	this->first_note = 21; // default to standard piano range
-	this->last_note = 108;
-	this->key_width = 3;
+    this->piano_roll = new PianoRoll();
+    this->event_list = new EventList();
 	this->midi_file = NULL;
 	this->DisableKeyboardScrolling();
 	this->Prepare();
@@ -410,6 +420,34 @@ void Canvas::OnDraw(wxDC& dc)
 
 		dc.DrawText(text, this->key_width * (this->last_note - this->first_note + 1) + 1, row_number * this->row_height);
 	}
+}
+
+PianoRoll::PianoRoll(Canvas* canvas)
+{
+    this->canvas = canvas;
+	this->first_note = 21; // default to standard piano range
+	this->last_note = 108;
+	this->key_width = 3;
+}
+
+PianoRoll::Prepare()
+{
+}
+
+EventList::EventList(Canvas* canvas)
+{
+    this->canvas = canvas;
+
+#if defined(__WXOSX__)
+	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
+#else
+	this->font = *wxNORMAL_FONT;
+#endif
+
+}
+
+EventList::Prepare()
+{
 }
 
 Row::Row(long step, MidiFileEvent_t event)
