@@ -265,6 +265,7 @@ int MidiFileLyricEvent_setText(MidiFileEvent_t event, char *text);
 char *MidiFileMarkerEvent_getText(MidiFileEvent_t event);
 int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text);
 
+int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event);
 unsigned long MidiFileVoiceEvent_getData(MidiFileEvent_t event);
 int MidiFileVoiceEvent_setData(MidiFileEvent_t event, unsigned long data);
 
