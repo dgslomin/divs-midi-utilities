@@ -6,7 +6,7 @@ class MidiSystem::Impl
 {
 public:
     HMIDIOUT midiOut;
-}
+};
 
 MidiSystem::MidiSystem()
 {

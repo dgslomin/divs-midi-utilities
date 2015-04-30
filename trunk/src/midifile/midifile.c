@@ -2792,6 +2792,30 @@ int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text)
 	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
 }
 
+int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event)
+{
+	switch (MidiFileEvent_getType(event))
+    {
+		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
+		case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
+		{
+			return 3;
+		}
+		case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return 2;
+		}
+		default:
+		{
+			return 0;
+		}
+	}
+}
+
 unsigned long MidiFileVoiceEvent_getData(MidiFileEvent_t event)
 {
 	switch (MidiFileEvent_getType(event))
