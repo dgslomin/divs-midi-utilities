@@ -1,0 +1,34 @@
+
+WXDIR=$(HOME)/opt/wxWidgets-3.0.2
+WXCONFIG=$(WXDIR)/bin/wx-config
+CC=`$(WXCONFIG) --cc`
+CFLAGS=`$(WXCONFIG) --cflags`
+CXX=`$(WXCONFIG) --cxx`
+CXXFLAGS=`$(WXCONFIG) --cxxflags`
+LD=`$(WXCONFIG) --ld`
+LIBS=`$(WXCONFIG) --libs` -framework CoreMIDI -framework CoreAudio
+
+brainstorm-organizer: brainstorm-organizer.o brainstorm-organizer-support-macos.o midifile.o midifile-player.o midifile-player-support-unix.o
+	$(LD) brainstorm-organizer brainstorm-organizer.o brainstorm-organizer-support-macos.o midifile.o midifile-player.o midifile-player-support-unix.o $(LIBS)
+
+brainstorm-organizer.o: brainstorm-organizer.cpp brainstorm-organizer-support.h ../../midifile/midifile.h ../midifile-player/midifile-player.h
+	$(CXX) $(CXXFLAGS) -I. -I../../midifile -I../midifile-player -c brainstorm-organizer.cpp
+
+brainstorm-organizer-support-macos.o: brainstorm-organizer-support-macos.cpp brainstorm-organizer-support.h ../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I. -I../../midifile -c brainstorm-organizer-support-macos.cpp
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
+
+midifile-player.o: ../midifile-player/midifile-player.c ../midifile-player/midifile-player.h ../midifile-player/midifile-player-support.h
+	$(CC) $(CFLAGS) -I../../midifile -I../midifile-player -c ../midifile-player/midifile-player.c
+
+midifile-player-support-unix.o: ../midifile-player/midifile-player-support-unix.c ../midifile-player/midifile-player-support.h
+	$(CC) $(CFLAGS) -I../midifile-player -c ../midifile-player/midifile-player-support-unix.c
+
+clean:
+	rm -f brainstorm-organizer.o brainstorm-organizer-support-macos.o midifile.o midifile-player.o midifile-player-support-unix.o
+
+reallyclean: clean
+	rm -f brainstorm-organizer
+
