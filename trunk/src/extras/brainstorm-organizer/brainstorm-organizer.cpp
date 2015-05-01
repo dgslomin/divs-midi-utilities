@@ -34,13 +34,13 @@ public:
 	void UpdateTimeLabel();
 
 private:
-    MidiSystem* midiSystem;
 	wxFrame* window;
 	wxListBox* filesListBox;
 	wxStaticText* timeLabel;
 	wxTextCtrl* nameTextBox;
 	std::string dir;
 	wxString oldName;
+    MidiOutput* midiOutput;
 	MidiFilePlayer_t midiFilePlayer;
 	MidiFile_t midiFile;
 	int midiFileLength;
@@ -61,8 +61,6 @@ IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
 {
-    this->midiSystem = new MidiSystem();
-
 	this->window = new wxFrame((wxFrame*)(NULL), wxID_ANY, "Brainstorm Organizer", wxDefaultPosition, wxSize(640, 480));
 	this->SetTopWindow(this->window);
 
@@ -133,6 +131,7 @@ bool Application::OnInit()
 
 	this->Bind(wxEVT_COMMAND_UPDATE_TIME_LABEL, &Application::OnUpdateTimeLabel, this);
 
+    this->midiOutput = new MidiOutput();
 	this->midiFilePlayer = MidiFilePlayer_new(&Application::OnMidiFileEvent, this);
 	this->midiFile = NULL;
 
@@ -150,7 +149,7 @@ void Application::OnSelect(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnMidiConfig(wxCommandEvent& WXUNUSED(event))
 {
-    this->midiSystem->DisplayConfigDialog();
+    this->midiOutput->DisplayConfigDialog();
 }
 
 void Application::OnOpenDirectory(wxCommandEvent& WXUNUSED(event))
@@ -283,7 +282,7 @@ void Application::OnUpdateTimeLabel(wxThreadEvent& WXUNUSED(event))
 void Application::OnMidiFileEvent(MidiFileEvent_t event, void* userData)
 {
 	Application* application = static_cast<Application*>(userData);
-    application->midiSystem->SendMessage(event);
+    application->midiOutput->SendMessage(event);
 	int eventTime = (int)(MidiFile_getTimeFromTick(application->midiFile, MidiFileEvent_getTick(event)));
 
 	if (eventTime != application->midiFileCurrentTime)

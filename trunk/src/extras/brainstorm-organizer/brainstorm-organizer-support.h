@@ -1,11 +1,11 @@
 #ifndef BRAINSTORM_ORGANIZER_SUPPORT_INCLUDED
 #define BRAINSTORM_ORGANIZER_SUPPORT_INCLUDED
 
-class MidiSystem
+class MidiOutput
 {
 public:
-    MidiSystem();
-    ~MidiSystem();
+    MidiOutput();
+    ~MidiOutput();
     void DisplayConfigDialog();
     void SendMessage(MidiFileEvent_t event);
 
