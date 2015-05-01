@@ -2,14 +2,14 @@
 #include <alsa/asoundlib.h>
 #include <brainstorm-organizer-support.h>
 
-class MidiSystem::Impl
+class MidiOutput::Impl
 {
 public:
     snd_seq_t* alsaSequencerOutput;
     int alsaSequencerOutputPort;
 };
 
-MidiSystem::MidiSystem()
+MidiOutput::MidiOutput()
 {
     this->impl = new Impl();
     snd_seq_open(&(this->impl->alsaSequencerOutput), "default", SND_SEQ_OPEN_OUTPUT, 0);
@@ -17,14 +17,14 @@ MidiSystem::MidiSystem()
     this->impl->alsaSequencerOutputPort = snd_seq_create_simple_port(this->impl->alsaSequencerOutput, "playback", SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 }
 
-MidiSystem::~MidiSystem()
+MidiOutput::~MidiOutput()
 {
     snd_seq_delete_simple_port(this->impl->alsaSequencerOutput, this->impl->alsaSequencerOutputPort);
     snd_seq_close(this->impl->alsaSequencerOutput);
     delete this->impl;
 }
 
-void MidiSystem::DisplayConfigDialog()
+void MidiOutput::DisplayConfigDialog()
 {
     // TODO: display modally; allow user to select; remember to disconnect the existing connection, and to support selecting none
 	// snd_seq_connect_to(alsaSequencerOutput, alsaSequencerOutputPort, alsaSequencerDestinationClientId, alsaSequencerDestinationPortId);
@@ -56,7 +56,7 @@ void MidiSystem::DisplayConfigDialog()
     snd_seq_client_info_free(alsaSequencerDestinationClientInfo);
 }
 
-void MidiSystem::SendMessage(MidiFileEvent_t event)
+void MidiOutput::SendMessage(MidiFileEvent_t event)
 {
     snd_seq_ev_t alsaSequencerEvent;
     snd_seq_ev_clear(&alsaSequencerEvent);

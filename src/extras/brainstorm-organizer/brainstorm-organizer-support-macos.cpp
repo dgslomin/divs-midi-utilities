@@ -1,9 +1,11 @@
 
+#include <wx/wx.h>
+#include <wx/osx/core/cfstring.h>
 #include <CoreMIDI/CoreMIDI.h>
 #include <midifile.h>
 #include <brainstorm-organizer-support.h>
 
-class MidiSystem::Impl
+class MidiOutput::Impl
 {
 public:
     MIDIClientRef midiClient;
@@ -11,7 +13,7 @@ public:
     MIDIEndpointRef midiDestination;
 };
 
-MidiSystem::MidiSystem()
+MidiOutput::MidiOutput()
 {
     this->impl = new Impl();
     MIDIClientCreate(CFSTR("Brainstorm Organizer"), NULL, NULL, &(this->impl->midiClient));
@@ -19,26 +21,45 @@ MidiSystem::MidiSystem()
     this->impl->midiDestination = kMIDIUnknownEndpoint;
 }
 
-MidiSystem::~MidiSystem()
+MidiOutput::~MidiOutput()
 {
     MIDIPortDispose(this->impl->midiOutputPort);
     MIDIClientDispose(this->impl->midiClient);
     delete this->impl;
 }
 
-void MidiSystem::DisplayConfigDialog()
+void MidiOutput::DisplayConfigDialog()
 {
-    // TODO: display modally; allow user to select; save in this->impl->midiDestination
+    wxDialog *dialog = new wxDialog(NULL, wxID_ANY, "Brainstorm Organizer");
 
+    wxBoxSizer* outerSizer = new wxBoxSizer(wxVERTICAL);
+    dialog->SetSizer(outerSizer);
+
+    wxListBox* destinationList = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE);
+    outerSizer->Add(destinationList, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM | wxLEFT, 4);
+
+    wxSizer* buttonSizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
+    outerSizer->Add(buttonSizer, 0, wxRIGHT | wxBOTTOM | wxLEFT, 4);
+    
     for (int destinationNumber = 0; destinationNumber < MIDIGetNumberOfDestinations(); destinationNumber++)
     {
         MIDIEndpointRef midiDestination = MIDIGetDestination(destinationNumber);
         CFStringRef midiDestinationName;
         MIDIObjectGetStringProperty(midiDestination, kMIDIPropertyDisplayName, &midiDestinationName);
+        destinationList->Append(wxCFStringRef(midiDestinationName).AsString());
+        if (midiDestination == this->impl->midiDestination) destinationList->SetSelection(destinationNumber);
     }
+
+    if (dialog->ShowModal() == wxID_OK)
+    {
+        int destinationNumber = destinationList->GetSelection();
+        if (destinationNumber != wxNOT_FOUND) this->impl->midiDestination = MIDIGetDestination(destinationNumber);
+    }
+
+    dialog->Destroy();
 }
 
-void MidiSystem::SendMessage(MidiFileEvent_t event)
+void MidiOutput::SendMessage(MidiFileEvent_t event)
 {
     if ((this->impl->midiDestination == kMIDIUnknownEndpoint) || !MidiFileEvent_isVoiceEvent(event)) return;
 
