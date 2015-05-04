@@ -36,7 +36,7 @@ void MidiOutput::DisplayConfigDialog()
     dialog->SetSizer(outerSizer);
 
     wxListBox* destinationList = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE);
-    outerSizer->Add(destinationList, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM | wxLEFT, 4);
+    outerSizer->Add(destinationList, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM | wxLEFT, 4);
 
     wxSizer* buttonSizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
     outerSizer->Add(buttonSizer, 0, wxRIGHT | wxBOTTOM | wxLEFT, 4);

@@ -1,6 +1,8 @@
 #ifndef BRAINSTORM_ORGANIZER_SUPPORT_INCLUDED
 #define BRAINSTORM_ORGANIZER_SUPPORT_INCLUDED
 
+#include <midifile.h>
+
 class MidiOutput
 {
 public:
