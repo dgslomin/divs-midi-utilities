@@ -30,7 +30,7 @@ MidiOutput::~MidiOutput()
 
 void MidiOutput::DisplayConfigDialog()
 {
-    wxDialog *dialog = new wxDialog(NULL, wxID_ANY, "Brainstorm Organizer");
+    wxDialog* dialog = new wxDialog(NULL, wxID_ANY, "Brainstorm Organizer");
 
     wxBoxSizer* outerSizer = new wxBoxSizer(wxVERTICAL);
     dialog->SetSizer(outerSizer);
@@ -53,7 +53,7 @@ void MidiOutput::DisplayConfigDialog()
     if (dialog->ShowModal() == wxID_OK)
     {
         int destinationNumber = destinationList->GetSelection();
-        if (destinationNumber != wxNOT_FOUND) this->impl->midiDestination = MIDIGetDestination(destinationNumber);
+        this->impl->midiDestination = (destinationNumber == wxNOT_FOUND) ? kMIDIUnknownEndpoint : MIDIGetDestination(destinationNumber);
     }
 
     dialog->Destroy();
@@ -71,10 +71,10 @@ void MidiOutput::SendMessage(MidiFileEvent_t event)
     u;
 
     u.messageAsUint32 = MidiFileVoiceEvent_getData(event);
-    Byte midiPacketListBuffer[128];
-    MIDIPacketList* midiPacketList = (MIDIPacketList*)(midiPacketListBuffer);
+    Byte midiPacketBuffer[128];
+    MIDIPacketList* midiPacketList = (MIDIPacketList*)(midiPacketBuffer);
     MIDIPacket* midiPacket = MIDIPacketListInit(midiPacketList);
-    MIDIPacketListAdd(midiPacketList, sizeof(midiPacketListBuffer), midiPacket, 0, MidiFileVoiceEvent_getDataLength(event), u.messageAsBytes);
+    midiPacket = MIDIPacketListAdd(midiPacketList, sizeof (midiPacketBuffer), midiPacket, 0, MidiFileVoiceEvent_getDataLength(event), u.messageAsBytes);
     MIDISend(this->impl->midiOutputPort, this->impl->midiDestination, midiPacketList);
 }
 
