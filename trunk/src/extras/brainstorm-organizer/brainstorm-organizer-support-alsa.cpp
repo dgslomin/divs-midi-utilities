@@ -1,108 +1,162 @@
 
+#include <wx/wx.h>
 #include <alsa/asoundlib.h>
+#include <midifile.h>
 #include <brainstorm-organizer-support.h>
 
 class MidiOutput::Impl
 {
 public:
-    snd_seq_t* alsaSequencerOutput;
-    int alsaSequencerOutputPort;
+    snd_seq_t* alsaSequencer;
+    int outputPort;
+    int destinationNumber;
 };
 
 MidiOutput::MidiOutput()
 {
     this->impl = new Impl();
-    snd_seq_open(&(this->impl->alsaSequencerOutput), "default", SND_SEQ_OPEN_OUTPUT, 0);
-    snd_seq_set_client_name(this->impl->alsaSequencerOutput, "Brainstorm Organizer");
-    this->impl->alsaSequencerOutputPort = snd_seq_create_simple_port(this->impl->alsaSequencerOutput, "playback", SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
+    snd_seq_open(&(this->impl->alsaSequencer), "default", SND_SEQ_OPEN_OUTPUT, 0);
+    snd_seq_set_client_name(this->impl->alsaSequencer, "Brainstorm Organizer");
+    this->impl->outputPort = snd_seq_create_simple_port(this->impl->alsaSequencer, "Brainstorm Organizer playback port", SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
+    this->impl->destinationNumber = wxNOT_FOUND;
 }
 
 MidiOutput::~MidiOutput()
 {
-    snd_seq_delete_simple_port(this->impl->alsaSequencerOutput, this->impl->alsaSequencerOutputPort);
-    snd_seq_close(this->impl->alsaSequencerOutput);
+    snd_seq_delete_simple_port(this->impl->alsaSequencer, this->impl->outputPort);
+    snd_seq_close(this->impl->alsaSequencer);
     delete this->impl;
 }
 
 void MidiOutput::DisplayConfigDialog()
 {
-    // TODO: display modally; allow user to select; remember to disconnect the existing connection, and to support selecting none
-	// snd_seq_connect_to(alsaSequencerOutput, alsaSequencerOutputPort, alsaSequencerDestinationClientId, alsaSequencerDestinationPortId);
+    wxDialog* dialog = new wxDialog(NULL, wxID_ANY, "Brainstorm Organizer");
 
-    snd_seq_client_info_t* alsaSequencerDestinationClientInfo;
-    snd_seq_client_info_malloc(&alsaSequencerDestinationClientInfo);
-    snd_seq_port_info_t* alsaSequencerDestinationPortInfo;
-    snd_seq_port_info_malloc(&alsaSequencerDestinationPortInfo);
-    snd_seq_client_info_set_client(alsaSequencerDestinationClientInfo, -1);
+    wxBoxSizer* outerSizer = new wxBoxSizer(wxVERTICAL);
+    dialog->SetSizer(outerSizer);
 
-	while (snd_seq_query_next_client(alsaSequencerOutput, alsaSequencerDestinationClientInfo) == 0)
+    wxListBox* destinationList = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE);
+    outerSizer->Add(destinationList, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM | wxLEFT, 4);
+
+    wxSizer* buttonSizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
+    outerSizer->Add(buttonSizer, 0, wxRIGHT | wxBOTTOM | wxLEFT, 4);
+    
+    snd_seq_client_info_t* destinationClientInfo;
+    snd_seq_client_info_malloc(&destinationClientInfo);
+    snd_seq_port_info_t* destinationPortInfo;
+    snd_seq_port_info_malloc(&destinationPortInfo);
+
+    int destinationNumber = 0;
+    snd_seq_client_info_set_client(destinationClientInfo, -1);
+
+	while (snd_seq_query_next_client(this->impl->alsaSequencer, destinationClientInfo) == 0)
 	{
-		int alsaSequencerDestinationClientId = snd_seq_client_info_get_client(alsaSequencerDestinationClientInfo);
-        char* alsaSequencerDestinationClientName = snd_seq_client_info_get_name(alsaSequencerDestinationClientInfo);
-        snd_seq_port_info_set_client(alsaSequencerDestinationPortInfo, alsaSequencerDestinationClientId);
-        snd_seq_port_info_set_port(alsaSequencerDestinationPortInfo, -1);
+		int destinationClientId = snd_seq_client_info_get_client(destinationClientInfo);
 
-        while (snd_seq_query_next_port(alsaSequencerOutput, alsaSequencerDestinationPortInfo) == 0)
+        if (destinationClientId != SND_SEQ_CLIENT_SYSTEM)
         {
-            if (send_seq_port_info_get_capability(alsaSequencerDestinationPortInfo) & (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE) != 0)
+            snd_seq_port_info_set_client(destinationPortInfo, destinationClientId);
+            snd_seq_port_info_set_port(destinationPortInfo, -1);
+
+            while (snd_seq_query_next_port(this->impl->alsaSequencer, destinationPortInfo) == 0)
             {
-                int alsaSequencerDestinationPortId = snd_seq_port_info_get_port(alsaSequencerDestinationPortInfo);
-                char* alsaSequencerDestinationPortName = snd_seq_port_info_get_name(alsaSequencerDestinationPortInfo);
+                if ((snd_seq_port_info_get_capability(destinationPortInfo) & (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)) != 0)
+                {
+                    destinationList->Append(wxString(snd_seq_port_info_get_name(destinationPortInfo)));
+                    destinationNumber++;
+                }
             }
         }
     }
 
-    snd_seq_port_info_free(alsaSequencerDestinationPortInfo);
-    snd_seq_client_info_free(alsaSequencerDestinationClientInfo);
+    if (this->impl->destinationNumber != wxNOT_FOUND) destinationList->SetSelection(this->impl->destinationNumber);
+
+    if (dialog->ShowModal() == wxID_OK)
+    {
+        destinationNumber = 0;
+        snd_seq_client_info_set_client(destinationClientInfo, -1);
+
+	    while (snd_seq_query_next_client(this->impl->alsaSequencer, destinationClientInfo) == 0)
+	    {
+		    int destinationClientId = snd_seq_client_info_get_client(destinationClientInfo);
+
+            if (destinationClientId != SND_SEQ_CLIENT_SYSTEM)
+            {
+                snd_seq_port_info_set_client(destinationPortInfo, destinationClientId);
+                snd_seq_port_info_set_port(destinationPortInfo, -1);
+
+                while (snd_seq_query_next_port(this->impl->alsaSequencer, destinationPortInfo) == 0)
+                {
+                    if ((snd_seq_port_info_get_capability(destinationPortInfo) & (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)) != 0)
+                    {
+                        int destinationPortId = snd_seq_port_info_get_port(destinationPortInfo);
+                        if (destinationNumber == this->impl->destinationNumber) snd_seq_disconnect_to(this->impl->alsaSequencer, this->impl->outputPort, destinationClientId, destinationPortId);
+                        if (destinationNumber == destinationList->GetSelection()) snd_seq_connect_to(this->impl->alsaSequencer, this->impl->outputPort, destinationClientId, destinationPortId);
+                        destinationNumber++;
+                    }
+                }
+            }
+        }
+
+        this->impl->destinationNumber = destinationList->GetSelection();
+    }
+
+    snd_seq_port_info_free(destinationPortInfo);
+    snd_seq_client_info_free(destinationClientInfo);
+
+    dialog->Destroy();
 }
 
-void MidiOutput::SendMessage(MidiFileEvent_t event)
+void MidiOutput::SendMessage(MidiFileEvent_t midiFileEvent)
 {
-    snd_seq_ev_t alsaSequencerEvent;
-    snd_seq_ev_clear(&alsaSequencerEvent);
+    snd_seq_event_t alsaEvent;
+    snd_seq_ev_clear(&alsaEvent);
+    snd_seq_ev_set_source(&alsaEvent, this->impl->outputPort);
+    snd_seq_ev_set_subs(&alsaEvent);
+    snd_seq_ev_set_direct(&alsaEvent);
 
-    switch (MidiFileEvent_getType(event))
+    switch (MidiFileEvent_getType(midiFileEvent))
     {
         case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
         {
-            snd_seq_ev_set_noteoff(&alsaSequencerEvent, MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_noteoff(&alsaEvent, MidiFileNoteOffEvent_getChannel(midiFileEvent), MidiFileNoteOffEvent_getNote(midiFileEvent), MidiFileNoteOffEvent_getVelocity(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_NOTE_ON:
         {
-            snd_seq_ev_set_noteon(&alsaSequencerEvent, MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_noteon(&alsaEvent, MidiFileNoteOnEvent_getChannel(midiFileEvent), MidiFileNoteOnEvent_getNote(midiFileEvent), MidiFileNoteOnEvent_getVelocity(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
         {
-            snd_seq_ev_set_keypress(&alsaSequencerEvent, MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_keypress(&alsaEvent, MidiFileKeyPressureEvent_getChannel(midiFileEvent), MidiFileKeyPressureEvent_getNote(midiFileEvent), MidiFileKeyPressureEvent_getAmount(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
         {
-            snd_seq_ev_set_controller(&alsaSequencerEvent, MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_controller(&alsaEvent, MidiFileControlChangeEvent_getChannel(midiFileEvent), MidiFileControlChangeEvent_getNumber(midiFileEvent), MidiFileControlChangeEvent_getValue(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
         {
-            snd_seq_ev_set_pgmchange(&alsaSequencerEvent, MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_pgmchange(&alsaEvent, MidiFileProgramChangeEvent_getChannel(midiFileEvent), MidiFileProgramChangeEvent_getNumber(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
         {
-            snd_seq_ev_set_chanpress(&alsaSequencerEvent, MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_chanpress(&alsaEvent, MidiFileChannelPressureEvent_getChannel(midiFileEvent), MidiFileChannelPressureEvent_getAmount(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
         {
-            snd_seq_ev_set_pitchbend(&alsaSequencerEvent, MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
-            snd_seq_event_output_direct(this->impl->alsaSequencerOutput, &alsaSequencerEvent);
+            snd_seq_ev_set_pitchbend(&alsaEvent, MidiFilePitchWheelEvent_getChannel(midiFileEvent), MidiFilePitchWheelEvent_getValue(midiFileEvent));
+            snd_seq_event_output_direct(this->impl->alsaSequencer, &alsaEvent);
             break;
         }
         default:
