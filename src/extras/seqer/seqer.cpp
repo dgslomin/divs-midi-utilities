@@ -193,9 +193,9 @@ Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSi
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F");
 			view_menu->AppendSeparator();
-			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
+			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll...");
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
@@ -272,7 +272,7 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
-	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
+	wxMessageBox("Seqer\nthe MIDI sequencer you've been seeking\nby Div Slomin", "About", wxOK);
 }
 
 #if defined(__WXMSW__)
