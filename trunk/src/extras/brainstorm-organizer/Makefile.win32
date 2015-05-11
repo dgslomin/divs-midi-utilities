@@ -1,0 +1,37 @@
+
+WXDIR=c:\wxWidgets-3.0.2
+WXLIBDIR=$(WXDIR)\lib\vc_lib
+WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
+WXLIBS=$(WXLIBDIR)\wxbase30ud.lib $(WXLIBDIR)\wxmsw30ud_core.lib $(WXLIBDIR)\wxmsw30ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib $(WXLIBDIR)\wxregexud.lib
+FLAGS=/Zi /EHsc /MDd
+
+brainstorm-organizer: brainstorm-organizer.obj brainstorm-organizer-support-win32.obj midifile.obj midifile-player.obj midifile-player-support-win32.obj
+	cl /nologo $(FLAGS) /Febrainstorm-organizer.exe brainstorm-organizer.obj brainstorm-organizer-support-win32.obj midifile.obj midifile-player.obj midifile-player-support-win32.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib winmm.lib $(WXLIBS)
+	mt /nologo /manifest brainstorm-organizer.exe.manifest /outputresource:brainstorm-organizer.exe;1
+	del brainstorm-organizer.exe.manifest
+
+brainstorm-organizer.obj: brainstorm-organizer.cpp brainstorm-organizer-support.h ..\..\midifile\midifile.h ..\midifile-player\midifile-player.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I. /I..\..\midifile /I..\midifile-player /c brainstorm-organizer.cpp
+
+brainstorm-organizer-support-win32.obj: brainstorm-organizer-support-win32.cpp brainstorm-organizer-support.h ..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I. /I..\..\midifile /c brainstorm-organizer-support-win32.cpp
+
+midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
+
+midifile-player.obj: ..\midifile-player\midifile-player.c ..\midifile-player\midifile-player.h ..\midifile-player\midifile-player-support.h
+	cl /nologo $(FLAGS) /I..\..\midifile /I..\midifile-player /c ..\midifile-player\midifile-player.c
+
+midifile-player-support-win32.obj: ..\midifile-player\midifile-player-support-win32.c ..\midifile-player\midifile-player-support.h
+	cl /nologo $(FLAGS) /I..\midifile-player /c ..\midifile-player\midifile-player-support-win32.c
+
+clean:
+	@if exist brainstorm-organizer.obj del brainstorm-organizer.obj
+	@if exist brainstorm-organizer-support-win32.obj del brainstorm-organizer-support-win32.obj
+	@if exist midifile.obj del midifile.obj
+	@if exist midifile-player.obj del midifile-player.obj
+	@if exist midifile-player-support-win32.obj del midifile-player-support-win32.obj
+
+reallyclean: clean
+	@if exist brainstorm-organizer del brainstorm-organizer
+
