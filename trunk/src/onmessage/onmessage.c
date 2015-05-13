@@ -21,7 +21,7 @@ int shutting_down = 0;
 
 void usage(char *app_name)
 {
-	fprintf(stderr, "Usage: %s --in <n> ( --note-command <number> <command> | --note-down-command <number> <command> | --note-up-command <number> <command> | --controller-commmand <number> <command> | --controller-down-command <number> <command> | --controller-up-command <number> <command> | --controller-increase-command <number> <command> | --controller-decrease-command <number> <command> | --program-command <number> <command> ) ...\n", app_name);
+	fprintf(stderr, "Usage: %s --in <n> ( --note-command <number> <command> | --note-down-command <number> <command> | --note-up-command <number> <command> | --controller-command <number> <command> | --controller-down-command <number> <command> | --controller-up-command <number> <command> | --controller-increase-command <number> <command> | --controller-decrease-command <number> <command> | --program-command <number> <command> ) ...\n", app_name);
 	exit(1);
 }
 
