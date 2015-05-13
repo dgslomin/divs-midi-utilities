@@ -23,3 +23,46 @@ reaper: index, time, duration, channel, type, note, velocity
 
 seqer: type, time, track, channel, note, velocity, duration, release velocity
 
+
+
+
+
+TODO:
+    event grid
+        step/row logic
+        insert/delete/edit operations
+        infinite scrollbar logic
+        mouse support for navigate/select
+    piano roll
+        step-based display logic
+        config dialog
+        mouse support for select
+    step size controls
+        There should be zoom in, zoom out, and step size dialog commands.
+        Zoom in and out imply that there's a sequence of available zoom levels.  Actually, there will be two such sequences (toggleable from the step size dialog):
+        1.  Seconds-based steps.  This zooms in and out by a factor of two.
+        2.  Musical-time-based steps.  Base step size is one beat.  One level zoomed out is one measure, then two measures, four measures, etc.  Zooming in takes you through a sequence of powers of two fractions of a beat, interspersed (in sorted order) with additional fractions specified by the user in a list of numerator/denominator pairs.  The list should come seeded with common tuplets.
+    filter infrastructure
+    selection/clipboard infrastructure
+    undo/redo infrastructure
+    multi-window infrastructure
+    realtime MIDI infrastructure
+        mapping from port name strings (arbitrarily user-selectable) to actual output ports
+        no arming of tracks; record should always target the current track
+        MIDI sync master
+        MIDI sync slave (much harder)
+    markers
+    macros
+        Current plan (of many possible approaches):
+        Macros would be based solely around record and playback of other commands.
+        There would be 36 available macro slots, one for each letter and number.
+        A vi-like record command which would take the slot identifier as an argument (no popup dialog when the record command is invoked from a keyboard shortcut).  Invoking the record command again would finish the recording.
+        Pressing alt+shift+(slot) would invoke the macro.  Since this type of keyboard binding supports hold-down-to-repeat, there's no need for a vi-like "." command or user-controllable mapping of arbitrary keystrokes.
+        Open question: should macros persist in the application's saved state?
+    external tool infrastructure
+        There should be a command for running the current sequence through an external program whose command line can be specified in a popup (with substitution parameters for input/output temp filenames).  An option would control whether this is uni- or bidirectional.  If bidirectional, the sequence would be replaced by the output of the tool, but Seqer would attempt to apply the same view settings and cursor location as had been in effect before the tool was invoked.
+        This would be a quick way to get tempo mapping, etc. into Seqer, as well as supporting user scripting.  Would be particularly nice in combination with macros.
+    non-realtime MIDI input
+        step-time recording = add at current grid step and don't automatically move on to the next step
+        also support MMC for remote control of the transport
+
