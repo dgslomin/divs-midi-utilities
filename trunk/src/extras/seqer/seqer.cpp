@@ -20,7 +20,7 @@ public:
 class Window: public wxFrame
 {
 public:
-    class Sequence* sequence;
+	class Sequence* sequence;
 	class Canvas* canvas;
 
 	Window();
@@ -34,8 +34,8 @@ class Canvas: public wxScrolledCanvas
 {
 public:
 	class Window* window;
-    class PianoRoll* piano_roll;
-    class EventList* event_list;
+	class PianoRoll* piano_roll;
+	class EventList* event_list;
 	MidiFile_t midi_file;
 
 	Canvas(Window* window);
@@ -47,14 +47,14 @@ public:
 class EventList
 {
 public:
-    Canvas *canvas;
+	Canvas *canvas;
 	wxFont font;
 	std::vector<class Row> rows;
 	long row_height;
 	long char_width;
 
 	EventList(Canvas* canvas);
-    void Prepare();
+	void Prepare();
 	void OnDraw(wxDC& dc);
 };
 
@@ -70,7 +70,7 @@ public:
 class PianoRoll
 {
 public:
-    Canvas *canvas;
+	Canvas *canvas;
 	long first_note;
 	long last_note;
 	long key_width;
@@ -80,7 +80,7 @@ public:
 	wxColour black_key_color;
 
 	PianoRoll(Canvas* canvas);
-    void Prepare();
+	void Prepare();
 	void OnDraw(wxDC& dc);
 };
 
@@ -149,7 +149,7 @@ bool Application::OnInit()
 	return true;
 }
 
-Window::Window(): wxFrame((wxFrame*)(NULL), -1, "Seqer", wxDefaultPosition, wxSize(640, 480))
+Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
 	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Window::OnMenuHighlight));
 		wxMenu* file_menu = new wxMenu(); menu_bar->Append(file_menu, "&File");
@@ -281,11 +281,11 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 #define CANVAS_BORDER wxBORDER_DEFAULT
 #endif
 
-Canvas::Canvas(Window* window): wxScrolledCanvas(window, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
+Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
-    this->piano_roll = new PianoRoll(this);
-    this->event_list = new EventList(this);
+	this->piano_roll = new PianoRoll(this);
+	this->event_list = new EventList(this);
 	this->midi_file = NULL;
 	this->DisableKeyboardScrolling();
 	this->Prepare();
@@ -303,19 +303,19 @@ bool Canvas::Load(char* filename)
 
 void Canvas::Prepare()
 {
-    this->piano_roll->Prepare();
-    this->event_list->Prepare();
+	this->piano_roll->Prepare();
+	this->event_list->Prepare();
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
-    this->piano_roll->OnDraw(dc);
-    this->event_list->OnDraw(dc);
+	this->piano_roll->OnDraw(dc);
+	this->event_list->OnDraw(dc);
 }
 
 PianoRoll::PianoRoll(Canvas* canvas)
 {
-    this->canvas = canvas;
+	this->canvas = canvas;
 	this->first_note = 21; // default to standard piano range
 	this->last_note = 108;
 	this->key_width = 3;
@@ -351,7 +351,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 EventList::EventList(Canvas* canvas)
 {
-    this->canvas = canvas;
+	this->canvas = canvas;
 
 #if defined(__WXOSX__)
 	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
@@ -366,20 +366,25 @@ void EventList::Prepare()
 
 	if (this->canvas->midi_file != NULL)
 	{
-		long last_step = 0;
+		long last_step = -1;
 
 		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->canvas->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 		{
-			long step = (long)(MidiFile_getBeatFromTick(this->canvas->midi_file, MidiFileEvent_getTick(midi_event)));
+			// TODO: real filter logic
 
-			while (last_step < step - 1)
+			if (MidiFileEvent_isNoteStartEvent(midi_event))
 			{
-				this->rows.push_back(Row(last_step, NULL));
-				last_step++;
-			}
+				long step = (long)(MidiFile_getBeatFromTick(this->canvas->midi_file, MidiFileEvent_getTick(midi_event)));
 
-			this->rows.push_back(Row(step, midi_event));
-			last_step = step;
+				while (last_step < step - 1)
+				{
+					last_step++;
+					this->rows.push_back(Row(last_step, NULL));
+				}
+
+				this->rows.push_back(Row(step, midi_event));
+				last_step = step;
+			}
 		}
 	}
 
@@ -418,9 +423,12 @@ void EventList::OnDraw(wxDC& dc)
 				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 				{
 					text.Printf("step %ld, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
+
+					// TODO: move to PianoRoll::OnDraw()
 					dc.SetPen(*wxBLACK_PEN);
 					dc.SetBrush(wxNullBrush);
 					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - this->canvas->piano_roll->first_note) * this->canvas->piano_roll->key_width - 1, row_number * this->row_height, this->canvas->piano_roll->key_width + 1, this->row_height);
+
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
