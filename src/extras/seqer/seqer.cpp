@@ -34,8 +34,8 @@ class Canvas: public wxScrolledCanvas
 {
 public:
 	class Window* window;
-	class PianoRoll* piano_roll;
 	class EventList* event_list;
+	class PianoRoll* piano_roll;
 	MidiFile_t midi_file;
 
 	Canvas(Window* window);
@@ -50,6 +50,7 @@ public:
 	Canvas *canvas;
 	wxFont font;
 	std::vector<class Row> rows;
+	std::vector<class Step> steps;
 	long row_height;
 	long char_width;
 
@@ -65,6 +66,14 @@ public:
 	MidiFileEvent_t event;
 
 	Row(long step, MidiFileEvent_t event);
+};
+
+class Step
+{
+public:
+	int number_of_rows;
+
+	Step(int number_of_rows);
 };
 
 class PianoRoll
@@ -284,8 +293,8 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
-	this->piano_roll = new PianoRoll(this);
 	this->event_list = new EventList(this);
+	this->piano_roll = new PianoRoll(this);
 	this->midi_file = NULL;
 	this->DisableKeyboardScrolling();
 	this->Prepare();
@@ -303,50 +312,14 @@ bool Canvas::Load(char* filename)
 
 void Canvas::Prepare()
 {
-	this->piano_roll->Prepare();
 	this->event_list->Prepare();
+	this->piano_roll->Prepare();
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	this->piano_roll->OnDraw(dc);
 	this->event_list->OnDraw(dc);
-}
-
-PianoRoll::PianoRoll(Canvas* canvas)
-{
-	this->canvas = canvas;
-	this->first_note = 21; // default to standard piano range
-	this->last_note = 108;
-	this->key_width = 3;
-}
-
-void PianoRoll::Prepare()
-{
-	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
-	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
-	this->white_key_color = *wxWHITE;
-	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
-}
-
-void PianoRoll::OnDraw(wxDC& dc)
-{
-	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
-	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
-	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
-	long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
-
-	long width = this->canvas->GetClientSize().GetWidth();
-	long height = this->canvas->GetClientSize().GetHeight();
-	long y = this->canvas->GetViewStart().y * this->canvas->event_list->row_height;
-
-	for (long note = this->first_note; note <= this->last_note; note++)
-	{
-		dc.SetPen(pens[key_pens[note % 12]]);
-		dc.SetBrush(brushes[key_brushes[note % 12]]);
-		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, y - 1, this->key_width + 1, height + 2);
-	}
+	this->piano_roll->OnDraw(dc);
 }
 
 EventList::EventList(Canvas* canvas)
@@ -363,6 +336,7 @@ EventList::EventList(Canvas* canvas)
 void EventList::Prepare()
 {
 	this->rows.clear();
+	this->steps.clear();
 
 	if (this->canvas->midi_file != NULL)
 	{
@@ -383,6 +357,16 @@ void EventList::Prepare()
 				}
 
 				this->rows.push_back(Row(step, midi_event));
+
+				if (step == last_step)
+				{
+					this->steps[this->steps.size() - 1].number_of_rows++;
+				}
+				else
+				{
+					this->steps.push_back(Step(1));
+				}
+
 				last_step = step;
 			}
 		}
@@ -423,12 +407,6 @@ void EventList::OnDraw(wxDC& dc)
 				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 				{
 					text.Printf("step %ld, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
-
-					// TODO: move to PianoRoll::OnDraw()
-					dc.SetPen(*wxBLACK_PEN);
-					dc.SetBrush(wxNullBrush);
-					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - this->canvas->piano_roll->first_note) * this->canvas->piano_roll->key_width - 1, row_number * this->row_height, this->canvas->piano_roll->key_width + 1, this->row_height);
-
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
@@ -482,5 +460,61 @@ Row::Row(long step, MidiFileEvent_t event)
 {
 	this->step = step;
 	this->event = event;
+}
+
+Step::Step(int number_of_rows)
+{
+	this->number_of_rows = number_of_rows;
+}
+
+PianoRoll::PianoRoll(Canvas* canvas)
+{
+	this->canvas = canvas;
+	this->first_note = 21; // default to standard piano range
+	this->last_note = 108;
+	this->key_width = 3;
+}
+
+void PianoRoll::Prepare()
+{
+	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
+	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
+	this->white_key_color = *wxWHITE;
+	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
+}
+
+void PianoRoll::OnDraw(wxDC& dc)
+{
+	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
+	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
+	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
+	long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
+
+	long width = this->canvas->GetClientSize().GetWidth();
+	long height = this->canvas->GetClientSize().GetHeight();
+	long y = this->canvas->GetViewStart().y * this->canvas->event_list->row_height;
+
+	for (long note = this->first_note; note <= this->last_note; note++)
+	{
+		dc.SetPen(pens[key_pens[note % 12]]);
+		dc.SetBrush(brushes[key_brushes[note % 12]]);
+		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, y - 1, this->key_width + 1, height + 2);
+	}
+
+	long first_row_number = this->canvas->GetViewStart().y;
+	long last_row_number = std::min((long)(first_row_number + (this->canvas->GetClientSize().GetHeight() / this->canvas->event_list->row_height)), (long)(this->canvas->event_list->rows.size()));
+
+	for (long row_number = first_row_number; row_number < last_row_number; row_number++)
+	{
+		Row row = this->canvas->event_list->rows[row_number];
+
+		if (MidiFileEvent_isNoteStartEvent(row.event))
+		{
+			dc.SetPen(*wxBLACK_PEN);
+			dc.SetBrush(wxNullBrush);
+			dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - this->first_note) * this->key_width - 1, row_number * this->canvas->event_list->row_height, this->key_width + 1, this->canvas->event_list->row_height);
+		}
+	}
 }
 
