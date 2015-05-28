@@ -482,6 +482,16 @@ void PianoRoll::Prepare()
 	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->canvas->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isNoteStartEvent(midi_event))
+		{
+			MidiFileEvent_t end_midi_event = MidiFileNoteStartEvent_getNoteEndEvent(midi_event);
+			long start_step = (long)(MidiFile_getBeatFromTick(this->canvas->midi_file, MidiFileEvent_getTick(midi_event)));
+			long end_step = (long)(MidiFile_getBeatFromTick(this->canvas->midi_file, MidiFileEvent_getTick(end_midi_event)));
+		}
+	}
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -502,6 +512,9 @@ void PianoRoll::OnDraw(wxDC& dc)
 		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, y - 1, this->key_width + 1, height + 2);
 	}
 
+	dc.SetPen(*wxBLACK_PEN);
+	dc.SetBrush(wxNullBrush);
+
 	long first_row_number = this->canvas->GetViewStart().y;
 	long last_row_number = std::min((long)(first_row_number + (this->canvas->GetClientSize().GetHeight() / this->canvas->event_list->row_height)), (long)(this->canvas->event_list->rows.size()));
 
@@ -511,9 +524,12 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 		if (MidiFileEvent_isNoteStartEvent(row.event))
 		{
-			dc.SetPen(*wxBLACK_PEN);
-			dc.SetBrush(wxNullBrush);
-			dc.DrawRectangle((MidiFileNoteOnEvent_getNote(row.event) - this->first_note) * this->key_width - 1, row_number * this->canvas->event_list->row_height, this->key_width + 1, this->canvas->event_list->row_height);
+			int note = MidiFileNoteOnEvent_getNote(row.event);
+
+			if ((note >= this->first_note) && (note <= this->last_note))
+			{
+				dc.DrawRectangle((note - this->first_note) * this->key_width - 1, row_number * this->canvas->event_list->row_height, this->key_width + 1, this->canvas->event_list->row_height);
+			}
 		}
 	}
 }
