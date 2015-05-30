@@ -44,7 +44,7 @@ public:
 	std::vector<class Step> steps;
 
 	Canvas(Window* window);
-	bool Load(char* filename);
+	bool Load(wxString filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
 	long GetVisibleHeight();
@@ -172,6 +172,12 @@ bool Application::OnInit()
 	Window* window = new Window();
 	this->SetTopWindow(window);
 	window->Show(true);
+
+	if (this->argc > 1)
+	{
+		window->canvas->Load(this->argv[1]);
+	}
+
 	return true;
 }
 
@@ -283,7 +289,7 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 
 	if (file_dialog->ShowModal() == wxID_OK)
 	{
-		if (!this->canvas->Load((char*)(file_dialog->GetPath().ToStdString().c_str())))
+		if (!this->canvas->Load(file_dialog->GetPath()))
 		{
 			wxMessageBox("Cannot open the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
 		}
@@ -324,9 +330,9 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->Prepare();
 }
 
-bool Canvas::Load(char* filename)
+bool Canvas::Load(wxString filename)
 { 
-	MidiFile_t new_midi_file = MidiFile_load(filename);
+	MidiFile_t new_midi_file = MidiFile_load((char *)(filename.ToStdString().c_str()));
 	if (new_midi_file == NULL) return false;
 	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
 	this->window->sequence->midi_file = new_midi_file;
