@@ -12,11 +12,6 @@ public:
 	bool OnInit();
 };
 
-class Sequence
-{
-public:
-};
-
 class Window: public wxFrame
 {
 public:
@@ -30,13 +25,21 @@ public:
 	void OnAbout(wxCommandEvent& event);
 };
 
+class Sequence
+{
+public:
+	Window* window;
+	MidiFile_t midi_file;
+
+	Sequence(Window* window);
+};
+
 class Canvas: public wxScrolledCanvas
 {
 public:
-	class Window* window;
+	Window* window;
 	class EventList* event_list;
 	class PianoRoll* piano_roll;
-	MidiFile_t midi_file;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
 
@@ -44,6 +47,12 @@ public:
 	bool Load(char* filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+	long GetVisibleHeight();
+	long GetFirstVisibleY();
+	long GetLastVisibleY();
+	long GetFirstRowNumberFromStepNumber(long step_number);
+	long GetLastRowNumberFromStepNumber(long step_number);
+	long GetStepNumberFromRowNumber(long row_number);
 };
 
 class EventList
@@ -57,6 +66,10 @@ public:
 	EventList(Canvas* canvas);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+	long GetFirstVisibleRowNumber();
+	long GetLastVisibleRowNumber();
+	long GetYFromRowNumber(long row_number);
+	long GetRowNumberFromY(long y);
 };
 
 class PianoRoll
@@ -68,12 +81,15 @@ public:
 	long key_width;
 	wxColour darker_line_color;
 	wxColour lighter_line_color;
+	wxColour lightest_line_color;
 	wxColour white_key_color;
 	wxColour black_key_color;
 
 	PianoRoll(Canvas* canvas);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+	long GetWidth();
+	long GetYFromStepNumber(double step_number);
 };
 
 class Row
@@ -82,7 +98,7 @@ public:
 	long step_number;
 	MidiFileEvent_t event;
 
-    Row(long step_number, MidiFileEvent_t event);
+	Row(long step_number, MidiFileEvent_t event);
 };
 
 class Step
@@ -91,7 +107,7 @@ public:
 	long first_row_number;
 	long last_row_number;
 
-    Step(long row_number);
+	Step(long row_number);
 };
 
 enum
@@ -251,6 +267,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 			help_menu->Append(wxID_ABOUT, "&About"); this->Connect(wxID_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnAbout));
 
+	this->sequence = new Sequence(this);
 	this->canvas = new Canvas(this);
 	this->CreateStatusBar();
 }
@@ -285,6 +302,12 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 	wxMessageBox("Seqer\nthe MIDI sequencer you've been seeking\nby Div Slomin", "About", wxOK);
 }
 
+Sequence::Sequence(Window* window)
+{
+	this->window = window;
+	this->midi_file = NULL;
+}
+
 #if defined(__WXMSW__)
 #define CANVAS_BORDER wxBORDER_THEME
 #else
@@ -296,8 +319,8 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->window = window;
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
-	this->midi_file = NULL;
 	this->DisableKeyboardScrolling();
+	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
 }
 
@@ -305,8 +328,8 @@ bool Canvas::Load(char* filename)
 { 
 	MidiFile_t new_midi_file = MidiFile_load(filename);
 	if (new_midi_file == NULL) return false;
-	if (this->midi_file != NULL) MidiFile_free(this->midi_file);
-	this->midi_file = new_midi_file;
+	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
+	this->window->sequence->midi_file = new_midi_file;
 	this->Prepare();
 	return true;
 }
@@ -316,34 +339,34 @@ void Canvas::Prepare()
 	this->rows.clear();
 	this->steps.clear();
 
-	if (this->midi_file != NULL)
+	if (this->window->sequence->midi_file != NULL)
 	{
 		long last_step_number = -1;
 
-		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
 			// TODO: real filter logic
 
-			if (MidiFileEvent_isNoteStartEvent(midi_event))
+			if (MidiFileEvent_isNoteStartEvent(event))
 			{
-				long step_number = (long)(MidiFile_getBeatFromTick(this->midi_file, MidiFileEvent_getTick(midi_event)));
+				long step_number = (long)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event)));
 
 				while (last_step_number < step_number - 1)
 				{
 					last_step_number++;
 					this->rows.push_back(Row(last_step_number, NULL));
-                    this->steps.push_back(Step(this->rows.size() - 1));
+					this->steps.push_back(Step(this->rows.size() - 1));
 				}
 
-				this->rows.push_back(Row(step_number, midi_event));
+				this->rows.push_back(Row(step_number, event));
 
 				if (step_number == last_step_number)
 				{
-                    this->steps[this->steps.size() - 1].last_row_number++;
-                }
-                else
-                {
-                    this->steps.push_back(Step(this->rows.size() - 1));
+					this->steps[this->steps.size() - 1].last_row_number++;
+				}
+				else
+				{
+					this->steps.push_back(Step(this->rows.size() - 1));
 				}
 
 				last_step_number = step_number;
@@ -359,6 +382,69 @@ void Canvas::OnDraw(wxDC& dc)
 {
 	this->event_list->OnDraw(dc);
 	this->piano_roll->OnDraw(dc);
+}
+
+long Canvas::GetVisibleHeight()
+{
+	return this->GetClientSize().GetHeight();
+}
+
+long Canvas::GetFirstVisibleY()
+{
+	return this->event_list->GetYFromRowNumber(this->event_list->GetFirstVisibleRowNumber());
+}
+
+long Canvas::GetLastVisibleY()
+{
+	return this->GetFirstVisibleY() + this->GetVisibleHeight();
+}
+
+long Canvas::GetFirstRowNumberFromStepNumber(long step_number)
+{
+	if (this->steps.size() == 0)
+	{
+		return step_number;
+	}
+	else if (step_number < this->steps.size())
+	{
+		return this->steps[step_number].first_row_number;
+	}
+	else
+	{
+		return this->steps[this->steps.size() - 1].last_row_number + step_number - this->steps.size() + 1;
+	}
+}
+
+long Canvas::GetLastRowNumberFromStepNumber(long step_number)
+{
+	if (this->steps.size() == 0)
+	{
+		return step_number;
+	}
+	else if (step_number < this->steps.size())
+	{
+		return this->steps[step_number].last_row_number;
+	}
+	else
+	{
+		return this->steps[this->steps.size() - 1].last_row_number + step_number - this->steps.size() + 1;
+	}
+}
+
+long Canvas::GetStepNumberFromRowNumber(long row_number)
+{
+	if (this->rows.size() == 0)
+	{
+		return row_number;
+	}
+	else if (row_number < this->rows.size())
+	{
+		return this->rows[row_number].step_number;
+	}
+	else
+	{
+		return this->rows[this->rows.size() - 1].step_number + row_number - this->rows.size() + 1;
+	}
 }
 
 EventList::EventList(Canvas* canvas)
@@ -385,10 +471,10 @@ void EventList::OnDraw(wxDC& dc)
 {
 	dc.SetFont(this->font);
 
-	long first_row_number = this->canvas->GetViewStart().y;
-	long last_row_number = std::min((long)(first_row_number + (this->canvas->GetClientSize().GetHeight() / this->row_height)) + 1, (long)(this->canvas->rows.size()));
+	long first_row_number = this->GetFirstVisibleRowNumber();
+	long last_row_number = this->GetLastVisibleRowNumber();
 
-	for (long row_number = first_row_number; row_number < last_row_number; row_number++)
+	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
 		Row row = this->canvas->rows[row_number];
 		wxString text;
@@ -454,8 +540,28 @@ void EventList::OnDraw(wxDC& dc)
 			}
 		}
 
-		dc.DrawText(text, this->canvas->piano_roll->key_width * (this->canvas->piano_roll->last_note - this->canvas->piano_roll->first_note + 1) + 1, row_number * this->row_height);
+		dc.DrawText(text, this->canvas->piano_roll->GetWidth() + 2, this->GetYFromRowNumber(row_number));
 	}
+}
+
+long EventList::GetFirstVisibleRowNumber()
+{
+	return this->canvas->GetViewStart().y;
+}
+
+long EventList::GetLastVisibleRowNumber()
+{
+	return std::min((long)(this->GetFirstVisibleRowNumber() + this->GetRowNumberFromY(this->canvas->GetVisibleHeight())) + 1, (long)(this->canvas->rows.size() - 1));
+}
+
+long EventList::GetYFromRowNumber(long row_number)
+{
+	return row_number * this->row_height;
+}
+
+long EventList::GetRowNumberFromY(long y)
+{
+	return y / this->row_height;
 }
 
 PianoRoll::PianoRoll(Canvas* canvas)
@@ -471,6 +577,7 @@ void PianoRoll::Prepare()
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
 	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
 	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
+	this->lightest_line_color = ColorShade(button_color, 225 * 100 / 255);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
 }
@@ -481,49 +588,71 @@ void PianoRoll::OnDraw(wxDC& dc)
 	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
 	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
 	long key_brushes[] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
-
-	long width = this->canvas->GetClientSize().GetWidth();
-	long height = this->canvas->GetClientSize().GetHeight();
-	long y = this->canvas->GetViewStart().y * this->canvas->event_list->row_height;
+	long first_y = this->canvas->GetFirstVisibleY();
+	long last_y = this->canvas->GetLastVisibleY();
+	long width = this->GetWidth();
+	long height = this->canvas->GetVisibleHeight();
 
 	for (long note = this->first_note; note <= this->last_note; note++)
 	{
 		dc.SetPen(pens[key_pens[note % 12]]);
 		dc.SetBrush(brushes[key_brushes[note % 12]]);
-		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, y - 1, this->key_width + 1, height + 2);
+		dc.DrawRectangle((note - this->first_note) * this->key_width - 1, first_y - 1, this->key_width + 1, height + 2);
+	}
+
+	long first_step_number = this->canvas->GetStepNumberFromRowNumber(this->canvas->event_list->GetRowNumberFromY(first_y));
+	long last_step_number = this->canvas->GetStepNumberFromRowNumber(this->canvas->event_list->GetRowNumberFromY(last_y));
+	dc.SetPen(wxPen(this->lightest_line_color));
+
+	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
+	{
+		long y = this->GetYFromStepNumber(step_number);
+		dc.DrawLine(0, y, width, y);
 	}
 
 	dc.SetPen(*wxBLACK_PEN);
 	dc.SetBrush(wxNullBrush);
 
-	long first_row_number = this->canvas->GetViewStart().y;
-	long last_row_number = std::min((long)(first_row_number + (this->canvas->GetClientSize().GetHeight() / this->canvas->event_list->row_height)) + 1, (long)(this->canvas->rows.size()));
-
-	for (long row_number = first_row_number; row_number < last_row_number; row_number++)
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->canvas->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		Row row = this->canvas->rows[row_number];
-
-		if (MidiFileEvent_isNoteStartEvent(row.event))
+		if (MidiFileEvent_isNoteStartEvent(event))
 		{
-			int note = MidiFileNoteOnEvent_getNote(row.event);
+			double event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
+			long event_y = this->GetYFromStepNumber(event_step_number);
 
-			if ((note >= this->first_note) && (note <= this->last_note))
+			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+			double end_event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(end_event));
+			long end_event_y = this->GetYFromStepNumber(end_event_step_number);
+
+			if ((event_y <= last_y) && (end_event_y >= first_y))
 			{
-				dc.DrawRectangle((note - this->first_note) * this->key_width - 1, row_number * this->canvas->event_list->row_height, this->key_width + 1, this->canvas->event_list->row_height);
+				dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1, event_y, this->key_width + 1, end_event_y - event_y);
 			}
 		}
 	}
 }
 
+long PianoRoll::GetWidth()
+{
+	return this->key_width * (this->last_note - this->first_note + 1);
+}
+
+long PianoRoll::GetYFromStepNumber(double step_number)
+{
+	long step_first_y = this->canvas->event_list->GetYFromRowNumber(this->canvas->GetFirstRowNumberFromStepNumber((long)(step_number)));
+	long step_last_y = this->canvas->event_list->GetYFromRowNumber(this->canvas->GetLastRowNumberFromStepNumber((long)(step_number)) + 1);
+	return step_first_y + (long)((step_last_y - step_first_y) * (step_number - (long)(step_number)));
+}
+
 Row::Row(long step_number, MidiFileEvent_t event)
 {
-    this->step_number = step_number;
-    this->event = event;
+	this->step_number = step_number;
+	this->event = event;
 }
 
 Step::Step(long row_number)
 {
-    this->first_row_number = row_number;
-    this->last_row_number = row_number;
+	this->first_row_number = row_number;
+	this->last_row_number = row_number;
 }
 
