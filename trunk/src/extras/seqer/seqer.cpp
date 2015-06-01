@@ -47,7 +47,7 @@ public:
 	bool Load(wxString filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
-	long GetWidth();
+	long GetVisibleWidth();
 	long GetVisibleHeight();
 	long GetFirstVisibleY();
 	long GetLastVisibleY();
@@ -67,7 +67,7 @@ public:
 	EventList(Canvas* canvas);
 	void Prepare();
 	void OnDraw(wxDC& dc);
-	long GetWidth();
+	long GetVisibleWidth();
 	long GetFirstVisibleRowNumber();
 	long GetLastVisibleRowNumber();
 	long GetLastVisiblePopulatedRowNumber();
@@ -393,7 +393,7 @@ void Canvas::OnDraw(wxDC& dc)
 	this->piano_roll->OnDraw(dc);
 }
 
-long Canvas::GetWidth()
+long Canvas::GetVisibleWidth()
 {
     return this->GetClientSize().GetWidth();
 }
@@ -487,7 +487,7 @@ void EventList::OnDraw(wxDC& dc)
 	long last_row_number = this->GetLastVisibleRowNumber();
 	long last_populated_row_number = this->GetLastVisiblePopulatedRowNumber();
     long piano_roll_width = this->canvas->piano_roll->GetWidth();
-    long width = this->GetWidth();
+    long width = this->GetVisibleWidth();
 
 	dc.SetPen(wxPen(this->canvas->piano_roll->lightest_line_color));
 
@@ -569,9 +569,9 @@ void EventList::OnDraw(wxDC& dc)
 	}
 }
 
-long EventList::GetWidth()
+long EventList::GetVisibleWidth()
 {
-    return this->canvas->GetWidth() - this->canvas->piano_roll->GetWidth();
+    return this->canvas->GetVisibleWidth() - this->canvas->piano_roll->GetWidth();
 }
 
 long EventList::GetFirstVisibleRowNumber()
