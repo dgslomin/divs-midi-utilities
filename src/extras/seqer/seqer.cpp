@@ -47,6 +47,7 @@ public:
 	bool Load(wxString filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+	long GetWidth();
 	long GetVisibleHeight();
 	long GetFirstVisibleY();
 	long GetLastVisibleY();
@@ -66,8 +67,10 @@ public:
 	EventList(Canvas* canvas);
 	void Prepare();
 	void OnDraw(wxDC& dc);
+	long GetWidth();
 	long GetFirstVisibleRowNumber();
 	long GetLastVisibleRowNumber();
+	long GetLastVisiblePopulatedRowNumber();
 	long GetYFromRowNumber(long row_number);
 	long GetRowNumberFromY(long y);
 };
@@ -390,6 +393,11 @@ void Canvas::OnDraw(wxDC& dc)
 	this->piano_roll->OnDraw(dc);
 }
 
+long Canvas::GetWidth()
+{
+    return this->GetClientSize().GetWidth();
+}
+
 long Canvas::GetVisibleHeight()
 {
 	return this->GetClientSize().GetHeight();
@@ -475,12 +483,23 @@ void EventList::Prepare()
 
 void EventList::OnDraw(wxDC& dc)
 {
-	dc.SetFont(this->font);
-
 	long first_row_number = this->GetFirstVisibleRowNumber();
 	long last_row_number = this->GetLastVisibleRowNumber();
+	long last_populated_row_number = this->GetLastVisiblePopulatedRowNumber();
+    long piano_roll_width = this->canvas->piano_roll->GetWidth();
+    long width = this->GetWidth();
 
-	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
+	dc.SetPen(wxPen(this->canvas->piano_roll->lightest_line_color));
+
+    for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
+    {
+		long y = this->GetYFromRowNumber(row_number);
+		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
+    }
+
+	dc.SetFont(this->font);
+
+	for (long row_number = first_row_number; row_number <= last_populated_row_number; row_number++)
 	{
 		Row row = this->canvas->rows[row_number];
 		wxString text;
@@ -546,8 +565,13 @@ void EventList::OnDraw(wxDC& dc)
 			}
 		}
 
-		dc.DrawText(text, this->canvas->piano_roll->GetWidth() + 2, this->GetYFromRowNumber(row_number));
+		dc.DrawText(text, piano_roll_width + 2, this->GetYFromRowNumber(row_number) + 1);
 	}
+}
+
+long EventList::GetWidth()
+{
+    return this->canvas->GetWidth() - this->canvas->piano_roll->GetWidth();
 }
 
 long EventList::GetFirstVisibleRowNumber()
@@ -557,7 +581,12 @@ long EventList::GetFirstVisibleRowNumber()
 
 long EventList::GetLastVisibleRowNumber()
 {
-	return std::min((long)(this->GetFirstVisibleRowNumber() + this->GetRowNumberFromY(this->canvas->GetVisibleHeight())) + 1, (long)(this->canvas->rows.size() - 1));
+	return this->GetFirstVisibleRowNumber() + this->GetRowNumberFromY(this->canvas->GetVisibleHeight()) + 1;
+}
+
+long EventList::GetLastVisiblePopulatedRowNumber()
+{
+	return std::min(this->GetLastVisibleRowNumber(), (long)(this->canvas->rows.size() - 1));
 }
 
 long EventList::GetYFromRowNumber(long row_number)
@@ -583,7 +612,7 @@ void PianoRoll::Prepare()
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
 	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
 	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
-	this->lightest_line_color = ColorShade(button_color, 225 * 100 / 255);
+	this->lightest_line_color = ColorShade(button_color, 218 * 100 / 255);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
 }
@@ -617,7 +646,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 	}
 
 	dc.SetPen(*wxBLACK_PEN);
-	dc.SetBrush(wxNullBrush);
+	dc.SetBrush(*wxWHITE_BRUSH);
 
 	for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->canvas->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{

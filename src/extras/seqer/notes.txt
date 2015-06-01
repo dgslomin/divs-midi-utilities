@@ -29,12 +29,10 @@ seqer: type, time, track, channel, note, velocity, duration, release velocity
 
 TODO:
     event grid
-        step/row logic
         insert/delete/edit operations
         infinite scrollbar logic
         mouse support for navigate/select
     piano roll
-        step-based display logic
         config dialog
         mouse support for select
     step size controls
