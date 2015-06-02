@@ -71,6 +71,7 @@ public:
 	long GetFirstVisibleRowNumber();
 	long GetLastVisibleRowNumber();
 	long GetLastVisiblePopulatedRowNumber();
+	long GetXFromColumnNumber(long column_number);
 	long GetYFromRowNumber(long row_number);
 	long GetRowNumberFromY(long y);
 };
@@ -395,7 +396,7 @@ void Canvas::OnDraw(wxDC& dc)
 
 long Canvas::GetVisibleWidth()
 {
-    return this->GetClientSize().GetWidth();
+	return this->GetClientSize().GetWidth();
 }
 
 long Canvas::GetVisibleHeight()
@@ -483,33 +484,49 @@ void EventList::Prepare()
 
 void EventList::OnDraw(wxDC& dc)
 {
+	long first_y = this->canvas->GetFirstVisibleY();
+	long last_y = this->canvas->GetLastVisibleY();
+	long first_step_number = this->canvas->GetStepNumberFromRowNumber(this->GetRowNumberFromY(first_y));
+	long last_step_number = this->canvas->GetStepNumberFromRowNumber(this->GetRowNumberFromY(last_y));
 	long first_row_number = this->GetFirstVisibleRowNumber();
-	long last_row_number = this->GetLastVisibleRowNumber();
 	long last_populated_row_number = this->GetLastVisiblePopulatedRowNumber();
-    long piano_roll_width = this->canvas->piano_roll->GetWidth();
-    long width = this->GetVisibleWidth();
+	long piano_roll_width = this->canvas->piano_roll->GetWidth();
+	long width = this->GetVisibleWidth();
 
 	dc.SetPen(wxPen(this->canvas->piano_roll->lightest_line_color));
 
-    for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
-    {
-		long y = this->GetYFromRowNumber(row_number);
+	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
+	{
+		long y = this->canvas->piano_roll->GetYFromStepNumber(step_number);
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
-    }
+	}
 
 	dc.SetFont(this->font);
+	const char* note_names[] = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
 
 	for (long row_number = first_row_number; row_number <= last_populated_row_number; row_number++)
 	{
 		Row row = this->canvas->rows[row_number];
-		wxString text;
 
 		if (row.event == NULL)
 		{
-			text.Printf("step %ld", row.step_number);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFile_getTickFromBeat(this->canvas->window->sequence->midi_file, row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+		}
+		else if (MidiFileEvent_isNoteStartEvent(row.event))
+		{
+			dc.DrawText("note", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileNoteStartEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%s%d", note_names[MidiFileNoteStartEvent_getNote(row.event) % 12], (MidiFileNoteStartEvent_getNote(row.event) / 12) - 1), this->GetXFromColumnNumber(4), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileNoteStartEvent_getVelocity(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(row.event))), this->GetXFromColumnNumber(6), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileNoteEndEvent_getVelocity(MidiFileNoteStartEvent_getNoteEndEvent(row.event))), this->GetXFromColumnNumber(7), this->GetYFromRowNumber(row_number) + 1);
 		}
 		else
 		{
+			wxString text;
+
 			switch(MidiFileEvent_getType(row.event))
 			{
 				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
@@ -563,15 +580,15 @@ void EventList::OnDraw(wxDC& dc)
 					break;
 				}
 			}
-		}
 
-		dc.DrawText(text, piano_roll_width + 2, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(text, piano_roll_width + 2, this->GetYFromRowNumber(row_number) + 1);
+		}
 	}
 }
 
 long EventList::GetVisibleWidth()
 {
-    return this->canvas->GetVisibleWidth() - this->canvas->piano_roll->GetWidth();
+	return this->canvas->GetVisibleWidth() - this->canvas->piano_roll->GetWidth();
 }
 
 long EventList::GetFirstVisibleRowNumber()
@@ -587,6 +604,19 @@ long EventList::GetLastVisibleRowNumber()
 long EventList::GetLastVisiblePopulatedRowNumber()
 {
 	return std::min(this->GetLastVisibleRowNumber(), (long)(this->canvas->rows.size() - 1));
+}
+
+long EventList::GetXFromColumnNumber(long column_number)
+{
+	long column_widths[] = {6, 7, 3, 3, 4, 4, 7, 4};
+	long x = this->canvas->piano_roll->GetWidth();
+
+	for (long i = 0; i < column_number; i++)
+	{
+		x += (this->char_width * column_widths[i]);
+	}
+
+	return x;
 }
 
 long EventList::GetYFromRowNumber(long row_number)
