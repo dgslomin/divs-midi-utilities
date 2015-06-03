@@ -62,7 +62,7 @@ public:
 	Canvas *canvas;
 	wxFont font;
 	long row_height;
-	long char_width;
+	int column_widths[8];
 
 	EventList(Canvas* canvas);
 	void Prepare();
@@ -478,7 +478,28 @@ void EventList::Prepare()
 	wxClientDC dc(this->canvas);
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
-	this->char_width = dc.GetCharWidth();
+
+    this->column_widths[0] = dc.GetTextExtent("note ").GetWidth();
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("ctrl ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("prog ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("touch ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("bend ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("sysex ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("text ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("lyric ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("mark ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("port ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("tempo ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("timesig ").GetWidth());
+    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("keysig ").GetWidth());
+    this->column_widths[1] = dc.GetTextExtent("000:0.000 ").GetWidth();
+    this->column_widths[2] = dc.GetTextExtent("00 ").GetWidth();
+    this->column_widths[3] = dc.GetTextExtent("00 ").GetWidth();
+    this->column_widths[4] = dc.GetTextExtent("c#0 ").GetWidth();
+    this->column_widths[5] = dc.GetTextExtent("000 ").GetWidth();
+    this->column_widths[6] = dc.GetTextExtent("000:0.000 ").GetWidth();
+    this->column_widths[7] = dc.GetTextExtent("000 ").GetWidth();
+
 	this->canvas->SetScrollbars(0, this->row_height, 0, this->canvas->rows.size());
 }
 
@@ -608,14 +629,8 @@ long EventList::GetLastVisiblePopulatedRowNumber()
 
 long EventList::GetXFromColumnNumber(long column_number)
 {
-	long column_widths[] = {6, 9, 3, 3, 4, 4, 9, 4};
 	long x = this->canvas->piano_roll->GetWidth();
-
-	for (long i = 0; i < column_number; i++)
-	{
-		x += (this->char_width * column_widths[i]);
-	}
-
+    while (--column_number >= 0) x += column_widths[column_number];
 	return x;
 }
 
