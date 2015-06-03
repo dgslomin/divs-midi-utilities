@@ -608,7 +608,7 @@ long EventList::GetLastVisiblePopulatedRowNumber()
 
 long EventList::GetXFromColumnNumber(long column_number)
 {
-	long column_widths[] = {6, 7, 3, 3, 4, 4, 7, 4};
+	long column_widths[] = {6, 9, 3, 3, 4, 4, 9, 4};
 	long x = this->canvas->piano_roll->GetWidth();
 
 	for (long i = 0; i < column_number; i++)
