@@ -22,6 +22,7 @@ public:
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
+	void OnFilter(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 };
 
@@ -228,7 +229,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_8, "Column &8\tCtrl+8");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F");
+			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Connect(SEQER_ID_FILTER, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnFilter));
 			view_menu->AppendSeparator();
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
@@ -306,6 +307,56 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
+}
+
+void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
+{
+    wxDialog* dialog = new wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+
+    wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
+    dialog->SetSizer(outer_sizer);
+
+    wxFlexGridSizer* grid_sizer = new wxFlexGridSizer(3, 4, 4);
+    outer_sizer->Add(grid_sizer, wxSizerFlags(1).Border().Expand());
+
+    grid_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Event type"));
+    grid_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Track"));
+    grid_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Channel"));
+
+    wxListBox* event_type_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    grid_sizer->Add(event_type_list_box, wxSizerFlags(1).Expand());
+    event_type_list_box->Append("Note");
+    event_type_list_box->Append("Control Change");
+    event_type_list_box->Append("Program Change");
+    event_type_list_box->Append("Aftertouch");
+    event_type_list_box->Append("Pitch Bend");
+    event_type_list_box->Append("System Exclusive");
+    event_type_list_box->Append("Text");
+    event_type_list_box->Append("Lyric");
+    event_type_list_box->Append("Marker");
+    event_type_list_box->Append("Port");
+    event_type_list_box->Append("Tempo");
+    event_type_list_box->Append("Time Signature");
+    event_type_list_box->Append("Key Signature");
+    
+    wxListBox* track_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    grid_sizer->Add(track_list_box, wxSizerFlags(1).Expand());
+    for (int i = 1; i <= MidiFile_getNumberOfTracks(this->sequence->midi_file); i++) track_list_box->Append(wxString::Format("%d", i));
+
+    wxListBox* channel_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    grid_sizer->Add(channel_list_box, wxSizerFlags(1).Expand());
+    for (int i = 1; i <= 16; i++) channel_list_box->Append(wxString::Format("%d", i));
+
+	wxSizer* button_sizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
+	outer_sizer->Add(button_sizer);
+
+    outer_sizer->Fit(dialog);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+	}
+
+	dialog->Destroy();
 }
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
