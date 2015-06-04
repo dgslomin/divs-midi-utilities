@@ -154,10 +154,13 @@ MidiFileEvent_t MidiFileTrack_createPitchWheelEvent(MidiFileTrack_t track, long 
 MidiFileEvent_t MidiFileTrack_createSysexEvent(MidiFileTrack_t track, long tick, int data_length, unsigned char *data_buffer);
 MidiFileEvent_t MidiFileTrack_createMetaEvent(MidiFileTrack_t track, long tick, int number, int data_length, unsigned char *data_buffer);
 MidiFileEvent_t MidiFileTrack_createNoteStartAndEndEvents(MidiFileTrack_t track, long start_tick, long end_tick, int channel, int note, int start_velocity, int end_velocity); /* returns the start event */
-MidiFileEvent_t MidiFileTrack_createTempoEvent(MidiFileTrack_t track, long tick, float tempo); /* tempo is in BPM */
-MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, long tick, int numerator, int denominator);
+MidiFileEvent_t MidiFileTrack_createTextEvent(MidiFileTrack_t track, long tick, char *text);
 MidiFileEvent_t MidiFileTrack_createLyricEvent(MidiFileTrack_t track, long tick, char *text);
 MidiFileEvent_t MidiFileTrack_createMarkerEvent(MidiFileTrack_t track, long tick, char *text);
+MidiFileEvent_t MidiFileTrack_createPortEvent(MidiFileTrack_t track, long tick, char *name);
+MidiFileEvent_t MidiFileTrack_createTempoEvent(MidiFileTrack_t track, long tick, float tempo); /* tempo is in BPM */
+MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, long tick, int numerator, int denominator);
+MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int flat, int minor);
 MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick, unsigned long data);
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
@@ -177,10 +180,13 @@ MidiFileEventType_t MidiFileEvent_getType(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteStartEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event);
-int MidiFileEvent_isTempoEvent(MidiFileEvent_t event);
-int MidiFileEvent_isTimeSignatureEvent(MidiFileEvent_t event);
+int MidiFileEvent_isTextEvent(MidiFileEvent_t event);
 int MidiFileEvent_isLyricEvent(MidiFileEvent_t event);
 int MidiFileEvent_isMarkerEvent(MidiFileEvent_t event);
+int MidiFileEvent_isPortEvent(MidiFileEvent_t event);
+int MidiFileEvent_isTempoEvent(MidiFileEvent_t event);
+int MidiFileEvent_isTimeSignatureEvent(MidiFileEvent_t event);
+int MidiFileEvent_isKeySignatureEvent(MidiFileEvent_t event);
 int MidiFileEvent_isVoiceEvent(MidiFileEvent_t event);
 
 int MidiFileNoteOffEvent_getChannel(MidiFileEvent_t event);
@@ -252,6 +258,18 @@ int MidiFileNoteEndEvent_getVelocity(MidiFileEvent_t event);
 int MidiFileNoteEndEvent_setVelocity(MidiFileEvent_t event, int velocity); /* caution:  will replace a note on event with a note off */
 MidiFileEvent_t MidiFileNoteEndEvent_getNoteStartEvent(MidiFileEvent_t event);
 
+char *MidiFileTextEvent_getText(MidiFileEvent_t event);
+int MidiFileTextEvent_setText(MidiFileEvent_t event, char *text);
+
+char *MidiFileLyricEvent_getText(MidiFileEvent_t event);
+int MidiFileLyricEvent_setText(MidiFileEvent_t event, char *text);
+
+char *MidiFileMarkerEvent_getText(MidiFileEvent_t event);
+int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text);
+
+char *MidiFilePortEvent_getName(MidiFileEvent_t event);
+int MidiFilePortEvent_setName(MidiFileEvent_t event, char *name);
+
 float MidiFileTempoEvent_getTempo(MidiFileEvent_t event);
 int MidiFileTempoEvent_setTempo(MidiFileEvent_t event, float tempo);
 
@@ -259,11 +277,10 @@ int MidiFileTimeSignatureEvent_getNumerator(MidiFileEvent_t event);
 int MidiFileTimeSignatureEvent_getDenominator(MidiFileEvent_t event);
 int MidiFileTimeSignatureEvent_setTimeSignature(MidiFileEvent_t event, int numerator, int denominator);
 
-char *MidiFileLyricEvent_getText(MidiFileEvent_t event);
-int MidiFileLyricEvent_setText(MidiFileEvent_t event, char *text);
-
-char *MidiFileMarkerEvent_getText(MidiFileEvent_t event);
-int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text);
+int MidiFileKeySignatureEvent_getNumber(MidiFileEvent_t event);
+int MidiFileKeySignatureEvent_isFlat(MidiFileEvent_t event);
+int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event);
+int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int flat, int minor);
 
 int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event);
 unsigned long MidiFileVoiceEvent_getData(MidiFileEvent_t event);

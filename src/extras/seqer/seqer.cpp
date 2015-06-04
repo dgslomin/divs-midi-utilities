@@ -62,7 +62,7 @@ public:
 	Canvas *canvas;
 	wxFont font;
 	long row_height;
-	int column_widths[8];
+	long column_widths[8];
 
 	EventList(Canvas* canvas);
 	void Prepare();
@@ -71,6 +71,7 @@ public:
 	long GetFirstVisibleRowNumber();
 	long GetLastVisibleRowNumber();
 	long GetLastVisiblePopulatedRowNumber();
+	long GetColumnWidth(long column_number);
 	long GetXFromColumnNumber(long column_number);
 	long GetYFromRowNumber(long row_number);
 	long GetRowNumberFromY(long y);
@@ -357,7 +358,7 @@ void Canvas::Prepare()
 		{
 			// TODO: real filter logic
 
-			if (MidiFileEvent_isNoteStartEvent(event))
+			if (!MidiFileEvent_isNoteEndEvent(event))
 			{
 				long step_number = (long)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event)));
 
@@ -479,26 +480,14 @@ void EventList::Prepare()
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 
-    this->column_widths[0] = dc.GetTextExtent("note ").GetWidth();
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("ctrl ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("prog ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("touch ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("bend ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("sysex ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("text ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("lyric ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("mark ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("port ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("tempo ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("timesig ").GetWidth());
-    this->column_widths[0] = std::max(this->column_widths[0], dc.GetTextExtent("keysig ").GetWidth());
-    this->column_widths[1] = dc.GetTextExtent("000:0.000 ").GetWidth();
-    this->column_widths[2] = dc.GetTextExtent("00 ").GetWidth();
-    this->column_widths[3] = dc.GetTextExtent("00 ").GetWidth();
-    this->column_widths[4] = dc.GetTextExtent("c#0 ").GetWidth();
-    this->column_widths[5] = dc.GetTextExtent("000 ").GetWidth();
-    this->column_widths[6] = dc.GetTextExtent("000:0.000 ").GetWidth();
-    this->column_widths[7] = dc.GetTextExtent("000 ").GetWidth();
+    this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
+    this->column_widths[1] = dc.GetTextExtent("000:0.000#").GetWidth();
+    this->column_widths[2] = dc.GetTextExtent("00#").GetWidth();
+    this->column_widths[3] = dc.GetTextExtent("00#").GetWidth();
+    this->column_widths[4] = dc.GetTextExtent("C#0#").GetWidth();
+    this->column_widths[5] = dc.GetTextExtent("000#").GetWidth();
+    this->column_widths[6] = dc.GetTextExtent("000:0.000#").GetWidth();
+    this->column_widths[7] = dc.GetTextExtent("000#").GetWidth();
 
 	this->canvas->SetScrollbars(0, this->row_height, 0, this->canvas->rows.size());
 }
@@ -523,7 +512,7 @@ void EventList::OnDraw(wxDC& dc)
 	}
 
 	dc.SetFont(this->font);
-	const char* note_names[] = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
+	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
 	for (long row_number = first_row_number; row_number <= last_populated_row_number; row_number++)
 	{
@@ -535,7 +524,7 @@ void EventList::OnDraw(wxDC& dc)
 		}
 		else if (MidiFileEvent_isNoteStartEvent(row.event))
 		{
-			dc.DrawText("note", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText("Note", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
 			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
 			dc.DrawText(wxString::Format("%d", MidiFileNoteStartEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
@@ -544,65 +533,109 @@ void EventList::OnDraw(wxDC& dc)
 			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(row.event))), this->GetXFromColumnNumber(6), this->GetYFromRowNumber(row_number) + 1);
 			dc.DrawText(wxString::Format("%d", MidiFileNoteEndEvent_getVelocity(MidiFileNoteStartEvent_getNoteEndEvent(row.event))), this->GetXFromColumnNumber(7), this->GetYFromRowNumber(row_number) + 1);
 		}
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE)
+        {
+			dc.DrawText("Ctrl", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileControlChangeEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileControlChangeEvent_getNumber(row.event) + 1), this->GetXFromColumnNumber(4), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileControlChangeEvent_getValue(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE)
+        {
+			dc.DrawText("Prog", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileProgramChangeEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileProgramChangeEvent_getNumber(row.event) + 1), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
+        {
+			dc.DrawText("Touch", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileKeyPressureEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%s%d", note_names[MidiFileKeyPressureEvent_getNote(row.event) % 12], (MidiFileKeyPressureEvent_getNote(row.event) / 12) - 1), this->GetXFromColumnNumber(4), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileKeyPressureEvent_getAmount(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE)
+        {
+			dc.DrawText("Touch", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileChannelPressureEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileChannelPressureEvent_getAmount(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_PITCH_WHEEL)
+        {
+			dc.DrawText("Bend", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFilePitchWheelEvent_getChannel(row.event) + 1), this->GetXFromColumnNumber(3), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFilePitchWheelEvent_getValue(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_SYSEX)
+        {
+			dc.DrawText("Sysex", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+            // TODO
+        }
+		else if (MidiFileEvent_isTextEvent(row.event))
+        {
+			dc.DrawText("Text", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFileTextEvent_getText(row.event), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isLyricEvent(row.event))
+        {
+			dc.DrawText("Lyric", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFileLyricEvent_getText(row.event), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isMarkerEvent(row.event))
+        {
+			dc.DrawText("Marker", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFileMarkerEvent_getText(row.event), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isPortEvent(row.event))
+        {
+			dc.DrawText("Port", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFilePortEvent_getName(row.event), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isTempoEvent(row.event))
+        {
+			dc.DrawText("Tempo", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%5.3f", MidiFileTempoEvent_getTempo(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isTimeSignatureEvent(row.event))
+        {
+			dc.DrawText("Time", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d/%d", MidiFileTimeSignatureEvent_getNumerator(row.event), MidiFileTimeSignatureEvent_getDenominator(row.event)), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
+		else if (MidiFileEvent_isKeySignatureEvent(row.event))
+        {
+			dc.DrawText("Key", this->GetXFromColumnNumber(0) + 1, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event))), this->GetXFromColumnNumber(2), this->GetYFromRowNumber(row_number) + 1);
+            const char* sharp_keys[] = {"C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#", "E#", "B#"};
+            const char* flat_keys[] = {"C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"};
+			dc.DrawText(wxString::Format("%s%s", MidiFileKeySignatureEvent_isFlat(row.event) ? flat_keys[MidiFileKeySignatureEvent_getNumber(row.event)] : sharp_keys[MidiFileKeySignatureEvent_getNumber(row.event)], MidiFileKeySignatureEvent_isMinor(row.event) ? "m" : ""), this->GetXFromColumnNumber(5), this->GetYFromRowNumber(row_number) + 1);
+        }
 		else
 		{
-			wxString text;
-
-			switch(MidiFileEvent_getType(row.event))
-			{
-				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
-				{
-					text.Printf("step %ld, note off, tick %ld, trk %d, ch %d, note %d, vel %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOffEvent_getChannel(row.event), MidiFileNoteOffEvent_getNote(row.event), MidiFileNoteOffEvent_getVelocity(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
-				{
-					text.Printf("step %ld, note on, tick %ld, trk %d, ch %d, note %d, vel %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileNoteOnEvent_getChannel(row.event), MidiFileNoteOnEvent_getNote(row.event), MidiFileNoteOnEvent_getVelocity(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
-				{
-					text.Printf("step %ld, key pressure, tick %ld, trk %d, ch %d, note %d, amt %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileKeyPressureEvent_getChannel(row.event), MidiFileKeyPressureEvent_getNote(row.event), MidiFileKeyPressureEvent_getAmount(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
-				{
-					text.Printf("step %ld, control change, tick %ld, trk %d, ch %d, num %d, val %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileControlChangeEvent_getChannel(row.event), MidiFileControlChangeEvent_getNumber(row.event), MidiFileControlChangeEvent_getValue(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
-				{
-					text.Printf("step %ld, program change, tick %ld, trk %d, ch %d, num %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileProgramChangeEvent_getChannel(row.event), MidiFileProgramChangeEvent_getNumber(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
-				{
-					text.Printf("step %ld, channel pressure, tick %ld, trk %d, ch %d, amt %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileChannelPressureEvent_getChannel(row.event), MidiFileChannelPressureEvent_getAmount(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
-				{
-					text.Printf("step %ld, pitch wheel, tick %ld, trk %d, ch %d, val %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFilePitchWheelEvent_getChannel(row.event), MidiFilePitchWheelEvent_getValue(row.event));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_SYSEX:
-				{
-					text.Printf("step %ld, sysex, tick %ld, trk %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
-					break;
-				}
-				case MIDI_FILE_EVENT_TYPE_META:
-				{
-					text.Printf("step %ld, meta, tick %ld, trk %d, num %d", row.step_number, MidiFileEvent_getTick(row.event), MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)), MidiFileMetaEvent_getNumber(row.event));
-					break;
-				}
-				default:
-				{
-					text.Empty();
-					break;
-				}
-			}
-
-			dc.DrawText(text, piano_roll_width + 2, this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 		}
 	}
 }
@@ -627,10 +660,15 @@ long EventList::GetLastVisiblePopulatedRowNumber()
 	return std::min(this->GetLastVisibleRowNumber(), (long)(this->canvas->rows.size() - 1));
 }
 
+long EventList::GetColumnWidth(long column_number)
+{
+    return this->column_widths[column_number];
+}
+
 long EventList::GetXFromColumnNumber(long column_number)
 {
 	long x = this->canvas->piano_roll->GetWidth();
-    while (--column_number >= 0) x += column_widths[column_number];
+    while (--column_number >= 0) x += this->column_widths[column_number];
 	return x;
 }
 

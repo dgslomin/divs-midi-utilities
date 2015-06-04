@@ -1852,6 +1852,26 @@ MidiFileEvent_t MidiFileTrack_createNoteStartAndEndEvents(MidiFileTrack_t track,
 	return start_event;
 }
 
+MidiFileEvent_t MidiFileTrack_createTextEvent(MidiFileTrack_t track, long tick, char *text)
+{
+	return MidiFileTrack_createMetaEvent(track, tick, 0x1, strlen(text), (unsigned char *)(text));
+}
+
+MidiFileEvent_t MidiFileTrack_createLyricEvent(MidiFileTrack_t track, long tick, char *text)
+{
+	return MidiFileTrack_createMetaEvent(track, tick, 0x5, strlen(text), (unsigned char *)(text));
+}
+
+MidiFileEvent_t MidiFileTrack_createMarkerEvent(MidiFileTrack_t track, long tick, char *text)
+{
+	return MidiFileTrack_createMetaEvent(track, tick, 0x6, strlen(text), (unsigned char *)(text));
+}
+
+MidiFileEvent_t MidiFileTrack_createPortEvent(MidiFileTrack_t track, long tick, char *name)
+{
+	return MidiFileTrack_createMetaEvent(track, tick, 0x9, strlen(name), (unsigned char *)(name));
+}
+
 MidiFileEvent_t MidiFileTrack_createTempoEvent(MidiFileTrack_t track, long tick, float tempo)
 {
 	long midi_tempo = (long)(60000000 / tempo);
@@ -1920,14 +1940,18 @@ MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, lo
 	return MidiFileTrack_createMetaEvent(track, tick, 0x58, 4, buffer);
 }
 
-MidiFileEvent_t MidiFileTrack_createLyricEvent(MidiFileTrack_t track, long tick, char *text)
+MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int flat, int minor)
 {
-	return MidiFileTrack_createMetaEvent(track, tick, 0x5, strlen(text), (unsigned char *)(text));
-}
+	union
+	{
+		unsigned char unsigned_buffer[2];
+		char signed_buffer[2];
+	}
+	u;
 
-MidiFileEvent_t MidiFileTrack_createMarkerEvent(MidiFileTrack_t track, long tick, char *text)
-{
-	return MidiFileTrack_createMetaEvent(track, tick, 0x6, strlen(text), (unsigned char *)(text));
+	u.signed_buffer[0] = flat ? -number : number;
+	u.signed_buffer[1] = minor ? 1 : 0;
+	return MidiFileTrack_createMetaEvent(track, tick, 0x59, 2, u.unsigned_buffer);
 }
 
 MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick, unsigned long data)
@@ -2094,14 +2118,9 @@ int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event)
 	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NOTE_OFF) || ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NOTE_ON) && (MidiFileNoteOnEvent_getVelocity(event) == 0)));
 }
 
-int MidiFileEvent_isTempoEvent(MidiFileEvent_t event)
+int MidiFileEvent_isTextEvent(MidiFileEvent_t event)
 {
-	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x51));
-}
-
-int MidiFileEvent_isTimeSignatureEvent(MidiFileEvent_t event)
-{
-	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x58));
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x1));
 }
 
 int MidiFileEvent_isLyricEvent(MidiFileEvent_t event)
@@ -2112,6 +2131,26 @@ int MidiFileEvent_isLyricEvent(MidiFileEvent_t event)
 int MidiFileEvent_isMarkerEvent(MidiFileEvent_t event)
 {
 	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x6));
+}
+
+int MidiFileEvent_isPortEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x9));
+}
+
+int MidiFileEvent_isTempoEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x51));
+}
+
+int MidiFileEvent_isTimeSignatureEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x58));
+}
+
+int MidiFileEvent_isKeySignatureEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x59));
 }
 
 int MidiFileEvent_isVoiceEvent(MidiFileEvent_t event)
@@ -2625,6 +2664,54 @@ MidiFileEvent_t MidiFileNoteEndEvent_getNoteStartEvent(MidiFileEvent_t event)
 	return NULL;
 }
 
+char *MidiFileTextEvent_getText(MidiFileEvent_t event)
+{
+	if (! MidiFileEvent_isTextEvent(event)) return NULL;
+	return (char *)(MidiFileMetaEvent_getData(event));
+}
+
+int MidiFileTextEvent_setText(MidiFileEvent_t event, char *text)
+{
+	if (! MidiFileEvent_isTextEvent(event)) return -1;
+	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
+}
+
+char *MidiFileLyricEvent_getText(MidiFileEvent_t event)
+{
+	if (! MidiFileEvent_isLyricEvent(event)) return NULL;
+	return (char *)(MidiFileMetaEvent_getData(event));
+}
+
+int MidiFileLyricEvent_setText(MidiFileEvent_t event, char *text)
+{
+	if (! MidiFileEvent_isLyricEvent(event)) return -1;
+	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
+}
+
+char *MidiFileMarkerEvent_getText(MidiFileEvent_t event)
+{
+	if (! MidiFileEvent_isMarkerEvent(event)) return NULL;
+	return (char *)(MidiFileMetaEvent_getData(event));
+}
+
+int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text)
+{
+	if (! MidiFileEvent_isMarkerEvent(event)) return -1;
+	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
+}
+
+char *MidiFilePortEvent_getName(MidiFileEvent_t event)
+{
+	if (! MidiFileEvent_isPortEvent(event)) return NULL;
+	return (char *)(MidiFileMetaEvent_getData(event));
+}
+
+int MidiFilePortEvent_setName(MidiFileEvent_t event, char *name)
+{
+	if (! MidiFileEvent_isPortEvent(event)) return -1;
+	return MidiFileMetaEvent_setData(event, strlen(name), (unsigned char *)(name));
+}
+
 float MidiFileTempoEvent_getTempo(MidiFileEvent_t event)
 {
 	unsigned char *buffer;
@@ -2768,34 +2855,58 @@ int MidiFileTimeSignatureEvent_setTimeSignature(MidiFileEvent_t event, int numer
 	return MidiFileMetaEvent_setData(event, 4, buffer);
 }
 
-char *MidiFileLyricEvent_getText(MidiFileEvent_t event)
+int MidiFileKeySignatureEvent_getNumber(MidiFileEvent_t event)
 {
-	if (! MidiFileEvent_isLyricEvent(event)) return NULL;
-	return (char *)(MidiFileMetaEvent_getData(event));
+	union
+	{
+		unsigned char unsigned_value;
+		char signed_value;
+	}
+	u;
+
+	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
+	u.unsigned_value = MidiFileMetaEvent_getData(event)[0];
+	return (u.signed_value < 0) ? -(u.signed_value) : u.signed_value;
 }
 
-int MidiFileLyricEvent_setText(MidiFileEvent_t event, char *text)
+int MidiFileKeySignatureEvent_isFlat(MidiFileEvent_t event)
 {
-	if (! MidiFileEvent_isLyricEvent(event)) return -1;
-	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
+	union
+	{
+		unsigned char unsigned_value;
+		char signed_value;
+	}
+	u;
+
+	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
+	u.unsigned_value = MidiFileMetaEvent_getData(event)[0];
+	return (u.signed_value < 0);
 }
 
-char *MidiFileMarkerEvent_getText(MidiFileEvent_t event)
+int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event)
 {
-	if (! MidiFileEvent_isMarkerEvent(event)) return NULL;
-	return (char *)(MidiFileMetaEvent_getData(event));
+	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
+	return MidiFileMetaEvent_getData(event)[1];
 }
 
-int MidiFileMarkerEvent_setText(MidiFileEvent_t event, char *text)
+int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int flat, int minor)
 {
-	if (! MidiFileEvent_isMarkerEvent(event)) return -1;
-	return MidiFileMetaEvent_setData(event, strlen(text), (unsigned char *)(text));
+	union
+	{
+		unsigned char unsigned_buffer[2];
+		char signed_buffer[2];
+	}
+	u;
+
+	u.signed_buffer[0] = flat ? -number : number;
+	u.signed_buffer[1] = minor ? 1 : 0;
+	return MidiFileMetaEvent_setData(event, 2, u.unsigned_buffer);
 }
 
 int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event)
 {
 	switch (MidiFileEvent_getType(event))
-    {
+	{
 		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
