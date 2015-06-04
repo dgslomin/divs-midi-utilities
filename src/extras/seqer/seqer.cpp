@@ -508,6 +508,7 @@ void EventList::OnDraw(wxDC& dc)
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{
 		long y = this->canvas->piano_roll->GetYFromStepNumber(step_number);
+        if (y == 0) continue;
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
 	}
 
@@ -725,6 +726,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{
 		long y = this->GetYFromStepNumber(step_number);
+        if (y == 0) continue;
 		dc.DrawLine(0, y, width, y);
 	}
 
