@@ -189,16 +189,16 @@ bool Application::OnInit()
 
 Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
-	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Connect(wxEVT_MENU_HIGHLIGHT, wxMenuEventHandler(Window::OnMenuHighlight));
+	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Bind(wxEVT_MENU_HIGHLIGHT, &Window::OnMenuHighlight, this);
 		wxMenu* file_menu = new wxMenu(); menu_bar->Append(file_menu, "&File");
 			file_menu->Append(wxID_NEW, "&New\tCtrl+N");
 			file_menu->Append(SEQER_ID_NEW_WINDOW, "New &Window\tCtrl+Shift+N");
-			file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O"); this->Connect(wxID_OPEN, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnFileOpen));
+			file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 			file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
 			file_menu->Append(wxID_SAVEAS, "Save &As...");
 			file_menu->Append(wxID_REVERT, "&Revert");
 			file_menu->AppendSeparator();
-			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W"); this->Connect(wxID_CLOSE, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnClose));
+			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
 		wxMenu* edit_menu = new wxMenu(); menu_bar->Append(edit_menu, "&Edit");
 			edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z");
 			edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Shift+Z");
@@ -229,7 +229,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_8, "Column &8\tCtrl+8");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Connect(SEQER_ID_FILTER, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnFilter));
+			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
 			view_menu->AppendSeparator();
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
@@ -277,7 +277,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
 		wxMenu* help_menu = new wxMenu(); menu_bar->Append(help_menu, "&Help");
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
-			help_menu->Append(wxID_ABOUT, "&About"); this->Connect(wxID_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Window::OnAbout));
+			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 
 	this->sequence = new Sequence(this);
 	this->canvas = new Canvas(this);
@@ -321,7 +321,8 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
-	event_type_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Event type"), wxSizerFlags(0).Center());
+	wxStaticText* event_type_label = new wxStaticText(dialog, wxID_ANY, "Event type");
+	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
 	wxListBox* event_type_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 	event_type_list_box->Append("Note");
@@ -340,14 +341,16 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
-	track_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Track"), wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
+	wxStaticText* track_label = new wxStaticText(dialog, wxID_ANY, "Track");
+	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
 	wxListBox* track_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	track_sizer->Add(track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
 	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->sequence->midi_file); i++) track_list_box->Append(wxString::Format("%d", i));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
-	channel_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Channel"), wxSizerFlags(0).Center());
+	wxStaticText* channel_label = new wxStaticText(dialog, wxID_ANY, "Channel");
+	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
 	wxListBox* channel_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	channel_sizer->Add(channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 	for (int i = 1; i <= 16; i++) channel_list_box->Append(wxString::Format("%d", i));
