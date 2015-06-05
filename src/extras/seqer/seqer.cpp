@@ -267,7 +267,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+]");
 			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+[");
-			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go To &Marker...\tCtrl+M");
+			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+M");
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
 		wxMenu* tools_menu = new wxMenu(); menu_bar->Append(tools_menu, "&Tools");
@@ -325,18 +325,18 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 	wxListBox* event_type_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 	event_type_list_box->Append("Note");
-	event_type_list_box->Append("Control Change");
-	event_type_list_box->Append("Program Change");
+	event_type_list_box->Append("Control change");
+	event_type_list_box->Append("Program change");
 	event_type_list_box->Append("Aftertouch");
-	event_type_list_box->Append("Pitch Bend");
-	event_type_list_box->Append("System Exclusive");
+	event_type_list_box->Append("Pitch bend");
+	event_type_list_box->Append("System exclusive");
 	event_type_list_box->Append("Text");
 	event_type_list_box->Append("Lyric");
 	event_type_list_box->Append("Marker");
 	event_type_list_box->Append("Port");
 	event_type_list_box->Append("Tempo");
-	event_type_list_box->Append("Time Signature");
-	event_type_list_box->Append("Key Signature");
+	event_type_list_box->Append("Time signature");
+	event_type_list_box->Append("Key signature");
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
