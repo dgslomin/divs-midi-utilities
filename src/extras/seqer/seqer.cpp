@@ -321,7 +321,7 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
-	event_type_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Event type"), wxSizerFlags(0));
+	event_type_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Event type"), wxSizerFlags(0).Center());
 	wxListBox* event_type_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 	event_type_list_box->Append("Note");
@@ -340,20 +340,20 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
-	track_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Track"), wxSizerFlags(0).Border(wxLEFT | wxRIGHT));
+	track_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Track"), wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
 	wxListBox* track_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	track_sizer->Add(track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
 	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->sequence->midi_file); i++) track_list_box->Append(wxString::Format("%d", i));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
-	channel_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Channel"), wxSizerFlags(0));
+	channel_sizer->Add(new wxStaticText(dialog, wxID_ANY, "Channel"), wxSizerFlags(0).Center());
 	wxListBox* channel_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	channel_sizer->Add(channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 	for (int i = 1; i <= 16; i++) channel_list_box->Append(wxString::Format("%d", i));
 
 	wxSizer* button_sizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
-	outer_sizer->Add(button_sizer);
+	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
 
 	outer_sizer->Fit(dialog);
 
