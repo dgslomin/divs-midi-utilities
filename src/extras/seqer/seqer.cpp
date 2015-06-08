@@ -116,6 +116,17 @@ public:
 	Step(long row_number);
 };
 
+class FilterDialog: public wxDialog
+{
+public:
+	Window* window;
+	wxListBox* event_type_list_box;
+	wxListBox* track_list_box;
+	wxListBox* channel_list_box;
+
+	FilterDialog(Window* window);
+};
+
 enum
 {
 	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
@@ -134,7 +145,6 @@ enum
 	SEQER_ID_EDIT_COLUMN_5,
 	SEQER_ID_EDIT_COLUMN_6,
 	SEQER_ID_EDIT_COLUMN_7,
-	SEQER_ID_EDIT_COLUMN_8,
 	SEQER_ID_FILTER,
 	SEQER_ID_ZOOM,
 	SEQER_ID_PIANO_ROLL,
@@ -227,7 +237,6 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_5, "Column &5\tCtrl+5");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_6, "Column &6\tCtrl+6");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
-				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_8, "Column &8\tCtrl+8");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
 			view_menu->AppendSeparator();
@@ -311,54 +320,7 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 {
-	wxDialog* dialog = new wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-
-	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
-	dialog->SetSizer(outer_sizer);
-
-	wxBoxSizer* controls_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_sizer->Add(controls_sizer, wxSizerFlags(1).Expand().Border());
-
-	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
-	wxStaticText* event_type_label = new wxStaticText(dialog, wxID_ANY, "Event type");
-	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
-	wxListBox* event_type_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
-	event_type_sizer->Add(event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
-	event_type_list_box->Append("Note");
-	event_type_list_box->Append("Control change");
-	event_type_list_box->Append("Program change");
-	event_type_list_box->Append("Aftertouch");
-	event_type_list_box->Append("Pitch bend");
-	event_type_list_box->Append("System exclusive");
-	event_type_list_box->Append("Text");
-	event_type_list_box->Append("Lyric");
-	event_type_list_box->Append("Marker");
-	event_type_list_box->Append("Port");
-	event_type_list_box->Append("Tempo");
-	event_type_list_box->Append("Time signature");
-	event_type_list_box->Append("Key signature");
-
-	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
-	wxStaticText* track_label = new wxStaticText(dialog, wxID_ANY, "Track");
-	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
-	wxListBox* track_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
-	track_sizer->Add(track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
-	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->sequence->midi_file); i++) track_list_box->Append(wxString::Format("%d", i));
-
-	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
-	wxStaticText* channel_label = new wxStaticText(dialog, wxID_ANY, "Channel");
-	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
-	wxListBox* channel_list_box = new wxListBox(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
-	channel_sizer->Add(channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
-	for (int i = 1; i <= 16; i++) channel_list_box->Append(wxString::Format("%d", i));
-
-	wxSizer* button_sizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
-	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
-
-	outer_sizer->Fit(dialog);
+	FilterDialog* dialog = new FilterDialog(this);
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
@@ -833,5 +795,57 @@ Step::Step(long row_number)
 {
 	this->first_row_number = row_number;
 	this->last_row_number = row_number;
+}
+
+FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+{
+	this->window = window;
+
+	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
+	this->SetSizer(outer_sizer);
+
+	wxBoxSizer* controls_sizer = new wxBoxSizer(wxHORIZONTAL);
+	outer_sizer->Add(controls_sizer, wxSizerFlags(1).Expand().Border());
+
+	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
+	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
+	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
+	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
+	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
+	this->event_type_list_box->Append("Note");
+	this->event_type_list_box->Append("Control change");
+	this->event_type_list_box->Append("Program change");
+	this->event_type_list_box->Append("Aftertouch");
+	this->event_type_list_box->Append("Pitch bend");
+	this->event_type_list_box->Append("System exclusive");
+	this->event_type_list_box->Append("Text");
+	this->event_type_list_box->Append("Lyric");
+	this->event_type_list_box->Append("Marker");
+	this->event_type_list_box->Append("Port");
+	this->event_type_list_box->Append("Tempo");
+	this->event_type_list_box->Append("Time signature");
+	this->event_type_list_box->Append("Key signature");
+
+	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
+	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
+	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
+	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
+	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
+	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) this->track_list_box->Append(wxString::Format("%d", i));
+
+	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
+	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
+	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
+	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
+	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
+	for (int i = 1; i <= 16; i++) this->channel_list_box->Append(wxString::Format("%d", i));
+
+	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
+	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
+
+	outer_sizer->Fit(this);
 }
 
