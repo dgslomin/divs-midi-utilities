@@ -125,6 +125,9 @@ public:
 	wxListBox* channel_list_box;
 
 	FilterDialog(Window* window);
+	void OnEventTypeLabelClick(wxMouseEvent& event);
+	void OnTrackLabelClick(wxMouseEvent& event);
+	void OnChannelLabelClick(wxMouseEvent& event);
 };
 
 enum
@@ -810,6 +813,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
 	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
+	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
 	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
@@ -830,6 +834,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
 	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
+	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
 	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
@@ -838,6 +843,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
 	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
+	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
 	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
@@ -847,5 +853,68 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
 
 	outer_sizer->Fit(this);
+}
+
+void FilterDialog::OnEventTypeLabelClick(wxMouseEvent& WXUNUSED(event))
+{
+	int count = this->event_type_list_box->GetCount();
+	wxArrayInt selections;
+
+	if (this->event_type_list_box->GetSelections(selections) == count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->event_type_list_box->Deselect(i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->event_type_list_box->SetSelection(i);
+		}
+	}
+}
+
+void FilterDialog::OnTrackLabelClick(wxMouseEvent& WXUNUSED(event))
+{
+	int count = this->track_list_box->GetCount();
+	wxArrayInt selections;
+
+	if (this->track_list_box->GetSelections(selections) == count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->track_list_box->Deselect(i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->track_list_box->SetSelection(i);
+		}
+	}
+}
+
+void FilterDialog::OnChannelLabelClick(wxMouseEvent& WXUNUSED(event))
+{
+	int count = this->channel_list_box->GetCount();
+	wxArrayInt selections;
+
+	if (this->channel_list_box->GetSelections(selections) == count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->channel_list_box->Deselect(i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < count; i++)
+		{
+			this->channel_list_box->SetSelection(i);
+		}
+	}
 }
 
