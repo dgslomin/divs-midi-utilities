@@ -817,21 +817,22 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
-	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    wxArrayString event_types;
+	event_types.Add("Note");
+	event_types.Add("Control change");
+	event_types.Add("Program change");
+	event_types.Add("Aftertouch");
+	event_types.Add("Pitch bend");
+	event_types.Add("System exclusive");
+	event_types.Add("Text");
+	event_types.Add("Lyric");
+	event_types.Add("Marker");
+	event_types.Add("Port");
+	event_types.Add("Tempo");
+	event_types.Add("Time signature");
+	event_types.Add("Key signature");
+	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, event_types, wxLB_MULTIPLE);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
-	this->event_type_list_box->Append("Note");
-	this->event_type_list_box->Append("Control change");
-	this->event_type_list_box->Append("Program change");
-	this->event_type_list_box->Append("Aftertouch");
-	this->event_type_list_box->Append("Pitch bend");
-	this->event_type_list_box->Append("System exclusive");
-	this->event_type_list_box->Append("Text");
-	this->event_type_list_box->Append("Lyric");
-	this->event_type_list_box->Append("Marker");
-	this->event_type_list_box->Append("Port");
-	this->event_type_list_box->Append("Tempo");
-	this->event_type_list_box->Append("Time signature");
-	this->event_type_list_box->Append("Key signature");
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
@@ -839,9 +840,10 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
 	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
-	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    wxArrayString tracks;
+	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
+	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, tracks, wxLB_MULTIPLE);
 	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
-	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) this->track_list_box->Append(wxString::Format("%d", i));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
@@ -849,9 +851,10 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
 	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
-	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
+    wxArrayString channels;
+	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
+	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, channels, wxLB_MULTIPLE);
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
-	for (int i = 1; i <= 16; i++) this->channel_list_box->Append(wxString::Format("%d", i));
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
