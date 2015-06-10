@@ -813,11 +813,13 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
+
 	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
+	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
 	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
-	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
-    wxArrayString event_types;
+
+	wxArrayString event_types;
 	event_types.Add("Note");
 	event_types.Add("Control change");
 	event_types.Add("Program change");
@@ -836,22 +838,27 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
+
 	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
+	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
+
 	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
-	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
-    wxArrayString tracks;
+
+	wxArrayString tracks;
 	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
 	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, tracks, wxLB_MULTIPLE);
 	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
+
 	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
+	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
 	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
-	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
-    wxArrayString channels;
+
+	wxArrayString channels;
 	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
 	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, channels, wxLB_MULTIPLE);
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
@@ -882,8 +889,8 @@ void FilterDialog::OnEventTypeLabelClick(wxMouseEvent& event)
 		}
 	}
 
-    this->event_type_list_box->SetFocus();
-    event.Skip();
+	this->event_type_list_box->SetFocus();
+	event.Skip();
 }
 
 void FilterDialog::OnTrackLabelClick(wxMouseEvent& event)
@@ -906,8 +913,8 @@ void FilterDialog::OnTrackLabelClick(wxMouseEvent& event)
 		}
 	}
 
-    this->track_list_box->SetFocus();
-    event.Skip();
+	this->track_list_box->SetFocus();
+	event.Skip();
 }
 
 void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
@@ -930,7 +937,7 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 		}
 	}
 
-    this->channel_list_box->SetFocus();
-    event.Skip();
+	this->channel_list_box->SetFocus();
+	event.Skip();
 }
 
