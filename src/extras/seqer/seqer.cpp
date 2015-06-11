@@ -43,6 +43,9 @@ public:
 	class PianoRoll* piano_roll;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
+	std::vector<int> filtered_event_types;
+	std::vector<int> filtered_tracks;
+	std::vector<int> filtered_channels;
 
 	Canvas(Window* window);
 	bool Load(wxString filename);
@@ -55,6 +58,7 @@ public:
 	long GetFirstRowNumberFromStepNumber(long step_number);
 	long GetLastRowNumberFromStepNumber(long step_number);
 	long GetStepNumberFromRowNumber(long row_number);
+	bool Filter(MidiFileEvent_t event);
 };
 
 class EventList
@@ -441,6 +445,21 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
+		wxArrayInt selections;
+
+		this->canvas->filtered_event_types.clear();
+		dialog->event_type_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) this->canvas->filtered_event_types.push_back(selections[i]);
+
+		this->canvas->filtered_tracks.clear();
+		dialog->track_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) this->canvas->filtered_tracks.push_back(selections[i]);
+
+		this->canvas->filtered_channels.clear();
+		dialog->channel_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) this->canvas->filtered_channels.push_back(selections[i]);
+
+		this->canvas->Prepare();
 	}
 
 	dialog->Destroy();
@@ -474,7 +493,7 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 }
 
 bool Canvas::Load(wxString filename)
-{ 
+{
 	MidiFile_t new_midi_file = MidiFile_load((char *)(filename.ToStdString().c_str()));
 	if (new_midi_file == NULL) return false;
 	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
@@ -494,37 +513,35 @@ void Canvas::Prepare()
 
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-			// TODO: real filter logic
+			if (!this->Filter(event)) continue;
 
-			if (!MidiFileEvent_isNoteEndEvent(event))
+			long step_number = (long)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event)));
+
+			while (last_step_number < step_number - 1)
 			{
-				long step_number = (long)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event)));
-
-				while (last_step_number < step_number - 1)
-				{
-					last_step_number++;
-					this->rows.push_back(Row(last_step_number, NULL));
-					this->steps.push_back(Step(this->rows.size() - 1));
-				}
-
-				this->rows.push_back(Row(step_number, event));
-
-				if (step_number == last_step_number)
-				{
-					this->steps[this->steps.size() - 1].last_row_number++;
-				}
-				else
-				{
-					this->steps.push_back(Step(this->rows.size() - 1));
-				}
-
-				last_step_number = step_number;
+				last_step_number++;
+				this->rows.push_back(Row(last_step_number, NULL));
+				this->steps.push_back(Step(this->rows.size() - 1));
 			}
+
+			this->rows.push_back(Row(step_number, event));
+
+			if (step_number == last_step_number)
+			{
+				this->steps[this->steps.size() - 1].last_row_number++;
+			}
+			else
+			{
+				this->steps.push_back(Step(this->rows.size() - 1));
+			}
+
+			last_step_number = step_number;
 		}
 	}
 
 	this->event_list->Prepare();
 	this->piano_roll->Prepare();
+	this->Refresh();
 }
 
 void Canvas::OnDraw(wxDC& dc)
@@ -599,6 +616,74 @@ long Canvas::GetStepNumberFromRowNumber(long row_number)
 	{
 		return this->rows[this->rows.size() - 1].step_number + row_number - this->rows.size() + 1;
 	}
+}
+
+bool Canvas::Filter(MidiFileEvent_t event)
+{
+	if (this->filtered_event_types.size() > 0)
+	{
+		bool matched = false;
+
+		for (int i = 0; i < this->filtered_event_types.size(); i++)
+		{
+			if (event_types[this->filtered_event_types[i]]->Matches(event))
+			{
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched) return false;
+	}
+	else
+	{
+		bool matched = false;
+
+		for (int i = 0; i < (sizeof event_types / sizeof (EventType*)); i++)
+		{
+			if (event_types[i]->Matches(event))
+			{
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched) return false;
+	}
+
+	if (this->filtered_tracks.size() > 0)
+	{
+		bool matched = false;
+
+		for (int i = 0; i < this->filtered_tracks.size(); i++)
+		{
+			if (this->filtered_tracks[i] == MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)))
+			{
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched) return false;
+	}
+
+	if ((this->filtered_channels.size() > 0) && MidiFileEvent_isVoiceEvent(event))
+	{
+		bool matched = false;
+
+		for (int i = 0; i < this->filtered_channels.size(); i++)
+		{
+			if (this->filtered_channels[i] == MidiFileVoiceEvent_getChannel(event))
+			{
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched) return false;
+	}
+
+	return true;
 }
 
 EventList::EventList(Canvas* canvas)
@@ -779,7 +864,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 	for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->canvas->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		if (MidiFileEvent_isNoteStartEvent(event))
+		if (MidiFileEvent_isNoteStartEvent(event) && this->canvas->Filter(event))
 		{
 			double event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
 			long event_y = this->GetYFromStepNumber(event_step_number);
@@ -841,6 +926,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxArrayString event_type_names;
 	for (int i = 0; i < (sizeof event_types / sizeof (EventType*)); i++) event_type_names.Add(event_types[i]->GetName());
 	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, event_type_names, wxLB_MULTIPLE);
+	for (int i = 0; i < this->window->canvas->filtered_event_types.size(); i++) this->event_type_list_box->SetSelection(this->window->canvas->filtered_event_types[i]);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
@@ -852,8 +938,9 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
 
 	wxArrayString tracks;
-	for (int i = 1; i <= MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
+	for (int i = 0; i < MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
 	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, tracks, wxLB_MULTIPLE);
+	for (int i = 0; i < this->window->canvas->filtered_tracks.size(); i++) this->track_list_box->SetSelection(this->window->canvas->filtered_tracks[i]);
 	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
@@ -867,6 +954,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxArrayString channels;
 	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
 	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, channels, wxLB_MULTIPLE);
+	for (int i = 0; i < this->window->canvas->filtered_channels.size(); i++) this->channel_list_box->SetSelection(this->window->canvas->filtered_channels[i]);
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
