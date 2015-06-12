@@ -2903,6 +2903,45 @@ int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number,
 	return MidiFileMetaEvent_setData(event, 2, u.unsigned_buffer);
 }
 
+int MidiFileVoiceEvent_getChannel(MidiFileEvent_t event)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+		{
+			return MidiFileNoteOffEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+		{
+			return MidiFileNoteOnEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			return MidiFileKeyPressureEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
+		{
+			return MidiFileControlChangeEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
+		{
+			return MidiFilePitchWheelEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			return MidiFileProgramChangeEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return MidiFileChannelPressureEvent_getChannel(event);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
 int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event)
 {
 	switch (MidiFileEvent_getType(event))
