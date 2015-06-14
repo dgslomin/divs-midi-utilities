@@ -1940,7 +1940,7 @@ MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, lo
 	return MidiFileTrack_createMetaEvent(track, tick, 0x58, 4, buffer);
 }
 
-MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int flat, int minor)
+MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int minor)
 {
 	union
 	{
@@ -1949,7 +1949,7 @@ MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, lon
 	}
 	u;
 
-	u.signed_buffer[0] = flat ? -number : number;
+	u.signed_buffer[0] = number;
 	u.signed_buffer[1] = minor ? 1 : 0;
 	return MidiFileTrack_createMetaEvent(track, tick, 0x59, 2, u.unsigned_buffer);
 }
@@ -2864,23 +2864,9 @@ int MidiFileKeySignatureEvent_getNumber(MidiFileEvent_t event)
 	}
 	u;
 
-	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
+	if (! MidiFileEvent_isKeySignatureEvent(event)) return 0;
 	u.unsigned_value = MidiFileMetaEvent_getData(event)[0];
-	return (u.signed_value < 0) ? -(u.signed_value) : u.signed_value;
-}
-
-int MidiFileKeySignatureEvent_isFlat(MidiFileEvent_t event)
-{
-	union
-	{
-		unsigned char unsigned_value;
-		char signed_value;
-	}
-	u;
-
-	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
-	u.unsigned_value = MidiFileMetaEvent_getData(event)[0];
-	return (u.signed_value < 0);
+	return u.signed_value;
 }
 
 int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event)
@@ -2889,7 +2875,7 @@ int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event)
 	return MidiFileMetaEvent_getData(event)[1];
 }
 
-int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int flat, int minor)
+int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int minor)
 {
 	union
 	{
@@ -2898,7 +2884,7 @@ int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number,
 	}
 	u;
 
-	u.signed_buffer[0] = flat ? -number : number;
+	u.signed_buffer[0] = number;
 	u.signed_buffer[1] = minor ? 1 : 0;
 	return MidiFileMetaEvent_setData(event, 2, u.unsigned_buffer);
 }

@@ -3,7 +3,7 @@
 
 /*
  * Div's Standard MIDI File API
- * Copyright 2003-2008 by David G. Slomin
+ * Copyright 2003-2015 by David G. Slomin
  * Provided under the terms of the BSD license
  *
  * Usage notes:
@@ -39,11 +39,14 @@
  * 8.  Convenience functions are provided for working with tempo, absolute
  *     time, musical time, and SMPTE time in files of format 1 or 0.
  *
- * 9.  Events other than sysex and meta are considered "voice events".  For 
- *     interaction with other APIs, it is sometimes useful to pack their 
- *     messages into 32 bit integers.
+ * 9.  Events other than sysex and meta (i.e., events which have a channel)
+ *     are considered "voice events".  For interaction with other APIs, it
+ *     is sometimes useful to pack their messages into 32 bit integers.
  *
- * 10. All numbers in this API are zero-based, to correspond with the actual
+ * 10. Key signatures are expressed as a negative number of flats or a
+ *     positive number of sharps.
+ *
+ * 11. All numbers in this API are zero-based, to correspond with the actual
  *     byte values of the MIDI protocol, rather than one-based, as they are
  *     commonly displayed to the user.  Channels range from 0 to 15, notes
  *     range from 0 to 127, etc.  The only exception is in the musical time
@@ -160,7 +163,7 @@ MidiFileEvent_t MidiFileTrack_createMarkerEvent(MidiFileTrack_t track, long tick
 MidiFileEvent_t MidiFileTrack_createPortEvent(MidiFileTrack_t track, long tick, char *name);
 MidiFileEvent_t MidiFileTrack_createTempoEvent(MidiFileTrack_t track, long tick, float tempo); /* tempo is in BPM */
 MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, long tick, int numerator, int denominator);
-MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int flat, int minor);
+MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int minor);
 MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick, unsigned long data);
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
@@ -278,9 +281,8 @@ int MidiFileTimeSignatureEvent_getDenominator(MidiFileEvent_t event);
 int MidiFileTimeSignatureEvent_setTimeSignature(MidiFileEvent_t event, int numerator, int denominator);
 
 int MidiFileKeySignatureEvent_getNumber(MidiFileEvent_t event);
-int MidiFileKeySignatureEvent_isFlat(MidiFileEvent_t event);
 int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event);
-int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int flat, int minor);
+int MidiFileKeySignatureEvent_setKeySignature(MidiFileEvent_t event, int number, int minor);
 
 int MidiFileVoiceEvent_getChannel(MidiFileEvent_t event);
 int MidiFileVoiceEvent_getDataLength(MidiFileEvent_t event);

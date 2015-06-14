@@ -23,6 +23,7 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
+	void OnPianoRollSettings(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 };
 
@@ -132,6 +133,17 @@ public:
 	void OnEventTypeLabelClick(wxMouseEvent& event);
 	void OnTrackLabelClick(wxMouseEvent& event);
 	void OnChannelLabelClick(wxMouseEvent& event);
+};
+
+class PianoRollSettingsDialog: public wxDialog
+{
+public:
+	Window* window;
+	wxTextCtrl* first_note_text_box;
+	wxTextCtrl* last_note_text_box;
+	wxTextCtrl* key_width_text_box;
+
+	PianoRollSettingsDialog(Window* window);
 };
 
 class EventType
@@ -304,6 +316,30 @@ enum
 
 IMPLEMENT_APP(Application)
 
+wxString NoteName(int note_number)
+{
+	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
+}
+
+wxString KeyName(int key_number, bool is_minor)
+{
+	if ((key_number < -6) || (key_number > 6)) return wxString("?");
+	const char* key_names[] = {"Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#"};
+	return wxString::Format("%s%s", key_names[key_number + 6], is_minor ? "m" : "");
+}
+
+int NoteSetScaleTone(int note_number, int diatonic_scale_tone, int key_number = 0)
+{
+	if ((key_number < -6) || (key_number > 6)) key_number = 0;
+	const int chromatic_scale_tones[] = {0, 2, 4, 5, 7, 9, 11};
+	const int key_modes_of_c[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
+	const int key_starting_notes[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
+	int octave = note_number / 12;
+	int chromatic_scale_tone_in_key = (key_starting_notes[key_number] + chromatic_scale_tones[(7 + diatonic_scale_tone - key_modes_of_c[key_number]) % 7]) % 12;
+	return (octave * 12) + chromatic_scale_tone_in_key;
+}
+
 bool Application::OnInit()
 {
 	Window* window = new Window();
@@ -365,7 +401,7 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->AppendSeparator();
-			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll...");
+			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll..."); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPianoRollSettings, this, SEQER_ID_PIANO_ROLL);
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
 			wxMenu* insert_note_menu = new wxMenu(); insert_menu->AppendSubMenu(insert_note_menu, "&Notes");
 				insert_note_menu->Append(SEQER_ID_INSERT_NOTE_A, "Note &A\tA");
@@ -460,6 +496,17 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 		for (int i = 0; i < selections.GetCount(); i++) this->canvas->filtered_channels.push_back(selections[i]);
 
 		this->canvas->Prepare();
+	}
+
+	dialog->Destroy();
+}
+
+void Window::OnPianoRollSettings(wxCommandEvent& WXUNUSED(event))
+{
+	PianoRollSettingsDialog* dialog = new PianoRollSettingsDialog(this);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
 	}
 
 	dialog->Destroy();
@@ -913,13 +960,13 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	this->SetSizer(outer_sizer);
 
 	wxBoxSizer* controls_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_sizer->Add(controls_sizer, wxSizerFlags(1).Expand().Border());
+	outer_sizer->Add(controls_sizer, wxSizerFlags().Proportion(1).Expand().Border());
 
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(event_type_sizer, wxSizerFlags(1).Expand());
+	controls_sizer->Add(event_type_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
-	event_type_sizer->Add(event_type_label, wxSizerFlags(0).Center());
+	event_type_sizer->Add(event_type_label, wxSizerFlags().Center());
 	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
 
@@ -927,13 +974,13 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	for (int i = 0; i < (sizeof event_types / sizeof (EventType*)); i++) event_type_names.Add(event_types[i]->GetName());
 	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, event_type_names, wxLB_MULTIPLE);
 	for (int i = 0; i < this->window->canvas->filtered_event_types.size(); i++) this->event_type_list_box->SetSelection(this->window->canvas->filtered_event_types[i]);
-	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
+	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(track_sizer, wxSizerFlags(1).Expand());
+	controls_sizer->Add(track_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
-	track_sizer->Add(track_label, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT));
+	track_sizer->Add(track_label, wxSizerFlags().Center().Border(wxLEFT | wxRIGHT));
 	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
 
@@ -941,13 +988,13 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	for (int i = 0; i < MidiFile_getNumberOfTracks(this->window->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
 	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, tracks, wxLB_MULTIPLE);
 	for (int i = 0; i < this->window->canvas->filtered_tracks.size(); i++) this->track_list_box->SetSelection(this->window->canvas->filtered_tracks[i]);
-	track_sizer->Add(this->track_list_box, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
+	track_sizer->Add(this->track_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
-	controls_sizer->Add(channel_sizer, wxSizerFlags(1).Expand());
+	controls_sizer->Add(channel_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
-	channel_sizer->Add(channel_label, wxSizerFlags(0).Center());
+	channel_sizer->Add(channel_label, wxSizerFlags().Center());
 	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
 
@@ -955,10 +1002,10 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
 	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, channels, wxLB_MULTIPLE);
 	for (int i = 0; i < this->window->canvas->filtered_channels.size(); i++) this->channel_list_box->SetSelection(this->window->canvas->filtered_channels[i]);
-	channel_sizer->Add(this->channel_list_box, wxSizerFlags(1).Expand().Border(wxTOP));
+	channel_sizer->Add(this->channel_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
-	outer_sizer->Add(button_sizer, wxSizerFlags(0).Border());
+	outer_sizer->Add(button_sizer, wxSizerFlags().Border());
 
 	outer_sizer->Fit(this);
 }
@@ -1035,6 +1082,42 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 	event.Skip();
 }
 
+PianoRollSettingsDialog::PianoRollSettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Piano Roll Settings")
+{
+	// TODO: continue here
+
+	this->window = window;
+
+	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
+	this->SetSizer(outer_sizer);
+
+	wxBoxSizer* first_note_sizer = new wxBoxSizer(wxHORIZONTAL);
+	outer_sizer->Add(first_note_sizer, wxSizerFlags().Right());
+	wxStaticText* first_note_label = new wxStaticText(this, wxID_ANY, "First note");
+	first_note_sizer->Add(first_note_label, wxSizerFlags().Center().Border());
+	this->first_note_text_box = new wxTextCtrl(this, wxID_ANY);
+	first_note_sizer->Add(this->first_note_text_box, wxSizerFlags().Border(wxTOP | wxRIGHT | wxBOTTOM));
+
+	wxBoxSizer* last_note_sizer = new wxBoxSizer(wxHORIZONTAL);
+	outer_sizer->Add(last_note_sizer, wxSizerFlags().Right());
+	wxStaticText* last_note_label = new wxStaticText(this, wxID_ANY, "Last note");
+	last_note_sizer->Add(last_note_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	this->last_note_text_box = new wxTextCtrl(this, wxID_ANY);
+	last_note_sizer->Add(this->last_note_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
+
+	wxBoxSizer* key_width_sizer = new wxBoxSizer(wxHORIZONTAL);
+	outer_sizer->Add(key_width_sizer, wxSizerFlags().Right());
+	wxStaticText* key_width_label = new wxStaticText(this, wxID_ANY, "Key width");
+	key_width_sizer->Add(key_width_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY);
+	key_width_sizer->Add(this->key_width_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
+
+	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
+	outer_sizer->Add(button_sizer, wxSizerFlags().Border());
+
+	outer_sizer->Fit(this);
+}
+
 wxString NoteEventType::GetName()
 {
 	return wxString("Note");
@@ -1067,8 +1150,7 @@ wxString NoteEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 4:
 		{
-			const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-			return wxString::Format("%s%d", note_names[MidiFileNoteStartEvent_getNote(event) % 12], (MidiFileNoteStartEvent_getNote(event) / 12) - 1);
+			return NoteName(MidiFileNoteStartEvent_getNote(event));
 		}
 		case 5:
 		{
@@ -1216,8 +1298,7 @@ wxString AftertouchEventType::GetEventListColumnText(EventList* event_list, Midi
 		{
 			if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
 			{
-				const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-				return wxString::Format("%s%d", note_names[MidiFileKeyPressureEvent_getNote(event) % 12], (MidiFileKeyPressureEvent_getNote(event) / 12) - 1);
+				return NoteName(MidiFileKeyPressureEvent_getNote(event));
 			}
 			else
 			{
@@ -1295,7 +1376,7 @@ bool SystemExclusiveEventType::Matches(MidiFileEvent_t event)
 
 wxString SystemExclusiveEventType::GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number)
 {
-	// TODO
+	// TODO: render bytes as ascii plus hex escapes
 
 	switch (column_number)
 	{
@@ -1568,9 +1649,7 @@ wxString KeySignatureEventType::GetEventListColumnText(EventList* event_list, Mi
 		}
 		case 4:
 		{
-			const char* sharp_keys[] = {"C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#", "E#", "B#"};
-			const char* flat_keys[] = {"C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"};
-			return wxString::Format("%s%s", MidiFileKeySignatureEvent_isFlat(event) ? flat_keys[MidiFileKeySignatureEvent_getNumber(event)] : sharp_keys[MidiFileKeySignatureEvent_getNumber(event)], MidiFileKeySignatureEvent_isMinor(event) ? "m" : "");
+			return KeyName(MidiFileKeySignatureEvent_getNumber(event), (bool)(MidiFileKeySignatureEvent_isMinor(event)));
 		}
 		default:
 		{
