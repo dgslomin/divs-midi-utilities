@@ -10,16 +10,22 @@
 class Application: public wxApp
 {
 public:
+	wxFont default_event_list_font;
+	long default_piano_roll_first_note;
+	long default_piano_roll_last_note;
+	long default_piano_roll_key_width;
+
 	bool OnInit();
 };
 
 class Window: public wxFrame
 {
 public:
+	Application* application;
 	class Sequence* sequence;
 	class Canvas* canvas;
 
-	Window();
+	Window(Application* application);
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
@@ -140,12 +146,16 @@ class SettingsDialog: public wxDialog
 {
 public:
 	Window* window;
-	wxTextCtrl* first_note_text_box;
-	wxTextCtrl* last_note_text_box;
-	wxTextCtrl* key_width_text_box;
-	wxFontPickerCtrl* font_picker;
+	wxFontPickerCtrl* event_list_font_picker;
+	wxTextCtrl* piano_roll_first_note_text_box;
+	wxTextCtrl* piano_roll_last_note_text_box;
+	wxTextCtrl* piano_roll_key_width_text_box;
 
 	SettingsDialog(Window* window);
+	void OnDefaultEventListFontButtonClick(wxCommandEvent& event);
+	void OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event);
+	void OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event);
+	void OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event);
 };
 
 class EventType
@@ -318,10 +328,34 @@ enum
 
 IMPLEMENT_APP(Application)
 
-wxString NoteName(int note_number)
+wxString NoteNumberToName(int note_number)
 {
 	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
+}
+
+int NoteNameToNumber(wxString note_name)
+{
+	const char* note_names[] = {"C#", "C", "Db", "D#", "D", "Eb", "E", "F#", "F", "Gb", "G#", "G", "Ab", "A#", "A", "Bb", "B"};
+	const int chromatics[] = {1, 0, 1, 3, 2, 3, 4, 6, 5, 6, 8, 7, 8, 10, 9, 10, 11};
+	int chromatic = -1;
+	int octave = -1;
+	int length;
+
+	for (int i = 0; i < (sizeof note_names / sizeof (char*)); i++)
+	{
+		length = strlen(note_names[i]);
+
+		if (strncmp(note_names[i], note_name.c_str(), length) == 0)
+		{
+			chromatic = chromatics[i];
+			break;
+		}
+	}
+
+	if (chromatic < 0) return -1;
+	if (sscanf(note_name.c_str() + length, "%d", &octave) != 1) return -1;
+	return ((octave + 1) * 12) + chromatic;
 }
 
 int NoteGetOctave(int note_number)
@@ -364,7 +398,16 @@ int ChromaticNoteInKey(int diatonic, int key_number)
 
 bool Application::OnInit()
 {
-	Window* window = new Window();
+#if defined(__WXOSX__)
+	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
+#else
+	this->default_event_list_font = *wxNORMAL_FONT;
+#endif
+	this->default_piano_roll_first_note = 21; // standard piano range
+	this->default_piano_roll_last_note = 108;
+	this->default_piano_roll_key_width = 3;
+
+	Window* window = new Window(this);
 	this->SetTopWindow(window);
 	window->Show(true);
 
@@ -376,8 +419,10 @@ bool Application::OnInit()
 	return true;
 }
 
-Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
+Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
+	this->application = application;
+
 	wxMenuBar* menu_bar = new wxMenuBar(); this->SetMenuBar(menu_bar); this->Bind(wxEVT_MENU_HIGHLIGHT, &Window::OnMenuHighlight, this);
 		wxMenu* file_menu = new wxMenu(); menu_bar->Append(file_menu, "&File");
 			file_menu->Append(wxID_NEW, "&New\tCtrl+N");
@@ -529,6 +574,12 @@ void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
+		this->canvas->event_list->font = dialog->event_list_font_picker->GetSelectedFont();
+		this->canvas->piano_roll->first_note = NoteNameToNumber(dialog->piano_roll_first_note_text_box->GetValue());
+		this->canvas->piano_roll->last_note = NoteNameToNumber(dialog->piano_roll_last_note_text_box->GetValue());
+		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&(this->canvas->piano_roll->key_width));
+		this->canvas->Prepare();
+		this->canvas->Refresh();
 	}
 
 	dialog->Destroy();
@@ -758,12 +809,7 @@ bool Canvas::Filter(MidiFileEvent_t event)
 EventList::EventList(Canvas* canvas)
 {
 	this->canvas = canvas;
-
-#if defined(__WXOSX__)
-	this->font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
-#else
-	this->font = *wxNORMAL_FONT;
-#endif
+	this->font = this->canvas->window->application->default_event_list_font;
 }
 
 void EventList::Prepare()
@@ -884,9 +930,9 @@ long EventList::GetRowNumberFromY(long y)
 PianoRoll::PianoRoll(Canvas* canvas)
 {
 	this->canvas = canvas;
-	this->first_note = 21; // default to standard piano range
-	this->last_note = 108;
-	this->key_width = 3;
+	this->first_note = this->canvas->window->application->default_piano_roll_first_note;
+	this->last_note = this->canvas->window->application->default_piano_roll_last_note;
+	this->key_width = this->canvas->window->application->default_piano_roll_key_width;
 }
 
 void PianoRoll::Prepare()
@@ -1106,53 +1152,79 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 
 SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settings")
 {
-	// TODO: continue here
-
 	this->window = window;
 
 	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(outer_sizer);
 
-	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
-	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border());
-	wxFlexGridSizer* piano_roll_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
-	piano_roll_settings_section->Add(piano_roll_settings_sizer, wxSizerFlags().Expand().Border());
-	piano_roll_settings_sizer->AddGrowableCol(1, 1);
-
-	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "First note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->first_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->first_note));
-	piano_roll_settings_sizer->Add(this->first_note_text_box, wxSizerFlags().Expand());
-	wxButton* default_first_note_button = new wxButton(this, wxID_ANY, "Default");
-	piano_roll_settings_sizer->Add(default_first_note_button, wxSizerFlags().Expand());
-
-	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->last_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->last_note));
-	piano_roll_settings_sizer->Add(this->last_note_text_box, wxSizerFlags().Expand());
-	wxButton* default_last_note_button = new wxButton(this, wxID_ANY, "Default");
-	piano_roll_settings_sizer->Add(default_last_note_button, wxSizerFlags().Expand());
-
-	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Key width"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%ld", this->window->canvas->piano_roll->key_width));
-	piano_roll_settings_sizer->Add(this->key_width_text_box, wxSizerFlags().Expand());
-	wxButton* default_key_width_button = new wxButton(this, wxID_ANY, "Default");
-	piano_roll_settings_sizer->Add(default_key_width_button, wxSizerFlags().Expand());
-
 	wxStaticBoxSizer* event_list_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Event list");
-	outer_sizer->Add(event_list_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	outer_sizer->Add(event_list_settings_section, wxSizerFlags().Expand().Border());
 	wxFlexGridSizer* event_list_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
 	event_list_settings_section->Add(event_list_settings_sizer, wxSizerFlags().Expand().Border());
 	event_list_settings_sizer->AddGrowableCol(1, 1);
 
 	event_list_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Font"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->font_picker = new wxFontPickerCtrl(this, wxID_ANY, wxNullFont, wxDefaultPosition, wxDefaultSize, wxFNTP_FONTDESC_AS_LABEL);
-	event_list_settings_sizer->Add(this->font_picker, wxSizerFlags().Expand());
-	wxButton* default_font_button = new wxButton(this, wxID_ANY, "Default");
-	event_list_settings_sizer->Add(default_font_button, wxSizerFlags().Expand());
+	this->event_list_font_picker = new wxFontPickerCtrl(this, wxID_ANY, this->window->canvas->event_list->font, wxDefaultPosition, wxDefaultSize, wxFNTP_FONTDESC_AS_LABEL);
+	event_list_settings_sizer->Add(this->event_list_font_picker, wxSizerFlags().Expand());
+	wxButton* default_event_list_font_button = new wxButton(this, wxID_ANY, "Default");
+	event_list_settings_sizer->Add(default_event_list_font_button, wxSizerFlags().Expand());
+	default_event_list_font_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultEventListFontButtonClick, this);
+
+	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
+	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	wxFlexGridSizer* piano_roll_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+	piano_roll_settings_section->Add(piano_roll_settings_sizer, wxSizerFlags().Expand().Border());
+	piano_roll_settings_sizer->AddGrowableCol(1, 1);
+
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "First note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->piano_roll_first_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteNumberToName(this->window->canvas->piano_roll->first_note));
+	piano_roll_settings_sizer->Add(this->piano_roll_first_note_text_box, wxSizerFlags().Expand());
+	wxButton* default_piano_roll_first_note_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_piano_roll_first_note_button, wxSizerFlags().Expand());
+	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick, this);
+
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->piano_roll_last_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteNumberToName(this->window->canvas->piano_roll->last_note));
+	piano_roll_settings_sizer->Add(this->piano_roll_last_note_text_box, wxSizerFlags().Expand());
+	wxButton* default_piano_roll_last_note_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_piano_roll_last_note_button, wxSizerFlags().Expand());
+	default_piano_roll_last_note_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollLastNoteButtonClick, this);
+
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Key width"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->piano_roll_key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%ld", this->window->canvas->piano_roll->key_width));
+	piano_roll_settings_sizer->Add(this->piano_roll_key_width_text_box, wxSizerFlags().Expand());
+	wxButton* default_piano_roll_key_width_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_piano_roll_key_width_button, wxSizerFlags().Expand());
+	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollKeyWidthButtonClick, this);
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
+}
+
+void SettingsDialog::OnDefaultEventListFontButtonClick(wxCommandEvent& event)
+{
+	this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
+	event.Skip();
+}
+
+void SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event)
+{
+	this->piano_roll_first_note_text_box->SetValue(NoteNumberToName(this->window->application->default_piano_roll_first_note));
+	event.Skip();
+}
+
+void SettingsDialog::OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event)
+{
+	this->piano_roll_last_note_text_box->SetValue(NoteNumberToName(this->window->application->default_piano_roll_last_note));
+	event.Skip();
+}
+
+void SettingsDialog::OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event)
+{
+	this->piano_roll_key_width_text_box->SetValue(wxString::Format("%ld", this->window->application->default_piano_roll_key_width));
+	event.Skip();
 }
 
 wxString NoteEventType::GetName()
@@ -1187,7 +1259,7 @@ wxString NoteEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 4:
 		{
-			return NoteName(MidiFileNoteStartEvent_getNote(event));
+			return NoteNumberToName(MidiFileNoteStartEvent_getNote(event));
 		}
 		case 5:
 		{
@@ -1335,7 +1407,7 @@ wxString AftertouchEventType::GetEventListColumnText(EventList* event_list, Midi
 		{
 			if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
 			{
-				return NoteName(MidiFileKeyPressureEvent_getNote(event));
+				return NoteNumberToName(MidiFileKeyPressureEvent_getNote(event));
 			}
 			else
 			{
