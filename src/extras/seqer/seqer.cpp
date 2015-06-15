@@ -322,22 +322,42 @@ wxString NoteName(int note_number)
 	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
 }
 
+int NoteGetOctave(int note_number)
+{
+	return (note_number / 12) - 1;
+}
+
+int NoteSetOctave(int note_number, int octave)
+{
+	return (note_number % 12) + ((octave + 1) * 12);
+}
+
+int NoteGetChromatic(int note_number)
+{
+	return note_number % 12;
+}
+
+int NoteSetChromatic(int note_number, int chromatic)
+{
+	return ((note_number / 12) * 12) + chromatic;
+}
+
 wxString KeyName(int key_number, bool is_minor)
 {
-	if ((key_number < -6) || (key_number > 6)) return wxString("?");
+	while (key_number < -6) key_number += 12;
+	while (key_number > 6) key_number -= 12;
 	const char* key_names[] = {"Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#"};
 	return wxString::Format("%s%s", key_names[key_number + 6], is_minor ? "m" : "");
 }
 
-int NoteSetScaleTone(int note_number, int diatonic_scale_tone, int key_number = 0)
+int ChromaticNoteInKey(int diatonic, int key_number)
 {
-	if ((key_number < -6) || (key_number > 6)) key_number = 0;
-	const int chromatic_scale_tones[] = {0, 2, 4, 5, 7, 9, 11};
-	const int key_modes_of_c[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
-	const int key_starting_notes[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
-	int octave = note_number / 12;
-	int chromatic_scale_tone_in_key = (key_starting_notes[key_number] + chromatic_scale_tones[(7 + diatonic_scale_tone - key_modes_of_c[key_number]) % 7]) % 12;
-	return (octave * 12) + chromatic_scale_tone_in_key;
+	while (key_number < -6) key_number += 12;
+	while (key_number > 6) key_number -= 12;
+	const int diatonic_to_chromatic[] = {0, 2, 4, 5, 7, 9, 11};
+	const int key_diatonics[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
+	const int key_chromatics[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
+	return (key_chromatics[key_number] + diatonic_to_chromatic[(7 + diatonic - key_diatonics[key_number]) % 7]) % 12;
 }
 
 bool Application::OnInit()
@@ -1095,21 +1115,21 @@ PianoRollSettingsDialog::PianoRollSettingsDialog(Window* window): wxDialog(NULL,
 	outer_sizer->Add(first_note_sizer, wxSizerFlags().Right());
 	wxStaticText* first_note_label = new wxStaticText(this, wxID_ANY, "First note");
 	first_note_sizer->Add(first_note_label, wxSizerFlags().Center().Border());
-	this->first_note_text_box = new wxTextCtrl(this, wxID_ANY);
+	this->first_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->first_note));
 	first_note_sizer->Add(this->first_note_text_box, wxSizerFlags().Border(wxTOP | wxRIGHT | wxBOTTOM));
 
 	wxBoxSizer* last_note_sizer = new wxBoxSizer(wxHORIZONTAL);
 	outer_sizer->Add(last_note_sizer, wxSizerFlags().Right());
 	wxStaticText* last_note_label = new wxStaticText(this, wxID_ANY, "Last note");
 	last_note_sizer->Add(last_note_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
-	this->last_note_text_box = new wxTextCtrl(this, wxID_ANY);
+	this->last_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->last_note));
 	last_note_sizer->Add(this->last_note_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
 
 	wxBoxSizer* key_width_sizer = new wxBoxSizer(wxHORIZONTAL);
 	outer_sizer->Add(key_width_sizer, wxSizerFlags().Right());
 	wxStaticText* key_width_label = new wxStaticText(this, wxID_ANY, "Key width");
 	key_width_sizer->Add(key_width_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
-	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY);
+	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%d", this->window->canvas->piano_roll->key_width));
 	key_width_sizer->Add(this->key_width_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
