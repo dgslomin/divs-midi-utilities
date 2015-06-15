@@ -3,6 +3,7 @@
 #include <vector>
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
+#include <wx/fontpicker.h>
 #include <midifile.h>
 #include "color.h"
 
@@ -23,7 +24,7 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
-	void OnPianoRollSettings(wxCommandEvent& event);
+	void OnSettings(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 };
 
@@ -135,15 +136,16 @@ public:
 	void OnChannelLabelClick(wxMouseEvent& event);
 };
 
-class PianoRollSettingsDialog: public wxDialog
+class SettingsDialog: public wxDialog
 {
 public:
 	Window* window;
 	wxTextCtrl* first_note_text_box;
 	wxTextCtrl* last_note_text_box;
 	wxTextCtrl* key_width_text_box;
+	wxFontPickerCtrl* font_picker;
 
-	PianoRollSettingsDialog(Window* window);
+	SettingsDialog(Window* window);
 };
 
 class EventType
@@ -280,7 +282,6 @@ enum
 	SEQER_ID_EDIT_COLUMN_7,
 	SEQER_ID_FILTER,
 	SEQER_ID_ZOOM,
-	SEQER_ID_PIANO_ROLL,
 	SEQER_ID_INSERT_NOTE_A,
 	SEQER_ID_INSERT_NOTE_B,
 	SEQER_ID_INSERT_NOTE_C,
@@ -308,9 +309,10 @@ enum
 	SEQER_ID_PREVIOUS_MARKER,
 	SEQER_ID_GO_TO_MARKER,
 	SEQER_ID_PORTS,
+	SEQER_ID_EXTERNAL_UTILITY,
 	SEQER_ID_RECORD_MACRO,
 	SEQER_ID_MACROS,
-	SEQER_ID_EXTERNAL_UTILITY,
+	SEQER_ID_SETTINGS,
 	SEQER_ID_HIGHEST
 };
 
@@ -420,8 +422,6 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
-			view_menu->AppendSeparator();
-			view_menu->Append(SEQER_ID_PIANO_ROLL, "&Piano Roll..."); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPianoRollSettings, this, SEQER_ID_PIANO_ROLL);
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
 			wxMenu* insert_note_menu = new wxMenu(); insert_menu->AppendSubMenu(insert_note_menu, "&Notes");
 				insert_note_menu->Append(SEQER_ID_INSERT_NOTE_A, "Note &A\tA");
@@ -457,10 +457,12 @@ Window::Window(): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
 		wxMenu* tools_menu = new wxMenu(); menu_bar->Append(tools_menu, "&Tools");
+			tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
+			tools_menu->AppendSeparator();
 			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+Shift+Q");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
 			tools_menu->AppendSeparator();
-			tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
+			tools_menu->Append(SEQER_ID_SETTINGS, "&Settings..."); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSettings, this, SEQER_ID_SETTINGS);
 		wxMenu* help_menu = new wxMenu(); menu_bar->Append(help_menu, "&Help");
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
@@ -521,9 +523,9 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 	dialog->Destroy();
 }
 
-void Window::OnPianoRollSettings(wxCommandEvent& WXUNUSED(event))
+void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
 {
-	PianoRollSettingsDialog* dialog = new PianoRollSettingsDialog(this);
+	SettingsDialog* dialog = new SettingsDialog(this);
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
@@ -986,7 +988,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	controls_sizer->Add(event_type_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
-	event_type_sizer->Add(event_type_label, wxSizerFlags().Center());
+	event_type_sizer->Add(event_type_label, wxSizerFlags().Align(wxALIGN_CENTER));
 	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
 
@@ -1000,7 +1002,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	controls_sizer->Add(track_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
-	track_sizer->Add(track_label, wxSizerFlags().Center().Border(wxLEFT | wxRIGHT));
+	track_sizer->Add(track_label, wxSizerFlags().Align(wxALIGN_CENTER).Border(wxLEFT | wxRIGHT));
 	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
 
@@ -1014,7 +1016,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	controls_sizer->Add(channel_sizer, wxSizerFlags().Proportion(1).Expand());
 
 	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
-	channel_sizer->Add(channel_label, wxSizerFlags().Center());
+	channel_sizer->Add(channel_label, wxSizerFlags().Align(wxALIGN_CENTER));
 	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
 
@@ -1025,7 +1027,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
-	outer_sizer->Add(button_sizer, wxSizerFlags().Border());
+	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
 }
@@ -1102,7 +1104,7 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 	event.Skip();
 }
 
-PianoRollSettingsDialog::PianoRollSettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Piano Roll Settings")
+SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settings")
 {
 	// TODO: continue here
 
@@ -1111,29 +1113,44 @@ PianoRollSettingsDialog::PianoRollSettingsDialog(Window* window): wxDialog(NULL,
 	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(outer_sizer);
 
-	wxBoxSizer* first_note_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_sizer->Add(first_note_sizer, wxSizerFlags().Right());
-	wxStaticText* first_note_label = new wxStaticText(this, wxID_ANY, "First note");
-	first_note_sizer->Add(first_note_label, wxSizerFlags().Center().Border());
+	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
+	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border());
+	wxFlexGridSizer* piano_roll_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+	piano_roll_settings_section->Add(piano_roll_settings_sizer, wxSizerFlags().Expand().Border());
+	piano_roll_settings_sizer->AddGrowableCol(1, 1);
+
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "First note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->first_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->first_note));
-	first_note_sizer->Add(this->first_note_text_box, wxSizerFlags().Border(wxTOP | wxRIGHT | wxBOTTOM));
+	piano_roll_settings_sizer->Add(this->first_note_text_box, wxSizerFlags().Expand());
+	wxButton* default_first_note_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_first_note_button, wxSizerFlags().Expand());
 
-	wxBoxSizer* last_note_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_sizer->Add(last_note_sizer, wxSizerFlags().Right());
-	wxStaticText* last_note_label = new wxStaticText(this, wxID_ANY, "Last note");
-	last_note_sizer->Add(last_note_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->last_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteName(this->window->canvas->piano_roll->last_note));
-	last_note_sizer->Add(this->last_note_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
+	piano_roll_settings_sizer->Add(this->last_note_text_box, wxSizerFlags().Expand());
+	wxButton* default_last_note_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_last_note_button, wxSizerFlags().Expand());
 
-	wxBoxSizer* key_width_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_sizer->Add(key_width_sizer, wxSizerFlags().Right());
-	wxStaticText* key_width_label = new wxStaticText(this, wxID_ANY, "Key width");
-	key_width_sizer->Add(key_width_label, wxSizerFlags().Center().Border(wxRIGHT | wxBOTTOM | wxLEFT));
-	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%d", this->window->canvas->piano_roll->key_width));
-	key_width_sizer->Add(this->key_width_text_box, wxSizerFlags().Border(wxRIGHT | wxBOTTOM));
+	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Key width"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%ld", this->window->canvas->piano_roll->key_width));
+	piano_roll_settings_sizer->Add(this->key_width_text_box, wxSizerFlags().Expand());
+	wxButton* default_key_width_button = new wxButton(this, wxID_ANY, "Default");
+	piano_roll_settings_sizer->Add(default_key_width_button, wxSizerFlags().Expand());
+
+	wxStaticBoxSizer* event_list_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Event list");
+	outer_sizer->Add(event_list_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	wxFlexGridSizer* event_list_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+	event_list_settings_section->Add(event_list_settings_sizer, wxSizerFlags().Expand().Border());
+	event_list_settings_sizer->AddGrowableCol(1, 1);
+
+	event_list_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Font"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->font_picker = new wxFontPickerCtrl(this, wxID_ANY, wxNullFont, wxDefaultPosition, wxDefaultSize, wxFNTP_FONTDESC_AS_LABEL);
+	event_list_settings_sizer->Add(this->font_picker, wxSizerFlags().Expand());
+	wxButton* default_font_button = new wxButton(this, wxID_ANY, "Default");
+	event_list_settings_sizer->Add(default_font_button, wxSizerFlags().Expand());
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
-	outer_sizer->Add(button_sizer, wxSizerFlags().Border());
+	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
 }
