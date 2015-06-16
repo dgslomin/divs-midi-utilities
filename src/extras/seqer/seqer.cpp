@@ -291,8 +291,8 @@ enum
 	SEQER_ID_EDIT_COLUMN_5,
 	SEQER_ID_EDIT_COLUMN_6,
 	SEQER_ID_EDIT_COLUMN_7,
-	SEQER_ID_FILTER,
 	SEQER_ID_ZOOM,
+	SEQER_ID_FILTER,
 	SEQER_ID_INSERT_NOTE_A,
 	SEQER_ID_INSERT_NOTE_B,
 	SEQER_ID_INSERT_NOTE_C,
@@ -463,11 +463,11 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_6, "Column &6\tCtrl+6");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
-			view_menu->AppendSeparator();
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
+			view_menu->AppendSeparator();
+			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
 			wxMenu* insert_note_menu = new wxMenu(); insert_menu->AppendSubMenu(insert_note_menu, "&Notes");
 				insert_note_menu->Append(SEQER_ID_INSERT_NOTE_A, "Note &A\tA");
