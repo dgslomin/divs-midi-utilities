@@ -102,6 +102,7 @@ public:
 	wxColour lightest_line_color;
 	wxColour white_key_color;
 	wxColour black_key_color;
+	wxColour shadow_color;
 
 	PianoRoll(Canvas* canvas);
 	void Prepare();
@@ -328,13 +329,13 @@ enum
 
 IMPLEMENT_APP(Application)
 
-wxString NoteNumberToName(int note_number)
+wxString GetNoteNameFromNumber(int note_number)
 {
 	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
 }
 
-int NoteNameToNumber(wxString note_name)
+int GetNoteNumberFromName(wxString note_name)
 {
 	const char* note_names[] = {"C#", "C", "Db", "D#", "D", "Eb", "E", "F#", "F", "Gb", "G#", "G", "Ab", "A#", "A", "Bb", "B"};
 	const int chromatics[] = {1, 0, 1, 3, 2, 3, 4, 6, 5, 6, 8, 7, 8, 10, 9, 10, 11};
@@ -358,27 +359,27 @@ int NoteNameToNumber(wxString note_name)
 	return ((octave + 1) * 12) + chromatic;
 }
 
-int NoteGetOctave(int note_number)
+int GetNoteOctave(int note_number)
 {
 	return (note_number / 12) - 1;
 }
 
-int NoteSetOctave(int note_number, int octave)
+int SetNoteOctave(int note_number, int octave)
 {
 	return (note_number % 12) + ((octave + 1) * 12);
 }
 
-int NoteGetChromatic(int note_number)
+int GetNoteChromatic(int note_number)
 {
 	return note_number % 12;
 }
 
-int NoteSetChromatic(int note_number, int chromatic)
+int SetNoteChromatic(int note_number, int chromatic)
 {
 	return ((note_number / 12) * 12) + chromatic;
 }
 
-wxString KeyName(int key_number, bool is_minor)
+wxString GetKeyNameFromNumber(int key_number, bool is_minor)
 {
 	while (key_number < -6) key_number += 12;
 	while (key_number > 6) key_number -= 12;
@@ -386,7 +387,7 @@ wxString KeyName(int key_number, bool is_minor)
 	return wxString::Format("%s%s", key_names[key_number + 6], is_minor ? "m" : "");
 }
 
-int ChromaticNoteInKey(int diatonic, int key_number)
+int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 {
 	while (key_number < -6) key_number += 12;
 	while (key_number > 6) key_number -= 12;
@@ -575,9 +576,20 @@ void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
 	if (dialog->ShowModal() == wxID_OK)
 	{
 		this->canvas->event_list->font = dialog->event_list_font_picker->GetSelectedFont();
-		this->canvas->piano_roll->first_note = NoteNameToNumber(dialog->piano_roll_first_note_text_box->GetValue());
-		this->canvas->piano_roll->last_note = NoteNameToNumber(dialog->piano_roll_last_note_text_box->GetValue());
-		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&(this->canvas->piano_roll->key_width));
+
+		long first_note = GetNoteNumberFromName(dialog->piano_roll_first_note_text_box->GetValue());
+		long last_note = GetNoteNumberFromName(dialog->piano_roll_last_note_text_box->GetValue());
+
+		if ((first_note >= 0) && (first_note < 128) && (last_note >= 0) && (last_note < 128) && (first_note <= last_note))
+		{
+			this->canvas->piano_roll->first_note = first_note;
+			this->canvas->piano_roll->last_note = last_note;
+		}
+
+		long key_width = -1;
+		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
+		if (key_width >= 0) this->canvas->piano_roll->key_width = key_width;
+
 		this->canvas->Prepare();
 		this->canvas->Refresh();
 	}
@@ -943,6 +955,7 @@ void PianoRoll::Prepare()
 	this->lightest_line_color = ColorShade(button_color, 218 * 100 / 255);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
+	this->shadow_color = ColorShade(button_color, 192 * 100 / 255);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -974,23 +987,31 @@ void PianoRoll::OnDraw(wxDC& dc)
 		dc.DrawLine(0, y, width, y);
 	}
 
-	dc.SetPen(*wxBLACK_PEN);
-	dc.SetBrush(*wxWHITE_BRUSH);
+	const wxPen pass_pens[] = {wxPen(this->shadow_color), *wxBLACK_PEN};
+	const wxBrush pass_brushes[] = {wxBrush(this->shadow_color), *wxWHITE_BRUSH};
+	const long pass_x_offsets[] = {1, 0};
+	const long pass_y_offsets[] = {1, 0};
 
-	for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->canvas->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	for (int pass = 0; pass < 2; pass++)
 	{
-		if (MidiFileEvent_isNoteStartEvent(event) && this->canvas->Filter(event))
+		dc.SetPen(pass_pens[pass]);
+		dc.SetBrush(pass_brushes[pass]);
+
+		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->canvas->window->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-			double event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
-			long event_y = this->GetYFromStepNumber(event_step_number);
-
-			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-			double end_event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(end_event));
-			long end_event_y = this->GetYFromStepNumber(end_event_step_number);
-
-			if ((event_y <= last_y) && (end_event_y >= first_y))
+			if (MidiFileEvent_isNoteStartEvent(event) && this->canvas->Filter(event))
 			{
-				dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1, event_y, this->key_width + 1, end_event_y - event_y);
+				double event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
+				long event_y = this->GetYFromStepNumber(event_step_number);
+
+				MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+				double end_event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(end_event));
+				long end_event_y = this->GetYFromStepNumber(end_event_step_number);
+
+				if ((event_y <= last_y) && (end_event_y >= first_y))
+				{
+					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1 + pass_x_offsets[pass], event_y + pass_y_offsets[pass], this->key_width + 1, end_event_y - event_y);
+				}
 			}
 		}
 	}
@@ -1177,14 +1198,14 @@ SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settin
 	piano_roll_settings_sizer->AddGrowableCol(1, 1);
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "First note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->piano_roll_first_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteNumberToName(this->window->canvas->piano_roll->first_note));
+	this->piano_roll_first_note_text_box = new wxTextCtrl(this, wxID_ANY, GetNoteNameFromNumber(this->window->canvas->piano_roll->first_note));
 	piano_roll_settings_sizer->Add(this->piano_roll_first_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_first_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_first_note_button, wxSizerFlags().Expand());
 	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick, this);
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->piano_roll_last_note_text_box = new wxTextCtrl(this, wxID_ANY, NoteNumberToName(this->window->canvas->piano_roll->last_note));
+	this->piano_roll_last_note_text_box = new wxTextCtrl(this, wxID_ANY, GetNoteNameFromNumber(this->window->canvas->piano_roll->last_note));
 	piano_roll_settings_sizer->Add(this->piano_roll_last_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_last_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_last_note_button, wxSizerFlags().Expand());
@@ -1211,13 +1232,13 @@ void SettingsDialog::OnDefaultEventListFontButtonClick(wxCommandEvent& event)
 
 void SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event)
 {
-	this->piano_roll_first_note_text_box->SetValue(NoteNumberToName(this->window->application->default_piano_roll_first_note));
+	this->piano_roll_first_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_first_note));
 	event.Skip();
 }
 
 void SettingsDialog::OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event)
 {
-	this->piano_roll_last_note_text_box->SetValue(NoteNumberToName(this->window->application->default_piano_roll_last_note));
+	this->piano_roll_last_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_last_note));
 	event.Skip();
 }
 
@@ -1259,7 +1280,7 @@ wxString NoteEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 4:
 		{
-			return NoteNumberToName(MidiFileNoteStartEvent_getNote(event));
+			return GetNoteNameFromNumber(MidiFileNoteStartEvent_getNote(event));
 		}
 		case 5:
 		{
@@ -1407,7 +1428,7 @@ wxString AftertouchEventType::GetEventListColumnText(EventList* event_list, Midi
 		{
 			if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
 			{
-				return NoteNumberToName(MidiFileKeyPressureEvent_getNote(event));
+				return GetNoteNameFromNumber(MidiFileKeyPressureEvent_getNote(event));
 			}
 			else
 			{
@@ -1758,7 +1779,7 @@ wxString KeySignatureEventType::GetEventListColumnText(EventList* event_list, Mi
 		}
 		case 4:
 		{
-			return KeyName(MidiFileKeySignatureEvent_getNumber(event), (bool)(MidiFileKeySignatureEvent_isMinor(event)));
+			return GetKeyNameFromNumber(MidiFileKeySignatureEvent_getNumber(event), (bool)(MidiFileKeySignatureEvent_isMinor(event)));
 		}
 		default:
 		{

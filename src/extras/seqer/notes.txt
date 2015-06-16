@@ -33,7 +33,6 @@ TODO:
         infinite scrollbar logic
         mouse support for navigate/select
     piano roll
-        config dialog
         mouse support for select
     step size controls
         There should be zoom in, zoom out, and step size dialog commands.
