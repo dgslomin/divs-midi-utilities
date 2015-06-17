@@ -10,6 +10,7 @@
 class Application: public wxApp
 {
 public:
+	double default_steps_per_beat;
 	wxFont default_event_list_font;
 	long default_piano_roll_first_note;
 	long default_piano_roll_last_note;
@@ -29,6 +30,8 @@ public:
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
+	void OnZoomIn(wxCommandEvent& event);
+	void OnZoomOut(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
 	void OnSettings(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
@@ -51,6 +54,7 @@ public:
 	class PianoRoll* piano_roll;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
+	double steps_per_beat;
 	std::vector<int> filtered_event_types;
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
@@ -66,6 +70,8 @@ public:
 	long GetFirstRowNumberFromStepNumber(long step_number);
 	long GetLastRowNumberFromStepNumber(long step_number);
 	long GetStepNumberFromRowNumber(long row_number);
+	long GetStepNumberFromTick(long tick);
+	double GetFractionalStepNumberFromTick(long tick);
 	bool Filter(MidiFileEvent_t event);
 };
 
@@ -399,6 +405,7 @@ int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 
 bool Application::OnInit()
 {
+	this->default_steps_per_beat = 1;
 #if defined(__WXOSX__)
 	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else
@@ -463,8 +470,8 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_6, "Column &6\tCtrl+6");
 				edit_column_menu->Append(SEQER_ID_EDIT_COLUMN_7, "Column &7\tCtrl+7");
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
-			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
-			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
+			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomIn, this, wxID_ZOOM_IN);
+			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
 			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
@@ -543,6 +550,18 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 	this->Close(true);
 }
 
+void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
+{
+	this->canvas->steps_per_beat *= 2;
+	this->canvas->Prepare();
+}
+
+void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
+{
+	this->canvas->steps_per_beat /= 2;
+	this->canvas->Prepare();
+}
+
 void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 {
 	FilterDialog* dialog = new FilterDialog(this);
@@ -619,6 +638,7 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->window = window;
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
+	this->steps_per_beat = this->window->application->default_steps_per_beat;
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
@@ -647,7 +667,7 @@ void Canvas::Prepare()
 		{
 			if (!this->Filter(event)) continue;
 
-			long step_number = (long)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event)));
+			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
 
 			while (last_step_number < step_number - 1)
 			{
@@ -748,6 +768,16 @@ long Canvas::GetStepNumberFromRowNumber(long row_number)
 	{
 		return this->rows[this->rows.size() - 1].step_number + row_number - this->rows.size() + 1;
 	}
+}
+
+long Canvas::GetStepNumberFromTick(long tick)
+{
+	return (long)(this->GetFractionalStepNumberFromTick(tick));
+}
+
+double Canvas::GetFractionalStepNumberFromTick(long tick)
+{
+	return MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) * this->steps_per_beat;
 }
 
 bool Canvas::Filter(MidiFileEvent_t event)
@@ -1001,11 +1031,11 @@ void PianoRoll::OnDraw(wxDC& dc)
 		{
 			if (MidiFileEvent_isNoteStartEvent(event) && this->canvas->Filter(event))
 			{
-				double event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
+				double event_step_number = this->canvas->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(event));
 				long event_y = this->GetYFromStepNumber(event_step_number);
 
 				MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-				double end_event_step_number = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(end_event));
+				double end_event_step_number = this->canvas->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(end_event));
 				long end_event_y = this->GetYFromStepNumber(end_event_step_number);
 
 				if ((event_y <= last_y) && (end_event_y >= first_y))
