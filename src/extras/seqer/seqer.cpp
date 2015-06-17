@@ -1019,8 +1019,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 	const wxPen pass_pens[] = {wxPen(this->shadow_color), *wxBLACK_PEN};
 	const wxBrush pass_brushes[] = {wxBrush(this->shadow_color), *wxWHITE_BRUSH};
-	const long pass_x_offsets[] = {1, 0};
-	const long pass_y_offsets[] = {1, 0};
+	const long pass_offsets[] = {1, 0};
 
 	for (int pass = 0; pass < 2; pass++)
 	{
@@ -1040,7 +1039,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 				if ((event_y <= last_y) && (end_event_y >= first_y))
 				{
-					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1 + pass_x_offsets[pass], event_y + pass_y_offsets[pass], this->key_width + 1, end_event_y - event_y);
+					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
 				}
 			}
 		}
