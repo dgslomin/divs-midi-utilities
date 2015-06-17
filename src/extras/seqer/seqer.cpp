@@ -520,6 +520,10 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 
+	// Make Unix work the same as Windows and Mac by ignoring whether shift is pressed for the zoom in/out keyboard shortcuts.
+	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL, '_', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN)};
+	this->SetAcceleratorTable(wxAcceleratorTable(sizeof additional_keyboard_accelerators / sizeof (wxAcceleratorEntry), additional_keyboard_accelerators));
+
 	this->sequence = new Sequence(this);
 	this->canvas = new Canvas(this);
 	this->CreateStatusBar();
