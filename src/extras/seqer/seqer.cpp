@@ -297,7 +297,7 @@ enum
 	SEQER_ID_EDIT_COLUMN_5,
 	SEQER_ID_EDIT_COLUMN_6,
 	SEQER_ID_EDIT_COLUMN_7,
-	SEQER_ID_ZOOM,
+	SEQER_ID_STEP_SIZE,
 	SEQER_ID_FILTER,
 	SEQER_ID_INSERT_NOTE_A,
 	SEQER_ID_INSERT_NOTE_B,
@@ -472,7 +472,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomIn, this, wxID_ZOOM_IN);
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
-			view_menu->Append(SEQER_ID_ZOOM, "Zoo&m...\tCtrl+Shift+M");
+			view_menu->Append(SEQER_ID_STEP_SIZE, "&Step Size...\tCtrl+Shift+S");
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
@@ -781,7 +781,32 @@ long Canvas::GetStepNumberFromTick(long tick)
 
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
+#if 1
 	return MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) * this->steps_per_beat;
+#else
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
+	float time_signature_event_beat = 0.0;
+	int numerator = 4;
+	int denominator = 4;
+	float measure = 0.0;
+
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isTimeSignatureEvent(event))
+		{
+			float next_time_signature_event_beat = MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event));
+			measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
+			time_signature_event_beat = next_time_signature_event_beat;
+			numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+			denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+		}
+	}
+
+	measure += ((MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
+	MidiFileMeasureBeat_setMeasure(measure_beat, (long)(measure) + 1);
+	MidiFileMeasureBeat_setBeat(measure_beat, ((measure - (MidiFileMeasureBeat_getMeasure(measure_beat) - (float)(1.0))) * (float)(numerator)) + (float)(1.0));
+	return 0;
+#endif
 }
 
 bool Canvas::Filter(MidiFileEvent_t event)
