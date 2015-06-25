@@ -20,8 +20,29 @@ cubase: type, time, end time, duration, note, velocity, release velocity, channe
 logic: time, type, channel, note, velocity, duration
 dp: time, note, velocity, release velocity, duration
 reaper: index, time, duration, channel, type, note, velocity
-
 seqer: type, time, track, channel, note, velocity, duration, release velocity
+
+
+
+
+
+
+
+Step size and zoom:
+
+  Amount: [6          ]
+
+  (x) Steps per measure
+  ( ) Measures per step
+  ( ) Steps per second
+  ( ) Seconds per step
+
+     [Ok] [Cancel]
+
+"Steps per measure" mode only applies to the current time signature block.  Zoom in and out move through a logical progression in the current time signature (for 4/4 it would be 2, 4, 8, 16, etc; for 3/4 it would be 3, 6, 12, 24, etc; for 6/8 it would be 2, 6, 12, 24, 48, etc; for 7/8 it would be 7, 14, 28, etc).  The user can use the dialog to type in a number that's not in the progression to acheive tuplets.  Zoom in or out after being on a tuplet goes to the next nearest from the progression in that direction.  As soon as the zoom hits one, the mode turns into "measures per step".
+
+"Measures per step" (like "steps per second" and "seconds per step") applies to the whole sequence.  Zoom in and out move through factors of two.
+
 
 
 
