@@ -30,19 +30,22 @@ seqer: type, time, track, channel, note, velocity, duration, release velocity
 
 Step size and zoom:
 
-  Amount: [6          ]
+   Amount: [6                  ]
 
-  (x) Steps per measure
-  ( ) Measures per step
-  ( ) Steps per second
-  ( ) Seconds per step
+     Mode: (x) Steps per measure
+           ( ) Measures per step
+           ( ) Seconds per step
 
-     [Ok] [Cancel]
+           [Ok] [Cancel]
 
-"Steps per measure" mode only applies to the current time signature block.  Zoom in and out move through a logical progression in the current time signature (for 4/4 it would be 2, 4, 8, 16, etc; for 3/4 it would be 3, 6, 12, 24, etc; for 6/8 it would be 2, 6, 12, 24, 48, etc; for 7/8 it would be 7, 14, 28, etc).  The user can use the dialog to type in a number that's not in the progression to acheive tuplets.  Zoom in or out after being on a tuplet goes to the next nearest from the progression in that direction.  As soon as the zoom hits one, the mode turns into "measures per step".
 
-"Measures per step" (like "steps per second" and "seconds per step") applies to the whole sequence.  Zoom in and out move through factors of two.
+In "steps per measure" mode each time signature block in the sequence has its own amount.  Zoom in and out moves through a series appropriate to the current time signature (4/4 = 1, 2, 4, 8...; 3/4 = 1, 3, 6, 12...; 6/8 = 1, 2, 6, 12, 24...; 7/8 = 1, 7, 14, 28...).  The dialog lets the user type in a non-series number to achieve tuplets.  Zoom in or out from a tuplet goes to the next nearest series number.
 
+In "measures per step" mode the whole sequence uses the same amount.  Zoom in and out moves through factors of two.
+
+Zooming out from 1 step per measure for the current time signature block switches to 2 measures per step for the whole sequence, regardless of how many steps per measure were in use for other time signature blocks.  Zooming in from 1 measure per step switches to "steps per measure" mode, but has a different effect on the current time signature block than for others:  the current time signature block switches to the second entry in that time signature's series, whereas other time signature blocks remain at 1 step per measure.  Taken together, these rules means that 1 step per measure and 1 measure per step are not quite identical, but by overshooting and coming back they can both always be reached via zoom in and out.
+
+In "seconds per step" mode the whole sequence uses the same amount, and zoom in and out moves through factors of two, just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
 
 
 
