@@ -39,13 +39,16 @@ Step size and zoom:
            [Ok] [Cancel]
 
 
-In "steps per measure" mode each time signature block in the sequence has its own amount.  Zoom in and out moves through a series appropriate to the current time signature (4/4 = 1, 2, 4, 8...; 3/4 = 1, 3, 6, 12...; 6/8 = 1, 2, 6, 12, 24...; 7/8 = 1, 7, 14, 28...).  The dialog lets the user type in a non-series number to achieve tuplets.  Zoom in or out from a tuplet goes to the next nearest series number.
+In "steps per measure" mode, zoom in and out moves through a series of zoom levels which consists of the factors of the numerator of the current time signature, followed by powers of two times that numerator (e.g., for 12/8 it would be 1, 2, 3, 4, 6, 12, 24, 48, 96...).  The dialog lets the user type in a non-series number to achieve tuplets.  Zoom in or out from a tuplet goes to the next nearest series number.
 
-In "measures per step" mode the whole sequence uses the same amount.  Zoom in and out moves through factors of two.
+Measures in other time signatures than the current are assigned the nearest zoom level in their respective series (determined by comparing duration in quarter notes, and rounding to the finer zoom level when ambiguous).  The other time signatures always get a series value even when the current time signature has been assigned a non-series tuplet.
 
-Zooming out from 1 step per measure for the current time signature block switches to 2 measures per step for the whole sequence, regardless of how many steps per measure were in use for other time signature blocks.  Zooming in from 1 measure per step switches to "steps per measure" mode, but has a different effect on the current time signature block than for others:  the current time signature block switches to the second entry in that time signature's series, whereas other time signature blocks remain at 1 step per measure.  Taken together, these rules means that 1 step per measure and 1 measure per step are not quite identical, but by overshooting and coming back they can both always be reached via zoom in and out.
+In "measures per step" mode, zoom in and out moves through powers of two.
 
-In "seconds per step" mode the whole sequence uses the same amount, and zoom in and out moves through factors of two, just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
+One measure per step is not exactly the same as one step per measure, since the latter is affected by time signature (e.g., setting the zoom to one step per measure when the current measure is in 3/8 results in two steps per measure for other sections of the song in 6/8).  Zooming out from one step per measure results in two measures per step.  Zooming in from one measure per step results in the second value in the current measure's "steps per measure" series.  This allows the user to get to both one measure per step and one step per measure solely by zooming in and out, by overshooting and coming back.
+
+In "seconds per step" mode, zoom in and out moves through factors of two just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
+
 
 
 
