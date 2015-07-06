@@ -518,7 +518,25 @@ int GetEquivalentMeasureDivision(int source_measure_division, int source_time_si
 	double raw_target_measure_division = (double)(source_measure_division * target_time_signature_numerator * source_time_signature_denominator) / (double)(source_time_signature_numerator * target_time_signature_denominator);
 	int coarser_target_measure_division = GetCoarserOrEqualMeasureDivision((int)(raw_target_measure_division), target_time_signature_numerator);
 	int finer_target_measure_division = GetFinerMeasureDivision(coarser_target_measure_division, target_time_signature_numerator);
-	return (finer_target_measure_division - raw_target_measure_division < raw_target_measure_division - coarser_target_measure_division) ? finer_target_measure_division : coarser_target_measure_division;
+	return ((double)(finer_target_measure_division) - raw_target_measure_division < raw_target_measure_division - (double)(coarser_target_measure_division)) ? finer_target_measure_division : coarser_target_measure_division;
+}
+
+int GetFinerMeasureMultiple(int existing_measure_multiple)
+{
+	for (int power_of_two = 1; true; power_of_two++)
+	{
+		int finer_measure_multiple = 1 << power_of_two;
+		if (finer_measure_multiple >= existing_measure_multiple) return finer_measure_multiple >> 1;
+	}
+}
+
+int GetCoarserMeasureMultiple(int existing_measure_multiple)
+{
+	for (int power_of_two = 1; true; power_of_two++)
+	{
+		int coarser_measure_multiple = 1 << power_of_two;
+		if (coarser_measure_multiple > existing_measure_multiple) return coarser_measure_multiple;
+	}
 }
 
 bool Application::OnInit()
@@ -639,7 +657,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 
 	// Make Unix work the same as Windows and Mac by ignoring whether shift is pressed for the zoom in/out keyboard shortcuts.
-	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL, '_', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN)};
+	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL, '_', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN), wxAcceleratorEntry(wxACCEL_SHIFT, WXK_LEFT, SEQER_ID_SELECT_CURRENT)};
 	this->SetAcceleratorTable(wxAcceleratorTable(sizeof additional_keyboard_accelerators / sizeof (wxAcceleratorEntry), additional_keyboard_accelerators));
 
 	this->sequence = new Sequence(this);
@@ -679,25 +697,24 @@ void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 	{
 		case STEPS_PER_MEASURE:
 		{
-			// TODO: time signature series
-			this->canvas->step_config.u.steps_per_measure.amount *= 2;
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.numerator, this->canvas->step_config.u.steps_per_measure.denominator, current_time_signature_numerator, current_time_signature_denominator);
+			this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
+			this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+			this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(current_measure_division, current_time_signature_numerator);
 			break;
 		}
 		case MEASURES_PER_STEP:
 		{
-			// TODO: tuplets
-
 			if (this->canvas->step_config.u.measures_per_step == 1)
 			{
 				this->canvas->step_config.type = STEPS_PER_MEASURE;
-				// TODO: get the time signature from the current step, and use the second entry in that time signature's series for the amount
-				this->canvas->step_config.u.steps_per_measure.numerator = 4;
-				this->canvas->step_config.u.steps_per_measure.denominator = 4;
-				this->canvas->step_config.u.steps_per_measure.amount = 2;
+				this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
+				this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+				this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(1, current_time_signature_numerator);
 			}
 			else
 			{
-				this->canvas->step_config.u.measures_per_step.amount /= 2;
+				this->canvas->step_config.u.measures_per_step.amount = GetFinerMeasureMultiple(this->canvas->step_config.u.measures_per_step.amount);
 			}
 
 			break;
@@ -718,7 +735,38 @@ void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
 #ifdef NEW_STEP_ZOOM
-	// TODO
+	switch (this->canvas->step_config.type)
+	{
+		case STEPS_PER_MEASURE:
+		{
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.numerator, this->canvas->step_config.u.steps_per_measure.denominator, current_time_signature_numerator, current_time_signature_denominator);
+
+			if (current_measure_division == 1)
+			{
+				this->canvas->step_config.type = MEASURES_PER_STEP;
+				this->canvas->step_config.u.measures_per_step.amount = 2;
+			}
+			else
+			{
+				this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
+				this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+				this->canvas->step_config.u.steps_per_measure.amount = GetCoarserMeasureDivision(current_measure_division, current_time_signature_numerator);
+			}
+
+			break;
+		}
+		case MEASURES_PER_STEP:
+		{
+			this->canvas->step_config.u.measures_per_step.amount = GetCoarserMeasureMultiple(this->canvas->step_config.u.measures_per_step.amount);
+			break;
+		}
+		case SECONDS_PER_STEP:
+		{
+			this->canvas->step_config.u.seconds_per_step.amount *= 2;
+			break;
+		}
+	}
+
 #else
 	this->canvas->steps_per_beat /= 2;
 #endif
