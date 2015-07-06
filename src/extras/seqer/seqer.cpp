@@ -54,7 +54,41 @@ public:
 	class PianoRoll* piano_roll;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
+#ifdef NEW_STEP_ZOOM
+
+	struct
+	{
+		StepType type;
+
+		union
+		{
+			struct
+			{
+				int numerator;
+				int denominator;
+				int amount;
+			}
+			steps_per_measure;
+
+			struct
+			{
+				int amount;
+			}
+			measures_per_step;
+
+			struct
+			{
+				double amount;
+			}
+			seconds_per_step;
+		}
+		u;
+	}
+	step_config;
+
+#else
 	double steps_per_beat;
+#endif
 	std::vector<int> filtered_event_types;
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
@@ -281,6 +315,14 @@ EventType* event_types[] = {new NoteEventType(), new ControlChangeEventType(), n
 
 enum
 {
+	STEPS_PER_MEASURE,
+	MEASURES_PER_STEP,
+	SECONDS_PER_STEP
+}
+StepType;
+
+enum
+{
 	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
 	SEQER_ID_SELECT_CURRENT,
 	SEQER_ID_SELECT_NONE,
@@ -401,6 +443,82 @@ int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 	const int key_diatonics[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
 	const int key_chromatics[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
 	return (key_chromatics[key_number] + diatonic_to_chromatic[(7 + diatonic - key_diatonics[key_number]) % 7]) % 12;
+}
+
+/*
+ * Zooming in steps per measure mode moves through a series of logical
+ * divisions of a measure -- first the factors of the time signature numerator,
+ * then powers of two times the time signature numerator.
+ *
+ * Examples:
+ *
+ * 4/4: 1, 2, 4, 8, 16, ...
+ * 3/4: 1, 3, 6, 12, 24, ...
+ * 3/8: 1, 3, 6, 12, 24, ...
+ * 6/8: 1, 2, 3, 6, 12, 24, ...
+ * 12/8: 1, 2, 3, 4, 6, 12, 24, ...
+ * 5/8: 1, 5, 10, 20, ...
+ */
+
+int GetFinerMeasureDivision(int existing_measure_division, int time_signature_numerator)
+{
+	if (existing_measure_division < time_signature_numerator)
+	{
+		for (int finer_measure_division = existing_measure_division + 1; true; finer_measure_division++)
+		{
+			if (time_signature_numerator % finer_measure_division == 0) return finer_measure_division;
+		}
+	}
+	else
+	{
+		for (int power_of_two = 1; true; power_of_two++)
+		{
+			int finer_measure_division = time_signature_numerator << power_of_two;
+			if (finer_measure_division > existing_measure_division) return finer_measure_division;
+		}
+	}
+}
+
+int GetCoarserMeasureDivision(int existing_measure_division, int time_signature_numerator)
+{
+	if (existing_measure_division <= time_signature_numerator)
+	{
+		for (int coarser_measure_division = existing_measure_division - 1; true; coarser_measure_division--)
+		{
+			if (time_signature_numerator % coarser_measure_division == 0) return coarser_measure_division;
+		}
+	}
+	else
+	{
+		for (int power_of_two = 1; true; power_of_two++)
+		{
+			int coarser_measure_division = time_signature_numerator << power_of_two;
+			if (coarser_measure_division >= existing_measure_division) return coarser_measure_division >> 1;
+		}
+	}
+}
+
+int GetFinerOrEqualMeasureDivision(int existing_measure_division, int time_signature_numerator)
+{
+	int finer_measure_division = GetFinerMeasureDivision(existing_measure_division, time_signature_numerator);
+	int coarser_measure_division = GetCoarserMeasureDivision(finer_measure_division, time_signature_numerator);
+	return (existing_measure_division == coarser_measure_division) ? existing_measure_division : finer_measure_division;
+}
+
+int GetCoarserOrEqualMeasureDivision(int existing_measure_division, int time_signature_numerator)
+{
+	int coarser_measure_division = GetCoarserMeasureDivision(existing_measure_division, time_signature_numerator);
+	int finer_measure_division = GetFinerMeasureDivision(coarser_measure_division, time_signature_numerator);
+	return (existing_measure_division == finer_measure_division) ? existing_measure_division : coarser_measure_division;
+}
+
+int GetEquivalentMeasureDivision(int source_measure_division, int source_time_signature_numerator, int source_time_signature_denominator, int target_time_signature_numerator, int target_time_signature_denominator)
+{
+	if ((source_time_signature_numerator == target_time_signature_numerator) && (source_time_signature_denominator == target_time_signature_denominator)) return source_measure_division;
+	double raw_target_measure_division = (double)(source_measure_division * target_time_signature_numerator * source_time_signature_denominator) / (double)(source_time_signature_numerator * target_time_signature_denominator);
+	int coarser_target_measure_division = GetCoarserOrEqualMeasureDivision((int)(raw_target_measure_division), target_time_signature_numerator);
+	int finer_target_measure_division = GetFinerMeasureDivision(coarser_target_measure_division, target_time_signature_numerator);
+	return (finer_target_measure_division - raw_target_measure_division < raw_target_measure_division - coarser_target_measure_division) ? finer_target_measure_division : coarser_target_measure_division;
 }
 
 bool Application::OnInit()
@@ -556,13 +674,54 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
+#ifdef NEW_STEP_ZOOM
+	switch (this->canvas->step_config.type)
+	{
+		case STEPS_PER_MEASURE:
+		{
+			// TODO: time signature series
+			this->canvas->step_config.u.steps_per_measure.amount *= 2;
+			break;
+		}
+		case MEASURES_PER_STEP:
+		{
+			// TODO: tuplets
+
+			if (this->canvas->step_config.u.measures_per_step == 1)
+			{
+				this->canvas->step_config.type = STEPS_PER_MEASURE;
+				// TODO: get the time signature from the current step, and use the second entry in that time signature's series for the amount
+				this->canvas->step_config.u.steps_per_measure.numerator = 4;
+				this->canvas->step_config.u.steps_per_measure.denominator = 4;
+				this->canvas->step_config.u.steps_per_measure.amount = 2;
+			}
+			else
+			{
+				this->canvas->step_config.u.measures_per_step.amount /= 2;
+			}
+
+			break;
+		}
+		case SECONDS_PER_STEP:
+		{
+			this->canvas->step_config.u.seconds_per_step.amount /= 2;
+			break;
+		}
+	}
+
+#else
 	this->canvas->steps_per_beat *= 2;
+#endif
 	this->canvas->Prepare();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
+#ifdef NEW_STEP_ZOOM
+	// TODO
+#else
 	this->canvas->steps_per_beat /= 2;
+#endif
 	this->canvas->Prepare();
 }
 
@@ -781,9 +940,7 @@ long Canvas::GetStepNumberFromTick(long tick)
 
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
-#if 1
-	return MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) * this->steps_per_beat;
-#else
+#ifdef NEW_STEP_ZOOM
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
 	float time_signature_event_beat = 0.0;
 	int numerator = 4;
@@ -806,6 +963,8 @@ double Canvas::GetFractionalStepNumberFromTick(long tick)
 	MidiFileMeasureBeat_setMeasure(measure_beat, (long)(measure) + 1);
 	MidiFileMeasureBeat_setBeat(measure_beat, ((measure - (MidiFileMeasureBeat_getMeasure(measure_beat) - (float)(1.0))) * (float)(numerator)) + (float)(1.0));
 	return 0;
+#else
+	return MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) * this->steps_per_beat;
 #endif
 }
 
