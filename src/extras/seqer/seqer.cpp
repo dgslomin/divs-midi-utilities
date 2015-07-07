@@ -166,8 +166,9 @@ class Step
 public:
 	long first_row_number;
 	long last_row_number;
+    double time;
 
-	Step(long row_number);
+	Step(long row_number, double time);
 };
 
 class StepSizeDialog: public wxDialog
@@ -903,13 +904,14 @@ void Canvas::Prepare()
 		{
 			if (!this->Filter(event)) continue;
 
+            // TODO: combine GetFractionalStepNumberFromTick() logic here, so it'll be incremental instead of O(n^2).  Consider the ramifications of both interpolation and extrapolation.
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
 
 			while (last_step_number < step_number - 1)
 			{
 				last_step_number++;
 				this->rows.push_back(Row(last_step_number, NULL));
-				this->steps.push_back(Step(this->rows.size() - 1));
+				this->steps.push_back(Step(this->rows.size() - 1, /* TODO: time in the current step zoom units */ 0));
 			}
 
 			this->rows.push_back(Row(step_number, event));
@@ -920,7 +922,7 @@ void Canvas::Prepare()
 			}
 			else
 			{
-				this->steps.push_back(Step(this->rows.size() - 1));
+				this->steps.push_back(Step(this->rows.size() - 1, /* TODO: time in the current step zoom units */ 0));
 			}
 
 			last_step_number = step_number;
@@ -1327,10 +1329,11 @@ Row::Row(long step_number, MidiFileEvent_t event)
 	this->event = event;
 }
 
-Step::Step(long row_number)
+Step::Step(long row_number, double time)
 {
 	this->first_row_number = row_number;
 	this->last_row_number = row_number;
+    this->time = time;
 }
 
 StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step Size")
