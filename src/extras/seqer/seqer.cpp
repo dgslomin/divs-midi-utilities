@@ -670,7 +670,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 
 	// Make Unix work the same as Windows and Mac by ignoring whether shift is pressed for the zoom in/out keyboard shortcuts.
-	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL, '_', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN), wxAcceleratorEntry(wxACCEL_SHIFT, WXK_LEFT, SEQER_ID_SELECT_CURRENT)};
+	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL | wxACCEL_SHIFT, '-', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN), wxAcceleratorEntry(wxACCEL_SHIFT, WXK_LEFT, SEQER_ID_SELECT_CURRENT)};
 	this->SetAcceleratorTable(wxAcceleratorTable(sizeof additional_keyboard_accelerators / sizeof (wxAcceleratorEntry), additional_keyboard_accelerators));
 
 	this->sequence = new Sequence(this);
@@ -1014,6 +1014,8 @@ long Canvas::GetStepNumberFromTick(long tick)
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
 #ifdef NEW_STEP_ZOOM
+    // TODO
+
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
 	float time_signature_event_beat = 0.0;
 	int numerator = 4;
