@@ -32,6 +32,7 @@ public:
 	void OnClose(wxCommandEvent& event);
 	void OnZoomIn(wxCommandEvent& event);
 	void OnZoomOut(wxCommandEvent& event);
+	void OnStepSize(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
 	void OnSettings(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
@@ -64,8 +65,8 @@ public:
 		{
 			struct
 			{
-				int numerator;
-				int denominator;
+				int time_signature_numerator;
+				int time_signature_denominator;
 				int amount;
 			}
 			steps_per_measure;
@@ -167,6 +168,18 @@ public:
 	long last_row_number;
 
 	Step(long row_number);
+};
+
+class StepSizeDialog: public wxDialog
+{
+public:
+	Window* window;
+	wxTextCtrl* amount_text_box;
+	wxRadioButton* steps_per_measure_radio_button;
+	wxRadioButton* measures_per_step_radio_button;
+	wxRadioButton* seconds_per_step_radio_button;
+
+	StepSizeDialog(Window* window);
 };
 
 class FilterDialog: public wxDialog
@@ -608,7 +621,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		wxMenu* view_menu = new wxMenu(); menu_bar->Append(view_menu, "&View");
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomIn, this, wxID_ZOOM_IN);
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
-			view_menu->Append(SEQER_ID_STEP_SIZE, "&Step Size...\tCtrl+Shift+S");
+			view_menu->Append(SEQER_ID_STEP_SIZE, "&Step Size...\tCtrl+Shift+S"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnStepSize, this, SEQER_ID_STEP_SIZE);
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
 		wxMenu* insert_menu = new wxMenu(); menu_bar->Append(insert_menu, "&Insert");
@@ -697,9 +710,9 @@ void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 	{
 		case STEPS_PER_MEASURE:
 		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.numerator, this->canvas->step_config.u.steps_per_measure.denominator, current_time_signature_numerator, current_time_signature_denominator);
-			this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
-			this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.time_signature_numerator, this->canvas->step_config.u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
+			this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+			this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
 			this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(current_measure_division, current_time_signature_numerator);
 			break;
 		}
@@ -708,8 +721,8 @@ void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 			if (this->canvas->step_config.u.measures_per_step == 1)
 			{
 				this->canvas->step_config.type = STEPS_PER_MEASURE;
-				this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
-				this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+				this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+				this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
 				this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(1, current_time_signature_numerator);
 			}
 			else
@@ -739,7 +752,7 @@ void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 	{
 		case STEPS_PER_MEASURE:
 		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.numerator, this->canvas->step_config.u.steps_per_measure.denominator, current_time_signature_numerator, current_time_signature_denominator);
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.time_signature_numerator, this->canvas->step_config.u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
 
 			if (current_measure_division == 1)
 			{
@@ -748,8 +761,8 @@ void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 			}
 			else
 			{
-				this->canvas->step_config.u.steps_per_measure.numerator = current_time_signature_numerator;
-				this->canvas->step_config.u.steps_per_measure.denominator = current_time_signature_denominator;
+				this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+				this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
 				this->canvas->step_config.u.steps_per_measure.amount = GetCoarserMeasureDivision(current_measure_division, current_time_signature_numerator);
 			}
 
@@ -771,6 +784,18 @@ void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 	this->canvas->steps_per_beat /= 2;
 #endif
 	this->canvas->Prepare();
+}
+
+void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
+{
+	StepSizeDialog* dialog = new StepSizeDialog(this);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+		// TODO
+	}
+
+	dialog->Destroy();
 }
 
 void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
@@ -1306,6 +1331,34 @@ Step::Step(long row_number)
 	this->last_row_number = row_number;
 }
 
+StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step Size")
+{
+	this->window = window;
+
+	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
+	this->SetSizer(outer_sizer);
+
+	wxBoxSizer* amount_sizer = new wxBoxSizer(wxHORIZONTAL);
+	outer_sizer->Add(amount_sizer, wxSizerFlags().Expand().Border(wxTOP | wxRIGHT | wxLEFT));
+	amount_sizer->Add(new wxStaticText(this, wxID_ANY, "&Amount"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Border());
+	this->amount_text_box = new wxTextCtrl(this, wxID_ANY);
+	amount_sizer->Add(this->amount_text_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP | wxRIGHT | wxBOTTOM));
+
+	wxBoxSizer* mode_sizer = new wxBoxSizer(wxVERTICAL);
+	outer_sizer->Add(mode_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
+	this->steps_per_measure_radio_button = new wxRadioButton(this, wxID_ANY, "Ste&ps per measure", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	mode_sizer->Add(this->steps_per_measure_radio_button, wxSizerFlags().Align(wxALIGN_LEFT).Border());
+	this->measures_per_step_radio_button = new wxRadioButton(this, wxID_ANY, "&Measures per step");
+	mode_sizer->Add(this->measures_per_step_radio_button, wxSizerFlags().Align(wxALIGN_LEFT).Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	this->seconds_per_step_radio_button = new wxRadioButton(this, wxID_ANY, "&Seconds per step");
+	mode_sizer->Add(this->seconds_per_step_radio_button, wxSizerFlags().Align(wxALIGN_LEFT).Border(wxRIGHT | wxBOTTOM | wxLEFT));
+
+	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
+	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
+
+	outer_sizer->Fit(this);
+}
+
 FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	this->window = window;
@@ -1319,7 +1372,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* event_type_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(event_type_sizer, wxSizerFlags().Proportion(1).Expand());
 
-	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "Event type");
+	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "&Event type");
 	event_type_sizer->Add(event_type_label, wxSizerFlags().Align(wxALIGN_CENTER));
 	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
@@ -1333,7 +1386,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags().Proportion(1).Expand());
 
-	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "Track");
+	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "&Track");
 	track_sizer->Add(track_label, wxSizerFlags().Align(wxALIGN_CENTER).Border(wxLEFT | wxRIGHT));
 	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
 	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
@@ -1347,7 +1400,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags().Proportion(1).Expand());
 
-	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "Channel");
+	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "&Channel");
 	channel_sizer->Add(channel_label, wxSizerFlags().Align(wxALIGN_CENTER));
 	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
