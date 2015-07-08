@@ -1119,7 +1119,7 @@ void EventList::OnDraw(wxDC& dc)
 
 		if (row.event == NULL)
 		{
-			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFile_getTickFromBeat(this->canvas->window->sequence->midi_file, row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->canvas->window->sequence->midi_file, MidiFile_getTickFromBeat(this->canvas->window->sequence->midi_file, /* TODO: step size */ row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 		}
 		else
 		{
