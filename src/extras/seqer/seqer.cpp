@@ -114,7 +114,7 @@ public:
 	Window* window;
 	class EventList* event_list;
 	class PianoRoll* piano_roll;
-	class StepPolicy* step_policy;
+	class StepSize* step_size;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
 	std::vector<int> filtered_event_types;
@@ -181,16 +181,16 @@ public:
 	long GetYFromStepNumber(double step_number);
 };
 
-class StepPolicy
+class StepSize
 {
 public:
-	virtual StepPolicy* ZoomIn() = 0;
-	virtual StepPolicy* ZoomOut() = 0;
+	virtual StepSize* ZoomIn() = 0;
+	virtual StepSize* ZoomOut() = 0;
 	virtual void PopulateDialog(class StepSizeDialog* dialog) = 0;
 	virtual double GetStepFromTick(long tick) = 0;
 };
 
-class StepsPerMeasurePolicy: public StepPolicy
+class StepsPerMeasureSize: public StepSize
 {
 public:
 	Canvas* canvas;
@@ -198,36 +198,36 @@ public:
 	int numerator;
 	int denominator;
 
-	StepsPerMeasurePolicy(Canvas* canvas, int amount, int numerator, int denominator);
-	StepsPerMeasurePolicy(Canvas* canvas);
-	StepPolicy* ZoomIn();
-	StepPolicy* ZoomOut();
+	StepsPerMeasureSize(Canvas* canvas, int amount, int numerator, int denominator);
+	StepsPerMeasureSize(Canvas* canvas);
+	StepSize* ZoomIn();
+	StepSize* ZoomOut();
 	void PopulateDialog(class StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 };
 
-class MeasuresPerStepPolicy: public StepPolicy
+class MeasuresPerStepSize: public StepSize
 {
 public:
 	Canvas* canvas;
 	int amount;
 
-	MeasuresPerStepPolicy(Canvas* canvas, int amount);
-	StepPolicy* ZoomIn();
-	StepPolicy* ZoomOut();
+	MeasuresPerStepSize(Canvas* canvas, int amount);
+	StepSize* ZoomIn();
+	StepSize* ZoomOut();
 	void PopulateDialog(class StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 };
 
-class SecondsPerStepPolicy: public StepPolicy
+class SecondsPerStepSize: public StepSize
 {
 public:
 	Canvas* canvas;
 	double amount;
 
-	SecondsPerStepPolicy(Canvas* canvas, double amount);
-	StepPolicy* ZoomIn();
-	StepPolicy* ZoomOut();
+	SecondsPerStepSize(Canvas* canvas, double amount);
+	StepSize* ZoomIn();
+	StepSize* ZoomOut();
 	void PopulateDialog(class StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 };
@@ -722,13 +722,13 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
-	this->canvas->step_policy = this->canvas->step_policy->ZoomIn();
+	this->canvas->step_size = this->canvas->step_size->ZoomIn();
 	this->canvas->Prepare();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
-	this->canvas->step_policy = this->canvas->step_policy->ZoomOut();
+	this->canvas->step_size = this->canvas->step_size->ZoomOut();
 	this->canvas->Prepare();
 }
 
@@ -745,7 +745,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 			if (amount > 0)
 			{
 				MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
-				this->canvas->step_policy = new StepsPerMeasurePolicy(this->canvas, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)); // TODO: memory leak
+				this->canvas->step_size = new StepsPerMeasureSize(this->canvas, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)); // TODO: memory leak
 				this->canvas->Prepare();
 			}
 		}
@@ -755,7 +755,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 
 			if (amount > 0)
 			{
-				this->canvas->step_policy = new MeasuresPerStepPolicy(this->canvas, amount);
+				this->canvas->step_size = new MeasuresPerStepSize(this->canvas, amount);
 				this->canvas->Prepare();
 			}
 		}
@@ -765,7 +765,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 
 			if (amount > 0)
 			{
-				this->canvas->step_policy = new SecondsPerStepPolicy(this->canvas, amount);
+				this->canvas->step_size = new SecondsPerStepSize(this->canvas, amount);
 				this->canvas->Prepare();
 			}
 		}
@@ -850,7 +850,7 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->window = window;
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
-	this->step_policy = new StepsPerMeasurePolicy(this);
+	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
@@ -863,7 +863,7 @@ bool Canvas::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
 	this->window->sequence->midi_file = new_midi_file;
-	this->step_policy = new StepsPerMeasurePolicy(this);
+	this->step_size = new StepsPerMeasureSize(this);
 	this->Prepare();
 	return true;
 }
@@ -991,7 +991,7 @@ long Canvas::GetStepNumberFromTick(long tick)
 
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
-	return this->step_policy->GetStepFromTick(tick);
+	return this->step_size->GetStepFromTick(tick);
 }
 
 MidiFileEvent_t Canvas::GetLatestTimeSignatureEventForRowNumber(long row_number)
@@ -1277,7 +1277,7 @@ long PianoRoll::GetYFromStepNumber(double step_number)
 	return step_first_y + (long)((step_last_y - step_first_y) * (step_number - (long)(step_number)));
 }
 
-StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas, int amount, int numerator, int denominator)
+StepsPerMeasureSize::StepsPerMeasureSize(Canvas* canvas, int amount, int numerator, int denominator)
 {
 	this->canvas = canvas;
 	this->amount = amount;
@@ -1285,7 +1285,7 @@ StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas, int amount, int num
 	this->denominator = denominator;
 }
 
-StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas)
+StepsPerMeasureSize::StepsPerMeasureSize(Canvas* canvas)
 {
 	this->canvas = canvas;
 	MidiFileEvent_t time_signature_event = MidiFile_getLatestTimeSignatureEventForTick(this->canvas->window->sequence->midi_file, 0);
@@ -1294,37 +1294,37 @@ StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas)
 	this->denominator = MidiFileTimeSignatureEvent_getDenominator(time_signature_event);
 }
 
-StepPolicy* StepsPerMeasurePolicy::ZoomIn()
+StepSize* StepsPerMeasureSize::ZoomIn()
 {
 	MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
 	int current_amount = GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 	int new_amount = GetFinerMeasureDivision(current_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
-	return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+	return new StepsPerMeasureSize(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 }
 
-StepPolicy* StepsPerMeasurePolicy::ZoomOut()
+StepSize* StepsPerMeasureSize::ZoomOut()
 {
 	MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
 	int current_amount = GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 
 	if (current_amount == 1)
 	{
-		return new MeasuresPerStepPolicy(this->canvas, 2);
+		return new MeasuresPerStepSize(this->canvas, 2);
 	}
 	else
 	{
 		int new_amount = GetCoarserMeasureDivision(current_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
-		return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+		return new StepsPerMeasureSize(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 	}
 }
 
-void StepsPerMeasurePolicy::PopulateDialog(StepSizeDialog* dialog)
+void StepsPerMeasureSize::PopulateDialog(StepSizeDialog* dialog)
 {
 	dialog->amount_text_box->SetValue(wxString::Format("%d", this->amount));
 	dialog->steps_per_measure_radio_button->SetValue(true);
 }
 
-double StepsPerMeasurePolicy::GetStepFromTick(long tick)
+double StepsPerMeasureSize::GetStepFromTick(long tick)
 {
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->canvas->window->sequence->midi_file);
 	double time_signature_event_beat = 0.0;
@@ -1350,65 +1350,65 @@ double StepsPerMeasurePolicy::GetStepFromTick(long tick)
 	return step;
 }
 
-MeasuresPerStepPolicy::MeasuresPerStepPolicy(Canvas* canvas, int amount)
+MeasuresPerStepSize::MeasuresPerStepSize(Canvas* canvas, int amount)
 {
 	this->canvas = canvas;
 	this->amount = amount;
 }
 
-StepPolicy* MeasuresPerStepPolicy::ZoomIn()
+StepSize* MeasuresPerStepSize::ZoomIn()
 {
 	if (this->amount == 1)
 	{
 		MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
 		int new_amount = GetFinerMeasureDivision(1, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
-		return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+		return new StepsPerMeasureSize(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 	}
 	else
 	{
-		return new MeasuresPerStepPolicy(this->canvas, GetFinerMeasureMultiple(this->amount));
+		return new MeasuresPerStepSize(this->canvas, GetFinerMeasureMultiple(this->amount));
 	}
 }
 
-StepPolicy* MeasuresPerStepPolicy::ZoomOut()
+StepSize* MeasuresPerStepSize::ZoomOut()
 {
-	return new MeasuresPerStepPolicy(this->canvas, GetCoarserMeasureMultiple(this->amount));
+	return new MeasuresPerStepSize(this->canvas, GetCoarserMeasureMultiple(this->amount));
 }
 
-void MeasuresPerStepPolicy::PopulateDialog(StepSizeDialog* dialog)
+void MeasuresPerStepSize::PopulateDialog(StepSizeDialog* dialog)
 {
 	dialog->amount_text_box->SetValue(wxString::Format("%d", this->amount));
 	dialog->measures_per_step_radio_button->SetValue(true);
 }
 
-double MeasuresPerStepPolicy::GetStepFromTick(long tick)
+double MeasuresPerStepSize::GetStepFromTick(long tick)
 {
 	return MidiFile_getMeasureFromTick(this->canvas->window->sequence->midi_file, tick) / this->amount;
 }
 
-SecondsPerStepPolicy::SecondsPerStepPolicy(Canvas* canvas, double amount)
+SecondsPerStepSize::SecondsPerStepSize(Canvas* canvas, double amount)
 {
 	this->canvas = canvas;
 	this->amount = amount;
 }
 
-StepPolicy* SecondsPerStepPolicy::ZoomIn()
+StepSize* SecondsPerStepSize::ZoomIn()
 {
-	return new SecondsPerStepPolicy(this->canvas, this->amount / 2);
+	return new SecondsPerStepSize(this->canvas, this->amount / 2);
 }
 
-StepPolicy* SecondsPerStepPolicy::ZoomOut()
+StepSize* SecondsPerStepSize::ZoomOut()
 {
-	return new SecondsPerStepPolicy(this->canvas, this->amount * 2);
+	return new SecondsPerStepSize(this->canvas, this->amount * 2);
 }
 
-void SecondsPerStepPolicy::PopulateDialog(StepSizeDialog* dialog)
+void SecondsPerStepSize::PopulateDialog(StepSizeDialog* dialog)
 {
 	dialog->amount_text_box->SetValue(wxString::Format("%0.3lf", this->amount));
 	dialog->seconds_per_step_radio_button->SetValue(true);
 }
 
-double SecondsPerStepPolicy::GetStepFromTick(long tick)
+double SecondsPerStepSize::GetStepFromTick(long tick)
 {
 	return MidiFile_getTimeFromTick(this->canvas->window->sequence->midi_file, tick) / this->amount;
 }
@@ -1452,7 +1452,7 @@ StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step S
 
 	outer_sizer->Fit(this);
 
-	this->window->canvas->step_policy->PopulateDialog(this);
+	this->window->canvas->step_size->PopulateDialog(this);
 }
 
 FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
