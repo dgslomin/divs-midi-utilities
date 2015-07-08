@@ -7,10 +7,74 @@
 #include <midifile.h>
 #include "color.h"
 
+// TODO: these are temporary, of course
+int current_time_signature_numerator = 4;
+int current_time_signature_denominator = 4;
+
+enum
+{
+	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
+	SEQER_ID_SELECT_CURRENT,
+	SEQER_ID_SELECT_NONE,
+	SEQER_ID_ENTER_VALUE,
+	SEQER_ID_SMALL_INCREASE,
+	SEQER_ID_SMALL_DECREASE,
+	SEQER_ID_LARGE_INCREASE,
+	SEQER_ID_LARGE_DECREASE,
+	SEQER_ID_QUANTIZE,
+	SEQER_ID_EDIT_COLUMN_1,
+	SEQER_ID_EDIT_COLUMN_2,
+	SEQER_ID_EDIT_COLUMN_3,
+	SEQER_ID_EDIT_COLUMN_4,
+	SEQER_ID_EDIT_COLUMN_5,
+	SEQER_ID_EDIT_COLUMN_6,
+	SEQER_ID_EDIT_COLUMN_7,
+	SEQER_ID_STEP_SIZE,
+	SEQER_ID_FILTER,
+	SEQER_ID_INSERT_NOTE_A,
+	SEQER_ID_INSERT_NOTE_B,
+	SEQER_ID_INSERT_NOTE_C,
+	SEQER_ID_INSERT_NOTE_D,
+	SEQER_ID_INSERT_NOTE_E,
+	SEQER_ID_INSERT_NOTE_F,
+	SEQER_ID_INSERT_NOTE_G,
+	SEQER_ID_INSERT_CONTROL_CHANGE,
+	SEQER_ID_INSERT_PROGRAM_CHANGE,
+	SEQER_ID_INSERT_AFTERTOUCH,
+	SEQER_ID_INSERT_PITCH_BEND,
+	SEQER_ID_INSERT_SYSTEM_EXCLUSIVE,
+	SEQER_ID_INSERT_TEXT,
+	SEQER_ID_INSERT_LYRIC,
+	SEQER_ID_INSERT_MARKER,
+	SEQER_ID_INSERT_PORT,
+	SEQER_ID_INSERT_TEMPO,
+	SEQER_ID_INSERT_TIME_SIGNATURE,
+	SEQER_ID_INSERT_KEY_SIGNATURE,
+	SEQER_ID_PLAY,
+	SEQER_ID_RECORD,
+	SEQER_ID_STOP,
+	SEQER_ID_STEP_RECORD,
+	SEQER_ID_NEXT_MARKER,
+	SEQER_ID_PREVIOUS_MARKER,
+	SEQER_ID_GO_TO_MARKER,
+	SEQER_ID_PORTS,
+	SEQER_ID_EXTERNAL_UTILITY,
+	SEQER_ID_RECORD_MACRO,
+	SEQER_ID_MACROS,
+	SEQER_ID_SETTINGS,
+	SEQER_ID_HIGHEST
+};
+
+enum StepType
+{
+	STEPS_PER_MEASURE,
+	MEASURES_PER_STEP,
+	SECONDS_PER_STEP
+};
+
 class Application: public wxApp
 {
 public:
-	double default_steps_per_beat;
 	wxFont default_event_list_font;
 	long default_piano_roll_first_note;
 	long default_piano_roll_last_note;
@@ -53,43 +117,10 @@ public:
 	Window* window;
 	class EventList* event_list;
 	class PianoRoll* piano_roll;
+	class StepConfig* step_config;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
-#ifdef NEW_STEP_ZOOM
 
-	struct
-	{
-		StepType type;
-
-		union
-		{
-			struct
-			{
-				int time_signature_numerator;
-				int time_signature_denominator;
-				int amount;
-			}
-			steps_per_measure;
-
-			struct
-			{
-				int amount;
-			}
-			measures_per_step;
-
-			struct
-			{
-				double amount;
-			}
-			seconds_per_step;
-		}
-		u;
-	}
-	step_config;
-
-#else
-	double steps_per_beat;
-#endif
 	std::vector<int> filtered_event_types;
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
@@ -152,6 +183,40 @@ public:
 	long GetYFromStepNumber(double step_number);
 };
 
+class StepConfig
+{
+public:
+	StepType type;
+
+	union
+	{
+		struct
+		{
+			int time_signature_numerator;
+			int time_signature_denominator;
+			int amount;
+		}
+		steps_per_measure;
+
+		struct
+		{
+			int amount;
+		}
+		measures_per_step;
+
+		struct
+		{
+			double amount;
+		}
+		seconds_per_step;
+	}
+	u;
+
+	StepConfig();
+	StepConfig(StepConfig* other);
+	void SetStepsPerMeasureFromMidiFile(MidiFile_t midi_file);
+};
+
 class Row
 {
 public:
@@ -166,9 +231,8 @@ class Step
 public:
 	long first_row_number;
 	long last_row_number;
-    double time;
 
-	Step(long row_number, double time);
+	Step(long row_number);
 };
 
 class StepSizeDialog: public wxDialog
@@ -326,68 +390,6 @@ public:
 };
 
 EventType* event_types[] = {new NoteEventType(), new ControlChangeEventType(), new ProgramChangeEventType(), new AftertouchEventType(), new PitchBendEventType(), new SystemExclusiveEventType(), new TextEventType(), new LyricEventType(), new MarkerEventType(), new PortEventType(), new TempoEventType(), new TimeSignatureEventType(), new KeySignatureEventType()};
-
-enum
-{
-	STEPS_PER_MEASURE,
-	MEASURES_PER_STEP,
-	SECONDS_PER_STEP
-}
-StepType;
-
-enum
-{
-	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
-	SEQER_ID_SELECT_CURRENT,
-	SEQER_ID_SELECT_NONE,
-	SEQER_ID_ENTER_VALUE,
-	SEQER_ID_SMALL_INCREASE,
-	SEQER_ID_SMALL_DECREASE,
-	SEQER_ID_LARGE_INCREASE,
-	SEQER_ID_LARGE_DECREASE,
-	SEQER_ID_QUANTIZE,
-	SEQER_ID_EDIT_COLUMN_1,
-	SEQER_ID_EDIT_COLUMN_2,
-	SEQER_ID_EDIT_COLUMN_3,
-	SEQER_ID_EDIT_COLUMN_4,
-	SEQER_ID_EDIT_COLUMN_5,
-	SEQER_ID_EDIT_COLUMN_6,
-	SEQER_ID_EDIT_COLUMN_7,
-	SEQER_ID_STEP_SIZE,
-	SEQER_ID_FILTER,
-	SEQER_ID_INSERT_NOTE_A,
-	SEQER_ID_INSERT_NOTE_B,
-	SEQER_ID_INSERT_NOTE_C,
-	SEQER_ID_INSERT_NOTE_D,
-	SEQER_ID_INSERT_NOTE_E,
-	SEQER_ID_INSERT_NOTE_F,
-	SEQER_ID_INSERT_NOTE_G,
-	SEQER_ID_INSERT_CONTROL_CHANGE,
-	SEQER_ID_INSERT_PROGRAM_CHANGE,
-	SEQER_ID_INSERT_AFTERTOUCH,
-	SEQER_ID_INSERT_PITCH_BEND,
-	SEQER_ID_INSERT_SYSTEM_EXCLUSIVE,
-	SEQER_ID_INSERT_TEXT,
-	SEQER_ID_INSERT_LYRIC,
-	SEQER_ID_INSERT_MARKER,
-	SEQER_ID_INSERT_PORT,
-	SEQER_ID_INSERT_TEMPO,
-	SEQER_ID_INSERT_TIME_SIGNATURE,
-	SEQER_ID_INSERT_KEY_SIGNATURE,
-	SEQER_ID_PLAY,
-	SEQER_ID_RECORD,
-	SEQER_ID_STOP,
-	SEQER_ID_STEP_RECORD,
-	SEQER_ID_NEXT_MARKER,
-	SEQER_ID_PREVIOUS_MARKER,
-	SEQER_ID_GO_TO_MARKER,
-	SEQER_ID_PORTS,
-	SEQER_ID_EXTERNAL_UTILITY,
-	SEQER_ID_RECORD_MACRO,
-	SEQER_ID_MACROS,
-	SEQER_ID_SETTINGS,
-	SEQER_ID_HIGHEST
-};
 
 IMPLEMENT_APP(Application)
 
@@ -555,7 +557,6 @@ int GetCoarserMeasureMultiple(int existing_measure_multiple)
 
 bool Application::OnInit()
 {
-	this->default_steps_per_beat = 1;
 #if defined(__WXOSX__)
 	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else
@@ -706,84 +707,76 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
-#ifdef NEW_STEP_ZOOM
-	switch (this->canvas->step_config.type)
+	switch (this->canvas->step_config->type)
 	{
 		case STEPS_PER_MEASURE:
 		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.time_signature_numerator, this->canvas->step_config.u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
-			this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-			this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-			this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(current_measure_division, current_time_signature_numerator);
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config->u.steps_per_measure.amount, this->canvas->step_config->u.steps_per_measure.time_signature_numerator, this->canvas->step_config->u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
+			this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+			this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
+			this->canvas->step_config->u.steps_per_measure.amount = GetFinerMeasureDivision(current_measure_division, current_time_signature_numerator);
 			break;
 		}
 		case MEASURES_PER_STEP:
 		{
-			if (this->canvas->step_config.u.measures_per_step == 1)
+			if (this->canvas->step_config->u.measures_per_step.amount == 1)
 			{
-				this->canvas->step_config.type = STEPS_PER_MEASURE;
-				this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-				this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-				this->canvas->step_config.u.steps_per_measure.amount = GetFinerMeasureDivision(1, current_time_signature_numerator);
+				this->canvas->step_config->type = STEPS_PER_MEASURE;
+				this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+				this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
+				this->canvas->step_config->u.steps_per_measure.amount = GetFinerMeasureDivision(1, current_time_signature_numerator);
 			}
 			else
 			{
-				this->canvas->step_config.u.measures_per_step.amount = GetFinerMeasureMultiple(this->canvas->step_config.u.measures_per_step.amount);
+				this->canvas->step_config->u.measures_per_step.amount = GetFinerMeasureMultiple(this->canvas->step_config->u.measures_per_step.amount);
 			}
 
 			break;
 		}
 		case SECONDS_PER_STEP:
 		{
-			this->canvas->step_config.u.seconds_per_step.amount /= 2;
+			this->canvas->step_config->u.seconds_per_step.amount /= 2;
 			break;
 		}
 	}
 
-#else
-	this->canvas->steps_per_beat *= 2;
-#endif
 	this->canvas->Prepare();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
-#ifdef NEW_STEP_ZOOM
-	switch (this->canvas->step_config.type)
+	switch (this->canvas->step_config->type)
 	{
 		case STEPS_PER_MEASURE:
 		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config.u.steps_per_measure.amount, this->canvas->step_config.u.steps_per_measure.time_signature_numerator, this->canvas->step_config.u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
+			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config->u.steps_per_measure.amount, this->canvas->step_config->u.steps_per_measure.time_signature_numerator, this->canvas->step_config->u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
 
 			if (current_measure_division == 1)
 			{
-				this->canvas->step_config.type = MEASURES_PER_STEP;
-				this->canvas->step_config.u.measures_per_step.amount = 2;
+				this->canvas->step_config->type = MEASURES_PER_STEP;
+				this->canvas->step_config->u.measures_per_step.amount = 2;
 			}
 			else
 			{
-				this->canvas->step_config.u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-				this->canvas->step_config.u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-				this->canvas->step_config.u.steps_per_measure.amount = GetCoarserMeasureDivision(current_measure_division, current_time_signature_numerator);
+				this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
+				this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
+				this->canvas->step_config->u.steps_per_measure.amount = GetCoarserMeasureDivision(current_measure_division, current_time_signature_numerator);
 			}
 
 			break;
 		}
 		case MEASURES_PER_STEP:
 		{
-			this->canvas->step_config.u.measures_per_step.amount = GetCoarserMeasureMultiple(this->canvas->step_config.u.measures_per_step.amount);
+			this->canvas->step_config->u.measures_per_step.amount = GetCoarserMeasureMultiple(this->canvas->step_config->u.measures_per_step.amount);
 			break;
 		}
 		case SECONDS_PER_STEP:
 		{
-			this->canvas->step_config.u.seconds_per_step.amount *= 2;
+			this->canvas->step_config->u.seconds_per_step.amount *= 2;
 			break;
 		}
 	}
 
-#else
-	this->canvas->steps_per_beat /= 2;
-#endif
 	this->canvas->Prepare();
 }
 
@@ -875,7 +868,7 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->window = window;
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
-	this->steps_per_beat = this->window->application->default_steps_per_beat;
+	this->step_config = new StepConfig();
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
@@ -887,6 +880,7 @@ bool Canvas::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
 	this->window->sequence->midi_file = new_midi_file;
+	this->step_config->SetStepsPerMeasureFromMidiFile(this->window->sequence->midi_file);
 	this->Prepare();
 	return true;
 }
@@ -904,14 +898,13 @@ void Canvas::Prepare()
 		{
 			if (!this->Filter(event)) continue;
 
-            // TODO: combine GetFractionalStepNumberFromTick() logic here, so it'll be incremental instead of O(n^2).  Consider the ramifications of both interpolation and extrapolation.
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
 
 			while (last_step_number < step_number - 1)
 			{
 				last_step_number++;
 				this->rows.push_back(Row(last_step_number, NULL));
-				this->steps.push_back(Step(this->rows.size() - 1, /* TODO: time in the current step zoom units */ 0));
+				this->steps.push_back(Step(this->rows.size() - 1));
 			}
 
 			this->rows.push_back(Row(step_number, event));
@@ -922,7 +915,7 @@ void Canvas::Prepare()
 			}
 			else
 			{
-				this->steps.push_back(Step(this->rows.size() - 1, /* TODO: time in the current step zoom units */ 0));
+				this->steps.push_back(Step(this->rows.size() - 1));
 			}
 
 			last_step_number = step_number;
@@ -1015,34 +1008,42 @@ long Canvas::GetStepNumberFromTick(long tick)
 
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
-#ifdef NEW_STEP_ZOOM
-    // TODO
-
-	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
-	float time_signature_event_beat = 0.0;
-	int numerator = 4;
-	int denominator = 4;
-	float measure = 0.0;
-
-	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
+	switch (this->step_config->type)
 	{
-		if (MidiFileEvent_isTimeSignatureEvent(event))
+		case STEPS_PER_MEASURE:
 		{
-			float next_time_signature_event_beat = MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event));
-			measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
-			time_signature_event_beat = next_time_signature_event_beat;
-			numerator = MidiFileTimeSignatureEvent_getNumerator(event);
-			denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+			MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
+			double time_signature_event_beat = 0.0;
+			int numerator = 4;
+			int denominator = 4;
+			double step = 0.0;
+
+			for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
+			{
+				if (MidiFileEvent_isTimeSignatureEvent(event))
+				{
+					double next_time_signature_event_beat = MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event));
+					double measures = (next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator;
+					step += (measures * GetEquivalentMeasureDivision(this->step_config->u.steps_per_measure.amount, this->step_config->u.steps_per_measure.time_signature_numerator, this->step_config->u.steps_per_measure.time_signature_denominator, numerator, denominator));
+					time_signature_event_beat = next_time_signature_event_beat;
+					numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+					denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+				}
+			}
+
+			double measures = (MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator;
+			step += (measures * GetEquivalentMeasureDivision(this->step_config->u.steps_per_measure.amount, this->step_config->u.steps_per_measure.time_signature_numerator, this->step_config->u.steps_per_measure.time_signature_denominator, numerator, denominator));
+			return step;
+		}
+		case MEASURES_PER_STEP:
+		{
+			return MidiFile_getMeasureFromTick(this->window->sequence->midi_file, tick) / this->step_config->u.measures_per_step.amount;
+		}
+		case SECONDS_PER_STEP:
+		{
+			return MidiFile_getTimeFromTick(this->window->sequence->midi_file, tick) / this->step_config->u.seconds_per_step.amount;
 		}
 	}
-
-	measure += ((MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
-	MidiFileMeasureBeat_setMeasure(measure_beat, (long)(measure) + 1);
-	MidiFileMeasureBeat_setBeat(measure_beat, ((measure - (MidiFileMeasureBeat_getMeasure(measure_beat) - (float)(1.0))) * (float)(numerator)) + (float)(1.0));
-	return 0;
-#else
-	return MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) * this->steps_per_beat;
-#endif
 }
 
 bool Canvas::Filter(MidiFileEvent_t event)
@@ -1323,17 +1324,59 @@ long PianoRoll::GetYFromStepNumber(double step_number)
 	return step_first_y + (long)((step_last_y - step_first_y) * (step_number - (long)(step_number)));
 }
 
+StepConfig::StepConfig()
+{
+	this->type = STEPS_PER_MEASURE;
+	this->u.steps_per_measure.time_signature_numerator = 4;
+	this->u.steps_per_measure.time_signature_denominator = 4;
+	this->u.steps_per_measure.amount = 4;
+}
+
+StepConfig::StepConfig(StepConfig* other)
+{
+	this->type = other->type;
+
+	switch (other->type)
+	{
+		case STEPS_PER_MEASURE:
+		{
+			this->u.steps_per_measure.time_signature_numerator = other->u.steps_per_measure.time_signature_numerator;
+			this->u.steps_per_measure.time_signature_denominator = other->u.steps_per_measure.time_signature_denominator;
+			this->u.steps_per_measure.amount = other->u.steps_per_measure.amount;
+			break;
+		}
+		case MEASURES_PER_STEP:
+		{
+			this->u.measures_per_step.amount = other->u.measures_per_step.amount;
+			break;
+		}
+		case SECONDS_PER_STEP:
+		{
+			this->u.seconds_per_step.amount = other->u.seconds_per_step.amount;
+			break;
+		}
+	}
+}
+
+void StepConfig::SetStepsPerMeasureFromMidiFile(MidiFile_t midi_file)
+{
+	this->type = STEPS_PER_MEASURE;
+	MidiFileEvent_t time_signature_event = MidiFile_getLatestTimeSignatureEventForTick(midi_file, 0);
+	this->u.steps_per_measure.time_signature_numerator = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
+	this->u.steps_per_measure.time_signature_denominator = MidiFileTimeSignatureEvent_getDenominator(time_signature_event);
+	this->u.steps_per_measure.amount = this->u.steps_per_measure.time_signature_numerator;
+}
+
 Row::Row(long step_number, MidiFileEvent_t event)
 {
 	this->step_number = step_number;
 	this->event = event;
 }
 
-Step::Step(long row_number, double time)
+Step::Step(long row_number)
 {
 	this->first_row_number = row_number;
 	this->last_row_number = row_number;
-    this->time = time;
 }
 
 StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step Size")

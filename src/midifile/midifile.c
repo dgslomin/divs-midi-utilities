@@ -1280,6 +1280,44 @@ long MidiFile_getTickFromTime(MidiFile_t midi_file, float time)
 	}
 }
 
+float MidiFile_getMeasureFromTick(MidiFile_t midi_file, long tick)
+{
+	if (midi_file == NULL)
+	{
+		return -1.0;
+	}
+	else
+	{
+		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
+		MidiFileEvent_t event;
+		float time_signature_event_beat = 0.0;
+		int numerator = 4;
+		int denominator = 4;
+		float measure = 0.0;
+
+		for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
+		{
+			if (MidiFileEvent_isTimeSignatureEvent(event))
+			{
+				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
+				measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
+				time_signature_event_beat = next_time_signature_event_beat;
+				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+			}
+		}
+
+		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
+		return measure;
+	}
+}
+
+long MidiFile_getTickFromMeasure(MidiFile_t midi_file, float measure)
+{
+    /* TODO */
+    return -1;
+}
+
 int MidiFile_setMeasureBeatFromTick(MidiFile_t midi_file, long tick, MidiFileMeasureBeat_t measure_beat)
 {
 	if ((midi_file == NULL) || (measure_beat == NULL))
@@ -1560,6 +1598,48 @@ long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker)
 	}
 
 	return -1;
+}
+
+MidiFileEvent_t MidiFile_getLatestTempoEventForTick(MidiFile_t midi_file, long tick)
+{
+    MidiFileEvent_t tempo_event = NULL;
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
+	MidiFileEvent_t event;
+
+	for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) <= tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isTempoEvent(event)) tempo_event = event;
+	}
+
+	return tempo_event;
+}
+
+MidiFileEvent_t MidiFile_getLatestTimeSignatureEventForTick(MidiFile_t midi_file, long tick)
+{
+    MidiFileEvent_t time_signature_event = NULL;
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
+	MidiFileEvent_t event;
+
+	for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) <= tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isTimeSignatureEvent(event)) time_signature_event = event;
+	}
+
+	return time_signature_event;
+}
+
+MidiFileEvent_t MidiFile_getLatestKeySignatureEventForTick(MidiFile_t midi_file, long tick)
+{
+    MidiFileEvent_t key_signature_event = NULL;
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
+	MidiFileEvent_t event;
+
+	for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) <= tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isKeySignatureEvent(event)) key_signature_event = event;
+	}
+
+	return key_signature_event;
 }
 
 int MidiFileTrack_delete(MidiFileTrack_t track)
@@ -2717,7 +2797,7 @@ float MidiFileTempoEvent_getTempo(MidiFileEvent_t event)
 	unsigned char *buffer;
 	long midi_tempo;
 
-	if (! MidiFileEvent_isTempoEvent(event)) return -1;
+	if (! MidiFileEvent_isTempoEvent(event)) return 120.0;
 
 	buffer = MidiFileMetaEvent_getData(event);
 	midi_tempo = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
@@ -2742,7 +2822,7 @@ int MidiFileTimeSignatureEvent_getNumerator(MidiFileEvent_t event)
 {
 	unsigned char *buffer;
 
-	if (! MidiFileEvent_isTimeSignatureEvent(event)) return -1;
+	if (! MidiFileEvent_isTimeSignatureEvent(event)) return 4;
 
 	buffer = MidiFileMetaEvent_getData(event);
 	return (int)(buffer[0]);
@@ -2752,7 +2832,7 @@ int MidiFileTimeSignatureEvent_getDenominator(MidiFileEvent_t event)
 {
 	unsigned char *buffer;
 
-	if (! MidiFileEvent_isTimeSignatureEvent(event)) return -1;
+	if (! MidiFileEvent_isTimeSignatureEvent(event)) return 4;
 
 	buffer = MidiFileMetaEvent_getData(event);
 
@@ -2871,7 +2951,7 @@ int MidiFileKeySignatureEvent_getNumber(MidiFileEvent_t event)
 
 int MidiFileKeySignatureEvent_isMinor(MidiFileEvent_t event)
 {
-	if (! MidiFileEvent_isKeySignatureEvent(event)) return -1;
+	if (! MidiFileEvent_isKeySignatureEvent(event)) return 0;
 	return MidiFileMetaEvent_getData(event)[1];
 }
 

@@ -121,6 +121,8 @@ float MidiFile_getBeatFromTick(MidiFile_t midi_file, long tick);
 long MidiFile_getTickFromBeat(MidiFile_t midi_file, float beat);
 float MidiFile_getTimeFromTick(MidiFile_t midi_file, long tick); /* time is in seconds */
 long MidiFile_getTickFromTime(MidiFile_t midi_file, float time);
+float MidiFile_getMeasureFromTick(MidiFile_t midi_file, long tick);
+long MidiFile_getTickFromMeasure(MidiFile_t midi_file, float measure);
 int MidiFile_setMeasureBeatFromTick(MidiFile_t midi_file, long tick, MidiFileMeasureBeat_t measure_beat);
 long MidiFile_getTickFromMeasureBeat(MidiFile_t midi_file, MidiFileMeasureBeat_t measure_beat);
 int MidiFile_setMeasureBeatTickFromTick(MidiFile_t midi_file, long tick, MidiFileMeasureBeatTick_t measure_beat_tick);
@@ -138,6 +140,10 @@ int MidiFile_getTickFromHourMinuteSecondString(MidiFile_t midi_file, char *hour_
 char *MidiFile_getHourMinuteSecondFrameStringFromTick(MidiFile_t midi_file, long tick);
 int MidiFile_getTickFromHourMinuteSecondFrameString(MidiFile_t midi_file, char *hour_minute_second_frame_string);
 long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker);
+
+MidiFileEvent_t MidiFile_getLatestTempoEventForTick(MidiFile_t midi_file, long tick);
+MidiFileEvent_t MidiFile_getLatestTimeSignatureEventForTick(MidiFile_t midi_file, long tick);
+MidiFileEvent_t MidiFile_getLatestKeySignatureEventForTick(MidiFile_t midi_file, long tick);
 
 int MidiFileTrack_delete(MidiFileTrack_t track);
 MidiFile_t MidiFileTrack_getMidiFile(MidiFileTrack_t track);
