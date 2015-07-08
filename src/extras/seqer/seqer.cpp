@@ -1,4 +1,5 @@
 
+#include <math.h>
 #include <algorithm>
 #include <vector>
 #include <wx/wx.h>
@@ -6,10 +7,6 @@
 #include <wx/fontpicker.h>
 #include <midifile.h>
 #include "color.h"
-
-// TODO: these are temporary, of course
-int current_time_signature_numerator = 4;
-int current_time_signature_denominator = 4;
 
 enum
 {
@@ -117,13 +114,13 @@ public:
 	Window* window;
 	class EventList* event_list;
 	class PianoRoll* piano_roll;
-	class StepConfig* step_config;
+	class StepPolicy* step_policy;
 	std::vector<class Row> rows;
 	std::vector<class Step> steps;
-
 	std::vector<int> filtered_event_types;
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
+	int current_row_number;
 
 	Canvas(Window* window);
 	bool Load(wxString filename);
@@ -138,6 +135,7 @@ public:
 	long GetStepNumberFromRowNumber(long row_number);
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
+	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
 };
 
@@ -183,38 +181,55 @@ public:
 	long GetYFromStepNumber(double step_number);
 };
 
-class StepConfig
+class StepPolicy
 {
 public:
-	StepType type;
+	virtual StepPolicy* ZoomIn() = 0;
+	virtual StepPolicy* ZoomOut() = 0;
+	virtual void PopulateDialog(class StepSizeDialog* dialog) = 0;
+	virtual double GetStepFromTick(long tick) = 0;
+};
 
-	union
-	{
-		struct
-		{
-			int time_signature_numerator;
-			int time_signature_denominator;
-			int amount;
-		}
-		steps_per_measure;
+class StepsPerMeasurePolicy: public StepPolicy
+{
+public:
+	Canvas* canvas;
+	int amount;
+	int numerator;
+	int denominator;
 
-		struct
-		{
-			int amount;
-		}
-		measures_per_step;
+	StepsPerMeasurePolicy(Canvas* canvas, int amount, int numerator, int denominator);
+	StepsPerMeasurePolicy(Canvas* canvas);
+	StepPolicy* ZoomIn();
+	StepPolicy* ZoomOut();
+	void PopulateDialog(class StepSizeDialog* dialog);
+	double GetStepFromTick(long tick);
+};
 
-		struct
-		{
-			double amount;
-		}
-		seconds_per_step;
-	}
-	u;
+class MeasuresPerStepPolicy: public StepPolicy
+{
+public:
+	Canvas* canvas;
+	int amount;
 
-	StepConfig();
-	StepConfig(StepConfig* other);
-	void SetStepsPerMeasureFromMidiFile(MidiFile_t midi_file);
+	MeasuresPerStepPolicy(Canvas* canvas, int amount);
+	StepPolicy* ZoomIn();
+	StepPolicy* ZoomOut();
+	void PopulateDialog(class StepSizeDialog* dialog);
+	double GetStepFromTick(long tick);
+};
+
+class SecondsPerStepPolicy: public StepPolicy
+{
+public:
+	Canvas* canvas;
+	double amount;
+
+	SecondsPerStepPolicy(Canvas* canvas, double amount);
+	StepPolicy* ZoomIn();
+	StepPolicy* ZoomOut();
+	void PopulateDialog(class StepSizeDialog* dialog);
+	double GetStepFromTick(long tick);
 };
 
 class Row
@@ -707,76 +722,13 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
-	switch (this->canvas->step_config->type)
-	{
-		case STEPS_PER_MEASURE:
-		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config->u.steps_per_measure.amount, this->canvas->step_config->u.steps_per_measure.time_signature_numerator, this->canvas->step_config->u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
-			this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-			this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-			this->canvas->step_config->u.steps_per_measure.amount = GetFinerMeasureDivision(current_measure_division, current_time_signature_numerator);
-			break;
-		}
-		case MEASURES_PER_STEP:
-		{
-			if (this->canvas->step_config->u.measures_per_step.amount == 1)
-			{
-				this->canvas->step_config->type = STEPS_PER_MEASURE;
-				this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-				this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-				this->canvas->step_config->u.steps_per_measure.amount = GetFinerMeasureDivision(1, current_time_signature_numerator);
-			}
-			else
-			{
-				this->canvas->step_config->u.measures_per_step.amount = GetFinerMeasureMultiple(this->canvas->step_config->u.measures_per_step.amount);
-			}
-
-			break;
-		}
-		case SECONDS_PER_STEP:
-		{
-			this->canvas->step_config->u.seconds_per_step.amount /= 2;
-			break;
-		}
-	}
-
+	this->canvas->step_policy = this->canvas->step_policy->ZoomIn();
 	this->canvas->Prepare();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
-	switch (this->canvas->step_config->type)
-	{
-		case STEPS_PER_MEASURE:
-		{
-			int current_measure_division = GetEquivalentMeasureDivision(this->canvas->step_config->u.steps_per_measure.amount, this->canvas->step_config->u.steps_per_measure.time_signature_numerator, this->canvas->step_config->u.steps_per_measure.time_signature_denominator, current_time_signature_numerator, current_time_signature_denominator);
-
-			if (current_measure_division == 1)
-			{
-				this->canvas->step_config->type = MEASURES_PER_STEP;
-				this->canvas->step_config->u.measures_per_step.amount = 2;
-			}
-			else
-			{
-				this->canvas->step_config->u.steps_per_measure.time_signature_numerator = current_time_signature_numerator;
-				this->canvas->step_config->u.steps_per_measure.time_signature_denominator = current_time_signature_denominator;
-				this->canvas->step_config->u.steps_per_measure.amount = GetCoarserMeasureDivision(current_measure_division, current_time_signature_numerator);
-			}
-
-			break;
-		}
-		case MEASURES_PER_STEP:
-		{
-			this->canvas->step_config->u.measures_per_step.amount = GetCoarserMeasureMultiple(this->canvas->step_config->u.measures_per_step.amount);
-			break;
-		}
-		case SECONDS_PER_STEP:
-		{
-			this->canvas->step_config->u.seconds_per_step.amount *= 2;
-			break;
-		}
-	}
-
+	this->canvas->step_policy = this->canvas->step_policy->ZoomOut();
 	this->canvas->Prepare();
 }
 
@@ -786,7 +738,37 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
-		// TODO
+		if (dialog->steps_per_measure_radio_button->GetValue())
+		{
+			int amount = atoi(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
+				this->canvas->step_policy = new StepsPerMeasurePolicy(this->canvas, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)); // TODO: memory leak
+				this->canvas->Prepare();
+			}
+		}
+		else if (dialog->measures_per_step_radio_button->GetValue())
+		{
+			int amount = atoi(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				this->canvas->step_policy = new MeasuresPerStepPolicy(this->canvas, amount);
+				this->canvas->Prepare();
+			}
+		}
+		else if (dialog->seconds_per_step_radio_button->GetValue())
+		{
+			double amount = atof(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				this->canvas->step_policy = new SecondsPerStepPolicy(this->canvas, amount);
+				this->canvas->Prepare();
+			}
+		}
 	}
 
 	dialog->Destroy();
@@ -868,7 +850,8 @@ Canvas::Canvas(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosi
 	this->window = window;
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
-	this->step_config = new StepConfig();
+	this->step_policy = new StepsPerMeasurePolicy(this);
+	this->current_row_number = 0;
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
@@ -880,7 +863,7 @@ bool Canvas::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	if (this->window->sequence->midi_file != NULL) MidiFile_free(this->window->sequence->midi_file);
 	this->window->sequence->midi_file = new_midi_file;
-	this->step_config->SetStepsPerMeasureFromMidiFile(this->window->sequence->midi_file);
+	this->step_policy = new StepsPerMeasurePolicy(this);
 	this->Prepare();
 	return true;
 }
@@ -1008,42 +991,12 @@ long Canvas::GetStepNumberFromTick(long tick)
 
 double Canvas::GetFractionalStepNumberFromTick(long tick)
 {
-	switch (this->step_config->type)
-	{
-		case STEPS_PER_MEASURE:
-		{
-			MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->window->sequence->midi_file);
-			double time_signature_event_beat = 0.0;
-			int numerator = 4;
-			int denominator = 4;
-			double step = 0.0;
+	return this->step_policy->GetStepFromTick(tick);
+}
 
-			for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
-			{
-				if (MidiFileEvent_isTimeSignatureEvent(event))
-				{
-					double next_time_signature_event_beat = MidiFile_getBeatFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(event));
-					double measures = (next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator;
-					step += (measures * GetEquivalentMeasureDivision(this->step_config->u.steps_per_measure.amount, this->step_config->u.steps_per_measure.time_signature_numerator, this->step_config->u.steps_per_measure.time_signature_denominator, numerator, denominator));
-					time_signature_event_beat = next_time_signature_event_beat;
-					numerator = MidiFileTimeSignatureEvent_getNumerator(event);
-					denominator = MidiFileTimeSignatureEvent_getDenominator(event);
-				}
-			}
-
-			double measures = (MidiFile_getBeatFromTick(this->window->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator;
-			step += (measures * GetEquivalentMeasureDivision(this->step_config->u.steps_per_measure.amount, this->step_config->u.steps_per_measure.time_signature_numerator, this->step_config->u.steps_per_measure.time_signature_denominator, numerator, denominator));
-			return step;
-		}
-		case MEASURES_PER_STEP:
-		{
-			return MidiFile_getMeasureFromTick(this->window->sequence->midi_file, tick) / this->step_config->u.measures_per_step.amount;
-		}
-		case SECONDS_PER_STEP:
-		{
-			return MidiFile_getTimeFromTick(this->window->sequence->midi_file, tick) / this->step_config->u.seconds_per_step.amount;
-		}
-	}
+MidiFileEvent_t Canvas::GetLatestTimeSignatureEventForRowNumber(long row_number)
+{
+	return MidiFile_getLatestTimeSignatureEventForTick(this->window->sequence->midi_file, /* TODO */ 0);
 }
 
 bool Canvas::Filter(MidiFileEvent_t event)
@@ -1324,47 +1277,140 @@ long PianoRoll::GetYFromStepNumber(double step_number)
 	return step_first_y + (long)((step_last_y - step_first_y) * (step_number - (long)(step_number)));
 }
 
-StepConfig::StepConfig()
+StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas, int amount, int numerator, int denominator)
 {
-	this->type = STEPS_PER_MEASURE;
-	this->u.steps_per_measure.time_signature_numerator = 4;
-	this->u.steps_per_measure.time_signature_denominator = 4;
-	this->u.steps_per_measure.amount = 4;
+	this->canvas = canvas;
+	this->amount = amount;
+	this->numerator = numerator;
+	this->denominator = denominator;
 }
 
-StepConfig::StepConfig(StepConfig* other)
+StepsPerMeasurePolicy::StepsPerMeasurePolicy(Canvas* canvas)
 {
-	this->type = other->type;
+	this->canvas = canvas;
+	MidiFileEvent_t time_signature_event = MidiFile_getLatestTimeSignatureEventForTick(this->canvas->window->sequence->midi_file, 0);
+	this->amount = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
+	this->numerator = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
+	this->denominator = MidiFileTimeSignatureEvent_getDenominator(time_signature_event);
+}
 
-	switch (other->type)
+StepPolicy* StepsPerMeasurePolicy::ZoomIn()
+{
+	MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
+	int current_amount = GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+	int new_amount = GetFinerMeasureDivision(current_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
+	return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+}
+
+StepPolicy* StepsPerMeasurePolicy::ZoomOut()
+{
+	MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
+	int current_amount = GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+
+	if (current_amount == 1)
 	{
-		case STEPS_PER_MEASURE:
-		{
-			this->u.steps_per_measure.time_signature_numerator = other->u.steps_per_measure.time_signature_numerator;
-			this->u.steps_per_measure.time_signature_denominator = other->u.steps_per_measure.time_signature_denominator;
-			this->u.steps_per_measure.amount = other->u.steps_per_measure.amount;
-			break;
-		}
-		case MEASURES_PER_STEP:
-		{
-			this->u.measures_per_step.amount = other->u.measures_per_step.amount;
-			break;
-		}
-		case SECONDS_PER_STEP:
-		{
-			this->u.seconds_per_step.amount = other->u.seconds_per_step.amount;
-			break;
-		}
+		return new MeasuresPerStepPolicy(this->canvas, 2);
+	}
+	else
+	{
+		int new_amount = GetCoarserMeasureDivision(current_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
+		return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
 	}
 }
 
-void StepConfig::SetStepsPerMeasureFromMidiFile(MidiFile_t midi_file)
+void StepsPerMeasurePolicy::PopulateDialog(StepSizeDialog* dialog)
 {
-	this->type = STEPS_PER_MEASURE;
-	MidiFileEvent_t time_signature_event = MidiFile_getLatestTimeSignatureEventForTick(midi_file, 0);
-	this->u.steps_per_measure.time_signature_numerator = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
-	this->u.steps_per_measure.time_signature_denominator = MidiFileTimeSignatureEvent_getDenominator(time_signature_event);
-	this->u.steps_per_measure.amount = this->u.steps_per_measure.time_signature_numerator;
+	dialog->amount_text_box->SetValue(wxString::Format("%d", this->amount));
+	dialog->steps_per_measure_radio_button->SetValue(true);
+}
+
+double StepsPerMeasurePolicy::GetStepFromTick(long tick)
+{
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->canvas->window->sequence->midi_file);
+	double time_signature_event_beat = 0.0;
+	int numerator = 4;
+	int denominator = 4;
+	double step = 0.0;
+
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isTimeSignatureEvent(event))
+		{
+			double next_time_signature_event_beat = MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, MidiFileEvent_getTick(event));
+			double measures = (next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator;
+			step += (measures * GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator));
+			time_signature_event_beat = next_time_signature_event_beat;
+			numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+			denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+		}
+	}
+
+	double measures = (MidiFile_getBeatFromTick(this->canvas->window->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator;
+	step += (measures * GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator));
+	return step;
+}
+
+MeasuresPerStepPolicy::MeasuresPerStepPolicy(Canvas* canvas, int amount)
+{
+	this->canvas = canvas;
+	this->amount = amount;
+}
+
+StepPolicy* MeasuresPerStepPolicy::ZoomIn()
+{
+	if (this->amount == 1)
+	{
+		MidiFileEvent_t time_signature_event = this->canvas->GetLatestTimeSignatureEventForRowNumber(this->canvas->current_row_number);
+		int new_amount = GetFinerMeasureDivision(1, MidiFileTimeSignatureEvent_getNumerator(time_signature_event));
+		return new StepsPerMeasurePolicy(this->canvas, new_amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event));
+	}
+	else
+	{
+		return new MeasuresPerStepPolicy(this->canvas, GetFinerMeasureMultiple(this->amount));
+	}
+}
+
+StepPolicy* MeasuresPerStepPolicy::ZoomOut()
+{
+	return new MeasuresPerStepPolicy(this->canvas, GetCoarserMeasureMultiple(this->amount));
+}
+
+void MeasuresPerStepPolicy::PopulateDialog(StepSizeDialog* dialog)
+{
+	dialog->amount_text_box->SetValue(wxString::Format("%d", this->amount));
+	dialog->measures_per_step_radio_button->SetValue(true);
+}
+
+double MeasuresPerStepPolicy::GetStepFromTick(long tick)
+{
+	return MidiFile_getMeasureFromTick(this->canvas->window->sequence->midi_file, tick) / this->amount;
+}
+
+SecondsPerStepPolicy::SecondsPerStepPolicy(Canvas* canvas, double amount)
+{
+	this->canvas = canvas;
+	this->amount = amount;
+}
+
+StepPolicy* SecondsPerStepPolicy::ZoomIn()
+{
+	return new SecondsPerStepPolicy(this->canvas, this->amount / 2);
+}
+
+StepPolicy* SecondsPerStepPolicy::ZoomOut()
+{
+	return new SecondsPerStepPolicy(this->canvas, this->amount * 2);
+}
+
+void SecondsPerStepPolicy::PopulateDialog(StepSizeDialog* dialog)
+{
+	dialog->amount_text_box->SetValue(wxString::Format("%0.3lf", this->amount));
+	dialog->seconds_per_step_radio_button->SetValue(true);
+}
+
+double SecondsPerStepPolicy::GetStepFromTick(long tick)
+{
+	return MidiFile_getTimeFromTick(this->canvas->window->sequence->midi_file, tick) / this->amount;
 }
 
 Row::Row(long step_number, MidiFileEvent_t event)
@@ -1405,6 +1451,8 @@ StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step S
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
+
+	this->window->canvas->step_policy->PopulateDialog(this);
 }
 
 FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
