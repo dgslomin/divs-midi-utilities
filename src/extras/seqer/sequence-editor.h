@@ -1,0 +1,126 @@
+#ifndef SEQUENCE_EDITOR_INCLUDED
+#define SEQUENCE_EDITOR_INCLUDED
+
+#include <vector>
+#include <wx/wx.h>
+#include <midifile.h>
+
+class Window;
+class EventList;
+class PianoRoll;
+class StepSize;
+class Sequence;
+class Row;
+class Step;
+
+wxString GetNoteNameFromNumber(int note_number);
+int GetNoteNumberFromName(wxString note_name);
+int GetNoteOctave(int note_number);
+int SetNoteOctave(int note_number, int octave);
+int GetNoteChromatic(int note_number);
+int SetNoteChromatic(int note_number, int chromatic);
+wxString GetKeyNameFromNumber(int key_number, bool is_minor);
+int GetChromaticFromDiatonicInKey(int diatonic, int key_number);
+
+class SequenceEditor: public wxScrolledCanvas
+{
+public:
+	Window* window;
+	EventList* event_list;
+	PianoRoll* piano_roll;
+	StepSize* step_size;
+    Sequence* sequence;
+	std::vector<Row> rows;
+	std::vector<Step> steps;
+	std::vector<int> filtered_event_types;
+	std::vector<int> filtered_tracks;
+	std::vector<int> filtered_channels;
+	int current_row_number;
+
+	SequenceEditor(Window* window);
+	bool Load(wxString filename);
+	void Prepare();
+	void OnDraw(wxDC& dc);
+	long GetVisibleWidth();
+	long GetVisibleHeight();
+	long GetFirstVisibleY();
+	long GetLastVisibleY();
+	long GetFirstRowNumberFromStepNumber(long step_number);
+	long GetLastRowNumberFromStepNumber(long step_number);
+	long GetStepNumberFromRowNumber(long row_number);
+	long GetStepNumberFromTick(long tick);
+	double GetFractionalStepNumberFromTick(long tick);
+	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
+	bool Filter(MidiFileEvent_t event);
+};
+
+class EventList
+{
+public:
+	SequenceEditor *sequence_editor;
+	wxFont font;
+	long row_height;
+	long column_widths[8];
+
+	EventList(SequenceEditor* sequence_editor);
+	void Prepare();
+	void OnDraw(wxDC& dc);
+	long GetVisibleWidth();
+	long GetFirstVisibleRowNumber();
+	long GetLastVisibleRowNumber();
+	long GetLastVisiblePopulatedRowNumber();
+	long GetColumnWidth(long column_number);
+	long GetXFromColumnNumber(long column_number);
+	long GetYFromRowNumber(long row_number);
+	long GetRowNumberFromY(long y);
+};
+
+class PianoRoll
+{
+public:
+	SequenceEditor *sequence_editor;
+	long first_note;
+	long last_note;
+	long key_width;
+	wxColour darker_line_color;
+	wxColour lighter_line_color;
+	wxColour lightest_line_color;
+	wxColour white_key_color;
+	wxColour black_key_color;
+	wxColour shadow_color;
+
+	PianoRoll(SequenceEditor* sequence_editor);
+	void Prepare();
+	void OnDraw(wxDC& dc);
+	long GetWidth();
+	long GetYFromStepNumber(double step_number);
+};
+
+class Sequence
+{
+public:
+	SequenceEditor* sequence_editor;
+	MidiFile_t midi_file;
+
+	Sequence(SequenceEditor* sequence_editor);
+};
+
+class Row
+{
+public:
+	long step_number;
+	MidiFileEvent_t event;
+
+	Row(long step_number, MidiFileEvent_t event);
+};
+
+class Step
+{
+public:
+	long first_row_number;
+	long last_row_number;
+
+	Step(long row_number);
+};
+
+#endif
