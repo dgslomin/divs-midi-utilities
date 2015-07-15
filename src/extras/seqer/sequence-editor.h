@@ -6,10 +6,10 @@
 #include <midifile.h>
 
 class Window;
+class Sequence;
 class EventList;
 class PianoRoll;
 class StepSize;
-class Sequence;
 class Row;
 class Step;
 
@@ -26,10 +26,10 @@ class SequenceEditor: public wxScrolledCanvas
 {
 public:
 	Window* window;
+    Sequence* sequence;
 	EventList* event_list;
 	PianoRoll* piano_roll;
 	StepSize* step_size;
-    Sequence* sequence;
 	std::vector<Row> rows;
 	std::vector<Step> steps;
 	std::vector<int> filtered_event_types;
@@ -52,6 +52,15 @@ public:
 	double GetFractionalStepNumberFromTick(long tick);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
+};
+
+class Sequence
+{
+public:
+	SequenceEditor* sequence_editor;
+	MidiFile_t midi_file;
+
+	Sequence(SequenceEditor* sequence_editor);
 };
 
 class EventList
@@ -94,15 +103,6 @@ public:
 	void OnDraw(wxDC& dc);
 	long GetWidth();
 	long GetYFromStepNumber(double step_number);
-};
-
-class Sequence
-{
-public:
-	SequenceEditor* sequence_editor;
-	MidiFile_t midi_file;
-
-	Sequence(SequenceEditor* sequence_editor);
 };
 
 class Row

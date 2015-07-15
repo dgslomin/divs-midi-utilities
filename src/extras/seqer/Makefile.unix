@@ -11,22 +11,22 @@ LIBS=`$(WXCONFIG) --libs`
 Seqer: seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
 	$(LD) Seqer seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o $(LIBS)
 
-seqer.o: seqer.cpp 
+seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h event-type.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
 
-sequence-editor.o: sequence-editor.cpp
+sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h event-type.h color.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c sequence-editor.cpp
 
-step-size.o: step-size.cpp
+step-size.o: step-size.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c step-size.cpp
 
-event-type.o: event-type.cpp
+event-type.o: event-type.cpp ../../midifile/midifile.h sequence-editor.h event-type.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c event-type.cpp
 
 color.o: color.cpp
 	$(CXX) $(CXXFLAGS) -c color.cpp
 
-midifile.o: ../../midifile/midifile.c
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
 
 clean:

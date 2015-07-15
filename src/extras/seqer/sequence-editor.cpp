@@ -87,6 +87,7 @@ int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
+    this->sequence = new Sequence(this);
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
 	this->step_size = new StepsPerMeasureSize(this);
@@ -306,6 +307,12 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
+Sequence::Sequence(SequenceEditor* sequence_editor)
+{
+	this->sequence_editor = sequence_editor;
+	this->midi_file = NULL;
+}
+
 EventList::EventList(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
@@ -514,12 +521,6 @@ long PianoRoll::GetYFromStepNumber(double step_number)
 	long step_first_y = this->sequence_editor->event_list->GetYFromRowNumber(this->sequence_editor->GetFirstRowNumberFromStepNumber((long)(step_number)));
 	long step_last_y = this->sequence_editor->event_list->GetYFromRowNumber(this->sequence_editor->GetLastRowNumberFromStepNumber((long)(step_number)) + 1);
 	return step_first_y + (long)((step_last_y - step_first_y) * (step_number - (long)(step_number)));
-}
-
-Sequence::Sequence(SequenceEditor* sequence_editor)
-{
-	this->sequence_editor = sequence_editor;
-	this->midi_file = NULL;
 }
 
 Row::Row(long step_number, MidiFileEvent_t event)
