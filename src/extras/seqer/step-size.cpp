@@ -157,6 +157,12 @@ double StepsPerMeasureSize::GetStepFromTick(long tick)
 	return step;
 }
 
+long StepsPerMeasureSize::GetTickFromStep(double step)
+{
+	// TODO: handle time signatures using the inverse of the above logic
+	return MidiFile_getTickFromBeat(this->sequence_editor->sequence->midi_file, step * this->amount);
+}
+
 MeasuresPerStepSize::MeasuresPerStepSize(SequenceEditor* sequence_editor, int amount)
 {
 	this->sequence_editor = sequence_editor;
@@ -193,6 +199,11 @@ double MeasuresPerStepSize::GetStepFromTick(long tick)
 	return MidiFile_getMeasureFromTick(this->sequence_editor->sequence->midi_file, tick) / this->amount;
 }
 
+long MeasuresPerStepSize::GetTickFromStep(double step)
+{
+	return MidiFile_getTickFromMeasure(this->sequence_editor->sequence->midi_file, step * this->amount);
+}
+
 SecondsPerStepSize::SecondsPerStepSize(SequenceEditor* sequence_editor, double amount)
 {
 	this->sequence_editor = sequence_editor;
@@ -218,5 +229,10 @@ void SecondsPerStepSize::PopulateDialog(StepSizeDialog* dialog)
 double SecondsPerStepSize::GetStepFromTick(long tick)
 {
 	return MidiFile_getTimeFromTick(this->sequence_editor->sequence->midi_file, tick) / this->amount;
+}
+
+long SecondsPerStepSize::GetTickFromStep(double step)
+{
+	return MidiFile_getTickFromTime(this->sequence_editor->sequence->midi_file, step * this->amount);
 }
 

@@ -34,6 +34,7 @@ public:
 	virtual StepSize* ZoomOut() = 0;
 	virtual void PopulateDialog(StepSizeDialog* dialog) = 0;
 	virtual double GetStepFromTick(long tick) = 0;
+	virtual long GetTickFromStep(double step) = 0;
 };
 
 class StepsPerMeasureSize: public StepSize
@@ -50,6 +51,7 @@ public:
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
+	long GetTickFromStep(double step);
 };
 
 class MeasuresPerStepSize: public StepSize
@@ -63,6 +65,7 @@ public:
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
+	long GetTickFromStep(double step);
 };
 
 class SecondsPerStepSize: public StepSize
@@ -76,6 +79,7 @@ public:
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
+	long GetTickFromStep(double step);
 };
 
 #endif

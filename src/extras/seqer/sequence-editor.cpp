@@ -87,7 +87,7 @@ int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
-    this->sequence = new Sequence(this);
+	this->sequence = new Sequence(this);
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
 	this->step_size = new StepsPerMeasureSize(this);
@@ -365,7 +365,7 @@ void EventList::OnDraw(wxDC& dc)
 
 		if (row.event == NULL)
 		{
-			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, MidiFile_getTickFromBeat(this->sequence_editor->sequence->midi_file, /* TODO: step size */ row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, this->sequence_editor->step_size->GetTickFromStep(row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 		}
 		else
 		{
