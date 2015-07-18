@@ -180,6 +180,11 @@ long StepsPerMeasureSize::GetTickFromStep(double step)
 	return MidiFile_getTickFromBeat(this->sequence_editor->sequence->midi_file, time_signature_event_beat + ((step - time_signature_event_step) / ((double)(GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator)) * denominator / numerator / 4)));
 }
 
+wxString StepsPerMeasureSize::GetTimeStringFromTick(long tick)
+{
+	return wxString(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, tick));
+}
+
 MeasuresPerStepSize::MeasuresPerStepSize(SequenceEditor* sequence_editor, int amount)
 {
 	this->sequence_editor = sequence_editor;
@@ -221,6 +226,11 @@ long MeasuresPerStepSize::GetTickFromStep(double step)
 	return MidiFile_getTickFromMeasure(this->sequence_editor->sequence->midi_file, step * this->amount);
 }
 
+wxString MeasuresPerStepSize::GetTimeStringFromTick(long tick)
+{
+	return wxString(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, tick));
+}
+
 SecondsPerStepSize::SecondsPerStepSize(SequenceEditor* sequence_editor, double amount)
 {
 	this->sequence_editor = sequence_editor;
@@ -251,5 +261,10 @@ double SecondsPerStepSize::GetStepFromTick(long tick)
 long SecondsPerStepSize::GetTickFromStep(double step)
 {
 	return MidiFile_getTickFromTime(this->sequence_editor->sequence->midi_file, step * this->amount);
+}
+
+wxString SecondsPerStepSize::GetTimeStringFromTick(long tick)
+{
+	return wxString(MidiFile_getHourMinuteSecondStringFromTick(this->sequence_editor->sequence->midi_file, tick));
 }
 

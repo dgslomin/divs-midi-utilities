@@ -326,12 +326,12 @@ void EventList::Prepare()
 	this->row_height = dc.GetCharHeight();
 
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
-	this->column_widths[1] = dc.GetTextExtent("000:0.000#").GetWidth();
+	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "#").GetWidth();
 	this->column_widths[2] = dc.GetTextExtent("00#").GetWidth();
 	this->column_widths[3] = dc.GetTextExtent("00#").GetWidth();
 	this->column_widths[4] = dc.GetTextExtent("C#0#").GetWidth();
 	this->column_widths[5] = dc.GetTextExtent("000#").GetWidth();
-	this->column_widths[6] = dc.GetTextExtent("000:0.000#").GetWidth();
+	this->column_widths[6] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "#").GetWidth();
 	this->column_widths[7] = dc.GetTextExtent("000#").GetWidth();
 
 	this->sequence_editor->SetScrollbars(0, this->row_height, 0, this->sequence_editor->rows.size());
@@ -365,7 +365,7 @@ void EventList::OnDraw(wxDC& dc)
 
 		if (row.event == NULL)
 		{
-			dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, this->sequence_editor->step_size->GetTickFromStep(row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			dc.DrawText(this->sequence_editor->step_size->GetTimeStringFromTick(this->sequence_editor->step_size->GetTickFromStep(row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 		}
 		else
 		{
@@ -387,7 +387,7 @@ void EventList::OnDraw(wxDC& dc)
 				}
 			}
 
-			if (!matched) dc.DrawText(MidiFile_getMeasureBeatStringFromTick(this->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			if (!matched) dc.DrawText(this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
 		}
 	}
 }

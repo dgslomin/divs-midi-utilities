@@ -61,11 +61,6 @@ TODO:
         mouse support for navigate/select
     piano roll
         mouse support for select
-    step size controls
-        There should be zoom in, zoom out, and step size dialog commands.
-        Zoom in and out imply that there's a sequence of available zoom levels.  Actually, there will be two such sequences (toggleable from the step size dialog):
-        1.  Seconds-based steps.  This zooms in and out by a factor of two.
-        2.  Musical-time-based steps.  Base step size is one beat.  One level zoomed out is one measure, then two measures, four measures, etc.  Zooming in takes you through a sequence of powers of two fractions of a beat, interspersed (in sorted order) with additional fractions specified by the user in a list of numerator/denominator pairs.  The list should come seeded with common tuplets.
     selection/clipboard infrastructure
     undo/redo infrastructure
     multi-window infrastructure

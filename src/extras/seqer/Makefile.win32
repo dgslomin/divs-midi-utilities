@@ -19,7 +19,7 @@ sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h seqer.h seque
 step-size.obj: step-size.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h step-size.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c step-size.cpp
 
-event-type.obj: event-type.cpp ..\..\midifile\midifile.h sequence-editor.h event-type.h
+event-type.obj: event-type.cpp ..\..\midifile\midifile.h sequence-editor.h step-size.h event-type.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c event-type.cpp
 
 color.obj: color.cpp

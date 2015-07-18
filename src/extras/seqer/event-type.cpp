@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+#include "step-size.h"
 #include "event-type.h"
 
 EventType* event_types[] = {new NoteEventType(), new ControlChangeEventType(), new ProgramChangeEventType(), new AftertouchEventType(), new PitchBendEventType(), new SystemExclusiveEventType(), new TextEventType(), new LyricEventType(), new MarkerEventType(), new PortEventType(), new TempoEventType(), new TimeSignatureEventType(), new KeySignatureEventType(), NULL};
@@ -26,7 +27,7 @@ wxString NoteEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -46,7 +47,7 @@ wxString NoteEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 6:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(event))));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(event)));
 		}
 		case 7:
 		{
@@ -79,7 +80,7 @@ wxString ControlChangeEventType::GetEventListColumnText(EventList* event_list, M
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -124,7 +125,7 @@ wxString ProgramChangeEventType::GetEventListColumnText(EventList* event_list, M
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -165,7 +166,7 @@ wxString AftertouchEventType::GetEventListColumnText(EventList* event_list, Midi
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -231,7 +232,7 @@ wxString PitchBendEventType::GetEventListColumnText(EventList* event_list, MidiF
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -274,7 +275,7 @@ wxString SystemExclusiveEventType::GetEventListColumnText(EventList* event_list,
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -307,7 +308,7 @@ wxString TextEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -344,7 +345,7 @@ wxString LyricEventType::GetEventListColumnText(EventList* event_list, MidiFileE
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -381,7 +382,7 @@ wxString MarkerEventType::GetEventListColumnText(EventList* event_list, MidiFile
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -418,7 +419,7 @@ wxString PortEventType::GetEventListColumnText(EventList* event_list, MidiFileEv
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -455,7 +456,7 @@ wxString TempoEventType::GetEventListColumnText(EventList* event_list, MidiFileE
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -492,7 +493,7 @@ wxString TimeSignatureEventType::GetEventListColumnText(EventList* event_list, M
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{
@@ -529,7 +530,7 @@ wxString KeySignatureEventType::GetEventListColumnText(EventList* event_list, Mi
 		}
 		case 1:
 		{
-			return wxString(MidiFile_getMeasureBeatStringFromTick(event_list->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event)));
+			return event_list->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(event));
 		}
 		case 2:
 		{

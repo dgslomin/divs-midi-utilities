@@ -35,6 +35,7 @@ public:
 	virtual void PopulateDialog(StepSizeDialog* dialog) = 0;
 	virtual double GetStepFromTick(long tick) = 0;
 	virtual long GetTickFromStep(double step) = 0;
+	virtual wxString GetTimeStringFromTick(long tick) = 0;
 };
 
 class StepsPerMeasureSize: public StepSize
@@ -52,6 +53,7 @@ public:
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 	long GetTickFromStep(double step);
+	wxString GetTimeStringFromTick(long tick);
 };
 
 class MeasuresPerStepSize: public StepSize
@@ -66,6 +68,7 @@ public:
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 	long GetTickFromStep(double step);
+	wxString GetTimeStringFromTick(long tick);
 };
 
 class SecondsPerStepSize: public StepSize
@@ -80,6 +83,7 @@ public:
 	void PopulateDialog(StepSizeDialog* dialog);
 	double GetStepFromTick(long tick);
 	long GetTickFromStep(double step);
+	wxString GetTimeStringFromTick(long tick);
 };
 
 #endif
