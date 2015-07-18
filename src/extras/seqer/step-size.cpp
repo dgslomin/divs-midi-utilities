@@ -135,32 +135,49 @@ double StepsPerMeasureSize::GetStepFromTick(long tick)
 {
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->sequence_editor->sequence->midi_file);
 	double time_signature_event_beat = 0.0;
+	double step = 0.0;
 	int numerator = 4;
 	int denominator = 4;
-	double step = 0.0;
 
 	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
 	{
 		if (MidiFileEvent_isTimeSignatureEvent(event))
 		{
 			double next_time_signature_event_beat = MidiFile_getBeatFromTick(this->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event));
-			double measures = (next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator;
-			step += (measures * GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator));
+			step += ((next_time_signature_event_beat - time_signature_event_beat) * ((double)(GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator)) * denominator / numerator / 4));
 			time_signature_event_beat = next_time_signature_event_beat;
 			numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 			denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 		}
 	}
 
-	double measures = (MidiFile_getBeatFromTick(this->sequence_editor->sequence->midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator;
-	step += (measures * GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator));
+	step += ((MidiFile_getBeatFromTick(this->sequence_editor->sequence->midi_file, tick) - time_signature_event_beat) * ((double)(GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator)) * denominator / numerator / 4));
 	return step;
 }
 
 long StepsPerMeasureSize::GetTickFromStep(double step)
 {
-	// TODO: handle time signatures using the inverse of the above logic
-	return MidiFile_getTickFromBeat(this->sequence_editor->sequence->midi_file, step * this->amount);
+	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(this->sequence_editor->sequence->midi_file);
+	double time_signature_event_beat = 0.0;
+	double time_signature_event_step = 0.0;
+	int numerator = 4;
+	int denominator = 4;
+
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(conductor_track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isTimeSignatureEvent(event))
+		{
+			double next_time_signature_event_beat = MidiFile_getBeatFromTick(this->sequence_editor->sequence->midi_file, MidiFileEvent_getTick(event));
+			double next_time_signature_event_step = time_signature_event_step + ((next_time_signature_event_beat - time_signature_event_beat) * ((double)(GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator)) * denominator / numerator / 4));
+			if (next_time_signature_event_step >= step) break;
+			time_signature_event_beat = next_time_signature_event_beat;
+			time_signature_event_step = next_time_signature_event_step;
+			numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+			denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+		}
+	}
+
+	return MidiFile_getTickFromBeat(this->sequence_editor->sequence->midi_file, time_signature_event_beat + ((step - time_signature_event_step) / ((double)(GetEquivalentMeasureDivision(this->amount, this->numerator, this->denominator, numerator, denominator)) * denominator / numerator / 4)));
 }
 
 MeasuresPerStepSize::MeasuresPerStepSize(SequenceEditor* sequence_editor, int amount)

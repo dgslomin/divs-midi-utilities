@@ -1291,31 +1291,58 @@ float MidiFile_getMeasureFromTick(MidiFile_t midi_file, long tick)
 		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 		MidiFileEvent_t event;
 		float time_signature_event_beat = 0.0;
+		float measure = 0.0;
 		int numerator = 4;
 		int denominator = 4;
-		float measure = 0.0;
 
 		for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
 		{
 			if (MidiFileEvent_isTimeSignatureEvent(event))
 			{
 				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
-				measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
+				measure += ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 				time_signature_event_beat = next_time_signature_event_beat;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
 		}
 
-		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
+		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 		return measure;
 	}
 }
 
 long MidiFile_getTickFromMeasure(MidiFile_t midi_file, float measure)
 {
-    /* TODO */
-    return -1;
+	if (midi_file == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
+		MidiFileEvent_t event;
+		float time_signature_event_beat = 0.0;
+		float time_signature_event_measure = 0.0;
+		int numerator = 4;
+		int denominator = 4;
+
+		for (event = MidiFileTrack_getFirstEvent(conductor_track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+		{
+			if (MidiFileEvent_isTimeSignatureEvent(event))
+			{
+				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
+				float next_time_signature_event_measure = time_signature_event_measure + ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
+				if (next_time_signature_event_measure >= measure) break;
+				time_signature_event_beat = next_time_signature_event_beat;
+				time_signature_event_measure = next_time_signature_event_measure;
+				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
+				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
+			}
+		}
+
+		return MidiFile_getTickFromBeat(midi_file, time_signature_event_beat + ((measure - time_signature_event_measure) / ((float)(denominator) / numerator / 4)));
+	}
 }
 
 int MidiFile_setMeasureBeatFromTick(MidiFile_t midi_file, long tick, MidiFileMeasureBeat_t measure_beat)
@@ -1329,25 +1356,25 @@ int MidiFile_setMeasureBeatFromTick(MidiFile_t midi_file, long tick, MidiFileMea
 		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 		MidiFileEvent_t event;
 		float time_signature_event_beat = 0.0;
+		float measure = 0.0;
 		int numerator = 4;
 		int denominator = 4;
-		float measure = 0.0;
 
 		for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
 		{
 			if (MidiFileEvent_isTimeSignatureEvent(event))
 			{
 				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
-				measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
+				measure += ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 				time_signature_event_beat = next_time_signature_event_beat;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
 		}
 
-		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
+		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 		MidiFileMeasureBeat_setMeasure(measure_beat, (long)(measure) + 1);
-		MidiFileMeasureBeat_setBeat(measure_beat, ((measure - (MidiFileMeasureBeat_getMeasure(measure_beat) - (float)(1.0))) * (float)(numerator)) + (float)(1.0));
+		MidiFileMeasureBeat_setBeat(measure_beat, ((measure - (float)(MidiFileMeasureBeat_getMeasure(measure_beat) - 1)) * numerator) + 1.0);
 		return 0;
 	}
 }
@@ -1362,35 +1389,32 @@ long MidiFile_getTickFromMeasureBeat(MidiFile_t midi_file, MidiFileMeasureBeat_t
 	{
 		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 		MidiFileEvent_t event;
-		long time_signature_event_absolute_tick = 0;
-		float time_signature_event_absolute_beat = 0.0;
-		float time_signature_event_absolute_measure = 0.0;
-		long time_signature_event_measure = 1;
-		float time_signature_event_beat = 1.0;
-		long numerator = 4;
-		long denominator = 4;
+		float time_signature_event_beat = 0.0;
+		float time_signature_event_measure = 0.0;
+		long time_signature_event_visible_measure = 1;
+		float time_signature_event_visible_beat = 1.0;
+		int numerator = 4;
+		int denominator = 4;
 
 		for (event = MidiFileTrack_getFirstEvent(conductor_track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
 		{
 			if (MidiFileEvent_isTimeSignatureEvent(event))
 			{
-				long next_time_signature_event_absolute_tick = MidiFileEvent_getTick(event);
-				float next_time_signature_event_absolute_beat = MidiFile_getBeatFromTick(midi_file, next_time_signature_event_absolute_tick);
-				float next_time_signature_event_absolute_measure = time_signature_event_absolute_measure + ((next_time_signature_event_absolute_beat - time_signature_event_absolute_beat) * (float)(denominator) / (float)(4.0) / (float)(numerator));
-				long next_time_signature_event_measure = (long)(next_time_signature_event_absolute_measure) + 1;
-				float next_time_signature_event_beat = ((next_time_signature_event_absolute_measure - (float)(next_time_signature_event_measure - 1)) * (float)(numerator)) + (float)(1.0);
-				if ((next_time_signature_event_measure > MidiFileMeasureBeat_getMeasure(measure_beat)) || ((next_time_signature_event_measure == MidiFileMeasureBeat_getMeasure(measure_beat)) && (next_time_signature_event_beat > MidiFileMeasureBeat_getBeat(measure_beat)))) break;
-				time_signature_event_absolute_tick = next_time_signature_event_absolute_tick;
-				time_signature_event_absolute_beat = next_time_signature_event_absolute_beat;
-				time_signature_event_absolute_measure = next_time_signature_event_absolute_measure;
-				time_signature_event_measure = next_time_signature_event_measure;
+				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
+				float next_time_signature_event_measure = time_signature_event_measure + ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
+				long next_time_signature_event_visible_measure = (long)(next_time_signature_event_measure) + 1;
+				float next_time_signature_event_visible_beat = ((next_time_signature_event_measure - (float)(next_time_signature_event_visible_measure - 1)) * numerator) + 1.0;
+				if ((next_time_signature_event_visible_measure > MidiFileMeasureBeat_getMeasure(measure_beat)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeat_getMeasure(measure_beat)) && (next_time_signature_event_visible_beat >= MidiFileMeasureBeat_getBeat(measure_beat)))) break;
 				time_signature_event_beat = next_time_signature_event_beat;
+				time_signature_event_measure = next_time_signature_event_measure;
+				time_signature_event_visible_measure = next_time_signature_event_visible_measure;
+				time_signature_event_visible_beat = next_time_signature_event_visible_beat;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
 		}
 
-		return time_signature_event_absolute_tick + MidiFile_getTickFromBeat(midi_file, ((float)((MidiFileMeasureBeat_getMeasure(measure_beat) - time_signature_event_measure) * numerator) + MidiFileMeasureBeat_getBeat(measure_beat) - time_signature_event_beat) * (float)(4.0) / (float)(denominator));
+		return MidiFile_getTickFromBeat(midi_file, time_signature_event_beat + (((((float)(MidiFileMeasureBeat_getMeasure(measure_beat) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeat_getBeat(measure_beat) - time_signature_event_visible_beat)) - time_signature_event_measure) / ((float)(denominator) / numerator / 4)));
 	}
 }
 
@@ -1405,25 +1429,25 @@ int MidiFile_setMeasureBeatTickFromTick(MidiFile_t midi_file, long tick, MidiFil
 		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 		MidiFileEvent_t event;
 		float time_signature_event_beat = 0.0;
+		float measure = 0.0;
 		int numerator = 4;
 		int denominator = 4;
-		float measure = 0.0;
 
 		for (event = MidiFileTrack_getFirstEvent(conductor_track); (event != NULL) && (MidiFileEvent_getTick(event) < tick); event = MidiFileEvent_getNextEventInTrack(event))
 		{
 			if (MidiFileEvent_isTimeSignatureEvent(event))
 			{
 				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(event));
-				measure += ((next_time_signature_event_beat - time_signature_event_beat) * denominator / 4 / numerator);
+				measure += ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 				time_signature_event_beat = next_time_signature_event_beat;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
 		}
 
-		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * denominator / 4 / numerator);
+		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 		MidiFileMeasureBeatTick_setMeasure(measure_beat_tick, (long)(measure) + 1);
-		MidiFileMeasureBeatTick_setBeat(measure_beat_tick, (long)((measure - (float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - 1)) * (float)(numerator)) + 1);
+		MidiFileMeasureBeatTick_setBeat(measure_beat_tick, (long)((measure - (float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - 1)) * numerator) + 1);
 		MidiFileMeasureBeatTick_setTick(measure_beat_tick, (measure - (float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - 1) - ((float)(MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - 1) / numerator)) * numerator * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file));
 		return 0;
 	}
@@ -1439,38 +1463,57 @@ long MidiFile_getTickFromMeasureBeatTick(MidiFile_t midi_file, MidiFileMeasureBe
 	{
 		MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 		MidiFileEvent_t event;
-		long time_signature_event_absolute_tick = 0;
-		float time_signature_event_absolute_beat = 0.0;
-		float time_signature_event_absolute_measure = 0.0;
-		long time_signature_event_measure = 1;
-		long time_signature_event_beat = 1;
-		float time_signature_event_tick = 0.0;
-		long numerator = 4;
-		long denominator = 4;
+		long time_signature_event_tick = 0;
+		float time_signature_event_beat = 0.0;
+		float time_signature_event_measure = 0.0;
+		long time_signature_event_visible_measure = 1;
+		long time_signature_event_visible_beat = 1;
+		float time_signature_event_visible_tick = 0.0;
+		int numerator = 4;
+		int denominator = 4;
 
 		for (event = MidiFileTrack_getFirstEvent(conductor_track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
 		{
 			if (MidiFileEvent_isTimeSignatureEvent(event))
 			{
-				long next_time_signature_event_absolute_tick = MidiFileEvent_getTick(event);
-				float next_time_signature_event_absolute_beat = MidiFile_getBeatFromTick(midi_file, next_time_signature_event_absolute_tick);
-				float next_time_signature_event_absolute_measure = time_signature_event_absolute_measure + ((next_time_signature_event_absolute_beat - time_signature_event_absolute_beat) * denominator / 4 / numerator);
-				long next_time_signature_event_measure = (long)(next_time_signature_event_absolute_measure) + 1;
-				long next_time_signature_event_beat = (long)((next_time_signature_event_absolute_measure - (float)(next_time_signature_event_measure - 1)) * (float)(numerator)) + 1;
-				float next_time_signature_event_tick = (next_time_signature_event_absolute_measure - (float)(next_time_signature_event_measure - 1) - ((float)(next_time_signature_event_beat - 1) / numerator)) * numerator * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file);
-				if ((next_time_signature_event_measure > MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) || ((next_time_signature_event_measure == MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) && ((next_time_signature_event_beat > MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) || ((next_time_signature_event_measure == MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) && (next_time_signature_event_tick > MidiFileMeasureBeatTick_getTick(measure_beat_tick)))))) break;
-				time_signature_event_absolute_tick = next_time_signature_event_absolute_tick;
-				time_signature_event_absolute_beat = next_time_signature_event_absolute_beat;
-				time_signature_event_absolute_measure = next_time_signature_event_absolute_measure;
-				time_signature_event_measure = next_time_signature_event_measure;
-				time_signature_event_beat = next_time_signature_event_beat;
+				long next_time_signature_event_tick = MidiFileEvent_getTick(event);
+				float next_time_signature_event_beat = MidiFile_getBeatFromTick(midi_file, next_time_signature_event_tick);
+				float next_time_signature_event_measure = time_signature_event_measure + ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
+				long next_time_signature_event_visible_measure = (long)(next_time_signature_event_measure) + 1;
+				long next_time_signature_event_visible_beat = (long)((next_time_signature_event_measure - (float)(next_time_signature_event_visible_measure - 1)) * numerator) + 1;
+				float next_time_signature_event_visible_tick = (next_time_signature_event_measure - (float)(next_time_signature_event_visible_measure - 1) - ((float)(next_time_signature_event_visible_beat - 1) / numerator)) * numerator * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file);
+
+/* TODO: MidiFile_getNumberOfTicksPerBeat() should be removed from the API entirely, since it doesn't accomodate tempo variations in SMPTE files.  MidiFile_getTickFromBeat() should be used instead, but it works on absolute positions, not relative ones.  Haven't yet figured out quite how to do it though. */
+
+#if 0
+				float next_time_signature_event_visible_tick = MidiFileEvent_getTick(event) - MidiFile_getTickFromBeat();
+(float)(next_time_signature_event_visible_measure - 1) * numerator
+ + (((float)(next_time_signature_event_visible_beat - 1) / numerator)
+
+ / ((float)(denominator) / numerator / 4))
+#endif
+
+				if ((next_time_signature_event_visible_measure > MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) && ((next_time_signature_event_visible_beat > MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) && (next_time_signature_event_visible_tick > MidiFileMeasureBeatTick_getTick(measure_beat_tick)))))) break;
 				time_signature_event_tick = next_time_signature_event_tick;
+				time_signature_event_beat = next_time_signature_event_beat;
+				time_signature_event_measure = next_time_signature_event_measure;
+				time_signature_event_visible_measure = next_time_signature_event_visible_measure;
+				time_signature_event_visible_beat = next_time_signature_event_visible_beat;
+				time_signature_event_visible_tick = next_time_signature_event_visible_tick;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
 		}
 
-		return time_signature_event_absolute_tick + (long)(((((MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - time_signature_event_measure) * numerator) + (MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - time_signature_event_beat)) * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file)) + (MidiFileMeasureBeatTick_getTick(measure_beat_tick) - time_signature_event_tick));
+		return time_signature_event_tick + (long)(((((MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - time_signature_event_visible_beat)) * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file)) + (MidiFileMeasureBeatTick_getTick(measure_beat_tick) - time_signature_event_visible_tick));
+
+#if 0
+		return MidiFile_getTickFromBeat(midi_file, time_signature_event_beat + 
+
+(((((float)(MidiFileMeasureBeat_getMeasure(measure_beat) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeat_getBeat(measure_beat) - time_signature_event_visible_beat)) - time_signature_event_measure) / ((float)(denominator) / numerator / 4))
+
+);
+#endif
 	}
 }
 
@@ -1602,7 +1645,7 @@ long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker)
 
 MidiFileEvent_t MidiFile_getLatestTempoEventForTick(MidiFile_t midi_file, long tick)
 {
-    MidiFileEvent_t tempo_event = NULL;
+	MidiFileEvent_t tempo_event = NULL;
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 	MidiFileEvent_t event;
 
@@ -1616,7 +1659,7 @@ MidiFileEvent_t MidiFile_getLatestTempoEventForTick(MidiFile_t midi_file, long t
 
 MidiFileEvent_t MidiFile_getLatestTimeSignatureEventForTick(MidiFile_t midi_file, long tick)
 {
-    MidiFileEvent_t time_signature_event = NULL;
+	MidiFileEvent_t time_signature_event = NULL;
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 	MidiFileEvent_t event;
 
@@ -1630,7 +1673,7 @@ MidiFileEvent_t MidiFile_getLatestTimeSignatureEventForTick(MidiFile_t midi_file
 
 MidiFileEvent_t MidiFile_getLatestKeySignatureEventForTick(MidiFile_t midi_file, long tick)
 {
-    MidiFileEvent_t key_signature_event = NULL;
+	MidiFileEvent_t key_signature_event = NULL;
 	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 	MidiFileEvent_t event;
 
