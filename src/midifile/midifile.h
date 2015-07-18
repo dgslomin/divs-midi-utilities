@@ -104,8 +104,6 @@ MidiFileDivisionType_t MidiFile_getDivisionType(MidiFile_t midi_file);
 int MidiFile_setDivisionType(MidiFile_t midi_file, MidiFileDivisionType_t division_type);
 int MidiFile_getResolution(MidiFile_t midi_file);
 int MidiFile_setResolution(MidiFile_t midi_file, int resolution);
-int MidiFile_getNumberOfTicksPerBeat(MidiFile_t midi_file);
-int MidiFile_setNumberOfTicksPerBeat(MidiFile_t midi_file, int number_of_ticks_per_beat);
 float MidiFile_getNumberOfFramesPerSecond(MidiFile_t midi_file);
 int MidiFile_setNumberOfFramesPerSecond(MidiFile_t midi_file, float number_of_frames_per_second);
 MidiFileTrack_t MidiFile_createTrack(MidiFile_t midi_file);

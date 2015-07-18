@@ -13,7 +13,6 @@ struct MidiFile
 	int file_format;
 	MidiFileDivisionType_t division_type;
 	int resolution;
-	int number_of_ticks_per_beat;
 	float number_of_frames_per_second;
 	int number_of_tracks;
 	struct MidiFileTrack *first_track;
@@ -745,37 +744,31 @@ MidiFile_t MidiFile_new(int file_format, MidiFileDivisionType_t division_type, i
 	{
 		case MIDI_FILE_DIVISION_TYPE_PPQ:
 		{
-			midi_file->number_of_ticks_per_beat = resolution;
 			midi_file->number_of_frames_per_second = 30.0;
 			break;
 		}
 		case MIDI_FILE_DIVISION_TYPE_SMPTE24:
 		{
-			midi_file->number_of_ticks_per_beat = 960;
 			midi_file->number_of_frames_per_second = 24.0;
 			break;
 		}
 		case MIDI_FILE_DIVISION_TYPE_SMPTE25:
 		{
-			midi_file->number_of_ticks_per_beat = 960;
 			midi_file->number_of_frames_per_second = 25.0;
 			break;
 		}
 		case MIDI_FILE_DIVISION_TYPE_SMPTE30DROP:
 		{
-			midi_file->number_of_ticks_per_beat = 960;
 			midi_file->number_of_frames_per_second = 29.97;
 			break;
 		}
 		case MIDI_FILE_DIVISION_TYPE_SMPTE30:
 		{
-			midi_file->number_of_ticks_per_beat = 960;
 			midi_file->number_of_frames_per_second = 30.0;
 			break;
 		}
 		default:
 		{
-			midi_file->number_of_ticks_per_beat = 960;
 			midi_file->number_of_frames_per_second = 30.0;
 			break;
 		}
@@ -836,6 +829,35 @@ int MidiFile_setDivisionType(MidiFile_t midi_file, MidiFileDivisionType_t divisi
 {
 	if (midi_file == NULL) return -1;
 	midi_file->division_type = division_type;
+
+	switch (division_type)
+	{
+		case MIDI_FILE_DIVISION_TYPE_SMPTE24:
+		{
+			midi_file->number_of_frames_per_second = 24.0;
+			break;
+		}
+		case MIDI_FILE_DIVISION_TYPE_SMPTE25:
+		{
+			midi_file->number_of_frames_per_second = 25.0;
+			break;
+		}
+		case MIDI_FILE_DIVISION_TYPE_SMPTE30DROP:
+		{
+			midi_file->number_of_frames_per_second = 29.97;
+			break;
+		}
+		case MIDI_FILE_DIVISION_TYPE_SMPTE30:
+		{
+			midi_file->number_of_frames_per_second = 30.0;
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+
 	return 0;
 }
 
@@ -849,19 +871,6 @@ int MidiFile_setResolution(MidiFile_t midi_file, int resolution)
 {
 	if (midi_file == NULL) return -1;
 	midi_file->resolution = resolution;
-	return 0;
-}
-
-int MidiFile_getNumberOfTicksPerBeat(MidiFile_t midi_file)
-{
-	if (midi_file == NULL) return -1;
-	return midi_file->number_of_ticks_per_beat;
-}
-
-int MidiFile_setNumberOfTicksPerBeat(MidiFile_t midi_file, int number_of_ticks_per_beat)
-{
-	if (midi_file == NULL) return -1;
-	midi_file->number_of_ticks_per_beat = number_of_ticks_per_beat;
 	return 0;
 }
 
@@ -1448,7 +1457,7 @@ int MidiFile_setMeasureBeatTickFromTick(MidiFile_t midi_file, long tick, MidiFil
 		measure += ((MidiFile_getBeatFromTick(midi_file, tick) - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 		MidiFileMeasureBeatTick_setMeasure(measure_beat_tick, (long)(measure) + 1);
 		MidiFileMeasureBeatTick_setBeat(measure_beat_tick, (long)((measure - (float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - 1)) * numerator) + 1);
-		MidiFileMeasureBeatTick_setTick(measure_beat_tick, (measure - (float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - 1) - ((float)(MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - 1) / numerator)) * numerator * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file));
+		MidiFileMeasureBeatTick_setTick(measure_beat_tick, tick - MidiFile_getTickFromBeat(midi_file, (float)((long)(MidiFile_getBeatFromTick(midi_file, tick)))));
 		return 0;
 	}
 }
@@ -1481,19 +1490,8 @@ long MidiFile_getTickFromMeasureBeatTick(MidiFile_t midi_file, MidiFileMeasureBe
 				float next_time_signature_event_measure = time_signature_event_measure + ((next_time_signature_event_beat - time_signature_event_beat) * ((float)(denominator) / numerator / 4));
 				long next_time_signature_event_visible_measure = (long)(next_time_signature_event_measure) + 1;
 				long next_time_signature_event_visible_beat = (long)((next_time_signature_event_measure - (float)(next_time_signature_event_visible_measure - 1)) * numerator) + 1;
-				float next_time_signature_event_visible_tick = (next_time_signature_event_measure - (float)(next_time_signature_event_visible_measure - 1) - ((float)(next_time_signature_event_visible_beat - 1) / numerator)) * numerator * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file);
-
-/* TODO: MidiFile_getNumberOfTicksPerBeat() should be removed from the API entirely, since it doesn't accomodate tempo variations in SMPTE files.  MidiFile_getTickFromBeat() should be used instead, but it works on absolute positions, not relative ones.  Haven't yet figured out quite how to do it though. */
-
-#if 0
-				float next_time_signature_event_visible_tick = MidiFileEvent_getTick(event) - MidiFile_getTickFromBeat();
-(float)(next_time_signature_event_visible_measure - 1) * numerator
- + (((float)(next_time_signature_event_visible_beat - 1) / numerator)
-
- / ((float)(denominator) / numerator / 4))
-#endif
-
-				if ((next_time_signature_event_visible_measure > MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) && ((next_time_signature_event_visible_beat > MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) && (next_time_signature_event_visible_tick > MidiFileMeasureBeatTick_getTick(measure_beat_tick)))))) break;
+				float next_time_signature_event_visible_tick = next_time_signature_event_tick - MidiFile_getTickFromBeat(midi_file, (float)((long)(next_time_signature_event_beat)));
+				if ((next_time_signature_event_visible_measure > MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getMeasure(measure_beat_tick)) && ((next_time_signature_event_visible_beat > MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) || ((next_time_signature_event_visible_measure == MidiFileMeasureBeatTick_getBeat(measure_beat_tick)) && (next_time_signature_event_visible_tick >= MidiFileMeasureBeatTick_getTick(measure_beat_tick)))))) break;
 				time_signature_event_tick = next_time_signature_event_tick;
 				time_signature_event_beat = next_time_signature_event_beat;
 				time_signature_event_measure = next_time_signature_event_measure;
@@ -1505,15 +1503,7 @@ long MidiFile_getTickFromMeasureBeatTick(MidiFile_t midi_file, MidiFileMeasureBe
 			}
 		}
 
-		return time_signature_event_tick + (long)(((((MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - time_signature_event_visible_beat)) * 4 / denominator * MidiFile_getNumberOfTicksPerBeat(midi_file)) + (MidiFileMeasureBeatTick_getTick(measure_beat_tick) - time_signature_event_visible_tick));
-
-#if 0
-		return MidiFile_getTickFromBeat(midi_file, time_signature_event_beat + 
-
-(((((float)(MidiFileMeasureBeat_getMeasure(measure_beat) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeat_getBeat(measure_beat) - time_signature_event_visible_beat)) - time_signature_event_measure) / ((float)(denominator) / numerator / 4))
-
-);
-#endif
+		return MidiFile_getTickFromBeat(midi_file, time_signature_event_beat + (((((float)(MidiFileMeasureBeatTick_getMeasure(measure_beat_tick) - time_signature_event_visible_measure) * numerator) + (MidiFileMeasureBeatTick_getBeat(measure_beat_tick) - time_signature_event_visible_beat)) - time_signature_event_measure) / ((float)(denominator) / numerator / 4))) + MidiFileMeasureBeatTick_getTick(measure_beat_tick);
 	}
 }
 
