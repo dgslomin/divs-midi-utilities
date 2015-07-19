@@ -164,8 +164,8 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 			transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 			transport_menu->AppendSeparator();
-			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+]");
-			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+[");
+			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+Right");
+			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+Left");
 			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+M");
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
