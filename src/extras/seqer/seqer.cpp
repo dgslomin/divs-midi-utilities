@@ -166,13 +166,13 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+Right");
 			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+Left");
-			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+M");
+			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+Shift+M");
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
 		wxMenu* tools_menu = new wxMenu(); menu_bar->Append(tools_menu, "&Tools");
 			tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
 			tools_menu->AppendSeparator();
-			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+Shift+Q");
+			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+M");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
 			tools_menu->AppendSeparator();
 			tools_menu->Append(SEQER_ID_SETTINGS, "&Settings..."); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSettings, this, SEQER_ID_SETTINGS);
