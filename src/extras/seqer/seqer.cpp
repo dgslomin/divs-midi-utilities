@@ -180,12 +180,15 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
 			help_menu->Append(wxID_ABOUT, "&About"); this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 
-	// Make Unix work the same as Windows and Mac by ignoring whether shift is pressed for the zoom in/out keyboard shortcuts.
-	wxAcceleratorEntry additional_keyboard_accelerators[] = {wxAcceleratorEntry(wxACCEL_CTRL | wxACCEL_SHIFT, '-', wxID_ZOOM_OUT), wxAcceleratorEntry(wxACCEL_CTRL, '=', wxID_ZOOM_IN), wxAcceleratorEntry(wxACCEL_SHIFT, WXK_LEFT, SEQER_ID_SELECT_CURRENT)};
-	this->SetAcceleratorTable(wxAcceleratorTable(sizeof additional_keyboard_accelerators / sizeof (wxAcceleratorEntry), additional_keyboard_accelerators));
+	this->Bind(wxEVT_CHAR_HOOK, &Window::OnKeyPress, this);
 
 	this->sequence_editor = new SequenceEditor(this);
 	this->CreateStatusBar();
+}
+
+Window::~Window()
+{
+	delete this->sequence_editor;
 }
 
 void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
@@ -215,13 +218,13 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
-	this->sequence_editor->step_size = this->sequence_editor->step_size->ZoomIn();
+	this->sequence_editor->SetStepSize(this->sequence_editor->step_size->ZoomIn());
 	this->sequence_editor->Prepare();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
-	this->sequence_editor->step_size = this->sequence_editor->step_size->ZoomOut();
+	this->sequence_editor->SetStepSize(this->sequence_editor->step_size->ZoomOut());
 	this->sequence_editor->Prepare();
 }
 
@@ -238,7 +241,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 			if (amount > 0)
 			{
 				MidiFileEvent_t time_signature_event = this->sequence_editor->GetLatestTimeSignatureEventForRowNumber(this->sequence_editor->current_row_number);
-				this->sequence_editor->step_size = new StepsPerMeasureSize(this->sequence_editor, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)); // TODO: memory leak
+				this->sequence_editor->SetStepSize(new StepsPerMeasureSize(this->sequence_editor, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)));
 				this->sequence_editor->Prepare();
 			}
 		}
@@ -248,7 +251,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 
 			if (amount > 0)
 			{
-				this->sequence_editor->step_size = new MeasuresPerStepSize(this->sequence_editor, amount);
+				this->sequence_editor->SetStepSize(new MeasuresPerStepSize(this->sequence_editor, amount));
 				this->sequence_editor->Prepare();
 			}
 		}
@@ -258,7 +261,7 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 
 			if (amount > 0)
 			{
-				this->sequence_editor->step_size = new SecondsPerStepSize(this->sequence_editor, amount);
+				this->sequence_editor->SetStepSize(new SecondsPerStepSize(this->sequence_editor, amount));
 				this->sequence_editor->Prepare();
 			}
 		}
@@ -324,6 +327,29 @@ void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
+}
+
+void Window::OnKeyPress(wxKeyEvent& event)
+{
+	if ((event.GetKeyCode() == '=') && event.ControlDown())
+	{
+		// make ctrl+plus ignore whether shift is pressed
+		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
+	}
+	else if ((event.GetKeyCode() == '-') && event.ControlDown())
+	{
+		// make ctrl+minus ignore whether shift is pressed
+		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
+	}
+	else if ((event.GetKeyCode() == WXK_LEFT) && event.ShiftDown())
+	{
+		// make shift+left be a synonym for shift+right
+		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));
+	}
+	else
+	{
+		event.Skip();
+	}
 }
 
 StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step Size")

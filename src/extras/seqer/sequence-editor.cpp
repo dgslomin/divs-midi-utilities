@@ -92,9 +92,18 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->piano_roll = new PianoRoll(this);
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
+	this->current_column_number = 0;
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
+}
+
+SequenceEditor::~SequenceEditor()
+{
+	delete this->sequence;
+	delete this->event_list;
+	delete this->piano_roll;
+	delete this->step_size;
 }
 
 bool SequenceEditor::Load(wxString filename)
@@ -103,7 +112,7 @@ bool SequenceEditor::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	if (this->sequence->midi_file != NULL) MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	this->step_size = new StepsPerMeasureSize(this);
+	this->SetStepSize(new StepsPerMeasureSize(this));
 	this->Prepare();
 	return true;
 }
@@ -307,10 +316,21 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
+void SequenceEditor::SetStepSize(StepSize* step_size)
+{
+	delete this->step_size;
+	this->step_size = step_size;
+}
+
 Sequence::Sequence(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
 	this->midi_file = NULL;
+}
+
+Sequence::~Sequence()
+{
+	MidiFile_free(this->midi_file);
 }
 
 EventList::EventList(SequenceEditor* sequence_editor)

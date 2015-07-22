@@ -1,6 +1,7 @@
 #ifndef SEQUENCE_EDITOR_INCLUDED
 #define SEQUENCE_EDITOR_INCLUDED
 
+#include <memory>
 #include <vector>
 #include <wx/wx.h>
 #include <midifile.h>
@@ -26,7 +27,7 @@ class SequenceEditor: public wxScrolledCanvas
 {
 public:
 	Window* window;
-    Sequence* sequence;
+	Sequence* sequence;
 	EventList* event_list;
 	PianoRoll* piano_roll;
 	StepSize* step_size;
@@ -36,8 +37,10 @@ public:
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
 	int current_row_number;
+	int current_column_number;
 
 	SequenceEditor(Window* window);
+	~SequenceEditor();
 	bool Load(wxString filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
@@ -52,6 +55,7 @@ public:
 	double GetFractionalStepNumberFromTick(long tick);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
+	void SetStepSize(StepSize* step_size);
 };
 
 class Sequence
@@ -61,6 +65,7 @@ public:
 	MidiFile_t midi_file;
 
 	Sequence(SequenceEditor* sequence_editor);
+	~Sequence();
 };
 
 class EventList

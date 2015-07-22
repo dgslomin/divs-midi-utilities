@@ -1,6 +1,7 @@
 #ifndef SEQER_INCLUDED
 #define SEQER_INCLUDED
 
+#include <memory>
 #include <wx/wx.h>
 #include <wx/fontpicker.h>
 
@@ -24,6 +25,7 @@ public:
 	SequenceEditor* sequence_editor;
 
 	Window(Application* application);
+	~Window();
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
@@ -33,6 +35,7 @@ public:
 	void OnFilter(wxCommandEvent& event);
 	void OnSettings(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void OnKeyPress(wxKeyEvent& event);
 };
 
 class StepSizeDialog: public wxDialog
