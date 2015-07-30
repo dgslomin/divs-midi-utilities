@@ -218,110 +218,27 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
 {
-	this->sequence_editor->SetStepSize(this->sequence_editor->step_size->ZoomIn());
-	this->sequence_editor->Prepare();
+	this->sequence_editor->ZoomIn();
 }
 
 void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 {
-	this->sequence_editor->SetStepSize(this->sequence_editor->step_size->ZoomOut());
-	this->sequence_editor->Prepare();
+	this->sequence_editor->ZoomOut();
 }
 
 void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 {
-	StepSizeDialog* dialog = new StepSizeDialog(this);
-
-	if (dialog->ShowModal() == wxID_OK)
-	{
-		if (dialog->steps_per_measure_radio_button->GetValue())
-		{
-			int amount = atoi(dialog->amount_text_box->GetValue());
-
-			if (amount > 0)
-			{
-				MidiFileEvent_t time_signature_event = this->sequence_editor->GetLatestTimeSignatureEventForRowNumber(this->sequence_editor->current_row_number);
-				this->sequence_editor->SetStepSize(new StepsPerMeasureSize(this->sequence_editor, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)));
-				this->sequence_editor->Prepare();
-			}
-		}
-		else if (dialog->measures_per_step_radio_button->GetValue())
-		{
-			int amount = atoi(dialog->amount_text_box->GetValue());
-
-			if (amount > 0)
-			{
-				this->sequence_editor->SetStepSize(new MeasuresPerStepSize(this->sequence_editor, amount));
-				this->sequence_editor->Prepare();
-			}
-		}
-		else if (dialog->seconds_per_step_radio_button->GetValue())
-		{
-			double amount = atof(dialog->amount_text_box->GetValue());
-
-			if (amount > 0)
-			{
-				this->sequence_editor->SetStepSize(new SecondsPerStepSize(this->sequence_editor, amount));
-				this->sequence_editor->Prepare();
-			}
-		}
-	}
-
-	dialog->Destroy();
+	StepSizeDialog::Run(this);
 }
 
 void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 {
-	FilterDialog* dialog = new FilterDialog(this);
-
-	if (dialog->ShowModal() == wxID_OK)
-	{
-		wxArrayInt selections;
-
-		this->sequence_editor->filtered_event_types.clear();
-		dialog->event_type_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) this->sequence_editor->filtered_event_types.push_back(selections[i]);
-
-		this->sequence_editor->filtered_tracks.clear();
-		dialog->track_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) this->sequence_editor->filtered_tracks.push_back(selections[i]);
-
-		this->sequence_editor->filtered_channels.clear();
-		dialog->channel_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) this->sequence_editor->filtered_channels.push_back(selections[i]);
-
-		this->sequence_editor->Prepare();
-	}
-
-	dialog->Destroy();
+	FilterDialog::Run(this);
 }
 
 void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
 {
-	SettingsDialog* dialog = new SettingsDialog(this);
-
-	if (dialog->ShowModal() == wxID_OK)
-	{
-		this->sequence_editor->event_list->font = dialog->event_list_font_picker->GetSelectedFont();
-
-		long first_note = GetNoteNumberFromName(dialog->piano_roll_first_note_text_box->GetValue());
-		long last_note = GetNoteNumberFromName(dialog->piano_roll_last_note_text_box->GetValue());
-
-		if ((first_note >= 0) && (first_note < 128) && (last_note >= 0) && (last_note < 128) && (first_note <= last_note))
-		{
-			this->sequence_editor->piano_roll->first_note = first_note;
-			this->sequence_editor->piano_roll->last_note = last_note;
-		}
-
-		long key_width = -1;
-		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
-		if (key_width >= 0) this->sequence_editor->piano_roll->key_width = key_width;
-
-		this->sequence_editor->Prepare();
-		this->sequence_editor->Refresh();
-	}
-
-	dialog->Destroy();
+	SettingsDialog::Run(this);
 }
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
@@ -352,6 +269,45 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	}
 }
 
+void StepSizeDialog::Run(Window* window)
+{
+	StepSizeDialog* dialog = new StepSizeDialog(window);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+		if (dialog->steps_per_measure_radio_button->GetValue())
+		{
+			int amount = atoi(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				MidiFileEvent_t time_signature_event = window->sequence_editor->GetLatestTimeSignatureEventForRowNumber(window->sequence_editor->current_row_number);
+				window->sequence_editor->SetStepSize(new StepsPerMeasureSize(window->sequence_editor, amount, MidiFileTimeSignatureEvent_getNumerator(time_signature_event), MidiFileTimeSignatureEvent_getDenominator(time_signature_event)));
+			}
+		}
+		else if (dialog->measures_per_step_radio_button->GetValue())
+		{
+			int amount = atoi(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				window->sequence_editor->SetStepSize(new MeasuresPerStepSize(window->sequence_editor, amount));
+			}
+		}
+		else if (dialog->seconds_per_step_radio_button->GetValue())
+		{
+			double amount = atof(dialog->amount_text_box->GetValue());
+
+			if (amount > 0)
+			{
+				window->sequence_editor->SetStepSize(new SecondsPerStepSize(window->sequence_editor, amount));
+			}
+		}
+	}
+
+	dialog->Destroy();
+}
+
 StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step Size")
 {
 	this->window = window;
@@ -380,6 +336,32 @@ StepSizeDialog::StepSizeDialog(Window* window): wxDialog(NULL, wxID_ANY, "Step S
 	outer_sizer->Fit(this);
 
 	this->window->sequence_editor->step_size->PopulateDialog(this);
+}
+
+void FilterDialog::Run(Window* window)
+{
+	FilterDialog* dialog = new FilterDialog(window);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+		wxArrayInt selections;
+
+		window->sequence_editor->filtered_event_types.clear();
+		dialog->event_type_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_event_types.push_back(selections[i]);
+
+		window->sequence_editor->filtered_tracks.clear();
+		dialog->track_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_tracks.push_back(selections[i]);
+
+		window->sequence_editor->filtered_channels.clear();
+		dialog->channel_list_box->GetSelections(selections);
+		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_channels.push_back(selections[i]);
+
+		window->sequence_editor->Prepare();
+	}
+
+	dialog->Destroy();
 }
 
 FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
@@ -510,6 +492,34 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 
 	this->channel_list_box->SetFocus();
 	event.Skip();
+}
+
+void SettingsDialog::Run(Window* window)
+{
+	SettingsDialog* dialog = new SettingsDialog(window);
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+		window->sequence_editor->event_list->font = dialog->event_list_font_picker->GetSelectedFont();
+
+		long first_note = GetNoteNumberFromName(dialog->piano_roll_first_note_text_box->GetValue());
+		long last_note = GetNoteNumberFromName(dialog->piano_roll_last_note_text_box->GetValue());
+
+		if ((first_note >= 0) && (first_note < 128) && (last_note >= 0) && (last_note < 128) && (first_note <= last_note))
+		{
+			window->sequence_editor->piano_roll->first_note = first_note;
+			window->sequence_editor->piano_roll->last_note = last_note;
+		}
+
+		long key_width = -1;
+		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
+		if (key_width >= 0) window->sequence_editor->piano_roll->key_width = key_width;
+
+		window->sequence_editor->Prepare();
+		window->sequence_editor->Refresh();
+	}
+
+	dialog->Destroy();
 }
 
 SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settings")

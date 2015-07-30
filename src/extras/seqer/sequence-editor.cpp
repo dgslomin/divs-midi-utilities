@@ -112,7 +112,7 @@ bool SequenceEditor::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	if (this->sequence->midi_file != NULL) MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	this->SetStepSize(new StepsPerMeasureSize(this));
+	this->SetStepSize(new StepsPerMeasureSize(this), false);
 	this->Prepare();
 	return true;
 }
@@ -316,10 +316,21 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::SetStepSize(StepSize* step_size)
+void SequenceEditor::SetStepSize(StepSize* step_size, boolean prepare)
 {
 	delete this->step_size;
 	this->step_size = step_size;
+	if (prepare) this->Prepare();
+}
+
+void SequenceEditor::ZoomIn(boolean prepare)
+{
+	this->SetStepSize(this->step_size->ZoomIn(), prepare);
+}
+
+void SequenceEditor::ZoomOut(boolean prepare)
+{
+	this->SetStepSize(this->step_size->ZoomOut(), prepare);
 }
 
 Sequence::Sequence(SequenceEditor* sequence_editor)

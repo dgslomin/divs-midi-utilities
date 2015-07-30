@@ -47,6 +47,7 @@ public:
 	wxRadioButton* measures_per_step_radio_button;
 	wxRadioButton* seconds_per_step_radio_button;
 
+	static void Run(Window* window);
 	StepSizeDialog(Window* window);
 };
 
@@ -58,6 +59,7 @@ public:
 	wxListBox* track_list_box;
 	wxListBox* channel_list_box;
 
+	static void Run(Window* window);
 	FilterDialog(Window* window);
 	void OnEventTypeLabelClick(wxMouseEvent& event);
 	void OnTrackLabelClick(wxMouseEvent& event);
@@ -73,6 +75,7 @@ public:
 	wxTextCtrl* piano_roll_last_note_text_box;
 	wxTextCtrl* piano_roll_key_width_text_box;
 
+	static void Run(Window* window);
 	SettingsDialog(Window* window);
 	void OnDefaultEventListFontButtonClick(wxCommandEvent& event);
 	void OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event);
