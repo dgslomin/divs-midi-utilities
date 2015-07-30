@@ -36,8 +36,8 @@ public:
 	std::vector<int> filtered_event_types;
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
-	int current_row_number;
-	int current_column_number;
+	long current_row_number;
+	long current_column_number;
 
 	SequenceEditor(Window* window);
 	~SequenceEditor();
@@ -58,6 +58,10 @@ public:
 	void SetStepSize(StepSize* step_size, boolean prepare = true);
 	void ZoomIn(boolean prepare = true);
 	void ZoomOut(boolean prepare = true);
+	void RowUp();
+	void RowDown();
+	void PageUp();
+	void PageDown();
 };
 
 class Sequence

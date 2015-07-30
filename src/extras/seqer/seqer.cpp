@@ -248,17 +248,33 @@ void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
 
 void Window::OnKeyPress(wxKeyEvent& event)
 {
-	if ((event.GetKeyCode() == '=') && event.ControlDown())
+	if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->RowUp();
+	}
+	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->RowDown();
+	}
+	else if ((event.GetKeyCode() == WXK_PAGEUP) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->PageUp();
+	}
+	else if ((event.GetKeyCode() == WXK_PAGEDOWN) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->PageDown();
+	}
+	else if ((event.GetKeyCode() == '=') && (event.GetModifiers() & ~wxMOD_SHIFT == wxMOD_CMD))
 	{
 		// make ctrl+plus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
 	}
-	else if ((event.GetKeyCode() == '-') && event.ControlDown())
+	else if ((event.GetKeyCode() == '-') && (event.GetModifiers() & ~wxMOD_SHIFT == wxMOD_CMD))
 	{
 		// make ctrl+minus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
 	}
-	else if ((event.GetKeyCode() == WXK_LEFT) && event.ShiftDown())
+	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_SHIFT))
 	{
 		// make shift+left be a synonym for shift+right
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));

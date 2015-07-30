@@ -333,6 +333,26 @@ void SequenceEditor::ZoomOut(boolean prepare)
 	this->SetStepSize(this->step_size->ZoomOut(), prepare);
 }
 
+void SequenceEditor::RowUp()
+{
+	this->current_row_number = std::max(this->current_row_number - 1, 0l);
+}
+
+void SequenceEditor::RowDown()
+{
+	this->current_row_number++;
+}
+
+void SequenceEditor::PageUp()
+{
+	this->current_row_number = std::max(this->current_row_number - this->GetVisibleHeight(), 0l);
+}
+
+void SequenceEditor::PageDown()
+{
+	this->current_row_number += this->GetVisibleHeight();
+}
+
 Sequence::Sequence(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
