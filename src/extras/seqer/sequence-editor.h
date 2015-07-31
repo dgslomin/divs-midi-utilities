@@ -55,9 +55,9 @@ public:
 	double GetFractionalStepNumberFromTick(long tick);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
-	void SetStepSize(StepSize* step_size, boolean prepare = true);
-	void ZoomIn(boolean prepare = true);
-	void ZoomOut(boolean prepare = true);
+	void SetStepSize(StepSize* step_size, bool prepare = true);
+	void ZoomIn(bool prepare = true);
+	void ZoomOut(bool prepare = true);
 	void RowUp();
 	void RowDown();
 	void PageUp();

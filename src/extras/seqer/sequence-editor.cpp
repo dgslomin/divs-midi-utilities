@@ -316,19 +316,19 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::SetStepSize(StepSize* step_size, boolean prepare)
+void SequenceEditor::SetStepSize(StepSize* step_size, bool prepare)
 {
 	delete this->step_size;
 	this->step_size = step_size;
 	if (prepare) this->Prepare();
 }
 
-void SequenceEditor::ZoomIn(boolean prepare)
+void SequenceEditor::ZoomIn(bool prepare)
 {
 	this->SetStepSize(this->step_size->ZoomIn(), prepare);
 }
 
-void SequenceEditor::ZoomOut(boolean prepare)
+void SequenceEditor::ZoomOut(bool prepare)
 {
 	this->SetStepSize(this->step_size->ZoomOut(), prepare);
 }
