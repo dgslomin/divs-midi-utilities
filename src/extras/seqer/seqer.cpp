@@ -264,12 +264,12 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	{
 		this->sequence_editor->PageDown();
 	}
-	else if ((event.GetKeyCode() == '=') && (event.GetModifiers() & ~wxMOD_SHIFT == wxMOD_CMD))
+	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CMD))
 	{
 		// make ctrl+plus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
 	}
-	else if ((event.GetKeyCode() == '-') && (event.GetModifiers() & ~wxMOD_SHIFT == wxMOD_CMD))
+	else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CMD))
 	{
 		// make ctrl+minus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));

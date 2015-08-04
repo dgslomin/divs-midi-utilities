@@ -84,6 +84,10 @@ int GetCoarserMeasureMultiple(int existing_measure_multiple)
 	}
 }
 
+StepSize::~StepSize()
+{
+}
+
 StepsPerMeasureSize::StepsPerMeasureSize(SequenceEditor* sequence_editor, int amount, int numerator, int denominator)
 {
 	this->sequence_editor = sequence_editor;
@@ -99,6 +103,10 @@ StepsPerMeasureSize::StepsPerMeasureSize(SequenceEditor* sequence_editor)
 	this->amount = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
 	this->numerator = MidiFileTimeSignatureEvent_getNumerator(time_signature_event);
 	this->denominator = MidiFileTimeSignatureEvent_getDenominator(time_signature_event);
+}
+
+StepsPerMeasureSize::~StepsPerMeasureSize()
+{
 }
 
 StepSize* StepsPerMeasureSize::ZoomIn()
@@ -191,6 +199,10 @@ MeasuresPerStepSize::MeasuresPerStepSize(SequenceEditor* sequence_editor, int am
 	this->amount = amount;
 }
 
+MeasuresPerStepSize::~MeasuresPerStepSize()
+{
+}
+
 StepSize* MeasuresPerStepSize::ZoomIn()
 {
 	if (this->amount == 1)
@@ -235,6 +247,10 @@ SecondsPerStepSize::SecondsPerStepSize(SequenceEditor* sequence_editor, double a
 {
 	this->sequence_editor = sequence_editor;
 	this->amount = amount;
+}
+
+SecondsPerStepSize::~SecondsPerStepSize()
+{
 }
 
 StepSize* SecondsPerStepSize::ZoomIn()

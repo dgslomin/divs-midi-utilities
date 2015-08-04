@@ -30,6 +30,7 @@ int GetCoarserMeasureMultiple(int existing_measure_multiple);
 class StepSize
 {
 public:
+	virtual ~StepSize() = 0;
 	virtual StepSize* ZoomIn() = 0;
 	virtual StepSize* ZoomOut() = 0;
 	virtual void PopulateDialog(StepSizeDialog* dialog) = 0;
@@ -48,6 +49,7 @@ public:
 
 	StepsPerMeasureSize(SequenceEditor* sequence_editor, int amount, int numerator, int denominator);
 	StepsPerMeasureSize(SequenceEditor* sequence_editor);
+	~StepsPerMeasureSize();
 	StepSize* ZoomIn();
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
@@ -63,6 +65,7 @@ public:
 	int amount;
 
 	MeasuresPerStepSize(SequenceEditor* sequence_editor, int amount);
+	~MeasuresPerStepSize();
 	StepSize* ZoomIn();
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
@@ -78,6 +81,7 @@ public:
 	double amount;
 
 	SecondsPerStepSize(SequenceEditor* sequence_editor, double amount);
+	~SecondsPerStepSize();
 	StepSize* ZoomIn();
 	StepSize* ZoomOut();
 	void PopulateDialog(StepSizeDialog* dialog);
