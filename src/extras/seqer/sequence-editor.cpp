@@ -245,7 +245,7 @@ double SequenceEditor::GetFractionalStepNumberFromTick(long tick)
 
 MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row_number)
 {
-	return MidiFile_getLatestTimeSignatureEventForTick(this->sequence->midi_file, /* TODO */ 0);
+	return MidiFile_getLatestTimeSignatureEventForTick(this->sequence->midi_file, this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number)));
 }
 
 bool SequenceEditor::Filter(MidiFileEvent_t event)
