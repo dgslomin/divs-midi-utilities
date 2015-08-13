@@ -175,6 +175,11 @@ long SequenceEditor::GetVisibleHeight()
 	return this->GetClientSize().GetHeight();
 }
 
+long SequenceEditor::GetNumberOfVisibleRows()
+{
+    return this->GetVisibleHeight() / this->event_list->row_height;
+}
+
 long SequenceEditor::GetFirstVisibleY()
 {
 	return this->event_list->GetYFromRowNumber(this->event_list->GetFirstVisibleRowNumber());
@@ -336,24 +341,28 @@ void SequenceEditor::ZoomOut(bool prepare)
 void SequenceEditor::RowUp()
 {
 	this->current_row_number = std::max(this->current_row_number - 1, 0l);
+    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 	this->Refresh();
 }
 
 void SequenceEditor::RowDown()
 {
 	this->current_row_number++;
+    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 	this->Refresh();
 }
 
 void SequenceEditor::PageUp()
 {
-	this->current_row_number = std::max(this->current_row_number - this->GetVisibleHeight(), 0l);
+	this->current_row_number = std::max(this->current_row_number - this->GetNumberOfVisibleRows(), 0l);
+    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 	this->Refresh();
 }
 
 void SequenceEditor::PageDown()
 {
-	this->current_row_number += this->GetVisibleHeight();
+	this->current_row_number += this->GetNumberOfVisibleRows();
+    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 	this->Refresh();
 }
 
@@ -380,6 +389,9 @@ void EventList::Prepare()
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 
+	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+    this->current_cell_border_color = ColorShade(button_color, 25);
+
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
 	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "#").GetWidth();
 	this->column_widths[2] = dc.GetTextExtent("00#").GetWidth();
@@ -403,7 +415,7 @@ void EventList::OnDraw(wxDC& dc)
 	long piano_roll_width = this->sequence_editor->piano_roll->GetWidth();
 	long width = this->GetVisibleWidth();
 
-	dc.SetPen(wxPen(this->sequence_editor->piano_roll->lightest_line_color));
+	dc.SetPen(wxPen(this->sequence_editor->piano_roll->lighter_line_color));
 
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{
@@ -412,12 +424,7 @@ void EventList::OnDraw(wxDC& dc)
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
 	}
 
-	// dc.SetPen(this->sequence_editor->piano_roll->shadow_color);
-	// dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number), this->GetYFromRowNumber(this->sequence_editor->current_row_number) + 1, this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
-	// dc.SetPen(*wxBLACK_PEN);
-	// dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
-	dc.SetPen(this->sequence_editor->piano_roll->lighter_line_color);
-	dc.SetBrush(wxBrush(ColorShade(this->sequence_editor->piano_roll->lighter_line_color, 95)));
+	dc.SetPen(this->current_cell_border_color);
 	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
 	dc.SetFont(this->font);
@@ -508,12 +515,11 @@ PianoRoll::PianoRoll(SequenceEditor* sequence_editor)
 void PianoRoll::Prepare()
 {
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-	this->darker_line_color = ColorShade(button_color, 205 * 100 / 255);
-	this->lighter_line_color = ColorShade(button_color, 215 * 100 / 255);
-	this->lightest_line_color = ColorShade(button_color, 218 * 100 / 255);
+	this->darker_line_color = ColorShade(button_color, 80);
+	this->lighter_line_color = ColorShade(button_color, 85);
 	this->white_key_color = *wxWHITE;
-	this->black_key_color = ColorShade(button_color, 230 * 100 / 255);
-	this->shadow_color = ColorShade(button_color, 192 * 100 / 255);
+	this->black_key_color = ColorShade(button_color, 90);
+	this->shadow_color = ColorShade(button_color, 75);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -536,7 +542,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 	long first_step_number = this->sequence_editor->GetStepNumberFromRowNumber(this->sequence_editor->event_list->GetRowNumberFromY(first_y));
 	long last_step_number = this->sequence_editor->GetStepNumberFromRowNumber(this->sequence_editor->event_list->GetRowNumberFromY(last_y));
-	dc.SetPen(wxPen(this->lightest_line_color));
+	dc.SetPen(wxPen(this->lighter_line_color));
 
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{

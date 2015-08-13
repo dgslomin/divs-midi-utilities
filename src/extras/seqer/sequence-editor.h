@@ -46,6 +46,7 @@ public:
 	void OnDraw(wxDC& dc);
 	long GetVisibleWidth();
 	long GetVisibleHeight();
+	long GetNumberOfVisibleRows();
 	long GetFirstVisibleY();
 	long GetLastVisibleY();
 	long GetFirstRowNumberFromStepNumber(long step_number);
@@ -79,6 +80,7 @@ class EventList
 public:
 	SequenceEditor *sequence_editor;
 	wxFont font;
+	wxColour current_cell_border_color;
 	long row_height;
 	long column_widths[8];
 
