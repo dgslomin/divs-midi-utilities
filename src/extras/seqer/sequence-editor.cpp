@@ -161,8 +161,8 @@ void SequenceEditor::Prepare()
 
 void SequenceEditor::OnDraw(wxDC& dc)
 {
-	this->event_list->OnDraw(dc);
 	this->piano_roll->OnDraw(dc);
+	this->event_list->OnDraw(dc);
 }
 
 long SequenceEditor::GetVisibleWidth()
@@ -336,21 +336,25 @@ void SequenceEditor::ZoomOut(bool prepare)
 void SequenceEditor::RowUp()
 {
 	this->current_row_number = std::max(this->current_row_number - 1, 0l);
+	this->Refresh();
 }
 
 void SequenceEditor::RowDown()
 {
 	this->current_row_number++;
+	this->Refresh();
 }
 
 void SequenceEditor::PageUp()
 {
 	this->current_row_number = std::max(this->current_row_number - this->GetVisibleHeight(), 0l);
+	this->Refresh();
 }
 
 void SequenceEditor::PageDown()
 {
 	this->current_row_number += this->GetVisibleHeight();
+	this->Refresh();
 }
 
 Sequence::Sequence(SequenceEditor* sequence_editor)
@@ -407,6 +411,14 @@ void EventList::OnDraw(wxDC& dc)
 		if (y == 0) continue;
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
 	}
+
+	// dc.SetPen(this->sequence_editor->piano_roll->shadow_color);
+	// dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number), this->GetYFromRowNumber(this->sequence_editor->current_row_number) + 1, this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
+	// dc.SetPen(*wxBLACK_PEN);
+	// dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
+	dc.SetPen(this->sequence_editor->piano_roll->lighter_line_color);
+	dc.SetBrush(wxBrush(ColorShade(this->sequence_editor->piano_roll->lighter_line_color, 95)));
+	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
 	dc.SetFont(this->font);
 
