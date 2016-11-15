@@ -92,7 +92,7 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->piano_roll = new PianoRoll(this);
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
-	this->current_column_number = 0;
+	this->current_column_number = 1;
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
@@ -338,32 +338,79 @@ void SequenceEditor::ZoomOut(bool prepare)
 	this->SetStepSize(this->step_size->ZoomOut(), prepare);
 }
 
+void SequenceEditor::ScrollToCurrentRow()
+{
+    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+}
+
 void SequenceEditor::RowUp()
 {
-	this->current_row_number = std::max(this->current_row_number - 1, 0l);
-    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	this->current_row_number = std::max<int>(this->current_row_number - 1, 0);
+	this->ScrollToCurrentRow();
 	this->Refresh();
 }
 
 void SequenceEditor::RowDown()
 {
 	this->current_row_number++;
-    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	this->ScrollToCurrentRow();
 	this->Refresh();
 }
 
 void SequenceEditor::PageUp()
 {
-	this->current_row_number = std::max(this->current_row_number - this->GetNumberOfVisibleRows(), 0l);
-    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	this->current_row_number = std::max<int>(this->current_row_number - this->GetNumberOfVisibleRows(), 0);
+	this->ScrollToCurrentRow();
 	this->Refresh();
 }
 
 void SequenceEditor::PageDown()
 {
 	this->current_row_number += this->GetNumberOfVisibleRows();
-    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	this->ScrollToCurrentRow();
 	this->Refresh();
+}
+
+void SequenceEditor::GoToFirstRow()
+{
+	this->current_row_number = 0;
+	this->ScrollToCurrentRow();
+	this->Refresh();
+}
+
+void SequenceEditor::GoToLastRow()
+{
+	this->current_row_number = this->rows.size() - 1;
+	this->ScrollToCurrentRow();
+	this->Refresh();
+}
+
+void SequenceEditor::ColumnLeft()
+{
+	this->current_column_number = std::max<int>(this->current_column_number - 1, 1);
+	this->Refresh();
+}
+
+void SequenceEditor::ColumnRight()
+{
+	this->current_column_number = std::min<int>(this->current_column_number + 1, 7);
+	this->Refresh();
+}
+
+void SequenceEditor::GoToColumn(int column_number)
+{
+	this->current_column_number = std::min<int>(std::max<int>(column_number, 1), 7);
+	this->Refresh();
+}
+
+void SequenceEditor::GoToPreviousMarker()
+{
+	// TODO
+}
+
+void SequenceEditor::GoToNextMarker()
+{
+	// TODO
 }
 
 Sequence::Sequence(SequenceEditor* sequence_editor)
@@ -479,7 +526,7 @@ long EventList::GetLastVisibleRowNumber()
 
 long EventList::GetLastVisiblePopulatedRowNumber()
 {
-	return std::min(this->GetLastVisibleRowNumber(), (long)(this->sequence_editor->rows.size() - 1));
+	return std::min<int>(this->GetLastVisibleRowNumber(), (long)(this->sequence_editor->rows.size() - 1));
 }
 
 long EventList::GetColumnWidth(long column_number)

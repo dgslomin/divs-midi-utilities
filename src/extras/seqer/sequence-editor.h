@@ -59,10 +59,18 @@ public:
 	void SetStepSize(StepSize* step_size, bool prepare = true);
 	void ZoomIn(bool prepare = true);
 	void ZoomOut(bool prepare = true);
+	void ScrollToCurrentRow();
 	void RowUp();
 	void RowDown();
 	void PageUp();
 	void PageDown();
+	void GoToFirstRow();
+	void GoToLastRow();
+	void ColumnLeft();
+	void ColumnRight();
+	void GoToColumn(int column_number);
+	void GoToPreviousMarker();
+	void GoToNextMarker();
 };
 
 class Sequence

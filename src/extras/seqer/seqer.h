@@ -29,6 +29,13 @@ public:
 	void OnMenuHighlight(wxMenuEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
+	void OnColumn1(wxCommandEvent& event);
+	void OnColumn2(wxCommandEvent& event);
+	void OnColumn3(wxCommandEvent& event);
+	void OnColumn4(wxCommandEvent& event);
+	void OnColumn5(wxCommandEvent& event);
+	void OnColumn6(wxCommandEvent& event);
+	void OnColumn7(wxCommandEvent& event);
 	void OnZoomIn(wxCommandEvent& event);
 	void OnZoomOut(wxCommandEvent& event);
 	void OnStepSize(wxCommandEvent& event);

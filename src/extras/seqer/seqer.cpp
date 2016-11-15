@@ -51,8 +51,6 @@ enum
 	SEQER_ID_RECORD,
 	SEQER_ID_STOP,
 	SEQER_ID_STEP_RECORD,
-	SEQER_ID_NEXT_MARKER,
-	SEQER_ID_PREVIOUS_MARKER,
 	SEQER_ID_GO_TO_MARKER,
 	SEQER_ID_PORTS,
 	SEQER_ID_EXTERNAL_UTILITY,
@@ -170,8 +168,6 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 			transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 			transport_menu->AppendSeparator();
-			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+Right");
-			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+Left");
 			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+Shift+M");
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
@@ -193,6 +189,13 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_MENU_HIGHLIGHT, &Window::OnMenuHighlight, this);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn2, this, SEQER_ID_EDIT_COLUMN_2);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn3, this, SEQER_ID_EDIT_COLUMN_3);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn4, this, SEQER_ID_EDIT_COLUMN_4);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn5, this, SEQER_ID_EDIT_COLUMN_5);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn6, this, SEQER_ID_EDIT_COLUMN_6);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn7, this, SEQER_ID_EDIT_COLUMN_7);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomIn, this, wxID_ZOOM_IN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnStepSize, this, SEQER_ID_STEP_SIZE);
@@ -233,6 +236,41 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
+}
+
+void Window::OnColumn1(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(1);
+}
+
+void Window::OnColumn2(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(2);
+}
+
+void Window::OnColumn3(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(3);
+}
+
+void Window::OnColumn4(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(4);
+}
+
+void Window::OnColumn5(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(5);
+}
+
+void Window::OnColumn6(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(6);
+}
+
+void Window::OnColumn7(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToColumn(7);
 }
 
 void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
@@ -283,12 +321,79 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	{
 		this->sequence_editor->PageDown();
 	}
-	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CMD))
+	else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToFirstRow();
+	}
+	else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToLastRow();
+	}
+	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->ColumnLeft();
+	}
+	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->ColumnRight();
+	}
+	else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->GoToColumn(0);
+	}
+	else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
+	{
+		this->sequence_editor->GoToColumn(6);
+	}
+#if defined(__WXOSX__)
+	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
+	{
+		this->sequence_editor->PageUp();
+	}
+	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_ALT))
+	{
+		this->sequence_editor->PageDown();
+	}
+	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToFirstRow();
+	}
+	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToLastRow();
+	}
+	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToColumn(0);
+	}
+	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToColumn(6);
+	}
+	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_ALT))
+	{
+		this->sequence_editor->GoToPreviousMarker();
+	}
+	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_ALT))
+	{
+		this->sequence_editor->GoToNextMarker();
+	}
+#else
+	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToPreviousMarker();
+	}
+	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
+	{
+		this->sequence_editor->GoToNextMarker();
+	}
+#endif
+	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 	{
 		// make ctrl+plus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
 	}
-	else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CMD))
+	else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 	{
 		// make ctrl+minus ignore whether shift is pressed
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
