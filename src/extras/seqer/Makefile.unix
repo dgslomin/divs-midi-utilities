@@ -8,8 +8,15 @@ CXXFLAGS=`$(WXCONFIG) --cxxflags`
 LD=`$(WXCONFIG) --ld`
 LIBS=`$(WXCONFIG) --libs`
 
-Seqer: seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
-	$(LD) Seqer seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o $(LIBS)
+#ifeq (`uname -s`, "Darwin")
+Seqer.app/Contents/MacOS/Seqer: seqer
+    -mkdir -p Seqer.app/Contents/MacOS
+	cp seqer Seqer.app/Contents/MacOS/Seqer
+	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
+#endif
+
+seqer: seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
+	$(LD) seqer seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o $(LIBS)
 
 seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h event-type.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
@@ -33,5 +40,5 @@ clean:
 	rm -f seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
 
 reallyclean: clean
-	rm -f Seqer
+	rm -f Seqer Seqer.app/Contents/MacOS/Seqer
 
