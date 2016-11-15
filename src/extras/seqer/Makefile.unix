@@ -10,7 +10,7 @@ LIBS=`$(WXCONFIG) --libs`
 
 #ifeq (`uname -s`, "Darwin")
 Seqer.app/Contents/MacOS/Seqer: seqer
-    -mkdir -p Seqer.app/Contents/MacOS
+	-mkdir -p Seqer.app/Contents/MacOS
 	cp seqer Seqer.app/Contents/MacOS/Seqer
 	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
 #endif
