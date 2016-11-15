@@ -186,7 +186,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		menu_bar->Append(tools_menu, "&Tools");
 		wxMenu* help_menu = new wxMenu();
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
-			help_menu->Append(wxID_ABOUT, "&About");
+			help_menu->Append(wxID_ABOUT, "&About Seqer");
 		menu_bar->Append(help_menu, "&Help");
 	this->SetMenuBar(menu_bar);
 
