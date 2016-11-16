@@ -363,11 +363,11 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	}
 	else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_NONE))
 	{
-		this->sequence_editor->GoToColumn(0);
+		this->sequence_editor->GoToColumn(1);
 	}
 	else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
 	{
-		this->sequence_editor->GoToColumn(6);
+		this->sequence_editor->GoToColumn(7);
 	}
 #if defined(__WXOSX__)
 	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
@@ -388,11 +388,11 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	}
 	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
 	{
-		this->sequence_editor->GoToColumn(0);
+		this->sequence_editor->GoToColumn(1);
 	}
 	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
 	{
-		this->sequence_editor->GoToColumn(6);
+		this->sequence_editor->GoToColumn(7);
 	}
 #endif
 	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))

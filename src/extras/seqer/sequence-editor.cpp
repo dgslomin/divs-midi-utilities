@@ -445,12 +445,12 @@ void EventList::Prepare()
     this->current_cell_border_color = ColorShade(button_color, 25);
 
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
-	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "#").GetWidth();
+	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
 	this->column_widths[2] = dc.GetTextExtent("00#").GetWidth();
 	this->column_widths[3] = dc.GetTextExtent("00#").GetWidth();
 	this->column_widths[4] = dc.GetTextExtent("C#0#").GetWidth();
 	this->column_widths[5] = dc.GetTextExtent("000#").GetWidth();
-	this->column_widths[6] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "#").GetWidth();
+	this->column_widths[6] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
 	this->column_widths[7] = dc.GetTextExtent("000#").GetWidth();
 
 	this->sequence_editor->SetScrollbars(0, this->row_height, 0, this->sequence_editor->rows.size());
