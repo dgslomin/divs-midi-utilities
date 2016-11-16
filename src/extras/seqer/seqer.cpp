@@ -51,12 +51,13 @@ enum
 	SEQER_ID_RECORD,
 	SEQER_ID_STOP,
 	SEQER_ID_STEP_RECORD,
+	SEQER_ID_NEXT_MARKER,
+	SEQER_ID_PREVIOUS_MARKER,
 	SEQER_ID_GO_TO_MARKER,
 	SEQER_ID_PORTS,
 	SEQER_ID_EXTERNAL_UTILITY,
 	SEQER_ID_RECORD_MACRO,
 	SEQER_ID_MACROS,
-	SEQER_ID_SETTINGS,
 	SEQER_ID_HIGHEST
 };
 
@@ -168,6 +169,13 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 			transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 			transport_menu->AppendSeparator();
+#if defined(__WXOSX__)
+			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tAlt+Right");
+			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tAlt+Left");
+#else
+			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tCtrl+Right");
+			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tCtrl+Left");
+#endif
 			transport_menu->Append(SEQER_ID_GO_TO_MARKER, "Go to &Marker...\tCtrl+Shift+M");
 			transport_menu->AppendSeparator();
 			transport_menu->Append(SEQER_ID_PORTS, "P&orts...\tCtrl+Shift+O");
@@ -178,7 +186,11 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+M");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
 			tools_menu->AppendSeparator();
-			tools_menu->Append(SEQER_ID_SETTINGS, "&Settings...");
+#if defined(__WXOSX__)
+			tools_menu->Append(wxID_PREFERENCES, "&Preferences...\tCtrl+,");
+#else
+			tools_menu->Append(wxID_PREFERENCES, "&Preferences...");
+#endif
 		menu_bar->Append(tools_menu, "&Tools");
 		wxMenu* help_menu = new wxMenu();
 			help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
@@ -200,7 +212,9 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnStepSize, this, SEQER_ID_STEP_SIZE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSettings, this, SEQER_ID_SETTINGS);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnNextMarker, this, SEQER_ID_NEXT_MARKER);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreviousMarker, this, SEQER_ID_PREVIOUS_MARKER);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreferences, this, wxID_PREFERENCES);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 	this->Bind(wxEVT_CHAR_HOOK, &Window::OnKeyPress, this);
 
@@ -293,9 +307,19 @@ void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 	FilterDialog::Run(this);
 }
 
-void Window::OnSettings(wxCommandEvent& WXUNUSED(event))
+void Window::OnNextMarker(wxCommandEvent& WXUNUSED(event))
 {
-	SettingsDialog::Run(this);
+	this->sequence_editor->GoToNextMarker();
+}
+
+void Window::OnPreviousMarker(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->GoToPreviousMarker();
+}
+
+void Window::OnPreferences(wxCommandEvent& WXUNUSED(event))
+{
+	PreferencesDialog::Run(this);
 }
 
 void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
@@ -369,23 +393,6 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
 	{
 		this->sequence_editor->GoToColumn(6);
-	}
-	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_ALT))
-	{
-		this->sequence_editor->GoToPreviousMarker();
-	}
-	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_ALT))
-	{
-		this->sequence_editor->GoToNextMarker();
-	}
-#else
-	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToPreviousMarker();
-	}
-	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToNextMarker();
 	}
 #endif
 	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
@@ -634,9 +641,9 @@ void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
 	event.Skip();
 }
 
-void SettingsDialog::Run(Window* window)
+void PreferencesDialog::Run(Window* window)
 {
-	SettingsDialog* dialog = new SettingsDialog(window);
+	PreferencesDialog* dialog = new PreferencesDialog(window);
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
@@ -662,7 +669,7 @@ void SettingsDialog::Run(Window* window)
 	dialog->Destroy();
 }
 
-SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settings")
+PreferencesDialog::PreferencesDialog(Window* window): wxDialog(NULL, wxID_ANY, "Preferences")
 {
 	this->window = window;
 
@@ -680,7 +687,7 @@ SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settin
 	event_list_settings_sizer->Add(this->event_list_font_picker, wxSizerFlags().Expand());
 	wxButton* default_event_list_font_button = new wxButton(this, wxID_ANY, "Default");
 	event_list_settings_sizer->Add(default_event_list_font_button, wxSizerFlags().Expand());
-	default_event_list_font_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultEventListFontButtonClick, this);
+	default_event_list_font_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultEventListFontButtonClick, this);
 
 	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
 	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
@@ -693,21 +700,21 @@ SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settin
 	piano_roll_settings_sizer->Add(this->piano_roll_first_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_first_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_first_note_button, wxSizerFlags().Expand());
-	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick, this);
+	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollFirstNoteButtonClick, this);
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "&Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->piano_roll_last_note_text_box = new wxTextCtrl(this, wxID_ANY, GetNoteNameFromNumber(this->window->sequence_editor->piano_roll->last_note));
 	piano_roll_settings_sizer->Add(this->piano_roll_last_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_last_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_last_note_button, wxSizerFlags().Expand());
-	default_piano_roll_last_note_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollLastNoteButtonClick, this);
+	default_piano_roll_last_note_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollLastNoteButtonClick, this);
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "&Key width"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->piano_roll_key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%ld", this->window->sequence_editor->piano_roll->key_width));
 	piano_roll_settings_sizer->Add(this->piano_roll_key_width_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_key_width_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_key_width_button, wxSizerFlags().Expand());
-	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, &SettingsDialog::OnDefaultPianoRollKeyWidthButtonClick, this);
+	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollKeyWidthButtonClick, this);
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
@@ -715,25 +722,25 @@ SettingsDialog::SettingsDialog(Window* window): wxDialog(NULL, wxID_ANY, "Settin
 	outer_sizer->Fit(this);
 }
 
-void SettingsDialog::OnDefaultEventListFontButtonClick(wxCommandEvent& event)
+void PreferencesDialog::OnDefaultEventListFontButtonClick(wxCommandEvent& event)
 {
 	this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
 	event.Skip();
 }
 
-void SettingsDialog::OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event)
+void PreferencesDialog::OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event)
 {
 	this->piano_roll_first_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_first_note));
 	event.Skip();
 }
 
-void SettingsDialog::OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event)
+void PreferencesDialog::OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event)
 {
 	this->piano_roll_last_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_last_note));
 	event.Skip();
 }
 
-void SettingsDialog::OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event)
+void PreferencesDialog::OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event)
 {
 	this->piano_roll_key_width_text_box->SetValue(wxString::Format("%ld", this->window->application->default_piano_roll_key_width));
 	event.Skip();

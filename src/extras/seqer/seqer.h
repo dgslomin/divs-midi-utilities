@@ -40,7 +40,9 @@ public:
 	void OnZoomOut(wxCommandEvent& event);
 	void OnStepSize(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
-	void OnSettings(wxCommandEvent& event);
+	void OnNextMarker(wxCommandEvent& event);
+	void OnPreviousMarker(wxCommandEvent& event);
+	void OnPreferences(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void OnKeyPress(wxKeyEvent& event);
 };
@@ -73,7 +75,7 @@ public:
 	void OnChannelLabelClick(wxMouseEvent& event);
 };
 
-class SettingsDialog: public wxDialog
+class PreferencesDialog: public wxDialog
 {
 public:
 	Window* window;
@@ -83,7 +85,7 @@ public:
 	wxTextCtrl* piano_roll_key_width_text_box;
 
 	static void Run(Window* window);
-	SettingsDialog(Window* window);
+	PreferencesDialog(Window* window);
 	void OnDefaultEventListFontButtonClick(wxCommandEvent& event);
 	void OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event);
 	void OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event);

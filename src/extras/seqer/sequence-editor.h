@@ -69,8 +69,9 @@ public:
 	void ColumnLeft();
 	void ColumnRight();
 	void GoToColumn(int column_number);
-	void GoToPreviousMarker();
 	void GoToNextMarker();
+	void GoToPreviousMarker();
+	void GoToMarker(wxString marker_name);
 };
 
 class Sequence

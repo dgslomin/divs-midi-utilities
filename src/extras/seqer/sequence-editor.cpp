@@ -403,12 +403,17 @@ void SequenceEditor::GoToColumn(int column_number)
 	this->Refresh();
 }
 
+void SequenceEditor::GoToNextMarker()
+{
+	// TODO
+}
+
 void SequenceEditor::GoToPreviousMarker()
 {
 	// TODO
 }
 
-void SequenceEditor::GoToNextMarker()
+void SequenceEditor::GoToMarker(wxString marker_name)
 {
 	// TODO
 }
