@@ -180,7 +180,7 @@ long SequenceEditor::GetVisibleHeight()
 
 long SequenceEditor::GetNumberOfVisibleRows()
 {
-    return this->GetVisibleHeight() / this->event_list->row_height;
+	return this->GetVisibleHeight() / this->event_list->row_height;
 }
 
 long SequenceEditor::GetFirstVisibleY()
@@ -258,28 +258,16 @@ MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row
 
 bool SequenceEditor::Filter(MidiFileEvent_t event)
 {
+	SeqerEventType_t event_type = SeqerEvent_getType(event);
+	if (event_type == SEQER_EVENT_TYPE_INVALID) return false;
+
 	if (this->filtered_event_types.size() > 0)
 	{
 		bool matched = false;
 
 		for (int i = 0; i < this->filtered_event_types.size(); i++)
 		{
-			if (event_types[this->filtered_event_types[i]]->Matches(event))
-			{
-				matched = true;
-				break;
-			}
-		}
-
-		if (!matched) return false;
-	}
-	else
-	{
-		bool matched = false;
-
-		for (int i = 0; event_types[i] != NULL; i++)
-		{
-			if (event_types[i]->Matches(event))
+			if (event_type == this->filtered_event_types[i])
 			{
 				matched = true;
 				break;
@@ -343,7 +331,7 @@ void SequenceEditor::ZoomOut(bool prepare)
 
 void SequenceEditor::ScrollToCurrentRow()
 {
-    if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 }
 
 void SequenceEditor::RowUp()
@@ -445,7 +433,7 @@ void EventList::Prepare()
 	this->row_height = dc.GetCharHeight();
 
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-    this->current_cell_border_color = ColorShade(button_color, 25);
+	this->current_cell_border_color = ColorShade(button_color, 25);
 
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
 	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
@@ -486,33 +474,10 @@ void EventList::OnDraw(wxDC& dc)
 
 	for (long row_number = first_row_number; row_number <= last_populated_row_number; row_number++)
 	{
-		Row row = this->sequence_editor->rows[row_number];
-
-		if (row.event == NULL)
+		for (long column_number = 0; column_number < 8; column_number++)
 		{
-			dc.DrawText(this->sequence_editor->step_size->GetTimeStringFromTick(this->sequence_editor->step_size->GetTickFromStep(row.step_number)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
-		}
-		else
-		{
-			bool matched = false;
-
-			for (int event_type_number = 0; event_types[event_type_number] != NULL; event_type_number++)
-			{
-				if (event_types[event_type_number]->Matches(row.event))
-				{
-					matched = true;
-
-					for (int column_number = 0; column_number < 8; column_number++)
-					{
-						wxString column_text = event_types[event_type_number]->GetEventListColumnText(this, row.event, column_number);
-						if (!column_text.IsEmpty()) dc.DrawText(column_text, this->GetXFromColumnNumber(column_number) + (column_number == 0 ? 1 : 0), this->GetYFromRowNumber(row_number) + 1);
-					}
-
-					break;
-				}
-			}
-
-			if (!matched) dc.DrawText(this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event)), this->GetXFromColumnNumber(1), this->GetYFromRowNumber(row_number) + 1);
+			wxString cell_text = this->GetCellText(row_number, column_number);
+			if (!cell_text.IsEmpty()) dc.DrawText(cell_text, this->GetXFromColumnNumber(column_number) + (column_number == 0 ? 1 : 0), this->GetYFromRowNumber(row_number) + 1);
 		}
 	}
 }
@@ -557,6 +522,433 @@ long EventList::GetYFromRowNumber(long row_number)
 long EventList::GetRowNumberFromY(long y)
 {
 	return y / this->row_height;
+}
+
+wxString EventList::GetCellText(long row_number, long column_number)
+{
+	Row row = this->sequence_editor->rows[row_number];
+
+	if (row.event == NULL)
+	{
+		switch (column_number)
+		{
+			case 1:
+			{
+				return this->sequence_editor->step_size->GetTimeStringFromTick(this->sequence_editor->step_size->GetTickFromStep(row.step_number));
+			}
+			default:
+			{
+				return wxEmptyString;
+			}
+		}
+	}
+	else
+	{
+		switch (SeqerEvent_getType(row.event))
+		{
+			case SEQER_EVENT_TYPE_NOTE:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Note");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 3:
+					{
+						return wxString::Format("%d", MidiFileNoteStartEvent_getChannel(row.event) + 1);
+					}
+					case 4:
+					{
+						return GetNoteNameFromNumber(MidiFileNoteStartEvent_getNote(row.event));
+					}
+					case 5:
+					{
+						return wxString::Format("%d", MidiFileNoteStartEvent_getVelocity(row.event));
+					}
+					case 6:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(row.event)));
+					}
+					case 7:
+					{
+						return wxString::Format("%d", MidiFileNoteEndEvent_getVelocity(MidiFileNoteStartEvent_getNoteEndEvent(row.event)));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_CONTROL_CHANGE:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Ctrl");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 3:
+					{
+						return wxString::Format("%d", MidiFileControlChangeEvent_getChannel(row.event) + 1);
+					}
+					case 4:
+					{
+						return wxString::Format("%d", MidiFileControlChangeEvent_getNumber(row.event) + 1);
+					}
+					case 5:
+					{
+						return wxString::Format("%d", MidiFileControlChangeEvent_getValue(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_PROGRAM_CHANGE:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Prog");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 3:
+					{
+						return wxString::Format("%d", MidiFileProgramChangeEvent_getChannel(row.event) + 1);
+					}
+					case 4:
+					{
+						return wxString::Format("%d", MidiFileProgramChangeEvent_getNumber(row.event) + 1);
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_AFTERTOUCH:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Touch");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 3:
+					{
+						if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
+						{
+							return wxString::Format("%d", MidiFileKeyPressureEvent_getChannel(row.event) + 1);
+						}
+						else
+						{
+							return wxString::Format("%d", MidiFileChannelPressureEvent_getChannel(row.event) + 1);
+						}
+					}
+					case 4:
+					{
+						if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
+						{
+							return GetNoteNameFromNumber(MidiFileKeyPressureEvent_getNote(row.event));
+						}
+						else
+						{
+							return wxString("-");
+						}
+					}
+					case 5:
+					{
+						if (MidiFileEvent_getType(row.event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE)
+						{
+							return wxString::Format("%d", MidiFileKeyPressureEvent_getAmount(row.event));
+						}
+						else
+						{
+							return wxString::Format("%d", MidiFileChannelPressureEvent_getAmount(row.event));
+						}
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_PITCH_BEND:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Bend");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 3:
+					{
+						return wxString::Format("%d", MidiFilePitchWheelEvent_getChannel(row.event) + 1);
+					}
+					case 5:
+					{
+						return wxString::Format("%d", MidiFilePitchWheelEvent_getValue(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_SYSTEM_EXCLUSIVE:
+			{
+				// TODO: render bytes as ascii plus hex escapes
+
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Sysex");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_TEXT:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Text");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString(MidiFileTextEvent_getText(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_LYRIC:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Lyric");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString(MidiFileLyricEvent_getText(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_MARKER:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Marker");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString(MidiFileMarkerEvent_getText(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_PORT:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Port");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString(MidiFilePortEvent_getName(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_TEMPO:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Tempo");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString::Format("%5.3f", MidiFileTempoEvent_getTempo(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_TIME_SIGNATURE:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Time");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return wxString::Format("%d/%d", MidiFileTimeSignatureEvent_getNumerator(row.event), MidiFileTimeSignatureEvent_getDenominator(row.event));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			case SEQER_EVENT_TYPE_KEY_SIGNATURE:
+			{
+				switch (column_number)
+				{
+					case 0:
+					{
+						return wxString("Key");
+					}
+					case 1:
+					{
+						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
+					}
+					case 2:
+					{
+						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
+					}
+					case 4:
+					{
+						return GetKeyNameFromNumber(MidiFileKeySignatureEvent_getNumber(row.event), (bool)(MidiFileKeySignatureEvent_isMinor(row.event)));
+					}
+					default:
+					{
+						return wxEmptyString;
+					}
+				}
+			}
+			default:
+			{
+				return wxEmptyString;
+			}
+		}
+	}
 }
 
 PianoRoll::PianoRoll(SequenceEditor* sequence_editor)

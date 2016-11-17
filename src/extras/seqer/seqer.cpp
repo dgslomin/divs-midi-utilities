@@ -530,7 +530,7 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
 
 	wxArrayString event_type_names;
-	for (int i = 0; event_types[i] != NULL; i++) event_type_names.Add(event_types[i]->GetName());
+	for (int i = 0; i < SEQER_EVENT_TYPE_HIGHEST; i++) event_type_names.Add(SeqerEventType_getName((SeqerEventType_t)(i)));
 	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, event_type_names, wxLB_MULTIPLE);
 	for (int i = 0; i < this->window->sequence_editor->filtered_event_types.size(); i++) this->event_type_list_box->SetSelection(this->window->sequence_editor->filtered_event_types[i]);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));

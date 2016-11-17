@@ -4,121 +4,29 @@
 #include <wx/wx.h>
 #include <midifile.h>
 
-class EventType;
 class EventList;
 
-extern EventType* event_types[];
-
-class EventType
+typedef enum
 {
-public:
-	virtual wxString GetName() = 0;
-	virtual bool Matches(MidiFileEvent_t event) = 0;
-	virtual wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number) = 0;
-};
+	SEQER_EVENT_TYPE_INVALID = -1,
+	SEQER_EVENT_TYPE_NOTE,
+	SEQER_EVENT_TYPE_CONTROL_CHANGE,
+	SEQER_EVENT_TYPE_PROGRAM_CHANGE,
+	SEQER_EVENT_TYPE_AFTERTOUCH,
+	SEQER_EVENT_TYPE_PITCH_BEND,
+	SEQER_EVENT_TYPE_SYSTEM_EXCLUSIVE,
+	SEQER_EVENT_TYPE_TEXT,
+	SEQER_EVENT_TYPE_LYRIC,
+	SEQER_EVENT_TYPE_MARKER,
+	SEQER_EVENT_TYPE_PORT,
+	SEQER_EVENT_TYPE_TEMPO,
+	SEQER_EVENT_TYPE_TIME_SIGNATURE,
+	SEQER_EVENT_TYPE_KEY_SIGNATURE,
+	SEQER_EVENT_TYPE_HIGHEST
+}
+SeqerEventType_t;
 
-class NoteEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class ControlChangeEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class ProgramChangeEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class AftertouchEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class PitchBendEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class SystemExclusiveEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class TextEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class LyricEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class MarkerEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class PortEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class TempoEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class TimeSignatureEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
-
-class KeySignatureEventType: public EventType
-{
-public:
-	wxString GetName();
-	bool Matches(MidiFileEvent_t event);
-	wxString GetEventListColumnText(EventList* event_list, MidiFileEvent_t event, int column_number);
-};
+wxString SeqerEventType_getName(SeqerEventType_t event_type);
+SeqerEventType_t SeqerEvent_getType(MidiFileEvent_t event);
 
 #endif
