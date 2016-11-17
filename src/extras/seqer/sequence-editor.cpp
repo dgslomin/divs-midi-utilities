@@ -93,7 +93,9 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
 	this->current_column_number = 1;
+#if !defined(__WXOSX__)
 	this->SetDoubleBuffered(true);
+#endif
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
 	this->Prepare();
