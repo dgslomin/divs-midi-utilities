@@ -38,6 +38,10 @@ public:
 	std::vector<int> filtered_channels;
 	long current_row_number;
 	long current_column_number;
+    int insertion_track_number;
+    int insertion_channel_number;
+    int insertion_note_number;
+    int insertion_velocity;
 
 	SequenceEditor(Window* window);
 	~SequenceEditor();

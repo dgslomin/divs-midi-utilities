@@ -409,6 +409,28 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 	// TODO
 }
 
+#if 0
+void SequenceEditor::InsertNote(int diatonic)
+{
+	long tick;
+
+	if (this->rows[this->current_row_number].event == NULL)
+	{
+		tick = this->sequence_editor->step_size->GetTickFromStep(this->rows[this->current_row_number].step_number);
+	}
+	else
+	{
+		tick = MidiFileEvent_getTick(this->rows[this->current_row_number].event);
+	}
+
+	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence_editor->sequence->midi_file, tick)));
+	int note_number = this->insertion_note_number;
+	note_number = SetNoteChromatic(note_number, chromatic); // TODO: nearest octave, not necessarily same octave as insertion_note_number
+
+	MidiFileTrack_createNoteOnEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track, 1), tick, this->insertion_channel, note_number, this->insertion_velocity);
+}
+#endif
+
 Sequence::Sequence(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
