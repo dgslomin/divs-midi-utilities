@@ -13,6 +13,7 @@ wxString GetNoteNameFromNumber(int note_number);
 int GetNoteNumberFromName(wxString note_name);
 int GetNoteOctave(int note_number);
 int SetNoteOctave(int note_number, int octave);
+int MatchNoteOctave(int note_number, int existing_note_number);
 int GetNoteChromatic(int note_number);
 int SetNoteChromatic(int note_number, int chromatic);
 wxString GetKeyNameFromNumber(int key_number, bool is_minor);

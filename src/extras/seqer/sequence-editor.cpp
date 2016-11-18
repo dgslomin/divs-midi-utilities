@@ -24,6 +24,10 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
 	this->current_column_number = 1;
+	this->insertion_track_number = 1;
+	this->insertion_channel_number = 0;
+	this->insertion_note_number = 60;
+	this->insertion_velocity = 64;
 #ifndef __WXOSX__
 	this->SetDoubleBuffered(true);
 #endif
@@ -44,7 +48,7 @@ bool SequenceEditor::Load(wxString filename)
 {
 	MidiFile_t new_midi_file = MidiFile_load((char *)(filename.ToStdString().c_str()));
 	if (new_midi_file == NULL) return false;
-	if (this->sequence->midi_file != NULL) MidiFile_free(this->sequence->midi_file);
+	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
 	this->SetStepSize(new StepsPerMeasureSize(this), false);
 	this->Prepare();
@@ -182,6 +186,17 @@ double SequenceEditor::GetFractionalStepNumberFromTick(long tick)
 	return this->step_size->GetStepFromTick(tick);
 }
 
+long SequenceEditor::GetTickFromRowNumber(long row_number)
+{
+	if (row_number < this->rows.size())
+	{
+		MidiFileEvent_t event = this->rows[row_number].event;
+		if (event != NULL) return MidiFileEvent_getTick(event);
+	}
+
+	return this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number));
+}
+
 MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row_number)
 {
 	return MidiFile_getLatestTimeSignatureEventForTick(this->sequence->midi_file, this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number)));
@@ -267,7 +282,7 @@ void SequenceEditor::ScrollToCurrentRow()
 
 void SequenceEditor::RowUp()
 {
-	this->current_row_number = std::max<int>(this->current_row_number - 1, 0);
+	this->current_row_number = std::max<long>(this->current_row_number - 1, 0);
 	this->ScrollToCurrentRow();
 	this->Refresh();
 }
@@ -281,7 +296,7 @@ void SequenceEditor::RowDown()
 
 void SequenceEditor::PageUp()
 {
-	this->current_row_number = std::max<int>(this->current_row_number - this->GetNumberOfVisibleRows(), 0);
+	this->current_row_number = std::max<long>(this->current_row_number - this->GetNumberOfVisibleRows(), 0);
 	this->ScrollToCurrentRow();
 	this->Refresh();
 }
@@ -302,26 +317,26 @@ void SequenceEditor::GoToFirstRow()
 
 void SequenceEditor::GoToLastRow()
 {
-	this->current_row_number = this->rows.size() - 1;
+	this->current_row_number = std::max<long>(this->rows.size() - 1, 0);
 	this->ScrollToCurrentRow();
 	this->Refresh();
 }
 
 void SequenceEditor::ColumnLeft()
 {
-	this->current_column_number = std::max<int>(this->current_column_number - 1, 1);
+	this->current_column_number = std::max<long>(this->current_column_number - 1, 1);
 	this->Refresh();
 }
 
 void SequenceEditor::ColumnRight()
 {
-	this->current_column_number = std::min<int>(this->current_column_number + 1, 7);
+	this->current_column_number = std::min<long>(this->current_column_number + 1, 7);
 	this->Refresh();
 }
 
 void SequenceEditor::GoToColumn(int column_number)
 {
-	this->current_column_number = std::min<int>(std::max<int>(column_number, 1), 7);
+	this->current_column_number = std::min<long>(std::max<long>(column_number, 1), 7);
 	this->Refresh();
 }
 
@@ -340,27 +355,17 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 	// TODO
 }
 
-#if 0
 void SequenceEditor::InsertNote(int diatonic)
 {
-	long tick;
-
-	if (this->rows[this->current_row_number].event == NULL)
-	{
-		tick = this->sequence_editor->step_size->GetTickFromStep(this->rows[this->current_row_number].step_number);
-	}
-	else
-	{
-		tick = MidiFileEvent_getTick(this->rows[this->current_row_number].event);
-	}
-
-	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence_editor->sequence->midi_file, tick)));
-	int note_number = this->insertion_note_number;
-	note_number = SetNoteChromatic(note_number, chromatic); // TODO: nearest octave, not necessarily same octave as insertion_note_number
-
-	MidiFileTrack_createNoteOnEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track, 1), tick, this->insertion_channel, note_number, this->insertion_velocity);
+	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
+	long start_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number));
+	long end_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number + 1));
+	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
+	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
+	MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
+	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
+	this->Prepare();
 }
-#endif
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
 {
@@ -446,7 +451,7 @@ EventType_t SequenceEditor::GetEventType(MidiFileEvent_t event)
 Sequence::Sequence(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
-	this->midi_file = NULL;
+	this->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
 }
 
 Sequence::~Sequence()

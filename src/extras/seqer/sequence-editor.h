@@ -69,6 +69,7 @@ public:
 	long GetStepNumberFromRowNumber(long row_number);
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
+	long GetTickFromRowNumber(long row_number);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
 	void SetStepSize(StepSize* step_size, bool prepare = true);
@@ -87,6 +88,7 @@ public:
 	void GoToNextMarker();
 	void GoToPreviousMarker();
 	void GoToMarker(wxString marker_name);
+	void InsertNote(int diatonic);
 	wxString GetEventTypeName(EventType_t event_type);
 	EventType_t GetEventType(MidiFileEvent_t event);
 };

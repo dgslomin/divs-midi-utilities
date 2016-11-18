@@ -211,6 +211,13 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnStepSize, this, SEQER_ID_STEP_SIZE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteA, this, SEQER_ID_INSERT_NOTE_A);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteB, this, SEQER_ID_INSERT_NOTE_B);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteC, this, SEQER_ID_INSERT_NOTE_C);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteD, this, SEQER_ID_INSERT_NOTE_D);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteE, this, SEQER_ID_INSERT_NOTE_E);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteF, this, SEQER_ID_INSERT_NOTE_F);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteG, this, SEQER_ID_INSERT_NOTE_G);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnNextMarker, this, SEQER_ID_NEXT_MARKER);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreviousMarker, this, SEQER_ID_PREVIOUS_MARKER);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreferences, this, wxID_PREFERENCES);
@@ -304,6 +311,41 @@ void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
 void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
 {
 	FilterDialog::Run(this);
+}
+
+void Window::OnInsertNoteA(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(5);
+}
+
+void Window::OnInsertNoteB(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(6);
+}
+
+void Window::OnInsertNoteC(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(0);
+}
+
+void Window::OnInsertNoteD(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(1);
+}
+
+void Window::OnInsertNoteE(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(2);
+}
+
+void Window::OnInsertNoteF(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(3);
+}
+
+void Window::OnInsertNoteG(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->InsertNote(4);
 }
 
 void Window::OnNextMarker(wxCommandEvent& WXUNUSED(event))

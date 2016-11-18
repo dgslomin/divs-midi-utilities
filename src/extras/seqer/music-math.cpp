@@ -45,6 +45,20 @@ int SetNoteOctave(int note_number, int octave)
 	return (note_number % 12) + ((octave + 1) * 12);
 }
 
+int MatchNoteOctave(int note_number, int existing_note_number)
+{
+	if (note_number - existing_note_number > 6)
+	{
+		note_number -= 12;
+	}
+	else if (existing_note_number - note_number > 6)
+	{
+		note_number += 12;
+	}
+
+	return note_number;
+}
+
 int GetNoteChromatic(int note_number)
 {
 	return note_number % 12;
@@ -65,12 +79,12 @@ wxString GetKeyNameFromNumber(int key_number, bool is_minor)
 
 int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
 {
+	while (diatonic < 0) diatonic += 7;
+	while (diatonic > 6) diatonic -= 7;
 	while (key_number < -6) key_number += 12;
 	while (key_number > 6) key_number -= 12;
-	const int diatonic_to_chromatic[] = {0, 2, 4, 5, 7, 9, 11};
-	const int key_diatonics[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
-	const int key_chromatics[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
-	return (key_chromatics[key_number] + diatonic_to_chromatic[(7 + diatonic - key_diatonics[key_number]) % 7]) % 12;
+	const int key_accidentals[][12] = { { 11, 1, 3, 5, 6, 8, 10 }, { 0, 1, 3, 5, 6, 8, 10 }, { 0, 1, 3, 5, 7, 8, 10 }, { 0, 2, 3, 5, 7, 8, 10 }, { 0, 2, 3, 5, 7, 9, 10 }, { 0, 2, 4, 5, 7, 9, 10 }, { 0, 2, 4, 5, 7, 9, 11 }, { 0, 2, 4, 6, 7, 9, 11 }, { 1, 2, 4, 6, 7, 9, 11 }, { 1, 2, 4, 6, 8, 9, 11 }, { 1, 3, 4, 6, 8, 9, 11 }, { 1, 3, 4, 6, 8, 10, 11 }, { 1, 3, 5, 6, 8, 10, 11 } };
+	return key_accidentals[key_number + 6][diatonic];
 }
 
 int GetFinerMeasureDivision(int existing_measure_division, int time_signature_numerator)

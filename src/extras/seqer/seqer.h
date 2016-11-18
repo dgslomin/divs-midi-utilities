@@ -44,6 +44,13 @@ public:
 	void OnZoomOut(wxCommandEvent& event);
 	void OnStepSize(wxCommandEvent& event);
 	void OnFilter(wxCommandEvent& event);
+	void OnInsertNoteA(wxCommandEvent& event);
+	void OnInsertNoteB(wxCommandEvent& event);
+	void OnInsertNoteC(wxCommandEvent& event);
+	void OnInsertNoteD(wxCommandEvent& event);
+	void OnInsertNoteE(wxCommandEvent& event);
+	void OnInsertNoteF(wxCommandEvent& event);
+	void OnInsertNoteG(wxCommandEvent& event);
 	void OnNextMarker(wxCommandEvent& event);
 	void OnPreviousMarker(wxCommandEvent& event);
 	void OnPreferences(wxCommandEvent& event);
