@@ -1,18 +1,18 @@
 #ifndef SEQUENCE_EDITOR_INCLUDED
 #define SEQUENCE_EDITOR_INCLUDED
 
-#include <memory>
-#include <vector>
-#include <wx/wx.h>
-#include <midifile.h>
-
-class Window;
+class SequenceEditor;
 class Sequence;
 class EventList;
 class PianoRoll;
-class StepSize;
 class Row;
 class Step;
+
+#include <vector>
+#include <wx/wx.h>
+#include <midifile.h>
+#include "seqer.h"
+#include "music-math.h"
 
 typedef enum
 {

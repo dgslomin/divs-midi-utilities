@@ -1,8 +1,13 @@
 #ifndef MUSIC_MATH_INCLUDED
 #define MUSIC_MATH_INCLUDED
 
-class StepSizeDialog;
-class SequenceEditor;
+class StepSize;
+class StepsPerMeasureSize;
+class MeasuresPerStepSize;
+class SecondsPerStepSize;
+
+#include <wx/wx.h>
+#include "sequence-editor.h"
 
 wxString GetNoteNameFromNumber(int note_number);
 int GetNoteNumberFromName(wxString note_name);

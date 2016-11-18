@@ -1,11 +1,15 @@
 #ifndef SEQER_INCLUDED
 #define SEQER_INCLUDED
 
-#include <memory>
+class Application;
+class Window;
+class StepSizeDialog;
+class FilterDialog;
+class PreferencesDialog;
+
 #include <wx/wx.h>
 #include <wx/fontpicker.h>
-
-class SequenceEditor;
+#include "sequence-editor.h"
 
 class Application: public wxApp
 {
