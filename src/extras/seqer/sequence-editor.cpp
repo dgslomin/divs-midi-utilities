@@ -44,6 +44,13 @@ SequenceEditor::~SequenceEditor()
 	delete this->step_size;
 }
 
+void SequenceEditor::New()
+{
+	MidiFile_free(this->sequence->midi_file);
+	this->sequence->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
+	this->Prepare();
+}
+
 bool SequenceEditor::Load(wxString filename)
 {
 	MidiFile_t new_midi_file = MidiFile_load((char *)(filename.ToStdString().c_str()));

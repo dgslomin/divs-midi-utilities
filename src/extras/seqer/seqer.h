@@ -31,6 +31,7 @@ public:
 	Window(Application* application);
 	~Window();
 	void OnMenuHighlight(wxMenuEvent& event);
+	void OnFileNew(wxCommandEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnColumn1(wxCommandEvent& event);

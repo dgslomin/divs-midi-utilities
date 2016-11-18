@@ -198,6 +198,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->SetMenuBar(menu_bar);
 
 	this->Bind(wxEVT_MENU_HIGHLIGHT, &Window::OnMenuHighlight, this);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileNew, this, wxID_NEW);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
@@ -236,6 +237,11 @@ Window::~Window()
 void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
 {
 	// This prevents the default behavior of showing unhelpful help text in the status bar when the user navigates the menu.
+}
+
+void Window::OnFileNew(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->New();
 }
 
 void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))

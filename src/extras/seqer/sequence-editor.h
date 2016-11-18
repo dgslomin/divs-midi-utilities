@@ -56,6 +56,7 @@ public:
 
 	SequenceEditor(Window* window);
 	~SequenceEditor();
+	void New();
 	bool Load(wxString filename);
 	void Prepare();
 	void OnDraw(wxDC& dc);
