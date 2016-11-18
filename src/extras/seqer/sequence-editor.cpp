@@ -366,7 +366,7 @@ void SequenceEditor::InsertNote(int diatonic)
 {
 	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
 	long start_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number));
-	long end_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number + 1));
+	long end_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number) + 1);
 	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 	MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
