@@ -9,7 +9,7 @@
 #include "music-math.h"
 #include "color.h"
 
-#if defined(__WXMSW__)
+#ifdef __WXMSW__
 #define CANVAS_BORDER wxBORDER_THEME
 #else
 #define CANVAS_BORDER wxBORDER_DEFAULT
@@ -24,7 +24,7 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
 	this->current_column_number = 1;
-#if !defined(__WXOSX__)
+#ifndef __WXOSX__
 	this->SetDoubleBuffered(true);
 #endif
 	this->DisableKeyboardScrolling();

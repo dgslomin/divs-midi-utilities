@@ -64,7 +64,7 @@ IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
 {
-#if defined(__WXOSX__)
+#ifdef __WXOSX__
 	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else
 	this->default_event_list_font = *wxNORMAL_FONT;
@@ -168,7 +168,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 			transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 			transport_menu->AppendSeparator();
-#if defined(__WXOSX__)
+#ifdef __WXOSX__
 			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tAlt+Right");
 			transport_menu->Append(SEQER_ID_PREVIOUS_MARKER, "Pre&vious Marker\tAlt+Left");
 #else
@@ -185,7 +185,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+M");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
 			tools_menu->AppendSeparator();
-#if defined(__WXOSX__)
+#ifdef __WXOSX__
 			tools_menu->Append(wxID_PREFERENCES, "&Preferences...\tCtrl+,");
 #else
 			tools_menu->Append(wxID_PREFERENCES, "&Preferences...");
@@ -368,7 +368,7 @@ void Window::OnKeyPress(wxKeyEvent& event)
 	{
 		this->sequence_editor->GoToColumn(7);
 	}
-#if defined(__WXOSX__)
+#ifdef __WXOSX__
 	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
 	{
 		this->sequence_editor->PageUp();
