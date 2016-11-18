@@ -14,14 +14,25 @@ class StepSize;
 class Row;
 class Step;
 
-wxString GetNoteNameFromNumber(int note_number);
-int GetNoteNumberFromName(wxString note_name);
-int GetNoteOctave(int note_number);
-int SetNoteOctave(int note_number, int octave);
-int GetNoteChromatic(int note_number);
-int SetNoteChromatic(int note_number, int chromatic);
-wxString GetKeyNameFromNumber(int key_number, bool is_minor);
-int GetChromaticFromDiatonicInKey(int diatonic, int key_number);
+typedef enum
+{
+	EVENT_TYPE_INVALID = -1,
+	EVENT_TYPE_NOTE,
+	EVENT_TYPE_CONTROL_CHANGE,
+	EVENT_TYPE_PROGRAM_CHANGE,
+	EVENT_TYPE_AFTERTOUCH,
+	EVENT_TYPE_PITCH_BEND,
+	EVENT_TYPE_SYSTEM_EXCLUSIVE,
+	EVENT_TYPE_TEXT,
+	EVENT_TYPE_LYRIC,
+	EVENT_TYPE_MARKER,
+	EVENT_TYPE_PORT,
+	EVENT_TYPE_TEMPO,
+	EVENT_TYPE_TIME_SIGNATURE,
+	EVENT_TYPE_KEY_SIGNATURE,
+	EVENT_TYPE_HIGHEST
+}
+EventType_t;
 
 class SequenceEditor: public wxScrolledCanvas
 {
@@ -38,10 +49,10 @@ public:
 	std::vector<int> filtered_channels;
 	long current_row_number;
 	long current_column_number;
-    int insertion_track_number;
-    int insertion_channel_number;
-    int insertion_note_number;
-    int insertion_velocity;
+	int insertion_track_number;
+	int insertion_channel_number;
+	int insertion_note_number;
+	int insertion_velocity;
 
 	SequenceEditor(Window* window);
 	~SequenceEditor();
@@ -76,6 +87,8 @@ public:
 	void GoToNextMarker();
 	void GoToPreviousMarker();
 	void GoToMarker(wxString marker_name);
+	wxString GetEventTypeName(EventType_t event_type);
+	EventType_t GetEventType(MidiFileEvent_t event);
 };
 
 class Sequence

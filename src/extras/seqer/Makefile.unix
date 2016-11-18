@@ -15,20 +15,17 @@ Seqer.app/Contents/MacOS/Seqer: seqer
 	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
 #endif
 
-seqer: seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
-	$(LD) seqer seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o $(LIBS)
+seqer: seqer.o sequence-editor.o music-math.o color.o midifile.o
+	$(LD) seqer seqer.o sequence-editor.o music-math.o color.o midifile.o $(LIBS)
 
-seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h event-type.h
+seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
 
-sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h event-type.h color.h
+sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h color.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c sequence-editor.cpp
 
-step-size.o: step-size.cpp ../../midifile/midifile.h seqer.h sequence-editor.h step-size.h
-	$(CXX) $(CXXFLAGS) -I../../midifile -c step-size.cpp
-
-event-type.o: event-type.cpp ../../midifile/midifile.h sequence-editor.h step-size.h event-type.h
-	$(CXX) $(CXXFLAGS) -I../../midifile -c event-type.cpp
+music-math.o: music-math.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -c music-math.cpp
 
 color.o: color.cpp
 	$(CXX) $(CXXFLAGS) -c color.cpp
@@ -37,7 +34,7 @@ midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
 
 clean:
-	rm -f seqer.o sequence-editor.o step-size.o event-type.o color.o midifile.o
+	rm -f seqer.o sequence-editor.o music-math.o color.o midifile.o
 
 reallyclean: clean
 	rm -f Seqer Seqer.app/Contents/MacOS/Seqer

@@ -3,7 +3,75 @@
 #include <midifile.h>
 #include "seqer.h"
 #include "sequence-editor.h"
-#include "step-size.h"
+#include "music-math.h"
+
+wxString GetNoteNameFromNumber(int note_number)
+{
+	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
+}
+
+int GetNoteNumberFromName(wxString note_name)
+{
+	const char* note_names[] = {"C#", "C", "Db", "D#", "D", "Eb", "E", "F#", "F", "Gb", "G#", "G", "Ab", "A#", "A", "Bb", "B"};
+	const int chromatics[] = {1, 0, 1, 3, 2, 3, 4, 6, 5, 6, 8, 7, 8, 10, 9, 10, 11};
+	int chromatic = -1;
+	int octave = -1;
+	int length;
+
+	for (int i = 0; i < (sizeof note_names / sizeof (char*)); i++)
+	{
+		length = strlen(note_names[i]);
+
+		if (strncmp(note_names[i], note_name.c_str(), length) == 0)
+		{
+			chromatic = chromatics[i];
+			break;
+		}
+	}
+
+	if (chromatic < 0) return -1;
+	if (sscanf(note_name.c_str() + length, "%d", &octave) != 1) return -1;
+	return ((octave + 1) * 12) + chromatic;
+}
+
+int GetNoteOctave(int note_number)
+{
+	return (note_number / 12) - 1;
+}
+
+int SetNoteOctave(int note_number, int octave)
+{
+	return (note_number % 12) + ((octave + 1) * 12);
+}
+
+int GetNoteChromatic(int note_number)
+{
+	return note_number % 12;
+}
+
+int SetNoteChromatic(int note_number, int chromatic)
+{
+	return ((note_number / 12) * 12) + chromatic;
+}
+
+wxString GetKeyNameFromNumber(int key_number, bool is_minor)
+{
+	while (key_number < -6) key_number += 12;
+	while (key_number > 6) key_number -= 12;
+	const char* key_names[] = {"Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#"};
+	return wxString::Format("%s%s", key_names[key_number + 6], is_minor ? "m" : "");
+}
+
+int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
+{
+	while (key_number < -6) key_number += 12;
+	while (key_number > 6) key_number -= 12;
+	const int diatonic_to_chromatic[] = {0, 2, 4, 5, 7, 9, 11};
+	const int key_diatonics[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
+	const int key_chromatics[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
+	return (key_chromatics[key_number] + diatonic_to_chromatic[(7 + diatonic - key_diatonics[key_number]) % 7]) % 12;
+}
 
 int GetFinerMeasureDivision(int existing_measure_division, int time_signature_numerator)
 {

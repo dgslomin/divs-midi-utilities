@@ -6,8 +6,7 @@
 #include <midifile.h>
 #include "seqer.h"
 #include "sequence-editor.h"
-#include "step-size.h"
-#include "event-type.h"
+#include "music-math.h"
 #include "color.h"
 
 #if defined(__WXMSW__)
@@ -15,74 +14,6 @@
 #else
 #define CANVAS_BORDER wxBORDER_DEFAULT
 #endif
-
-wxString GetNoteNameFromNumber(int note_number)
-{
-	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-	return wxString::Format("%s%d", note_names[note_number % 12], (note_number / 12) - 1);
-}
-
-int GetNoteNumberFromName(wxString note_name)
-{
-	const char* note_names[] = {"C#", "C", "Db", "D#", "D", "Eb", "E", "F#", "F", "Gb", "G#", "G", "Ab", "A#", "A", "Bb", "B"};
-	const int chromatics[] = {1, 0, 1, 3, 2, 3, 4, 6, 5, 6, 8, 7, 8, 10, 9, 10, 11};
-	int chromatic = -1;
-	int octave = -1;
-	int length;
-
-	for (int i = 0; i < (sizeof note_names / sizeof (char*)); i++)
-	{
-		length = strlen(note_names[i]);
-
-		if (strncmp(note_names[i], note_name.c_str(), length) == 0)
-		{
-			chromatic = chromatics[i];
-			break;
-		}
-	}
-
-	if (chromatic < 0) return -1;
-	if (sscanf(note_name.c_str() + length, "%d", &octave) != 1) return -1;
-	return ((octave + 1) * 12) + chromatic;
-}
-
-int GetNoteOctave(int note_number)
-{
-	return (note_number / 12) - 1;
-}
-
-int SetNoteOctave(int note_number, int octave)
-{
-	return (note_number % 12) + ((octave + 1) * 12);
-}
-
-int GetNoteChromatic(int note_number)
-{
-	return note_number % 12;
-}
-
-int SetNoteChromatic(int note_number, int chromatic)
-{
-	return ((note_number / 12) * 12) + chromatic;
-}
-
-wxString GetKeyNameFromNumber(int key_number, bool is_minor)
-{
-	while (key_number < -6) key_number += 12;
-	while (key_number > 6) key_number -= 12;
-	const char* key_names[] = {"Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#"};
-	return wxString::Format("%s%s", key_names[key_number + 6], is_minor ? "m" : "");
-}
-
-int GetChromaticFromDiatonicInKey(int diatonic, int key_number)
-{
-	while (key_number < -6) key_number += 12;
-	while (key_number > 6) key_number -= 12;
-	const int diatonic_to_chromatic[] = {0, 2, 4, 5, 7, 9, 11};
-	const int key_diatonics[] = {4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3};
-	const int key_chromatics[] = {6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6};
-	return (key_chromatics[key_number] + diatonic_to_chromatic[(7 + diatonic - key_diatonics[key_number]) % 7]) % 12;
-}
 
 SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
@@ -258,8 +189,8 @@ MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row
 
 bool SequenceEditor::Filter(MidiFileEvent_t event)
 {
-	SeqerEventType_t event_type = SeqerEvent_getType(event);
-	if (event_type == SEQER_EVENT_TYPE_INVALID) return false;
+	EventType_t event_type = this->GetEventType(event);
+	if (event_type == EVENT_TYPE_INVALID) return false;
 
 	if (this->filtered_event_types.size() > 0)
 	{
@@ -431,6 +362,87 @@ void SequenceEditor::InsertNote(int diatonic)
 }
 #endif
 
+wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
+{
+	switch (event_type)
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			return wxString("Note");
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			return wxString("Control change");
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			return wxString("Program change");
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			return wxString("Aftertouch");
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			return wxString("Pitch bend");
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			return wxString("System exclusive");
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			return wxString("Text");
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			return wxString("Lyric");
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			return wxString("Marker");
+		}
+		case EVENT_TYPE_PORT:
+		{
+			return wxString("Port");
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			return wxString("Tempo");
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			return wxString("Time signature");
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			return wxString("Key signature");
+		}
+		default:
+		{
+			return wxEmptyString;
+		}
+	}
+}
+
+EventType_t SequenceEditor::GetEventType(MidiFileEvent_t event)
+{
+	if (MidiFileEvent_isNoteStartEvent(event)) return EVENT_TYPE_NOTE;
+	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE) return EVENT_TYPE_CONTROL_CHANGE;
+	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE) return EVENT_TYPE_PROGRAM_CHANGE;
+	if ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE) || (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE)) return EVENT_TYPE_AFTERTOUCH;
+	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PITCH_WHEEL) return EVENT_TYPE_PITCH_BEND;
+	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_SYSEX) return EVENT_TYPE_SYSTEM_EXCLUSIVE;
+	if (MidiFileEvent_isTextEvent(event)) return EVENT_TYPE_TEXT;
+	if (MidiFileEvent_isLyricEvent(event)) return EVENT_TYPE_LYRIC;
+	if (MidiFileEvent_isMarkerEvent(event)) return EVENT_TYPE_MARKER;
+	if (MidiFileEvent_isPortEvent(event)) return EVENT_TYPE_PORT;
+	if (MidiFileEvent_isTempoEvent(event)) return EVENT_TYPE_TEMPO;
+	if (MidiFileEvent_isTimeSignatureEvent(event)) return EVENT_TYPE_TIME_SIGNATURE;
+	if (MidiFileEvent_isKeySignatureEvent(event)) return EVENT_TYPE_KEY_SIGNATURE;
+	return EVENT_TYPE_INVALID;
+}
+
 Sequence::Sequence(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
@@ -566,9 +578,9 @@ wxString EventList::GetCellText(long row_number, long column_number)
 	}
 	else
 	{
-		switch (SeqerEvent_getType(row.event))
+		switch (this->sequence_editor->GetEventType(row.event))
 		{
-			case SEQER_EVENT_TYPE_NOTE:
+			case EVENT_TYPE_NOTE:
 			{
 				switch (column_number)
 				{
@@ -610,7 +622,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_CONTROL_CHANGE:
+			case EVENT_TYPE_CONTROL_CHANGE:
 			{
 				switch (column_number)
 				{
@@ -644,7 +656,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_PROGRAM_CHANGE:
+			case EVENT_TYPE_PROGRAM_CHANGE:
 			{
 				switch (column_number)
 				{
@@ -674,7 +686,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_AFTERTOUCH:
+			case EVENT_TYPE_AFTERTOUCH:
 			{
 				switch (column_number)
 				{
@@ -729,7 +741,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_PITCH_BEND:
+			case EVENT_TYPE_PITCH_BEND:
 			{
 				switch (column_number)
 				{
@@ -759,7 +771,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_SYSTEM_EXCLUSIVE:
+			case EVENT_TYPE_SYSTEM_EXCLUSIVE:
 			{
 				// TODO: render bytes as ascii plus hex escapes
 
@@ -783,7 +795,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_TEXT:
+			case EVENT_TYPE_TEXT:
 			{
 				switch (column_number)
 				{
@@ -809,7 +821,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_LYRIC:
+			case EVENT_TYPE_LYRIC:
 			{
 				switch (column_number)
 				{
@@ -835,7 +847,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_MARKER:
+			case EVENT_TYPE_MARKER:
 			{
 				switch (column_number)
 				{
@@ -861,7 +873,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_PORT:
+			case EVENT_TYPE_PORT:
 			{
 				switch (column_number)
 				{
@@ -887,7 +899,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_TEMPO:
+			case EVENT_TYPE_TEMPO:
 			{
 				switch (column_number)
 				{
@@ -913,7 +925,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_TIME_SIGNATURE:
+			case EVENT_TYPE_TIME_SIGNATURE:
 			{
 				switch (column_number)
 				{
@@ -939,7 +951,7 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					}
 				}
 			}
-			case SEQER_EVENT_TYPE_KEY_SIGNATURE:
+			case EVENT_TYPE_KEY_SIGNATURE:
 			{
 				switch (column_number)
 				{

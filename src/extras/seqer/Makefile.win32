@@ -5,22 +5,19 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase30ud.lib $(WXLIBDIR)\wxmsw30ud_core.lib $(WXLIBDIR)\wxmsw30ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: seqer.obj sequence-editor.obj step-size.obj event-type.obj color.obj midifile.obj
-	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj sequence-editor.obj step-size.obj event-type.obj color.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: seqer.obj sequence-editor.obj music-math.obj color.obj midifile.obj
+	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj sequence-editor.obj music-math.obj color.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
-seqer.obj: seqer.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h step-size.h event-type.h
+seqer.obj: seqer.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h music-math.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
 
-sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h step-size.h event-type.h color.h
+sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h music-math.h color.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c sequence-editor.cpp
 
-step-size.obj: step-size.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h step-size.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c step-size.cpp
-
-event-type.obj: event-type.cpp ..\..\midifile\midifile.h sequence-editor.h step-size.h event-type.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c event-type.cpp
+music-math.obj: music-math.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h music-math.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c music-math.cpp
 
 color.obj: color.cpp
 	cl /nologo $(FLAGS) $(WXINCLUDES) /c color.cpp
@@ -31,8 +28,7 @@ midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
 clean:
 	@if exist seqer.obj del seqer.obj
 	@if exist sequence-editor.obj del sequence-editor.obj
-	@if exist step-size.obj del step-size.obj
-	@if exist event-type.obj del event-type.obj
+	@if exist music-math.obj del music-math.obj
 	@if exist color.obj del color.obj
 	@if exist midifile.obj del midifile.obj
 	@if exist seqer.ilk del seqer.ilk

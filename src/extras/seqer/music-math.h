@@ -1,8 +1,17 @@
-#ifndef STEP_SIZE_INCLUDED
-#define STEP_SIZE_INCLUDED
+#ifndef MUSIC_MATH_INCLUDED
+#define MUSIC_MATH_INCLUDED
 
 class StepSizeDialog;
 class SequenceEditor;
+
+wxString GetNoteNameFromNumber(int note_number);
+int GetNoteNumberFromName(wxString note_name);
+int GetNoteOctave(int note_number);
+int SetNoteOctave(int note_number, int octave);
+int GetNoteChromatic(int note_number);
+int SetNoteChromatic(int note_number, int chromatic);
+wxString GetKeyNameFromNumber(int key_number, bool is_minor);
+int GetChromaticFromDiatonicInKey(int diatonic, int key_number);
 
 /*
  * Zooming in steps per measure mode moves through a series of logical
