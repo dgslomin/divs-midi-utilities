@@ -90,7 +90,7 @@ public:
 	long GetTickFromRowNumber(long row_number);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
-	void ScrollToCurrentRow();
+	void SetCurrentRowNumber(long current_row_number);
 	wxString GetEventTypeName(EventType_t event_type);
 	EventType_t GetEventType(MidiFileEvent_t event);
 };

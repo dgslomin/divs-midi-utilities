@@ -83,43 +83,37 @@ void SequenceEditor::ZoomOut()
 
 void SequenceEditor::RowUp()
 {
-	this->current_row_number = std::max<long>(this->current_row_number - 1, 0);
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(std::max<long>(this->current_row_number - 1, 0));
 	this->Refresh();
 }
 
 void SequenceEditor::RowDown()
 {
-	this->current_row_number++;
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(current_row_number + 1);
 	this->Refresh();
 }
 
 void SequenceEditor::PageUp()
 {
-	this->current_row_number = std::max<long>(this->current_row_number - this->GetNumberOfVisibleRows(), 0);
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(std::max<long>(this->current_row_number - this->GetNumberOfVisibleRows(), 0));
 	this->Refresh();
 }
 
 void SequenceEditor::PageDown()
 {
-	this->current_row_number += this->GetNumberOfVisibleRows();
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(current_row_number + this->GetNumberOfVisibleRows());
 	this->Refresh();
 }
 
 void SequenceEditor::GoToFirstRow()
 {
-	this->current_row_number = 0;
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(0);
 	this->Refresh();
 }
 
 void SequenceEditor::GoToLastRow()
 {
-	this->current_row_number = std::max<long>(this->rows.size() - 1, 0);
-	this->ScrollToCurrentRow();
+	this->SetCurrentRowNumber(std::max<long>(this->rows.size() - 1, 0));
 	this->Refresh();
 }
 
@@ -166,6 +160,12 @@ void SequenceEditor::InsertNote(int diatonic)
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 	MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
+
+	if ((this->current_row_number < this->rows.size()) && (this->rows[this->current_row_number].event != NULL))
+	{
+		this->SetCurrentRowNumber(this->steps[this->rows[this->current_row_number].step_number].last_row_number + 1);
+	}
+
 	this->RefreshData();
 }
 
@@ -372,8 +372,9 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::ScrollToCurrentRow()
+void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
+	this->current_row_number = current_row_number;
 	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 }
 
