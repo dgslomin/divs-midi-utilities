@@ -15,14 +15,20 @@ Seqer.app/Contents/MacOS/Seqer: seqer
 	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
 #endif
 
-seqer: seqer.o sequence-editor.o music-math.o color.o midifile.o
-	$(LD) seqer seqer.o sequence-editor.o music-math.o color.o midifile.o $(LIBS)
+seqer: seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o
+	$(LD) seqer seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o $(LIBS)
 
 seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
 
-sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h color.h
+sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c sequence-editor.cpp
+
+event-list.o: event-list.cpp ../../midifile/midifile.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -c event-list.cpp
+
+piano-roll.o: piano-roll.cpp ../../midifile/midifile.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h
+	$(CXX) $(CXXFLAGS) -I../../midifile -c piano-roll.cpp
 
 music-math.o: music-math.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c music-math.cpp
@@ -34,7 +40,7 @@ midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
 
 clean:
-	rm -f seqer.o sequence-editor.o music-math.o color.o midifile.o
+	rm -f seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o
 
 reallyclean: clean
 	rm -f Seqer Seqer.app/Contents/MacOS/Seqer

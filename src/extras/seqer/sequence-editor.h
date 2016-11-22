@@ -3,8 +3,6 @@
 
 class SequenceEditor;
 class Sequence;
-class EventList;
-class PianoRoll;
 class Row;
 class Step;
 
@@ -12,6 +10,8 @@ class Step;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "seqer.h"
+#include "event-list.h"
+#include "piano-roll.h"
 #include "music-math.h"
 
 typedef enum
@@ -58,6 +58,23 @@ public:
 	~SequenceEditor();
 	void New();
 	bool Load(wxString filename);
+	void SetStepSize(StepSize* step_size, bool suppress_refresh = false);
+	void ZoomIn();
+	void ZoomOut();
+	void RowUp();
+	void RowDown();
+	void PageUp();
+	void PageDown();
+	void GoToFirstRow();
+	void GoToLastRow();
+	void ColumnLeft();
+	void ColumnRight();
+	void GoToColumn(int column_number);
+	void GoToNextMarker();
+	void GoToPreviousMarker();
+	void GoToMarker(wxString marker_name);
+	void InsertNote(int diatonic);
+
 	void RefreshData();
 	void OnDraw(wxDC& dc);
 	long GetVisibleWidth();
@@ -73,23 +90,7 @@ public:
 	long GetTickFromRowNumber(long row_number);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
-	void SetStepSize(StepSize* step_size, bool suppress_refresh = false);
-	void ZoomIn();
-	void ZoomOut();
 	void ScrollToCurrentRow();
-	void RowUp();
-	void RowDown();
-	void PageUp();
-	void PageDown();
-	void GoToFirstRow();
-	void GoToLastRow();
-	void ColumnLeft();
-	void ColumnRight();
-	void GoToColumn(int column_number);
-	void GoToNextMarker();
-	void GoToPreviousMarker();
-	void GoToMarker(wxString marker_name);
-	void InsertNote(int diatonic);
 	wxString GetEventTypeName(EventType_t event_type);
 	EventType_t GetEventType(MidiFileEvent_t event);
 };
@@ -102,50 +103,6 @@ public:
 
 	Sequence(SequenceEditor* sequence_editor);
 	~Sequence();
-};
-
-class EventList
-{
-public:
-	SequenceEditor *sequence_editor;
-	wxFont font;
-	wxColour current_cell_border_color;
-	long row_height;
-	long column_widths[8];
-
-	EventList(SequenceEditor* sequence_editor);
-	void RefreshData();
-	void OnDraw(wxDC& dc);
-	long GetVisibleWidth();
-	long GetFirstVisibleRowNumber();
-	long GetLastVisibleRowNumber();
-	long GetLastVisiblePopulatedRowNumber();
-	long GetColumnWidth(long column_number);
-	long GetXFromColumnNumber(long column_number);
-	long GetYFromRowNumber(long row_number);
-	long GetRowNumberFromY(long y);
-	wxString GetCellText(long row_number, long column_number);
-};
-
-class PianoRoll
-{
-public:
-	SequenceEditor *sequence_editor;
-	long first_note;
-	long last_note;
-	long key_width;
-	wxColour darker_line_color;
-	wxColour lighter_line_color;
-	wxColour lightest_line_color;
-	wxColour white_key_color;
-	wxColour black_key_color;
-	wxColour shadow_color;
-
-	PianoRoll(SequenceEditor* sequence_editor);
-	void RefreshData();
-	void OnDraw(wxDC& dc);
-	long GetWidth();
-	long GetYFromStepNumber(double step_number);
 };
 
 class Row
