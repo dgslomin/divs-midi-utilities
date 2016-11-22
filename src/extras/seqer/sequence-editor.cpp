@@ -33,7 +33,7 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 #endif
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
-	this->Prepare();
+	this->RefreshData();
 }
 
 SequenceEditor::~SequenceEditor()
@@ -48,7 +48,7 @@ void SequenceEditor::New()
 {
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
-	this->Prepare();
+	this->RefreshData();
 }
 
 bool SequenceEditor::Load(wxString filename)
@@ -57,12 +57,12 @@ bool SequenceEditor::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	this->SetStepSize(new StepsPerMeasureSize(this), false);
-	this->Prepare();
+	this->SetStepSize(new StepsPerMeasureSize(this), true);
+	this->RefreshData();
 	return true;
 }
 
-void SequenceEditor::Prepare()
+void SequenceEditor::RefreshData()
 {
 	this->rows.clear();
 	this->steps.clear();
@@ -99,8 +99,8 @@ void SequenceEditor::Prepare()
 		}
 	}
 
-	this->event_list->Prepare();
-	this->piano_roll->Prepare();
+	this->event_list->RefreshData();
+	this->piano_roll->RefreshData();
 	this->Refresh();
 }
 
@@ -265,21 +265,21 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::SetStepSize(StepSize* step_size, bool prepare)
+void SequenceEditor::SetStepSize(StepSize* step_size, bool suppress_refresh)
 {
 	delete this->step_size;
 	this->step_size = step_size;
-	if (prepare) this->Prepare();
+	if (!suppress_refresh) this->RefreshData();
 }
 
-void SequenceEditor::ZoomIn(bool prepare)
+void SequenceEditor::ZoomIn()
 {
-	this->SetStepSize(this->step_size->ZoomIn(), prepare);
+	this->SetStepSize(this->step_size->ZoomIn());
 }
 
-void SequenceEditor::ZoomOut(bool prepare)
+void SequenceEditor::ZoomOut()
 {
-	this->SetStepSize(this->step_size->ZoomOut(), prepare);
+	this->SetStepSize(this->step_size->ZoomOut());
 }
 
 void SequenceEditor::ScrollToCurrentRow()
@@ -365,13 +365,14 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 void SequenceEditor::InsertNote(int diatonic)
 {
 	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
-	long start_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number));
-	long end_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number) + 1);
+	long start_step_number = this->GetStepNumberFromRowNumber(this->current_row_number);
+	long start_tick = this->step_size->GetTickFromStep(start_step_number);
+	long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
 	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 	MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
-	this->Prepare();
+	this->RefreshData();
 }
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
@@ -472,7 +473,7 @@ EventList::EventList(SequenceEditor* sequence_editor)
 	this->font = this->sequence_editor->window->application->default_event_list_font;
 }
 
-void EventList::Prepare()
+void EventList::RefreshData()
 {
 	wxClientDC dc(this->sequence_editor);
 	dc.SetFont(this->font);
@@ -1005,7 +1006,7 @@ PianoRoll::PianoRoll(SequenceEditor* sequence_editor)
 	this->key_width = this->sequence_editor->window->application->default_piano_roll_key_width;
 }
 
-void PianoRoll::Prepare()
+void PianoRoll::RefreshData()
 {
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
 	this->darker_line_color = ColorShade(button_color, 80);

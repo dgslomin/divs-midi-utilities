@@ -552,7 +552,7 @@ void FilterDialog::Run(Window* window)
 		dialog->channel_list_box->GetSelections(selections);
 		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_channels.push_back(selections[i]);
 
-		window->sequence_editor->Prepare();
+		window->sequence_editor->RefreshData();
 	}
 
 	dialog->Destroy();
@@ -709,8 +709,7 @@ void PreferencesDialog::Run(Window* window)
 		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
 		if (key_width >= 0) window->sequence_editor->piano_roll->key_width = key_width;
 
-		window->sequence_editor->Prepare();
-		window->sequence_editor->Refresh();
+		window->sequence_editor->RefreshData();
 	}
 
 	dialog->Destroy();

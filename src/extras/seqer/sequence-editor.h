@@ -58,7 +58,7 @@ public:
 	~SequenceEditor();
 	void New();
 	bool Load(wxString filename);
-	void Prepare();
+	void RefreshData();
 	void OnDraw(wxDC& dc);
 	long GetVisibleWidth();
 	long GetVisibleHeight();
@@ -73,9 +73,9 @@ public:
 	long GetTickFromRowNumber(long row_number);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
-	void SetStepSize(StepSize* step_size, bool prepare = true);
-	void ZoomIn(bool prepare = true);
-	void ZoomOut(bool prepare = true);
+	void SetStepSize(StepSize* step_size, bool suppress_refresh = false);
+	void ZoomIn();
+	void ZoomOut();
 	void ScrollToCurrentRow();
 	void RowUp();
 	void RowDown();
@@ -114,7 +114,7 @@ public:
 	long column_widths[8];
 
 	EventList(SequenceEditor* sequence_editor);
-	void Prepare();
+	void RefreshData();
 	void OnDraw(wxDC& dc);
 	long GetVisibleWidth();
 	long GetFirstVisibleRowNumber();
@@ -142,7 +142,7 @@ public:
 	wxColour shadow_color;
 
 	PianoRoll(SequenceEditor* sequence_editor);
-	void Prepare();
+	void RefreshData();
 	void OnDraw(wxDC& dc);
 	long GetWidth();
 	long GetYFromStepNumber(double step_number);
