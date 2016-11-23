@@ -31,8 +31,6 @@ void EventList::RefreshData()
 	this->column_widths[5] = dc.GetTextExtent("000#").GetWidth();
 	this->column_widths[6] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
 	this->column_widths[7] = dc.GetTextExtent("000#").GetWidth();
-
-	this->sequence_editor->SetScrollbars(0, this->row_height, 0, this->sequence_editor->rows.size(), 0, this->sequence_editor->GetScrollPos(wxVERTICAL));
 }
 
 void EventList::OnDraw(wxDC& dc)

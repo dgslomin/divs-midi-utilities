@@ -48,6 +48,7 @@ public:
 	std::vector<int> filtered_tracks;
 	std::vector<int> filtered_channels;
 	long current_row_number;
+	long last_row_number;
 	long current_column_number;
 	int insertion_track_number;
 	int insertion_channel_number;
@@ -77,6 +78,7 @@ public:
 
 	void RefreshData(bool suppress_refresh = false);
 	void OnDraw(wxDC& dc);
+	void UpdateScrollbar();
 	long GetVisibleWidth();
 	long GetVisibleHeight();
 	long GetNumberOfVisibleRows();
@@ -91,7 +93,7 @@ public:
 	long GetRowNumberForEvent(MidiFileEvent_t event);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
-	void SetCurrentRowNumber(long current_row_number);
+	void SetCurrentRowNumber(long current_row_number, bool suppress_refresh = false);
 	wxString GetEventTypeName(EventType_t event_type);
 	EventType_t GetEventType(MidiFileEvent_t event);
 };

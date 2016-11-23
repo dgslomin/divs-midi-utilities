@@ -25,6 +25,7 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->piano_roll = new PianoRoll(this);
 	this->step_size = new StepsPerMeasureSize(this);
 	this->current_row_number = 0;
+	this->last_row_number = 0;
 	this->current_column_number = 1;
 	this->insertion_track_number = 1;
 	this->insertion_channel_number = 0;
@@ -50,6 +51,9 @@ void SequenceEditor::New()
 {
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
+	this->current_row_number = 0;
+	this->last_row_number = 0;
+	this->current_column_number = 0;
 	this->RefreshData();
 }
 
@@ -59,6 +63,9 @@ bool SequenceEditor::Load(wxString filename)
 	if (new_midi_file == NULL) return false;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
+	this->current_row_number = 0;
+	this->last_row_number = 0;
+	this->current_column_number = 0;
 	this->SetStepSize(new StepsPerMeasureSize(this), true);
 	this->RefreshData();
 	return true;
@@ -84,37 +91,31 @@ void SequenceEditor::ZoomOut()
 void SequenceEditor::RowUp()
 {
 	this->SetCurrentRowNumber(std::max<long>(this->current_row_number - 1, 0));
-	this->Refresh();
 }
 
 void SequenceEditor::RowDown()
 {
 	this->SetCurrentRowNumber(current_row_number + 1);
-	this->Refresh();
 }
 
 void SequenceEditor::PageUp()
 {
 	this->SetCurrentRowNumber(std::max<long>(this->current_row_number - this->GetNumberOfVisibleRows(), 0));
-	this->Refresh();
 }
 
 void SequenceEditor::PageDown()
 {
 	this->SetCurrentRowNumber(current_row_number + this->GetNumberOfVisibleRows());
-	this->Refresh();
 }
 
 void SequenceEditor::GoToFirstRow()
 {
 	this->SetCurrentRowNumber(0);
-	this->Refresh();
 }
 
 void SequenceEditor::GoToLastRow()
 {
 	this->SetCurrentRowNumber(std::max<long>(this->rows.size() - 1, 0));
-	this->Refresh();
 }
 
 void SequenceEditor::ColumnLeft()
@@ -161,7 +162,7 @@ void SequenceEditor::InsertNote(int diatonic)
 	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
 	this->RefreshData(true);
-	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event), true);
 	this->Refresh();
 }
 
@@ -204,6 +205,7 @@ void SequenceEditor::RefreshData(bool suppress_refresh)
 
 	this->event_list->RefreshData();
 	this->piano_roll->RefreshData();
+	this->UpdateScrollbar();
 	if (!suppress_refresh) this->Refresh();
 }
 
@@ -211,6 +213,12 @@ void SequenceEditor::OnDraw(wxDC& dc)
 {
 	this->piano_roll->OnDraw(dc);
 	this->event_list->OnDraw(dc);
+}
+
+void SequenceEditor::UpdateScrollbar()
+{
+	this->SetScrollbars(0, this->event_list->row_height, 0, std::max<long>(this->rows.size(), this->last_row_number + 1), 0, this->GetScrollPos(wxVERTICAL));
+	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber() - 2) this->Scroll(wxDefaultCoord, this->current_row_number);
 }
 
 long SequenceEditor::GetVisibleWidth()
@@ -381,10 +389,12 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::SetCurrentRowNumber(long current_row_number)
+void SequenceEditor::SetCurrentRowNumber(long current_row_number, bool suppress_refresh)
 {
 	this->current_row_number = current_row_number;
-	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number >= event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	if (current_row_number > this->last_row_number) this->last_row_number = current_row_number;
+	this->UpdateScrollbar();
+	if (!suppress_refresh) this->Refresh();
 }
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
