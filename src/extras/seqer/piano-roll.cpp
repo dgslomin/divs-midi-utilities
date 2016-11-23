@@ -67,16 +67,21 @@ void PianoRoll::OnDraw(wxDC& dc)
 		{
 			if (MidiFileEvent_isNoteStartEvent(event) && this->sequence_editor->Filter(event))
 			{
-				double event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(event));
-				long event_y = this->GetYFromStepNumber(event_step_number);
+				int note = MidiFileNoteOnEvent_getNote(event);
 
-				MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-				double end_event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(end_event));
-				long end_event_y = this->GetYFromStepNumber(end_event_step_number);
-
-				if ((event_y <= last_y) && (end_event_y >= first_y))
+				if ((note >= this->first_note) && (note <= this->last_note))
 				{
-					dc.DrawRectangle((MidiFileNoteOnEvent_getNote(event) - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
+					double event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(event));
+					long event_y = this->GetYFromStepNumber(event_step_number);
+
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					double end_event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(end_event));
+					long end_event_y = this->GetYFromStepNumber(end_event_step_number);
+
+					if ((event_y <= last_y) && (end_event_y >= first_y))
+					{
+						dc.DrawRectangle((note - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
+					}
 				}
 			}
 		}
