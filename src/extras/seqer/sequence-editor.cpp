@@ -162,8 +162,7 @@ void SequenceEditor::InsertNote(int diatonic)
 	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
 	this->RefreshData(true);
-	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event), true);
-	this->Refresh();
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
 }
 
 void SequenceEditor::RefreshData(bool suppress_refresh)
@@ -391,8 +390,12 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 
 void SequenceEditor::SetCurrentRowNumber(long current_row_number, bool suppress_refresh)
 {
-	this->current_row_number = current_row_number;
-	if (current_row_number > this->last_row_number) this->last_row_number = current_row_number;
+	if (current_row_number >= 0)
+	{
+		this->current_row_number = current_row_number;
+		if (current_row_number > this->last_row_number) this->last_row_number = current_row_number;
+	}
+
 	this->UpdateScrollbar();
 	if (!suppress_refresh) this->Refresh();
 }
