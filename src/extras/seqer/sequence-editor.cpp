@@ -158,18 +158,14 @@ void SequenceEditor::InsertNote(int diatonic)
 	long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
 	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
-	MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
+	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
-
-	if ((this->current_row_number < this->rows.size()) && (this->rows[this->current_row_number].event != NULL))
-	{
-		this->SetCurrentRowNumber(this->steps[this->rows[this->current_row_number].step_number].last_row_number + 1);
-	}
-
-	this->RefreshData();
+	this->RefreshData(true);
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
+	this->Refresh();
 }
 
-void SequenceEditor::RefreshData()
+void SequenceEditor::RefreshData(bool suppress_refresh)
 {
 	this->rows.clear();
 	this->steps.clear();
@@ -208,7 +204,7 @@ void SequenceEditor::RefreshData()
 
 	this->event_list->RefreshData();
 	this->piano_roll->RefreshData();
-	this->Refresh();
+	if (!suppress_refresh) this->Refresh();
 }
 
 void SequenceEditor::OnDraw(wxDC& dc)
@@ -311,6 +307,19 @@ long SequenceEditor::GetTickFromRowNumber(long row_number)
 	return this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number));
 }
 
+long SequenceEditor::GetRowNumberForEvent(MidiFileEvent_t event)
+{
+	for (long i = 0; i < this->rows.size(); i++)
+	{
+		if (rows[i].event == event)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row_number)
 {
 	return MidiFile_getLatestTimeSignatureEventForTick(this->sequence->midi_file, this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number)));
@@ -375,7 +384,7 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
 	this->current_row_number = current_row_number;
-	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
+	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number >= event_list->GetLastVisibleRowNumber()) this->Scroll(wxDefaultCoord, this->current_row_number);
 }
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)

@@ -75,7 +75,7 @@ public:
 	void GoToMarker(wxString marker_name);
 	void InsertNote(int diatonic);
 
-	void RefreshData();
+	void RefreshData(bool suppress_refresh = false);
 	void OnDraw(wxDC& dc);
 	long GetVisibleWidth();
 	long GetVisibleHeight();
@@ -88,6 +88,7 @@ public:
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
 	long GetTickFromRowNumber(long row_number);
+	long GetRowNumberForEvent(MidiFileEvent_t event);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
 	void SetCurrentRowNumber(long current_row_number);
