@@ -115,7 +115,7 @@ void SequenceEditor::GoToFirstRow()
 
 void SequenceEditor::GoToLastRow()
 {
-	this->SetCurrentRowNumber(std::max<long>(this->rows.size() - 1, 0));
+	this->SetCurrentRowNumber(std::max<long>(this->rows.size() - 1, this->last_row_number));
 }
 
 void SequenceEditor::ColumnLeft()
