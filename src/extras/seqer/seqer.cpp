@@ -540,19 +540,19 @@ void FilterDialog::Run(Window* window)
 	{
 		wxArrayInt selections;
 
-		window->sequence_editor->filtered_event_types.clear();
+		std::vector<int> filtered_event_types;
 		dialog->event_type_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_event_types.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_event_types.push_back(selections[i]);
 
-		window->sequence_editor->filtered_tracks.clear();
+		std::vector<int> filtered_tracks;
 		dialog->track_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_tracks.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_tracks.push_back(selections[i]);
 
-		window->sequence_editor->filtered_channels.clear();
+		std::vector<int> filtered_channels;
 		dialog->channel_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) window->sequence_editor->filtered_channels.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_channels.push_back(selections[i]);
 
-		window->sequence_editor->RefreshData();
+		window->sequence_editor->SetFilters(filtered_event_types, filtered_tracks, filtered_channels);
 	}
 
 	dialog->Destroy();

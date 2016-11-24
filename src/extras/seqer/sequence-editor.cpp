@@ -73,31 +73,11 @@ bool SequenceEditor::Load(wxString filename)
 
 void SequenceEditor::SetStepSize(StepSize* step_size)
 {
-	MidiFileEvent_t current_event = (this->current_row_number < this->rows.size()) ? this->rows[current_row_number].event : NULL;
-	long current_tick = this->GetTickFromRowNumber(this->current_row_number);
-
+	RowLocator row_locator = this->GetLocatorFromRowNumber(this->current_row_number);
 	delete this->step_size;
 	this->step_size = step_size;
 	this->RefreshData();
-
-	if (current_event == NULL)
-	{
-		this->SetCurrentRowNumber(this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(current_tick)));
-	}
-	else
-	{
-		long new_row_number = this->GetRowNumberForEvent(current_event);
-
-		if (new_row_number < 0)
-		{
-			this->SetCurrentRowNumber(this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(MidiFileEvent_getTick(current_event))));
-		}
-		else
-		{
-			this->SetCurrentRowNumber(new_row_number);
-		}
-	}
-
+	this->SetCurrentRowNumber(this->GetRowNumberFromLocator(row_locator));
 	this->Refresh();
 }
 
@@ -109,6 +89,17 @@ void SequenceEditor::ZoomIn()
 void SequenceEditor::ZoomOut()
 {
 	this->SetStepSize(this->step_size->ZoomOut());
+}
+
+void SequenceEditor::SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels)
+{
+	RowLocator row_locator = this->GetLocatorFromRowNumber(this->current_row_number);
+	this->filtered_event_types = filtered_event_types;
+	this->filtered_tracks = filtered_tracks;
+	this->filtered_channels = filtered_channels;
+	this->RefreshData();
+	this->SetCurrentRowNumber(this->GetRowNumberFromLocator(row_locator));
+	this->Refresh();
 }
 
 void SequenceEditor::RowUp()
@@ -421,6 +412,35 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 
 	this->UpdateScrollbar();
 	this->Refresh();
+}
+
+RowLocator SequenceEditor::GetLocatorFromRowNumber(long row_number)
+{
+	RowLocator row_locator = RowLocator();
+	row_locator.event = (row_number < this->rows.size()) ? this->rows[row_number].event : NULL;
+	row_locator.tick = this->GetTickFromRowNumber(row_number);
+	return row_locator;
+}
+
+long SequenceEditor::GetRowNumberFromLocator(RowLocator row_locator)
+{
+	if (row_locator.event == NULL)
+	{
+		return this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(row_locator.tick));
+	}
+	else
+	{
+		long row_number = this->GetRowNumberForEvent(row_locator.event);
+
+		if (row_number < 0)
+		{
+			return this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(MidiFileEvent_getTick(row_locator.event)));
+		}
+		else
+		{
+			return row_number;
+		}
+	}
 }
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)

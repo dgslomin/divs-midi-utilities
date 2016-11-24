@@ -5,6 +5,7 @@ class SequenceEditor;
 class Sequence;
 class Row;
 class Step;
+class RowLocator;
 
 #include <vector>
 #include <wx/wx.h>
@@ -62,6 +63,7 @@ public:
 	void SetStepSize(StepSize* step_size);
 	void ZoomIn();
 	void ZoomOut();
+	void SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels);
 	void RowUp();
 	void RowDown();
 	void PageUp();
@@ -94,6 +96,8 @@ public:
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(MidiFileEvent_t event);
 	void SetCurrentRowNumber(long current_row_number);
+	RowLocator GetLocatorFromRowNumber(long row_number);
+	long GetRowNumberFromLocator(RowLocator row_locator);
 	wxString GetEventTypeName(EventType_t event_type);
 	EventType_t GetEventType(MidiFileEvent_t event);
 };
@@ -124,6 +128,13 @@ public:
 	long last_row_number;
 
 	Step(long row_number);
+};
+
+class RowLocator
+{
+public:
+	MidiFileEvent_t event;
+	long tick;
 };
 
 #endif
