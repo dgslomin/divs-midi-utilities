@@ -201,6 +201,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileNew, this, wxID_NEW);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnDelete, this, wxID_DELETE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn2, this, SEQER_ID_EDIT_COLUMN_2);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn3, this, SEQER_ID_EDIT_COLUMN_3);
@@ -262,6 +263,11 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
+}
+
+void Window::OnDelete(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->DeleteRow();
 }
 
 void Window::OnColumn1(wxCommandEvent& WXUNUSED(event))

@@ -34,6 +34,7 @@ public:
 	void OnFileNew(wxCommandEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
+	void OnDelete(wxCommandEvent& event);
 	void OnColumn1(wxCommandEvent& event);
 	void OnColumn2(wxCommandEvent& event);
 	void OnColumn3(wxCommandEvent& event);

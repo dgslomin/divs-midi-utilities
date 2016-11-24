@@ -179,6 +179,15 @@ void SequenceEditor::InsertNote(int diatonic)
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
 }
 
+void SequenceEditor::DeleteRow()
+{
+	if (this->current_row_number < this->rows.size())
+	{
+		MidiFileEvent_delete(this->rows[this->current_row_number].event);
+		this->RefreshData();
+	}
+}
+
 void SequenceEditor::RefreshData()
 {
 	this->rows.clear();
