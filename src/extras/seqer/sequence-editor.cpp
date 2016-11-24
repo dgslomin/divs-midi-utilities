@@ -231,7 +231,15 @@ void SequenceEditor::OnDraw(wxDC& dc)
 void SequenceEditor::UpdateScrollbar()
 {
 	this->SetScrollbars(0, this->event_list->row_height, 0, std::max<long>(this->rows.size(), this->last_row_number + 1), 0, this->GetScrollPos(wxVERTICAL));
-	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber() || this->current_row_number > event_list->GetLastVisibleRowNumber() - 2) this->Scroll(wxDefaultCoord, this->current_row_number);
+
+	if (this->current_row_number < this->event_list->GetFirstVisibleRowNumber())
+	{
+		this->Scroll(wxDefaultCoord, this->current_row_number);
+	}
+	else if (this->current_row_number > event_list->GetLastVisibleRowNumber() - 2)
+	{
+		this->Scroll(wxDefaultCoord, this->current_row_number - this->GetNumberOfVisibleRows() + 1);
+	}
 }
 
 long SequenceEditor::GetVisibleWidth()
