@@ -57,12 +57,9 @@ In "seconds per step" mode, zoom in and out moves through factors of two just li
 TODO:
 	event grid
 		insert/delete/edit operations
-		infinite scrollbar logic
 		mouse support for navigate/select
 	piano roll
 		mouse support for select
-	step/zoom infrastructure
-		preserve scroll position
 	selection/clipboard infrastructure
 	undo/redo infrastructure
 	multi-window infrastructure

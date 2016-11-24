@@ -66,16 +66,39 @@ bool SequenceEditor::Load(wxString filename)
 	this->current_row_number = 0;
 	this->last_row_number = 0;
 	this->current_column_number = 0;
-	this->SetStepSize(new StepsPerMeasureSize(this), true);
+	this->SetStepSize(new StepsPerMeasureSize(this));
 	this->RefreshData();
 	return true;
 }
 
-void SequenceEditor::SetStepSize(StepSize* step_size, bool suppress_refresh)
+void SequenceEditor::SetStepSize(StepSize* step_size)
 {
+	MidiFileEvent_t current_event = (this->current_row_number < this->rows.size()) ? this->rows[current_row_number].event : NULL;
+	long current_tick = this->GetTickFromRowNumber(this->current_row_number);
+
 	delete this->step_size;
 	this->step_size = step_size;
-	if (!suppress_refresh) this->RefreshData();
+	this->RefreshData();
+
+	if (current_event == NULL)
+	{
+		this->SetCurrentRowNumber(this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(current_tick)));
+	}
+	else
+	{
+		long new_row_number = this->GetRowNumberForEvent(current_event);
+
+		if (new_row_number < 0)
+		{
+			this->SetCurrentRowNumber(this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(MidiFileEvent_getTick(current_event))));
+		}
+		else
+		{
+			this->SetCurrentRowNumber(new_row_number);
+		}
+	}
+
+	this->Refresh();
 }
 
 void SequenceEditor::ZoomIn()
@@ -161,11 +184,11 @@ void SequenceEditor::InsertNote(int diatonic)
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
 	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
-	this->RefreshData(true);
+	this->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
 }
 
-void SequenceEditor::RefreshData(bool suppress_refresh)
+void SequenceEditor::RefreshData()
 {
 	this->rows.clear();
 	this->steps.clear();
@@ -205,7 +228,7 @@ void SequenceEditor::RefreshData(bool suppress_refresh)
 	this->event_list->RefreshData();
 	this->piano_roll->RefreshData();
 	this->UpdateScrollbar();
-	if (!suppress_refresh) this->Refresh();
+	this->Refresh();
 }
 
 void SequenceEditor::OnDraw(wxDC& dc)
@@ -388,7 +411,7 @@ bool SequenceEditor::Filter(MidiFileEvent_t event)
 	return true;
 }
 
-void SequenceEditor::SetCurrentRowNumber(long current_row_number, bool suppress_refresh)
+void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
 	if (current_row_number >= 0)
 	{
@@ -397,7 +420,7 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number, bool suppress_
 	}
 
 	this->UpdateScrollbar();
-	if (!suppress_refresh) this->Refresh();
+	this->Refresh();
 }
 
 wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
