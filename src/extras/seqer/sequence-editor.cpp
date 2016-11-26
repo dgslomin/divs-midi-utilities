@@ -196,6 +196,14 @@ void SequenceEditor::SmallIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 2:
+				{
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1, 1);
+					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
+					MidiFileEvent_setTrack(event, track);
+					this->RefreshData();
+					break;
+				}
 				case 3:
 				{
 					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
@@ -295,6 +303,14 @@ void SequenceEditor::SmallDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 2:
+				{
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0), 1);
+					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
+					MidiFileEvent_setTrack(event, track);
+					this->RefreshData();
+					break;
+				}
 				case 3:
 				{
 					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));
@@ -394,6 +410,14 @@ void SequenceEditor::LargeIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 2:
+				{
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1, 1);
+					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
+					MidiFileEvent_setTrack(event, track);
+					this->RefreshData();
+					break;
+				}
 				case 3:
 				{
 					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
@@ -493,6 +517,14 @@ void SequenceEditor::LargeDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 2:
+				{
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0), 1);
+					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
+					MidiFileEvent_setTrack(event, track);
+					this->RefreshData();
+					break;
+				}
 				case 3:
 				{
 					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));

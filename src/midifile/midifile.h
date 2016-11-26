@@ -175,6 +175,7 @@ int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallbac
 
 int MidiFileEvent_delete(MidiFileEvent_t event);
 MidiFileTrack_t MidiFileEvent_getTrack(MidiFileEvent_t event);
+int MidiFileEvent_setTrack(MidiFileEvent_t event, MidiFileTrack_t track);
 MidiFileEvent_t MidiFileEvent_getPreviousEvent(MidiFileEvent_t event); /* deprecated:  use MidiFileEvent_getPreviousEventInTrack() */
 MidiFileEvent_t MidiFileEvent_getNextEvent(MidiFileEvent_t event); /* deprecated:  use MidiFileEvent_getNextEventInTrack() */
 MidiFileEvent_t MidiFileEvent_getPreviousEventInTrack(MidiFileEvent_t event);

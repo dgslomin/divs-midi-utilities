@@ -2150,6 +2150,20 @@ MidiFileTrack_t MidiFileEvent_getTrack(MidiFileEvent_t event)
 	return event->track;
 }
 
+int MidiFileEvent_setTrack(MidiFileEvent_t event, MidiFileTrack_t track)
+{
+	if ((event == NULL) || (track == NULL)) return -1;
+
+	if (event->track != track)
+	{
+		remove_event(event);
+		event->track = track;
+		add_event(event);
+	}
+
+	return 0;
+}
+
 MidiFileEvent_t MidiFileEvent_getPreviousEvent(MidiFileEvent_t event)
 {
 	return MidiFileEvent_getPreviousEventInTrack(event);
