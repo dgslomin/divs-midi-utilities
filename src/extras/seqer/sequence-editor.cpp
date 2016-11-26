@@ -181,10 +181,328 @@ void SequenceEditor::InsertNote(int diatonic)
 
 void SequenceEditor::DeleteRow()
 {
-	if (this->current_row_number < this->rows.size())
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_delete(this->rows[this->current_row_number].event);
+	this->RefreshData();
+}
+
+void SequenceEditor::SmallIncrease()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
 	{
-		MidiFileEvent_delete(this->rows[this->current_row_number].event);
-		this->RefreshData();
+		case EVENT_TYPE_NOTE:
+		{
+			switch (current_column_number)
+			{
+				case 4:
+				{
+					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 1, 127));
+					this->RefreshData();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void SequenceEditor::SmallDecrease()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			switch (current_column_number)
+			{
+				case 4:
+				{
+					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 1, 0));
+					this->RefreshData();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void SequenceEditor::LargeIncrease()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			switch (current_column_number)
+			{
+				case 4:
+				{
+					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 12, 127));
+					this->RefreshData();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void SequenceEditor::LargeDecrease()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			switch (current_column_number)
+			{
+				case 4:
+				{
+					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 12, 0));
+					this->RefreshData();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 

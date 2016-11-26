@@ -78,6 +78,10 @@ public:
 	void GoToMarker(wxString marker_name);
 	void InsertNote(int diatonic);
 	void DeleteRow();
+	void SmallIncrease();
+	void SmallDecrease();
+	void LargeIncrease();
+	void LargeDecrease();
 
 	void RefreshData();
 	void OnDraw(wxDC& dc);

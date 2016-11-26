@@ -2600,6 +2600,29 @@ int MidiFileNoteStartEvent_getNote(MidiFileEvent_t event)
 int MidiFileNoteStartEvent_setNote(MidiFileEvent_t event, int note)
 {
 	if (! MidiFileEvent_isNoteStartEvent(event)) return -1;
+
+	{
+		MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+
+		switch (MidiFileEvent_getType(end_event))
+		{
+			case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+			{
+				MidiFileNoteOnEvent_setNote(end_event, note);
+				break;
+			}
+			case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+			{
+				MidiFileNoteOffEvent_setNote(end_event, note);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
 	return MidiFileNoteOnEvent_setNote(event, note);
 }
 
@@ -2698,6 +2721,7 @@ int MidiFileNoteEndEvent_getNote(MidiFileEvent_t event)
 int MidiFileNoteEndEvent_setNote(MidiFileEvent_t event, int note)
 {
 	if (! MidiFileEvent_isNoteEndEvent(event)) return -1;
+	MidiFileNoteOnEvent_setNote(MidiFileNoteEndEvent_getNoteStartEvent(event), note);
 
 	switch (MidiFileEvent_getType(event))
 	{

@@ -35,6 +35,10 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnDelete(wxCommandEvent& event);
+	void OnSmallIncrease(wxCommandEvent& event);
+	void OnSmallDecrease(wxCommandEvent& event);
+	void OnLargeIncrease(wxCommandEvent& event);
+	void OnLargeDecrease(wxCommandEvent& event);
 	void OnColumn1(wxCommandEvent& event);
 	void OnColumn2(wxCommandEvent& event);
 	void OnColumn3(wxCommandEvent& event);

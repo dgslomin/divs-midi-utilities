@@ -202,6 +202,10 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnDelete, this, wxID_DELETE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallIncrease, this, SEQER_ID_SMALL_INCREASE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallDecrease, this, SEQER_ID_SMALL_DECREASE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeIncrease, this, SEQER_ID_LARGE_INCREASE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeDecrease, this, SEQER_ID_LARGE_DECREASE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn2, this, SEQER_ID_EDIT_COLUMN_2);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn3, this, SEQER_ID_EDIT_COLUMN_3);
@@ -268,6 +272,26 @@ void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 void Window::OnDelete(wxCommandEvent& WXUNUSED(event))
 {
 	this->sequence_editor->DeleteRow();
+}
+
+void Window::OnSmallIncrease(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->SmallIncrease();
+}
+
+void Window::OnSmallDecrease(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->SmallDecrease();
+}
+
+void Window::OnLargeIncrease(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->LargeIncrease();
+}
+
+void Window::OnLargeDecrease(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->LargeDecrease();
 }
 
 void Window::OnColumn1(wxCommandEvent& WXUNUSED(event))
