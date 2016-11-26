@@ -487,6 +487,11 @@ void Window::OnKeyPress(wxKeyEvent& event)
 		// make shift+left be a synonym for shift+right
 		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));
 	}
+	else if (event.GetKeyCode() == WXK_BACK)
+	{
+		// make backspace be a synonym for delete
+		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_DELETE));
+	}
 	else
 	{
 		event.Skip();
