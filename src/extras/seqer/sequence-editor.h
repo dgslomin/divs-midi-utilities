@@ -55,6 +55,7 @@ public:
 	int insertion_channel_number;
 	int insertion_note_number;
 	int insertion_velocity;
+	int insertion_end_velocity;
 
 	SequenceEditor(Window* window);
 	~SequenceEditor();

@@ -31,6 +31,7 @@ SequenceEditor::SequenceEditor(Window* window): wxScrolledCanvas(window, wxID_AN
 	this->insertion_channel_number = 0;
 	this->insertion_note_number = 60;
 	this->insertion_velocity = 64;
+	this->insertion_end_velocity = 0;
 #ifndef __WXOSX__
 	this->SetDoubleBuffered(true);
 #endif
@@ -173,7 +174,7 @@ void SequenceEditor::InsertNote(int diatonic)
 	long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
 	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
-	MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, 0);
+	MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, this->insertion_end_velocity);
 	this->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 }
@@ -198,7 +199,8 @@ void SequenceEditor::SmallIncrease()
 			{
 				case 2:
 				{
-					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1, 1);
+					this->insertion_track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1;
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
 					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
 					MidiFileEvent_setTrack(event, track);
 					this->RefreshData();
@@ -206,26 +208,30 @@ void SequenceEditor::SmallIncrease()
 				}
 				case 3:
 				{
-					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
+					this->insertion_channel_number = std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15);
+					MidiFileNoteStartEvent_setChannel(event, this->insertion_channel_number);
 					this->RefreshData();
 					break;
 				}
 				case 4:
 				{
-					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 1, 127));
+					this->insertion_note_number = std::min<int>(MidiFileNoteStartEvent_getNote(event) + 1, 127);
+					MidiFileNoteStartEvent_setNote(event, this->insertion_note_number);
 					this->RefreshData();
 					break;
 				}
 				case 5:
 				{
-					MidiFileNoteStartEvent_setVelocity(event, std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 1, 127));
+					this->insertion_velocity = std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 1, 127);
+					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
 					this->RefreshData();
 					break;
 				}
 				case 7:
 				{
 					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-					MidiFileNoteEndEvent_setVelocity(end_event, std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 1, 127));
+					this->insertion_end_velocity = std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 1, 127);
+					MidiFileNoteEndEvent_setVelocity(end_event, this->insertion_end_velocity);
 					this->RefreshData();
 					break;
 				}
@@ -305,7 +311,8 @@ void SequenceEditor::SmallDecrease()
 			{
 				case 2:
 				{
-					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0), 1);
+					this->insertion_track_number = std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0);
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
 					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
 					MidiFileEvent_setTrack(event, track);
 					this->RefreshData();
@@ -313,26 +320,30 @@ void SequenceEditor::SmallDecrease()
 				}
 				case 3:
 				{
-					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));
+					this->insertion_channel_number = std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0);
+					MidiFileNoteStartEvent_setChannel(event, this->insertion_channel_number);
 					this->RefreshData();
 					break;
 				}
 				case 4:
 				{
-					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 1, 0));
+					this->insertion_note_number = std::max<int>(MidiFileNoteStartEvent_getNote(event) - 1, 0);
+					MidiFileNoteStartEvent_setNote(event, this->insertion_note_number);
 					this->RefreshData();
 					break;
 				}
 				case 5:
 				{
-					MidiFileNoteStartEvent_setVelocity(event, std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 1, 1));
+					this->insertion_velocity = std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 1, 1);
+					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
 					this->RefreshData();
 					break;
 				}
 				case 7:
 				{
 					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-					MidiFileNoteEndEvent_setVelocity(end_event, std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 1, 0));
+					this->insertion_end_velocity = std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 1, 0);
+					MidiFileNoteEndEvent_setVelocity(end_event, this->insertion_end_velocity);
 					this->RefreshData();
 					break;
 				}
@@ -412,7 +423,8 @@ void SequenceEditor::LargeIncrease()
 			{
 				case 2:
 				{
-					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1, 1);
+					this->insertion_track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1;
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
 					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
 					MidiFileEvent_setTrack(event, track);
 					this->RefreshData();
@@ -420,26 +432,30 @@ void SequenceEditor::LargeIncrease()
 				}
 				case 3:
 				{
-					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
+					this->insertion_channel_number = std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15);
+					MidiFileNoteStartEvent_setChannel(event, this->insertion_channel_number);
 					this->RefreshData();
 					break;
 				}
 				case 4:
 				{
-					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 12, 127));
+					this->insertion_note_number = std::min<int>(MidiFileNoteStartEvent_getNote(event) + 12, 127);
+					MidiFileNoteStartEvent_setNote(event, this->insertion_note_number);
 					this->RefreshData();
 					break;
 				}
 				case 5:
 				{
-					MidiFileNoteStartEvent_setVelocity(event, std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 8, 127));
+					this->insertion_velocity = std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 8, 127);
+					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
 					this->RefreshData();
 					break;
 				}
 				case 7:
 				{
 					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-					MidiFileNoteEndEvent_setVelocity(end_event, std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 8, 127));
+					this->insertion_end_velocity = std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 8, 127);
+					MidiFileNoteEndEvent_setVelocity(end_event, this->insertion_end_velocity);
 					this->RefreshData();
 					break;
 				}
@@ -519,7 +535,8 @@ void SequenceEditor::LargeDecrease()
 			{
 				case 2:
 				{
-					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0), 1);
+					this->insertion_track_number = std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0);
+					MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
 					MidiFileEvent_setTrack(MidiFileNoteStartEvent_getNoteEndEvent(event), track);
 					MidiFileEvent_setTrack(event, track);
 					this->RefreshData();
@@ -527,26 +544,30 @@ void SequenceEditor::LargeDecrease()
 				}
 				case 3:
 				{
-					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));
+					this->insertion_channel_number = std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0);
+					MidiFileNoteStartEvent_setChannel(event, this->insertion_channel_number);
 					this->RefreshData();
 					break;
 				}
 				case 4:
 				{
-					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 12, 0));
+					this->insertion_note_number = std::max<int>(MidiFileNoteStartEvent_getNote(event) - 12, 0);
+					MidiFileNoteStartEvent_setNote(event, this->insertion_note_number);
 					this->RefreshData();
 					break;
 				}
 				case 5:
 				{
-					MidiFileNoteStartEvent_setVelocity(event, std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 8, 1));
+					this->insertion_velocity = std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 8, 1);
+					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
 					this->RefreshData();
 					break;
 				}
 				case 7:
 				{
 					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-					MidiFileNoteEndEvent_setVelocity(end_event, std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 8, 0));
+					this->insertion_end_velocity = std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 8, 0);
+					MidiFileNoteEndEvent_setVelocity(end_event, this->insertion_end_velocity);
 					this->RefreshData();
 					break;
 				}
