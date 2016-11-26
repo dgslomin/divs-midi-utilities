@@ -173,10 +173,9 @@ void SequenceEditor::InsertNote(int diatonic)
 	long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
 	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
-	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity);
-	MidiFileTrack_createNoteOffEvent(track, end_tick, this->insertion_channel_number, this->insertion_note_number, 0);
+	MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, 0);
 	this->RefreshData();
-	this->SetCurrentRowNumber(this->GetRowNumberForEvent(start_event));
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 }
 
 void SequenceEditor::DeleteRow()
