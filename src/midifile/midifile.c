@@ -2588,6 +2588,29 @@ int MidiFileNoteStartEvent_getChannel(MidiFileEvent_t event)
 int MidiFileNoteStartEvent_setChannel(MidiFileEvent_t event, int channel)
 {
 	if (! MidiFileEvent_isNoteStartEvent(event)) return -1;
+
+	{
+		MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+
+		switch (MidiFileEvent_getType(end_event))
+		{
+			case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+			{
+				MidiFileNoteOnEvent_setChannel(end_event, channel);
+				break;
+			}
+			case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+			{
+				MidiFileNoteOffEvent_setChannel(end_event, channel);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
 	return MidiFileNoteOnEvent_setChannel(event, channel);
 }
 
@@ -2679,6 +2702,7 @@ int MidiFileNoteEndEvent_getChannel(MidiFileEvent_t event)
 int MidiFileNoteEndEvent_setChannel(MidiFileEvent_t event, int channel)
 {
 	if (! MidiFileEvent_isNoteEndEvent(event)) return -1;
+	MidiFileNoteOnEvent_setChannel(MidiFileNoteEndEvent_getNoteStartEvent(event), channel);
 
 	switch (MidiFileEvent_getType(event))
 	{

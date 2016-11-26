@@ -196,9 +196,28 @@ void SequenceEditor::SmallIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 3:
+				{
+					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
+					this->RefreshData();
+					break;
+				}
 				case 4:
 				{
 					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 1, 127));
+					this->RefreshData();
+					break;
+				}
+				case 5:
+				{
+					MidiFileNoteStartEvent_setVelocity(event, std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 1, 127));
+					this->RefreshData();
+					break;
+				}
+				case 7:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					MidiFileNoteEndEvent_setVelocity(end_event, std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 1, 127));
 					this->RefreshData();
 					break;
 				}
@@ -276,9 +295,28 @@ void SequenceEditor::SmallDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 3:
+				{
+					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));
+					this->RefreshData();
+					break;
+				}
 				case 4:
 				{
 					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 1, 0));
+					this->RefreshData();
+					break;
+				}
+				case 5:
+				{
+					MidiFileNoteStartEvent_setVelocity(event, std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 1, 1));
+					this->RefreshData();
+					break;
+				}
+				case 7:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					MidiFileNoteEndEvent_setVelocity(end_event, std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 1, 0));
 					this->RefreshData();
 					break;
 				}
@@ -356,9 +394,28 @@ void SequenceEditor::LargeIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 3:
+				{
+					MidiFileNoteStartEvent_setChannel(event, std::min<int>(MidiFileNoteStartEvent_getChannel(event) + 1, 15));
+					this->RefreshData();
+					break;
+				}
 				case 4:
 				{
 					MidiFileNoteStartEvent_setNote(event, std::min<int>(MidiFileNoteStartEvent_getNote(event) + 12, 127));
+					this->RefreshData();
+					break;
+				}
+				case 5:
+				{
+					MidiFileNoteStartEvent_setVelocity(event, std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 8, 127));
+					this->RefreshData();
+					break;
+				}
+				case 7:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					MidiFileNoteEndEvent_setVelocity(end_event, std::min<int>(MidiFileNoteEndEvent_getVelocity(end_event) + 8, 127));
 					this->RefreshData();
 					break;
 				}
@@ -436,9 +493,28 @@ void SequenceEditor::LargeDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 3:
+				{
+					MidiFileNoteStartEvent_setChannel(event, std::max<int>(MidiFileNoteStartEvent_getChannel(event) - 1, 0));
+					this->RefreshData();
+					break;
+				}
 				case 4:
 				{
 					MidiFileNoteStartEvent_setNote(event, std::max<int>(MidiFileNoteStartEvent_getNote(event) - 12, 0));
+					this->RefreshData();
+					break;
+				}
+				case 5:
+				{
+					MidiFileNoteStartEvent_setVelocity(event, std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 8, 1));
+					this->RefreshData();
+					break;
+				}
+				case 7:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					MidiFileNoteEndEvent_setVelocity(end_event, std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 8, 0));
 					this->RefreshData();
 					break;
 				}
