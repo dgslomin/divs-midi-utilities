@@ -35,6 +35,7 @@ public:
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
 	void OnDelete(wxCommandEvent& event);
+	void OnEnterValue(wxCommandEvent& event);
 	void OnSmallIncrease(wxCommandEvent& event);
 	void OnSmallDecrease(wxCommandEvent& event);
 	void OnLargeIncrease(wxCommandEvent& event);
@@ -58,6 +59,7 @@ public:
 	void OnInsertNoteE(wxCommandEvent& event);
 	void OnInsertNoteF(wxCommandEvent& event);
 	void OnInsertNoteG(wxCommandEvent& event);
+	void OnInsertMarker(wxCommandEvent& event);
 	void OnNextMarker(wxCommandEvent& event);
 	void OnPreviousMarker(wxCommandEvent& event);
 	void OnGoToMarker(wxCommandEvent& event);

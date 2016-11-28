@@ -237,11 +237,105 @@ void SequenceEditor::InsertNote(int diatonic)
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 }
 
+void SequenceEditor::InsertMarker()
+{
+	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number)), (char *)(""));
+	this->RefreshData();
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+}
+
 void SequenceEditor::DeleteRow()
 {
 	if (this->current_row_number >= this->rows.size()) return;
 	MidiFileEvent_delete(this->rows[this->current_row_number].event);
 	this->RefreshData();
+}
+
+void SequenceEditor::EnterValue()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 4:
+				{
+					wxTextEntryDialog* dialog = new wxTextEntryDialog(this, "Name", "Edit Marker", MidiFileMarkerEvent_getText(event));
+
+					if (dialog->ShowModal() == wxID_OK)
+					{
+						MidiFileMarkerEvent_setText(event, (char *)(dialog->GetValue().ToStdString().c_str()));
+						this->RefreshData();
+					}
+
+					dialog->Destroy();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
 }
 
 void SequenceEditor::SmallIncrease()

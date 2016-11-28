@@ -2584,7 +2584,7 @@ unsigned char *MidiFileMetaEvent_getData(MidiFileEvent_t event)
 
 int MidiFileMetaEvent_setData(MidiFileEvent_t event, int data_length, unsigned char *data_buffer)
 {
-	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_META) || (data_length < 1) || (data_buffer == NULL)) return -1;
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_META) || (data_buffer == NULL)) return -1;
 	free(event->u.meta.data_buffer);
 	event->u.meta.data_length = data_length;
 	event->u.meta.data_buffer = malloc(data_length + 1);

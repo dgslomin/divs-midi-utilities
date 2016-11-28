@@ -78,7 +78,9 @@ public:
 	void GoToPreviousMarker();
 	void GoToMarker(wxString marker_name);
 	void InsertNote(int diatonic);
+	void InsertMarker();
 	void DeleteRow();
+	void EnterValue();
 	void SmallIncrease();
 	void SmallDecrease();
 	void LargeIncrease();
