@@ -60,6 +60,7 @@ public:
 	void OnInsertNoteG(wxCommandEvent& event);
 	void OnNextMarker(wxCommandEvent& event);
 	void OnPreviousMarker(wxCommandEvent& event);
+	void OnGoToMarker(wxCommandEvent& event);
 	void OnPreferences(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void OnKeyPress(wxKeyEvent& event);

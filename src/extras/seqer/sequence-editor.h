@@ -99,6 +99,7 @@ public:
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
 	long GetTickFromRowNumber(long row_number);
+	long GetRowNumberFromTick(long tick);
 	long GetNumberOfTicksPerPixel(long step_number);
 	long GetRowNumberForEvent(MidiFileEvent_t event);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);

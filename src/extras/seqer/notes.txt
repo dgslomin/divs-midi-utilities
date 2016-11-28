@@ -68,7 +68,6 @@ TODO:
 		no arming of tracks; record should always target the current track
 		MIDI sync master
 		MIDI sync slave (much harder)
-	markers
 	macros
 		Current plan (of many possible approaches):
 		Macros would be based solely around record and playback of other commands.

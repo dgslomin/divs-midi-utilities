@@ -227,6 +227,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteG, this, SEQER_ID_INSERT_NOTE_G);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnNextMarker, this, SEQER_ID_NEXT_MARKER);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreviousMarker, this, SEQER_ID_PREVIOUS_MARKER);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnGoToMarker, this, SEQER_ID_GO_TO_MARKER);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreferences, this, wxID_PREFERENCES);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
 	this->Bind(wxEVT_CHAR_HOOK, &Window::OnKeyPress, this);
@@ -398,6 +399,18 @@ void Window::OnNextMarker(wxCommandEvent& WXUNUSED(event))
 void Window::OnPreviousMarker(wxCommandEvent& WXUNUSED(event))
 {
 	this->sequence_editor->GoToPreviousMarker();
+}
+
+void Window::OnGoToMarker(wxCommandEvent& WXUNUSED(event))
+{
+	wxTextEntryDialog* dialog = new wxTextEntryDialog(this, "Name", "Go to Marker");
+
+	if (dialog->ShowModal() == wxID_OK)
+	{
+		this->sequence_editor->GoToMarker(dialog->GetValue());
+	}
+
+	dialog->Destroy();
 }
 
 void Window::OnPreferences(wxCommandEvent& WXUNUSED(event))

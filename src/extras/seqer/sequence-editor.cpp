@@ -153,17 +153,75 @@ void SequenceEditor::GoToColumn(int column_number)
 
 void SequenceEditor::GoToNextMarker()
 {
-	// TODO
+	for (long row_number = this->current_row_number + 1; row_number < this->rows.size(); row_number++)
+	{
+		if (MidiFileEvent_isMarkerEvent(this->rows[row_number].event))
+		{
+			this->SetCurrentRowNumber(row_number);
+			return;
+		}
+	}
+
+	long current_tick = this->GetTickFromRowNumber(this->current_row_number);
+
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(MidiFile_getFirstTrack(this->sequence->midi_file)); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isMarkerEvent(event))
+		{
+			long tick = MidiFileEvent_getTick(event);
+
+			if (tick > current_tick)
+			{
+				this->SetCurrentRowNumber(this->GetRowNumberFromTick(tick));
+				return;
+			}
+		}
+	}
 }
 
 void SequenceEditor::GoToPreviousMarker()
 {
-	// TODO
+	for (long row_number = std::min<long>(this->current_row_number, this->rows.size()) - 1; row_number >= 0; row_number--)
+	{
+		if (MidiFileEvent_isMarkerEvent(this->rows[row_number].event))
+		{
+			this->SetCurrentRowNumber(row_number);
+			return;
+		}
+	}
+
+	long current_tick = this->GetTickFromRowNumber(this->current_row_number);
+
+	for (MidiFileEvent_t event = MidiFileTrack_getLastEvent(MidiFile_getFirstTrack(this->sequence->midi_file)); event != NULL; event = MidiFileEvent_getPreviousEventInTrack(event))
+	{
+		if (MidiFileEvent_isMarkerEvent(event))
+		{
+ 			long tick = MidiFileEvent_getTick(event);
+
+			if (tick < current_tick)
+			{
+				this->SetCurrentRowNumber(this->GetRowNumberFromTick(tick));
+				return;
+			}
+		}
+	}
 }
 
 void SequenceEditor::GoToMarker(wxString marker_name)
 {
-	// TODO
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		MidiFileEvent_t event = rows[row_number].event;
+
+		if (MidiFileEvent_isMarkerEvent(event) && (marker_name.Cmp(MidiFileMarkerEvent_getText(event)) == 0))
+		{
+			this->SetCurrentRowNumber(row_number);
+			return;
+		}
+	}
+
+	long tick = MidiFile_getTickFromMarker(this->sequence->midi_file, (char *)(marker_name.ToStdString().c_str()));
+	if (tick >= 0) this->SetCurrentRowNumber(this->GetRowNumberFromTick(tick));
 }
 
 void SequenceEditor::InsertNote(int diatonic)
@@ -987,6 +1045,23 @@ long SequenceEditor::GetTickFromRowNumber(long row_number)
 	}
 
 	return this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number));
+}
+
+long SequenceEditor::GetRowNumberFromTick(long tick)
+{
+	long step_number = this->GetStepNumberFromTick(tick);
+	long first_row_number = this->GetFirstRowNumberFromStepNumber(step_number);
+	long last_row_number = this->GetLastRowNumberFromStepNumber(step_number);
+
+	if (first_row_number < this->rows.size())
+	{
+		for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
+		{
+			if (MidiFileEvent_getTick(this->rows[row_number].event) >= tick) return row_number;
+		}
+	}
+
+	return first_row_number;
 }
 
 long SequenceEditor::GetNumberOfTicksPerPixel(long step_number)
