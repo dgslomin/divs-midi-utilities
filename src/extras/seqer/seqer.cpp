@@ -206,6 +206,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallDecrease, this, SEQER_ID_SMALL_DECREASE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeIncrease, this, SEQER_ID_LARGE_INCREASE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeDecrease, this, SEQER_ID_LARGE_DECREASE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnQuantize, this, SEQER_ID_QUANTIZE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn2, this, SEQER_ID_EDIT_COLUMN_2);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn3, this, SEQER_ID_EDIT_COLUMN_3);
@@ -292,6 +293,11 @@ void Window::OnLargeIncrease(wxCommandEvent& WXUNUSED(event))
 void Window::OnLargeDecrease(wxCommandEvent& WXUNUSED(event))
 {
 	this->sequence_editor->LargeDecrease();
+}
+
+void Window::OnQuantize(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->Quantize();
 }
 
 void Window::OnColumn1(wxCommandEvent& WXUNUSED(event))

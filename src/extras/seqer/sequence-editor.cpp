@@ -421,6 +421,22 @@ void SequenceEditor::LargeIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 1:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long step_number = this->GetStepNumberFromTick(tick);
+					long step_tick = this->step_size->GetTickFromStep(step_number);
+					long new_step_tick = this->step_size->GetTickFromStep(step_number + 1);
+					long new_tick = new_step_tick + (tick - step_tick);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick + (new_tick - tick);
+					MidiFileEvent_setTick(event, new_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+					break;
+				}
 				case 2:
 				{
 					this->insertion_track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1;
@@ -448,6 +464,18 @@ void SequenceEditor::LargeIncrease()
 				{
 					this->insertion_velocity = std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 8, 127);
 					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
+					this->RefreshData();
+					break;
+				}
+				case 6:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long end_step_number = this->GetStepNumberFromTick(end_tick);
+					long end_step_tick = this->step_size->GetTickFromStep(end_step_number);
+					long new_end_step_tick = this->step_size->GetTickFromStep(end_step_number + 1);
+					long new_end_tick = new_end_step_tick + (end_tick - end_step_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
 					this->RefreshData();
 					break;
 				}
@@ -533,6 +561,22 @@ void SequenceEditor::LargeDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 1:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long step_number = this->GetStepNumberFromTick(tick);
+					long step_tick = this->step_size->GetTickFromStep(step_number);
+					long new_step_tick = this->step_size->GetTickFromStep(std::max<long>(step_number - 1, 0));
+					long new_tick = new_step_tick + (tick - step_tick);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick - (tick - new_tick);
+					MidiFileEvent_setTick(event, new_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+					break;
+				}
 				case 2:
 				{
 					this->insertion_track_number = std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0);
@@ -563,11 +607,120 @@ void SequenceEditor::LargeDecrease()
 					this->RefreshData();
 					break;
 				}
+				case 6:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long end_step_number = this->GetStepNumberFromTick(end_tick);
+					long end_step_tick = this->step_size->GetTickFromStep(end_step_number);
+					long new_end_step_tick = this->step_size->GetTickFromStep(end_step_number - 1);
+					long new_end_tick = std::max<long>(new_end_step_tick + (end_tick - end_step_tick), tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					break;
+				}
 				case 7:
 				{
 					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 					this->insertion_end_velocity = std::max<int>(MidiFileNoteEndEvent_getVelocity(end_event) - 8, 0);
 					MidiFileNoteEndEvent_setVelocity(end_event, this->insertion_end_velocity);
+					this->RefreshData();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			break;
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			break;
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			break;
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			break;
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			break;
+		}
+		case EVENT_TYPE_PORT:
+		{
+			break;
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			break;
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			break;
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void SequenceEditor::Quantize()
+{
+	if (this->current_row_number >= this->rows.size()) return;
+	MidiFileEvent_t event = this->rows[this->current_row_number].event;
+
+	switch (this->GetEventType(event))
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromTick(tick));
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick - (tick - new_tick);
+					MidiFileEvent_setTick(event, new_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+					break;
+				}
+				case 6:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromTick(end_tick) + 1);
+					MidiFileEvent_setTick(end_event, new_end_tick);
 					this->RefreshData();
 					break;
 				}

@@ -83,6 +83,7 @@ public:
 	void SmallDecrease();
 	void LargeIncrease();
 	void LargeDecrease();
+	void Quantize();
 
 	void RefreshData();
 	void OnDraw(wxDC& dc);

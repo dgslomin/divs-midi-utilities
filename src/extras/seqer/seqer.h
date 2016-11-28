@@ -39,6 +39,7 @@ public:
 	void OnSmallDecrease(wxCommandEvent& event);
 	void OnLargeIncrease(wxCommandEvent& event);
 	void OnLargeDecrease(wxCommandEvent& event);
+	void OnQuantize(wxCommandEvent& event);
 	void OnColumn1(wxCommandEvent& event);
 	void OnColumn2(wxCommandEvent& event);
 	void OnColumn3(wxCommandEvent& event);
