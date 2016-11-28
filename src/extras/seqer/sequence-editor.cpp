@@ -197,6 +197,19 @@ void SequenceEditor::SmallIncrease()
 		{
 			switch (current_column_number)
 			{
+				case 1:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = tick + this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(tick));
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick + (new_tick - tick);
+					MidiFileEvent_setTick(event, new_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+					break;
+				}
 				case 2:
 				{
 					this->insertion_track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) + 1;
@@ -224,6 +237,15 @@ void SequenceEditor::SmallIncrease()
 				{
 					this->insertion_velocity = std::min<int>(MidiFileNoteStartEvent_getVelocity(event) + 1, 127);
 					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
+					this->RefreshData();
+					break;
+				}
+				case 6:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick + this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(end_tick));
+					MidiFileEvent_setTick(end_event, new_end_tick);
 					this->RefreshData();
 					break;
 				}
@@ -309,6 +331,19 @@ void SequenceEditor::SmallDecrease()
 		{
 			switch (current_column_number)
 			{
+				case 1:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = std::max<long>(tick - this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(tick)), 0);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = end_tick - (tick - new_tick);
+					MidiFileEvent_setTick(event, new_tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+					break;
+				}
 				case 2:
 				{
 					this->insertion_track_number = std::max<int>(MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)) - 1, 0);
@@ -336,6 +371,16 @@ void SequenceEditor::SmallDecrease()
 				{
 					this->insertion_velocity = std::max<int>(MidiFileNoteStartEvent_getVelocity(event) - 1, 1);
 					MidiFileNoteStartEvent_setVelocity(event, this->insertion_velocity);
+					this->RefreshData();
+					break;
+				}
+				case 6:
+				{
+					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					long tick = MidiFileEvent_getTick(event);
+					long end_tick = MidiFileEvent_getTick(end_event);
+					long new_end_tick = std::max<long>(end_tick - this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(end_tick)), tick);
+					MidiFileEvent_setTick(end_event, new_end_tick);
 					this->RefreshData();
 					break;
 				}
@@ -942,6 +987,14 @@ long SequenceEditor::GetTickFromRowNumber(long row_number)
 	}
 
 	return this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number));
+}
+
+long SequenceEditor::GetNumberOfTicksPerPixel(long step_number)
+{
+	long step_tick = this->step_size->GetTickFromStep(step_number);
+	long next_step_tick = this->step_size->GetTickFromStep(step_number + 1);
+	long number_of_rows = this->GetLastRowNumberFromStepNumber(step_number) - this->GetFirstRowNumberFromStepNumber(step_number) + 1;
+	return std::max<long>((next_step_tick - step_tick) / (number_of_rows * this->event_list->row_height), 1);
 }
 
 long SequenceEditor::GetRowNumberForEvent(MidiFileEvent_t event)
