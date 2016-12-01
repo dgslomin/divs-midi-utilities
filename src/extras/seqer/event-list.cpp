@@ -413,10 +413,6 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					{
 						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
 					}
-					case 2:
-					{
-						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
-					}
 					case 4:
 					{
 						return wxString(MidiFileMarkerEvent_getText(row.event));
@@ -465,10 +461,6 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					{
 						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
 					}
-					case 2:
-					{
-						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
-					}
 					case 4:
 					{
 						return wxString::Format("%5.3f", MidiFileTempoEvent_getTempo(row.event));
@@ -491,10 +483,6 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					{
 						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
 					}
-					case 2:
-					{
-						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
-					}
 					case 4:
 					{
 						return wxString::Format("%d/%d", MidiFileTimeSignatureEvent_getNumerator(row.event), MidiFileTimeSignatureEvent_getDenominator(row.event));
@@ -516,10 +504,6 @@ wxString EventList::GetCellText(long row_number, long column_number)
 					case 1:
 					{
 						return this->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row.event));
-					}
-					case 2:
-					{
-						return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row.event)));
 					}
 					case 4:
 					{

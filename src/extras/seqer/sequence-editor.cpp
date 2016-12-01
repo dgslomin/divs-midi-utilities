@@ -585,6 +585,41 @@ void SequenceEditor::SmallIncrease()
 
 			break;
 		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = tick + this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(tick));
+					MidiFileEvent_setTick(event, new_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+					this->sequence->undo_command_processor->Submit(new UndoCommand(
+						[=]{
+							MidiFileEvent_setTick(event, tick);
+							this->RefreshData();
+						},
+						NULL,
+						[=]{
+							MidiFileEvent_setTick(event, new_tick);
+							this->RefreshData();
+						},
+						NULL
+					));
+
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
 		default:
 		{
 			break;
@@ -762,6 +797,41 @@ void SequenceEditor::SmallDecrease()
 						NULL,
 						[=]{
 							MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
+							this->RefreshData();
+						},
+						NULL
+					));
+
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = std::max<long>(tick - this->GetNumberOfTicksPerPixel(this->GetStepNumberFromTick(tick)), 0);
+					MidiFileEvent_setTick(event, new_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+					this->sequence->undo_command_processor->Submit(new UndoCommand(
+						[=]{
+							MidiFileEvent_setTick(event, tick);
+							this->RefreshData();
+						},
+						NULL,
+						[=]{
+							MidiFileEvent_setTick(event, new_tick);
 							this->RefreshData();
 						},
 						NULL
@@ -976,6 +1046,44 @@ void SequenceEditor::LargeIncrease()
 
 			break;
 		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					long tick = MidiFileEvent_getTick(event);
+					long step_number = this->GetStepNumberFromTick(tick);
+					long step_tick = this->step_size->GetTickFromStep(step_number);
+					long new_step_tick = this->step_size->GetTickFromStep(step_number + 1);
+					long new_tick = new_step_tick + (tick - step_tick);
+					MidiFileEvent_setTick(event, new_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+					this->sequence->undo_command_processor->Submit(new UndoCommand(
+						[=]{
+							MidiFileEvent_setTick(event, tick);
+							this->RefreshData();
+						},
+						NULL,
+						[=]{
+							MidiFileEvent_setTick(event, new_tick);
+							this->RefreshData();
+						},
+						NULL
+					));
+
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
 		default:
 		{
 			break;
@@ -1175,6 +1283,44 @@ void SequenceEditor::LargeDecrease()
 
 			break;
 		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					long tick = MidiFileEvent_getTick(event);
+					long step_number = this->GetStepNumberFromTick(tick);
+					long step_tick = this->step_size->GetTickFromStep(step_number);
+					long new_step_tick = this->step_size->GetTickFromStep(std::max<long>(step_number - 1, 0));
+					long new_tick = new_step_tick + (tick - step_tick);
+					MidiFileEvent_setTick(event, new_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+					this->sequence->undo_command_processor->Submit(new UndoCommand(
+						[=]{
+							MidiFileEvent_setTick(event, tick);
+							this->RefreshData();
+						},
+						NULL,
+						[=]{
+							MidiFileEvent_setTick(event, new_tick);
+							this->RefreshData();
+						},
+						NULL
+					));
+
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
 		default:
 		{
 			break;
@@ -1239,6 +1385,41 @@ void SequenceEditor::Quantize()
 						NULL,
 						[=]{
 							MidiFileEvent_setTick(end_event, new_end_tick);
+							this->RefreshData();
+						},
+						NULL
+					));
+
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (current_column_number)
+			{
+				case 1:
+				{
+					long tick = MidiFileEvent_getTick(event);
+					long new_tick = this->step_size->GetTickFromStep(this->GetStepNumberFromTick(tick));
+					MidiFileEvent_setTick(event, new_tick);
+					this->RefreshData();
+					this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+					this->sequence->undo_command_processor->Submit(new UndoCommand(
+						[=]{
+							MidiFileEvent_setTick(event, tick);
+							this->RefreshData();
+						},
+						NULL,
+						[=]{
+							MidiFileEvent_setTick(event, new_tick);
 							this->RefreshData();
 						},
 						NULL

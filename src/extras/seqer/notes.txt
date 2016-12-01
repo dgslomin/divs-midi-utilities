@@ -61,7 +61,6 @@ TODO:
 	piano roll
 		mouse support for select
 	selection/clipboard infrastructure
-	undo/redo infrastructure
 	multi-window infrastructure
 	realtime MIDI infrastructure
 		mapping from port name strings (arbitrarily user-selectable) to actual output ports
