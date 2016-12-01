@@ -201,6 +201,8 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileNew, this, wxID_NEW);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnUndo, this, wxID_UNDO);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnRedo, this, wxID_REDO);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnDelete, this, wxID_DELETE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnEnterValue, this, SEQER_ID_ENTER_VALUE);
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallIncrease, this, SEQER_ID_SMALL_INCREASE);
@@ -271,6 +273,16 @@ void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
 void Window::OnClose(wxCommandEvent& WXUNUSED(event))
 {
 	this->Close(true);
+}
+
+void Window::OnUndo(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->sequence->undo_command_processor->Undo();
+}
+
+void Window::OnRedo(wxCommandEvent& WXUNUSED(event))
+{
+	this->sequence_editor->sequence->undo_command_processor->Redo();
 }
 
 void Window::OnDelete(wxCommandEvent& WXUNUSED(event))

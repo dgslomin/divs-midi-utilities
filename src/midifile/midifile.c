@@ -2120,7 +2120,7 @@ int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallbac
 int MidiFileEvent_delete(MidiFileEvent_t event)
 {
 	if (event == NULL) return -1;
-	remove_event(event);
+	if (event->track != NULL) remove_event(event);
 
 	switch (event->type)
 	{
@@ -2144,6 +2144,23 @@ int MidiFileEvent_delete(MidiFileEvent_t event)
 	return 0;
 }
 
+int MidiFileEvent_detach(MidiFileEvent_t event)
+{
+	if (event == NULL) return -1;
+
+	if (event->track != NULL)
+	{
+		remove_event(event);
+		event->track = NULL;
+		event->previous_event_in_track = NULL;
+		event->next_event_in_track = NULL;
+		event->previous_event_in_file = NULL;
+		event->next_event_in_file = NULL;
+	}
+
+	return 0;
+}
+
 MidiFileTrack_t MidiFileEvent_getTrack(MidiFileEvent_t event)
 {
 	if (event == NULL) return NULL;
@@ -2156,7 +2173,7 @@ int MidiFileEvent_setTrack(MidiFileEvent_t event, MidiFileTrack_t track)
 
 	if (event->track != track)
 	{
-		remove_event(event);
+		if (event->track != NULL) remove_event(event);
 		event->track = track;
 		add_event(event);
 	}
@@ -2207,9 +2224,9 @@ long MidiFileEvent_getTick(MidiFileEvent_t event)
 int MidiFileEvent_setTick(MidiFileEvent_t event, long tick)
 {
 	if (event == NULL) return -1;
-	remove_event(event);
+	if (event->track != NULL) remove_event(event);
 	event->tick = tick;
-	add_event(event);
+	if (event->track != NULL) add_event(event);
 	return 0;
 }
 
@@ -2811,9 +2828,9 @@ int MidiFileNoteEndEvent_setVelocity(MidiFileEvent_t event, int velocity)
 		}
 		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 		{
-			MidiFileTrack_createNoteOffEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), velocity);
-			MidiFileEvent_delete(event);
-			return 0;
+			if (velocity == 0) return 0;
+			event->type = MIDI_FILE_EVENT_TYPE_NOTE_OFF;
+			return MidiFileNoteOffEvent_setVelocity(event, velocity);
 		}
 		default:
 		{

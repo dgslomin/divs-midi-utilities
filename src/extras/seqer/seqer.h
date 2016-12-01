@@ -34,6 +34,8 @@ public:
 	void OnFileNew(wxCommandEvent& event);
 	void OnFileOpen(wxCommandEvent& event);
 	void OnClose(wxCommandEvent& event);
+	void OnUndo(wxCommandEvent& event);
+	void OnRedo(wxCommandEvent& event);
 	void OnDelete(wxCommandEvent& event);
 	void OnEnterValue(wxCommandEvent& event);
 	void OnSmallIncrease(wxCommandEvent& event);

@@ -1,19 +1,19 @@
 
-WXDIR=$(HOME)/opt/wxWidgets-3.0.1
-WXCONFIG=$(WXDIR)/bin/wx-config
+WXCONFIG=wx-config
 CC=`$(WXCONFIG) --cc`
 CFLAGS=`$(WXCONFIG) --cflags`
 CXX=`$(WXCONFIG) --cxx`
-CXXFLAGS=`$(WXCONFIG) --cxxflags`
+EXTRA_CXXFLAGS=-std=c++11
+CXXFLAGS=`$(WXCONFIG) --cxxflags` $(EXTRA_CXXFLAGS)
 LD=`$(WXCONFIG) --ld`
 LIBS=`$(WXCONFIG) --libs`
 
-#ifeq (`uname -s`, "Darwin")
+ifeq ("$(shell uname -s)", "Darwin")
 Seqer.app/Contents/MacOS/Seqer: seqer
 	-mkdir -p Seqer.app/Contents/MacOS
 	cp seqer Seqer.app/Contents/MacOS/Seqer
 	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
-#endif
+endif
 
 seqer: seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o
 	$(LD) seqer seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o $(LIBS)

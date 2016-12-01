@@ -3,7 +3,7 @@
 
 /*
  * Div's Standard MIDI File API
- * Copyright 2003-2015 by David G. Slomin
+ * Copyright 2003-2016 by David G. Slomin
  * Provided under the terms of the BSD license
  *
  * Usage notes:
@@ -14,7 +14,7 @@
  * 2.  MIDI files in formats 0, 1, and 2 are supported, but the caller is
  *     responsible for placing events into the appropriate tracks.  Format
  *     0 files should only use a single track.  Format 1 files use their
- *     first track as a "conductor track" for meta events like tempo and 
+ *     first track as a "conductor track" for meta events like tempo and
  *     meter changes.
  *
  * 3.  MidiFile_visitEvents() and MidiFileTrack_visitEvents() are specially
@@ -31,9 +31,9 @@
  *     tracks at once in an interwoven, time-sorted manner.
  *
  * 7.  Because a note on event with a velocity of zero is functionally
- *     equivalent to a note off event, you cannot simply look at the type of 
+ *     equivalent to a note off event, you cannot simply look at the type of
  *     an event to see whether it signifies the start or the end of a note.
- *     To handle this problem, convenience wrappers are provided for pseudo 
+ *     To handle this problem, convenience wrappers are provided for pseudo
  *     "note start" and "note end" events.
  *
  * 8.  Convenience functions are provided for working with tempo, absolute
@@ -51,6 +51,11 @@
  *     commonly displayed to the user.  Channels range from 0 to 15, notes
  *     range from 0 to 127, etc.  The only exception is in the musical time
  *     functions.
+ *
+ * 12. An event can be "detached", which means that it is no longer part of
+ *     a track or the file, but retains the rest of its properties.  It can
+ *     be reattached to the same or a different file by setting its track
+ *     property, or explicitly deleted.
  */
 
 #ifdef __cplusplus
@@ -174,6 +179,7 @@ MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
 int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
 
 int MidiFileEvent_delete(MidiFileEvent_t event);
+int MidiFileEvent_detach(MidiFileEvent_t event);
 MidiFileTrack_t MidiFileEvent_getTrack(MidiFileEvent_t event);
 int MidiFileEvent_setTrack(MidiFileEvent_t event, MidiFileTrack_t track);
 MidiFileEvent_t MidiFileEvent_getPreviousEvent(MidiFileEvent_t event); /* deprecated:  use MidiFileEvent_getPreviousEventInTrack() */

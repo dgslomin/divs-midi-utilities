@@ -6,9 +6,12 @@ class Sequence;
 class Row;
 class Step;
 class RowLocator;
+class UndoCommand;
 
+#include <functional>
 #include <vector>
 #include <wx/wx.h>
+#include <wx/cmdproc.h>
 #include <midifile.h>
 #include "seqer.h"
 #include "event-list.h"
@@ -117,6 +120,7 @@ class Sequence
 {
 public:
 	SequenceEditor* sequence_editor;
+	wxCommandProcessor* undo_command_processor;
 	MidiFile_t midi_file;
 
 	Sequence(SequenceEditor* sequence_editor);
@@ -146,6 +150,21 @@ class RowLocator
 public:
 	MidiFileEvent_t event;
 	long tick;
+};
+
+class UndoCommand: public wxCommand
+{
+public:
+	std::function<void ()> undo_callback;
+	std::function<void ()> cleanup_when_undone_callback;
+	std::function<void ()> redo_callback;
+	std::function<void ()> cleanup_when_done_callback;
+	bool has_been_undone;
+
+	UndoCommand(std::function<void ()> undo_callback, std::function<void ()> cleanup_when_undone_callback, std::function<void ()> redo_callback, std::function<void ()> cleanup_when_done_callback);
+	~UndoCommand();
+	bool Do();
+	bool Undo();
 };
 
 #endif
