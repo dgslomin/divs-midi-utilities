@@ -1,4 +1,5 @@
 
+#include <functional>
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
@@ -197,44 +198,262 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		menu_bar->Append(help_menu, "&Help");
 	this->SetMenuBar(menu_bar);
 
-	this->Bind(wxEVT_MENU_HIGHLIGHT, &Window::OnMenuHighlight, this);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileNew, this, wxID_NEW);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFileOpen, this, wxID_OPEN);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnClose, this, wxID_CLOSE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnUndo, this, wxID_UNDO);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnRedo, this, wxID_REDO);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnDelete, this, wxID_DELETE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnEnterValue, this, SEQER_ID_ENTER_VALUE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallIncrease, this, SEQER_ID_SMALL_INCREASE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnSmallDecrease, this, SEQER_ID_SMALL_DECREASE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeIncrease, this, SEQER_ID_LARGE_INCREASE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnLargeDecrease, this, SEQER_ID_LARGE_DECREASE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnQuantize, this, SEQER_ID_QUANTIZE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn1, this, SEQER_ID_EDIT_COLUMN_1);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn2, this, SEQER_ID_EDIT_COLUMN_2);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn3, this, SEQER_ID_EDIT_COLUMN_3);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn4, this, SEQER_ID_EDIT_COLUMN_4);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn5, this, SEQER_ID_EDIT_COLUMN_5);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn6, this, SEQER_ID_EDIT_COLUMN_6);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnColumn7, this, SEQER_ID_EDIT_COLUMN_7);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomIn, this, wxID_ZOOM_IN);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnZoomOut, this, wxID_ZOOM_OUT);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnStepSize, this, SEQER_ID_STEP_SIZE);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnFilter, this, SEQER_ID_FILTER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteA, this, SEQER_ID_INSERT_NOTE_A);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteB, this, SEQER_ID_INSERT_NOTE_B);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteC, this, SEQER_ID_INSERT_NOTE_C);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteD, this, SEQER_ID_INSERT_NOTE_D);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteE, this, SEQER_ID_INSERT_NOTE_E);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteF, this, SEQER_ID_INSERT_NOTE_F);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertNoteG, this, SEQER_ID_INSERT_NOTE_G);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnInsertMarker, this, SEQER_ID_INSERT_MARKER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnNextMarker, this, SEQER_ID_NEXT_MARKER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreviousMarker, this, SEQER_ID_PREVIOUS_MARKER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnGoToMarker, this, SEQER_ID_GO_TO_MARKER);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnPreferences, this, wxID_PREFERENCES);
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, &Window::OnAbout, this, wxID_ABOUT);
-	this->Bind(wxEVT_CHAR_HOOK, &Window::OnKeyPress, this);
+	// This prevents the default behavior of showing unhelpful help text in the status bar when the user navigates the menu.
+	this->Bind(wxEVT_MENU_HIGHLIGHT, [=](wxMenuEvent&) {});
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->New();
+	}, wxID_NEW);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		wxFileDialog* file_dialog = new wxFileDialog(this, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+		if (file_dialog->ShowModal() == wxID_OK)
+		{
+			if (!this->sequence_editor->Load(file_dialog->GetPath()))
+			{
+				wxMessageBox("Cannot open the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
+			}
+		}
+
+		delete file_dialog;
+	}, wxID_OPEN);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->Close(true);
+	}, wxID_CLOSE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->sequence->undo_command_processor->Undo();
+	}, wxID_UNDO);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->sequence->undo_command_processor->Redo();
+	}, wxID_REDO);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->DeleteRow();
+	}, wxID_DELETE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->EnterValue();
+	}, SEQER_ID_ENTER_VALUE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->SmallIncrease();
+	}, SEQER_ID_SMALL_INCREASE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->SmallDecrease();
+	}, SEQER_ID_SMALL_DECREASE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->LargeIncrease();
+	}, SEQER_ID_LARGE_INCREASE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->LargeDecrease();
+	}, SEQER_ID_LARGE_DECREASE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->Quantize();
+	}, SEQER_ID_QUANTIZE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(1);
+	}, SEQER_ID_EDIT_COLUMN_1);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(2);
+	}, SEQER_ID_EDIT_COLUMN_2);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(3);
+	}, SEQER_ID_EDIT_COLUMN_3);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(4);
+	}, SEQER_ID_EDIT_COLUMN_4);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(5);
+	}, SEQER_ID_EDIT_COLUMN_5);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(6);
+	}, SEQER_ID_EDIT_COLUMN_6);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToColumn(7);
+	}, SEQER_ID_EDIT_COLUMN_7);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->ZoomIn();
+	}, wxID_ZOOM_IN);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->ZoomOut();
+	}, wxID_ZOOM_OUT);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		StepSizeDialog::Run(this);
+	}, SEQER_ID_STEP_SIZE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		FilterDialog::Run(this);
+	}, SEQER_ID_FILTER);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(5);
+	}, SEQER_ID_INSERT_NOTE_A);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(6);
+	}, SEQER_ID_INSERT_NOTE_B);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(0);
+	}, SEQER_ID_INSERT_NOTE_C);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(1);
+	}, SEQER_ID_INSERT_NOTE_D);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(2);
+	}, SEQER_ID_INSERT_NOTE_E);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(3);
+	}, SEQER_ID_INSERT_NOTE_F);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertNote(4);
+	}, SEQER_ID_INSERT_NOTE_G);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->InsertMarker();
+	}, SEQER_ID_INSERT_MARKER);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToNextMarker();
+	}, SEQER_ID_NEXT_MARKER);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->GoToPreviousMarker();
+	}, SEQER_ID_PREVIOUS_MARKER);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		wxTextEntryDialog* dialog = new wxTextEntryDialog(this, "Name", "Go to Marker");
+
+		if (dialog->ShowModal() == wxID_OK)
+		{
+			this->sequence_editor->GoToMarker(dialog->GetValue());
+		}
+
+		dialog->Destroy();
+	}, SEQER_ID_GO_TO_MARKER);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		PreferencesDialog::Run(this);
+	}, wxID_PREFERENCES);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
+	}, wxID_ABOUT);
+
+	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {
+		if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->RowUp();
+		}
+		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->RowDown();
+		}
+		else if ((event.GetKeyCode() == WXK_PAGEUP) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->PageUp();
+		}
+		else if ((event.GetKeyCode() == WXK_PAGEDOWN) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->PageDown();
+		}
+		else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToFirstRow();
+		}
+		else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToLastRow();
+		}
+		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->ColumnLeft();
+		}
+		else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->ColumnRight();
+		}
+		else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->GoToColumn(1);
+		}
+		else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
+		{
+			this->sequence_editor->GoToColumn(7);
+		}
+#ifdef __WXOSX__
+		else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
+		{
+			this->sequence_editor->PageUp();
+		}
+		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_ALT))
+		{
+			this->sequence_editor->PageDown();
+		}
+		else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToFirstRow();
+		}
+		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToLastRow();
+		}
+		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToColumn(1);
+		}
+		else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
+		{
+			this->sequence_editor->GoToColumn(7);
+		}
+#endif
+		else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
+		{
+			// make ctrl+plus ignore whether shift is pressed
+			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
+		}
+		else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
+		{
+			// make ctrl+minus ignore whether shift is pressed
+			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
+		}
+		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_SHIFT))
+		{
+			// make shift+left be a synonym for shift+right
+			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));
+		}
+		else if (event.GetKeyCode() == WXK_BACK)
+		{
+			// make backspace be a synonym for delete
+			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_DELETE));
+		}
+		else
+		{
+			event.Skip();
+		}
+	});
 
 	this->sequence_editor = new SequenceEditor(this);
 	this->CreateStatusBar();
@@ -243,302 +462,6 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 Window::~Window()
 {
 	delete this->sequence_editor;
-}
-
-void Window::OnMenuHighlight(wxMenuEvent& WXUNUSED(event))
-{
-	// This prevents the default behavior of showing unhelpful help text in the status bar when the user navigates the menu.
-}
-
-void Window::OnFileNew(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->New();
-}
-
-void Window::OnFileOpen(wxCommandEvent& WXUNUSED(event))
-{
-	wxFileDialog* file_dialog = new wxFileDialog(this, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
-	if (file_dialog->ShowModal() == wxID_OK)
-	{
-		if (!this->sequence_editor->Load(file_dialog->GetPath()))
-		{
-			wxMessageBox("Cannot open the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
-		}
-	}
-
-	delete file_dialog;
-}
-
-void Window::OnClose(wxCommandEvent& WXUNUSED(event))
-{
-	this->Close(true);
-}
-
-void Window::OnUndo(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->sequence->undo_command_processor->Undo();
-}
-
-void Window::OnRedo(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->sequence->undo_command_processor->Redo();
-}
-
-void Window::OnDelete(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->DeleteRow();
-}
-
-void Window::OnEnterValue(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->EnterValue();
-}
-
-void Window::OnSmallIncrease(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->SmallIncrease();
-}
-
-void Window::OnSmallDecrease(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->SmallDecrease();
-}
-
-void Window::OnLargeIncrease(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->LargeIncrease();
-}
-
-void Window::OnLargeDecrease(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->LargeDecrease();
-}
-
-void Window::OnQuantize(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->Quantize();
-}
-
-void Window::OnColumn1(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(1);
-}
-
-void Window::OnColumn2(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(2);
-}
-
-void Window::OnColumn3(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(3);
-}
-
-void Window::OnColumn4(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(4);
-}
-
-void Window::OnColumn5(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(5);
-}
-
-void Window::OnColumn6(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(6);
-}
-
-void Window::OnColumn7(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToColumn(7);
-}
-
-void Window::OnZoomIn(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->ZoomIn();
-}
-
-void Window::OnZoomOut(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->ZoomOut();
-}
-
-void Window::OnStepSize(wxCommandEvent& WXUNUSED(event))
-{
-	StepSizeDialog::Run(this);
-}
-
-void Window::OnFilter(wxCommandEvent& WXUNUSED(event))
-{
-	FilterDialog::Run(this);
-}
-
-void Window::OnInsertNoteA(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(5);
-}
-
-void Window::OnInsertNoteB(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(6);
-}
-
-void Window::OnInsertNoteC(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(0);
-}
-
-void Window::OnInsertNoteD(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(1);
-}
-
-void Window::OnInsertNoteE(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(2);
-}
-
-void Window::OnInsertNoteF(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(3);
-}
-
-void Window::OnInsertNoteG(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertNote(4);
-}
-
-void Window::OnInsertMarker(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->InsertMarker();
-}
-
-void Window::OnNextMarker(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToNextMarker();
-}
-
-void Window::OnPreviousMarker(wxCommandEvent& WXUNUSED(event))
-{
-	this->sequence_editor->GoToPreviousMarker();
-}
-
-void Window::OnGoToMarker(wxCommandEvent& WXUNUSED(event))
-{
-	wxTextEntryDialog* dialog = new wxTextEntryDialog(this, "Name", "Go to Marker");
-
-	if (dialog->ShowModal() == wxID_OK)
-	{
-		this->sequence_editor->GoToMarker(dialog->GetValue());
-	}
-
-	dialog->Destroy();
-}
-
-void Window::OnPreferences(wxCommandEvent& WXUNUSED(event))
-{
-	PreferencesDialog::Run(this);
-}
-
-void Window::OnAbout(wxCommandEvent& WXUNUSED(event))
-{
-	wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
-}
-
-void Window::OnKeyPress(wxKeyEvent& event)
-{
-	if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->RowUp();
-	}
-	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->RowDown();
-	}
-	else if ((event.GetKeyCode() == WXK_PAGEUP) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->PageUp();
-	}
-	else if ((event.GetKeyCode() == WXK_PAGEDOWN) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->PageDown();
-	}
-	else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToFirstRow();
-	}
-	else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToLastRow();
-	}
-	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->ColumnLeft();
-	}
-	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->ColumnRight();
-	}
-	else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->GoToColumn(1);
-	}
-	else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
-	{
-		this->sequence_editor->GoToColumn(7);
-	}
-#ifdef __WXOSX__
-	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
-	{
-		this->sequence_editor->PageUp();
-	}
-	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_ALT))
-	{
-		this->sequence_editor->PageDown();
-	}
-	else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToFirstRow();
-	}
-	else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToLastRow();
-	}
-	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToColumn(1);
-	}
-	else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
-	{
-		this->sequence_editor->GoToColumn(7);
-	}
-#endif
-	else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
-	{
-		// make ctrl+plus ignore whether shift is pressed
-		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
-	}
-	else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
-	{
-		// make ctrl+minus ignore whether shift is pressed
-		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
-	}
-	else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_SHIFT))
-	{
-		// make shift+left be a synonym for shift+right
-		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));
-	}
-	else if (event.GetKeyCode() == WXK_BACK)
-	{
-		// make backspace be a synonym for delete
-		wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_DELETE));
-	}
-	else
-	{
-		event.Skip();
-	}
 }
 
 void StepSizeDialog::Run(Window* window)
@@ -651,8 +574,32 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxStaticText* event_type_label = new wxStaticText(this, wxID_ANY, "&Event type");
 	event_type_sizer->Add(event_type_label, wxSizerFlags().Align(wxALIGN_CENTER));
-	event_type_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnEventTypeLabelClick, this);
-	event_type_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnEventTypeLabelClick, this);
+
+	std::function<void (wxMouseEvent&)> event_type_label_click_callback = [=](wxMouseEvent& event) {
+		int count = this->event_type_list_box->GetCount();
+		wxArrayInt selections;
+
+		if (this->event_type_list_box->GetSelections(selections) == count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->event_type_list_box->Deselect(i);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->event_type_list_box->SetSelection(i);
+			}
+		}
+
+		this->event_type_list_box->SetFocus();
+		event.Skip();
+	};
+
+	event_type_label->Bind(wxEVT_LEFT_DOWN, event_type_label_click_callback);
+	event_type_label->Bind(wxEVT_LEFT_DCLICK, event_type_label_click_callback);
 
 	wxArrayString event_type_names;
 	for (int i = 0; i < EVENT_TYPE_HIGHEST; i++) event_type_names.Add(this->window->sequence_editor->GetEventTypeName((EventType_t)(i)));
@@ -665,8 +612,32 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxStaticText* track_label = new wxStaticText(this, wxID_ANY, "&Track");
 	track_sizer->Add(track_label, wxSizerFlags().Align(wxALIGN_CENTER).Border(wxLEFT | wxRIGHT));
-	track_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnTrackLabelClick, this);
-	track_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnTrackLabelClick, this);
+
+	std::function<void (wxMouseEvent&)> track_label_click_callback = [=](wxMouseEvent& event) {
+		int count = this->track_list_box->GetCount();
+		wxArrayInt selections;
+
+		if (this->track_list_box->GetSelections(selections) == count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->track_list_box->Deselect(i);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->track_list_box->SetSelection(i);
+			}
+		}
+
+		this->track_list_box->SetFocus();
+		event.Skip();
+	};
+
+	track_label->Bind(wxEVT_LEFT_DOWN, track_label_click_callback);
+	track_label->Bind(wxEVT_LEFT_DCLICK, track_label_click_callback);
 
 	wxArrayString tracks;
 	for (int i = 0; i < MidiFile_getNumberOfTracks(this->window->sequence_editor->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
@@ -679,8 +650,32 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxStaticText* channel_label = new wxStaticText(this, wxID_ANY, "&Channel");
 	channel_sizer->Add(channel_label, wxSizerFlags().Align(wxALIGN_CENTER));
-	channel_label->Bind(wxEVT_LEFT_DOWN, &FilterDialog::OnChannelLabelClick, this);
-	channel_label->Bind(wxEVT_LEFT_DCLICK, &FilterDialog::OnChannelLabelClick, this);
+
+	std::function<void (wxMouseEvent&)> channel_label_click_callback = [=](wxMouseEvent& event) {
+		int count = this->channel_list_box->GetCount();
+		wxArrayInt selections;
+
+		if (this->channel_list_box->GetSelections(selections) == count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->channel_list_box->Deselect(i);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < count; i++)
+			{
+				this->channel_list_box->SetSelection(i);
+			}
+		}
+
+		this->channel_list_box->SetFocus();
+		event.Skip();
+	};
+
+	channel_label->Bind(wxEVT_LEFT_DOWN, channel_label_click_callback);
+	channel_label->Bind(wxEVT_LEFT_DCLICK, channel_label_click_callback);
 
 	wxArrayString channels;
 	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
@@ -692,78 +687,6 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
-}
-
-void FilterDialog::OnEventTypeLabelClick(wxMouseEvent& event)
-{
-	int count = this->event_type_list_box->GetCount();
-	wxArrayInt selections;
-
-	if (this->event_type_list_box->GetSelections(selections) == count)
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->event_type_list_box->Deselect(i);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->event_type_list_box->SetSelection(i);
-		}
-	}
-
-	this->event_type_list_box->SetFocus();
-	event.Skip();
-}
-
-void FilterDialog::OnTrackLabelClick(wxMouseEvent& event)
-{
-	int count = this->track_list_box->GetCount();
-	wxArrayInt selections;
-
-	if (this->track_list_box->GetSelections(selections) == count)
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->track_list_box->Deselect(i);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->track_list_box->SetSelection(i);
-		}
-	}
-
-	this->track_list_box->SetFocus();
-	event.Skip();
-}
-
-void FilterDialog::OnChannelLabelClick(wxMouseEvent& event)
-{
-	int count = this->channel_list_box->GetCount();
-	wxArrayInt selections;
-
-	if (this->channel_list_box->GetSelections(selections) == count)
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->channel_list_box->Deselect(i);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < count; i++)
-		{
-			this->channel_list_box->SetSelection(i);
-		}
-	}
-
-	this->channel_list_box->SetFocus();
-	event.Skip();
 }
 
 void PreferencesDialog::Run(Window* window)
@@ -811,7 +734,11 @@ PreferencesDialog::PreferencesDialog(Window* window): wxDialog(NULL, wxID_ANY, "
 	event_list_settings_sizer->Add(this->event_list_font_picker, wxSizerFlags().Expand());
 	wxButton* default_event_list_font_button = new wxButton(this, wxID_ANY, "Default");
 	event_list_settings_sizer->Add(default_event_list_font_button, wxSizerFlags().Expand());
-	default_event_list_font_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultEventListFontButtonClick, this);
+
+	default_event_list_font_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+		this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
+		event.Skip();
+	});
 
 	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
 	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
@@ -824,49 +751,37 @@ PreferencesDialog::PreferencesDialog(Window* window): wxDialog(NULL, wxID_ANY, "
 	piano_roll_settings_sizer->Add(this->piano_roll_first_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_first_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_first_note_button, wxSizerFlags().Expand());
-	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollFirstNoteButtonClick, this);
+
+	default_piano_roll_first_note_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+		this->piano_roll_first_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_first_note));
+		event.Skip();
+	});
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "&Last note"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->piano_roll_last_note_text_box = new wxTextCtrl(this, wxID_ANY, GetNoteNameFromNumber(this->window->sequence_editor->piano_roll->last_note));
 	piano_roll_settings_sizer->Add(this->piano_roll_last_note_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_last_note_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_last_note_button, wxSizerFlags().Expand());
-	default_piano_roll_last_note_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollLastNoteButtonClick, this);
+
+	default_piano_roll_last_note_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+		this->piano_roll_last_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_last_note));
+		event.Skip();
+	});
 
 	piano_roll_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "&Key width"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
 	this->piano_roll_key_width_text_box = new wxTextCtrl(this, wxID_ANY, wxString::Format("%ld", this->window->sequence_editor->piano_roll->key_width));
 	piano_roll_settings_sizer->Add(this->piano_roll_key_width_text_box, wxSizerFlags().Expand());
 	wxButton* default_piano_roll_key_width_button = new wxButton(this, wxID_ANY, "Default");
 	piano_roll_settings_sizer->Add(default_piano_roll_key_width_button, wxSizerFlags().Expand());
-	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, &PreferencesDialog::OnDefaultPianoRollKeyWidthButtonClick, this);
+
+	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+		this->piano_roll_key_width_text_box->SetValue(wxString::Format("%ld", this->window->application->default_piano_roll_key_width));
+		event.Skip();
+	});
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
 
 	outer_sizer->Fit(this);
-}
-
-void PreferencesDialog::OnDefaultEventListFontButtonClick(wxCommandEvent& event)
-{
-	this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
-	event.Skip();
-}
-
-void PreferencesDialog::OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event)
-{
-	this->piano_roll_first_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_first_note));
-	event.Skip();
-}
-
-void PreferencesDialog::OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event)
-{
-	this->piano_roll_last_note_text_box->SetValue(GetNoteNameFromNumber(this->window->application->default_piano_roll_last_note));
-	event.Skip();
-}
-
-void PreferencesDialog::OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event)
-{
-	this->piano_roll_key_width_text_box->SetValue(wxString::Format("%ld", this->window->application->default_piano_roll_key_width));
-	event.Skip();
 }
 

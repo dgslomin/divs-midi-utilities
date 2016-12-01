@@ -30,44 +30,6 @@ public:
 
 	Window(Application* application);
 	~Window();
-	void OnMenuHighlight(wxMenuEvent& event);
-	void OnFileNew(wxCommandEvent& event);
-	void OnFileOpen(wxCommandEvent& event);
-	void OnClose(wxCommandEvent& event);
-	void OnUndo(wxCommandEvent& event);
-	void OnRedo(wxCommandEvent& event);
-	void OnDelete(wxCommandEvent& event);
-	void OnEnterValue(wxCommandEvent& event);
-	void OnSmallIncrease(wxCommandEvent& event);
-	void OnSmallDecrease(wxCommandEvent& event);
-	void OnLargeIncrease(wxCommandEvent& event);
-	void OnLargeDecrease(wxCommandEvent& event);
-	void OnQuantize(wxCommandEvent& event);
-	void OnColumn1(wxCommandEvent& event);
-	void OnColumn2(wxCommandEvent& event);
-	void OnColumn3(wxCommandEvent& event);
-	void OnColumn4(wxCommandEvent& event);
-	void OnColumn5(wxCommandEvent& event);
-	void OnColumn6(wxCommandEvent& event);
-	void OnColumn7(wxCommandEvent& event);
-	void OnZoomIn(wxCommandEvent& event);
-	void OnZoomOut(wxCommandEvent& event);
-	void OnStepSize(wxCommandEvent& event);
-	void OnFilter(wxCommandEvent& event);
-	void OnInsertNoteA(wxCommandEvent& event);
-	void OnInsertNoteB(wxCommandEvent& event);
-	void OnInsertNoteC(wxCommandEvent& event);
-	void OnInsertNoteD(wxCommandEvent& event);
-	void OnInsertNoteE(wxCommandEvent& event);
-	void OnInsertNoteF(wxCommandEvent& event);
-	void OnInsertNoteG(wxCommandEvent& event);
-	void OnInsertMarker(wxCommandEvent& event);
-	void OnNextMarker(wxCommandEvent& event);
-	void OnPreviousMarker(wxCommandEvent& event);
-	void OnGoToMarker(wxCommandEvent& event);
-	void OnPreferences(wxCommandEvent& event);
-	void OnAbout(wxCommandEvent& event);
-	void OnKeyPress(wxKeyEvent& event);
 };
 
 class StepSizeDialog: public wxDialog
@@ -93,9 +55,6 @@ public:
 
 	static void Run(Window* window);
 	FilterDialog(Window* window);
-	void OnEventTypeLabelClick(wxMouseEvent& event);
-	void OnTrackLabelClick(wxMouseEvent& event);
-	void OnChannelLabelClick(wxMouseEvent& event);
 };
 
 class PreferencesDialog: public wxDialog
@@ -109,10 +68,6 @@ public:
 
 	static void Run(Window* window);
 	PreferencesDialog(Window* window);
-	void OnDefaultEventListFontButtonClick(wxCommandEvent& event);
-	void OnDefaultPianoRollFirstNoteButtonClick(wxCommandEvent& event);
-	void OnDefaultPianoRollLastNoteButtonClick(wxCommandEvent& event);
-	void OnDefaultPianoRollKeyWidthButtonClick(wxCommandEvent& event);
 };
 
 #endif
