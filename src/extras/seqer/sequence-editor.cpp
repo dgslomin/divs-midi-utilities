@@ -81,7 +81,7 @@ void SequenceEditor::SetStepSize(StepSize* step_size)
 	this->step_size = step_size;
 	this->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberFromLocator(row_locator));
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::ZoomIn()
@@ -102,7 +102,7 @@ void SequenceEditor::SetFilters(std::vector<int> filtered_event_types, std::vect
 	this->filtered_channels = filtered_channels;
 	this->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberFromLocator(row_locator));
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::RowUp()
@@ -138,19 +138,19 @@ void SequenceEditor::GoToLastRow()
 void SequenceEditor::ColumnLeft()
 {
 	this->current_column_number = std::max<long>(this->current_column_number - 1, 1);
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::ColumnRight()
 {
 	this->current_column_number = std::min<long>(this->current_column_number + 1, 7);
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::GoToColumn(int column_number)
 {
 	this->current_column_number = std::min<long>(std::max<long>(column_number, 1), 7);
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::GoToNextMarker()
@@ -354,7 +354,7 @@ void SequenceEditor::EnterValue()
 	{
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 4:
 				{
@@ -410,7 +410,7 @@ void SequenceEditor::SmallIncrease()
 		{
 			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -587,7 +587,7 @@ void SequenceEditor::SmallIncrease()
 		}
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -638,7 +638,7 @@ void SequenceEditor::SmallDecrease()
 		{
 			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -814,7 +814,7 @@ void SequenceEditor::SmallDecrease()
 		}
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -865,7 +865,7 @@ void SequenceEditor::LargeIncrease()
 		{
 			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1048,7 +1048,7 @@ void SequenceEditor::LargeIncrease()
 		}
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1102,7 +1102,7 @@ void SequenceEditor::LargeDecrease()
 		{
 			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1285,7 +1285,7 @@ void SequenceEditor::LargeDecrease()
 		}
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1339,7 +1339,7 @@ void SequenceEditor::Quantize()
 		{
 			MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1402,7 +1402,7 @@ void SequenceEditor::Quantize()
 		}
 		case EVENT_TYPE_MARKER:
 		{
-			switch (current_column_number)
+			switch (this->current_column_number)
 			{
 				case 1:
 				{
@@ -1482,6 +1482,12 @@ void SequenceEditor::RefreshData()
 	this->event_list->RefreshData();
 	this->piano_roll->RefreshData();
 	this->UpdateScrollbar();
+	this->RefreshDisplay();
+}
+
+void SequenceEditor::RefreshDisplay()
+{
+	this->window->SetStatusText(this->event_list->GetColumnLabel(this->current_row_number, this->current_column_number), 0);
 	this->Refresh();
 }
 
@@ -1707,7 +1713,7 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 	}
 
 	this->UpdateScrollbar();
-	this->Refresh();
+	this->RefreshDisplay();
 }
 
 RowLocator SequenceEditor::GetLocatorFromRowNumber(long row_number)

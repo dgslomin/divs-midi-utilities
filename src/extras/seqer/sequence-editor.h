@@ -91,6 +91,7 @@ public:
 	void Quantize();
 
 	void RefreshData();
+	void RefreshDisplay();
 	void OnDraw(wxDC& dc);
 	void UpdateScrollbar();
 	long GetVisibleWidth();

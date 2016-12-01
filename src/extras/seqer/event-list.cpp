@@ -523,3 +523,336 @@ wxString EventList::GetCellText(long row_number, long column_number)
 	}
 }
 
+wxString EventList::GetColumnLabel(long row_number, long column_number)
+{
+	EventType_t event_type = (row_number < this->sequence_editor->rows.size()) ? this->sequence_editor->GetEventType(this->sequence_editor->rows[row_number].event) : EVENT_TYPE_INVALID;
+
+	switch (event_type)
+	{
+		case EVENT_TYPE_NOTE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 3:
+				{
+					return wxString("Channel");
+				}
+				case 4:
+				{
+					return wxString("Note");
+				}
+				case 5:
+				{
+					return wxString("Velocity");
+				}
+				case 6:
+				{
+					return wxString("End time");
+				}
+				case 7:
+				{
+					return wxString("End velocity");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_CONTROL_CHANGE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 3:
+				{
+					return wxString("Channel");
+				}
+				case 4:
+				{
+					return wxString("Number");
+				}
+				case 5:
+				{
+					return wxString("Value");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 3:
+				{
+					return wxString("Channel");
+				}
+				case 4:
+				{
+					return wxString("Number");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_AFTERTOUCH:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 3:
+				{
+					return wxString("Channel");
+				}
+				case 4:
+				{
+					return wxString("Note");
+				}
+				case 5:
+				{
+					return wxString("Amount");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_PITCH_BEND:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 3:
+				{
+					return wxString("Channel");
+				}
+				case 5:
+				{
+					return wxString("Value");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 4:
+				{
+					return wxString("Data");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_TEXT:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 4:
+				{
+					return wxString("Text");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_LYRIC:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 4:
+				{
+					return wxString("Lyric");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_MARKER:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 4:
+				{
+					return wxString("Name");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_PORT:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 2:
+				{
+					return wxString("Track");
+				}
+				case 4:
+				{
+					return wxString("Name");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_TEMPO:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 4:
+				{
+					return wxString("Tempo");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_TIME_SIGNATURE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 4:
+				{
+					return wxString("Time signature");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		case EVENT_TYPE_KEY_SIGNATURE:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				case 4:
+				{
+					return wxString("Key signature");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+		default:
+		{
+			switch (column_number)
+			{
+				case 1:
+				{
+					return wxString("Time");
+				}
+				default:
+				{
+					return wxEmptyString;
+				}
+			}
+		}
+	}
+}
+

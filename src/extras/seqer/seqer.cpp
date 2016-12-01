@@ -89,6 +89,7 @@ bool Application::OnInit()
 Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
 	this->application = application;
+	this->CreateStatusBar();
 
 	wxMenuBar* menu_bar = new wxMenuBar();
 		wxMenu* file_menu = new wxMenu();
@@ -456,7 +457,6 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	});
 
 	this->sequence_editor = new SequenceEditor(this);
-	this->CreateStatusBar();
 }
 
 Window::~Window()
