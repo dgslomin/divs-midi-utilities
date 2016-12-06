@@ -120,7 +120,7 @@ public:
 class Sequence
 {
 public:
-	SequenceEditor* sequence_editor;
+	std::vector<SequenceEditor*> sequence_editors;
 	wxCommandProcessor* undo_command_processor;
 	MidiFile_t midi_file;
 

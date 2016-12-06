@@ -74,19 +74,14 @@ bool Application::OnInit()
 	this->default_piano_roll_last_note = 108;
 	this->default_piano_roll_key_width = 3;
 
-	Window* window = new Window(this);
-	this->SetTopWindow(window);
+	Window* window = new Window(this, NULL);
+	this->windows.push_back(window);
 	window->Show(true);
-
-	if (this->argc > 1)
-	{
-		window->sequence_editor->Load(this->argv[1]);
-	}
-
+	if (this->argc > 1) window->sequence_editor->Load(this->argv[1]);
 	return true;
 }
 
-Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
+Window::Window(Application* application, Sequence* sequence): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
 	this->application = application;
 	this->CreateStatusBar();
@@ -207,6 +202,13 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	}, wxID_NEW);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		Window* window = new Window(this->application, this->sequence_editor->sequence);
+		this->application->windows.push_back(window);
+		this->sequence_editor->sequence->sequence_editors->push_back(window->sequence_editor);
+		window->Show(true);
+	}, SEQER_ID_NEW_WINDOW);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		wxFileDialog* file_dialog = new wxFileDialog(this, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 		if (file_dialog->ShowModal() == wxID_OK)
@@ -221,7 +223,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 	}, wxID_OPEN);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		this->Close(true);
+		if (this->Close(false)) this->application->windows.remove(this);
 	}, wxID_CLOSE);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
@@ -456,7 +458,7 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		}
 	});
 
-	this->sequence_editor = new SequenceEditor(this);
+	this->sequence_editor = new SequenceEditor(this, sequence);
 }
 
 Window::~Window()
