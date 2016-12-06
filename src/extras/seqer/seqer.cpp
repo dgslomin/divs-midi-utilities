@@ -74,8 +74,7 @@ bool Application::OnInit()
 	this->default_piano_roll_last_note = 108;
 	this->default_piano_roll_key_width = 3;
 
-	Window* window = new Window(this, NULL);
-	this->windows.push_back(window);
+	Window* window = new Window(this, new Sequence(NULL));
 	window->Show(true);
 	if (this->argc > 1) window->sequence_editor->Load(this->argv[1]);
 	return true;
@@ -202,10 +201,7 @@ Window::Window(Application* application, Sequence* sequence): wxFrame((wxFrame*)
 	}, wxID_NEW);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		Window* window = new Window(this->application, this->sequence_editor->sequence);
-		this->application->windows.push_back(window);
-		this->sequence_editor->sequence->sequence_editors->push_back(window->sequence_editor);
-		window->Show(true);
+		(new Window(this->application, this->sequence_editor->sequence))->Show(true);
 	}, SEQER_ID_NEW_WINDOW);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
@@ -223,7 +219,7 @@ Window::Window(Application* application, Sequence* sequence): wxFrame((wxFrame*)
 	}, wxID_OPEN);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		if (this->Close(false)) this->application->windows.remove(this);
+		this->Close();
 	}, wxID_CLOSE);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
@@ -456,6 +452,11 @@ Window::Window(Application* application, Sequence* sequence): wxFrame((wxFrame*)
 		{
 			event.Skip();
 		}
+	});
+
+	this->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
+        // TODO: prompt for save
+        event.Skip();
 	});
 
 	this->sequence_editor = new SequenceEditor(this, sequence);

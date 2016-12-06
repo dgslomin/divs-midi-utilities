@@ -9,6 +9,7 @@ class RowLocator;
 class UndoCommand;
 
 #include <functional>
+#include <list>
 #include <vector>
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
@@ -60,7 +61,7 @@ public:
 	int insertion_velocity;
 	int insertion_end_velocity;
 
-	SequenceEditor(Window* window);
+	SequenceEditor(Window* window, Sequence* sequence);
 	~SequenceEditor();
 	void New();
 	bool Load(wxString filename);
@@ -120,12 +121,16 @@ public:
 class Sequence
 {
 public:
-	std::vector<SequenceEditor*> sequence_editors;
+	std::list<SequenceEditor*> sequence_editors;
 	wxCommandProcessor* undo_command_processor;
 	MidiFile_t midi_file;
 
-	Sequence(SequenceEditor* sequence_editor);
+	Sequence(MidiFile_t midi_file);
 	~Sequence();
+    void AddSequenceEditor(SequenceEditor* sequence_editor);
+    void RemoveSequenceEditor(SequenceEditor* sequence_editor);
+    void RefreshData();
+    void RefreshDisplay();
 };
 
 class Row

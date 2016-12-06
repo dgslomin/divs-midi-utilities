@@ -7,7 +7,6 @@ class StepSizeDialog;
 class FilterDialog;
 class PreferencesDialog;
 
-#include <vector>
 #include <wx/wx.h>
 #include <wx/fontpicker.h>
 #include "sequence-editor.h"
@@ -19,7 +18,6 @@ public:
 	long default_piano_roll_first_note;
 	long default_piano_roll_last_note;
 	long default_piano_roll_key_width;
-	std::vector<Window> windows;
 
 	bool OnInit();
 };
@@ -30,7 +28,7 @@ public:
 	Application* application;
 	SequenceEditor* sequence_editor;
 
-	Window(Application* application);
+	Window(Application* application, Sequence* sequence);
 	~Window();
 };
 
