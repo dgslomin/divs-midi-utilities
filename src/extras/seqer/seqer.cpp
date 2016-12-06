@@ -433,22 +433,22 @@ Window::Window(Application* application): wxFrame((wxFrame*)(NULL), wxID_ANY, "S
 		else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 		{
 			// make ctrl+plus ignore whether shift is pressed
-			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_IN));
+			this->ProcessCommand(wxID_ZOOM_IN);
 		}
 		else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 		{
 			// make ctrl+minus ignore whether shift is pressed
-			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_ZOOM_OUT));
+			this->ProcessCommand(wxID_ZOOM_OUT);
 		}
 		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_SHIFT))
 		{
 			// make shift+left be a synonym for shift+right
-			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, SEQER_ID_SELECT_CURRENT));
+			this->ProcessCommand(SEQER_ID_SELECT_CURRENT);
 		}
 		else if (event.GetKeyCode() == WXK_BACK)
 		{
 			// make backspace be a synonym for delete
-			wxPostEvent(this, wxCommandEvent(wxEVT_COMMAND_MENU_SELECTED, wxID_DELETE));
+			this->ProcessCommand(wxID_DELETE);
 		}
 		else
 		{
