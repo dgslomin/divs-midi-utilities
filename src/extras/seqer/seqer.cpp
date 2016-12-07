@@ -228,6 +228,14 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_OPEN);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->Save();
+	}, wxID_SAVE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->SaveAs();
+	}, wxID_SAVEAS);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		this->Close();
 	}, wxID_CLOSE);
 
@@ -465,7 +473,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 
 	this->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
 		if (!this->SaveChanges()) return;
-        event.Skip();
+		event.Skip();
 	});
 
 	this->sequence_editor = new SequenceEditor(this, (existing_window == NULL) ? NULL : existing_window->sequence_editor);
@@ -473,49 +481,13 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 
 bool Window::SaveChanges()
 {
-	if (!this->sequence_editor->IsModified()) return true;
+	if (!(this->sequence_editor->IsModified() && this->sequence_editor->IsLastEditorForSequence())) return true;
 
 	switch (wxMessageBox("Do you want to save changes to the current file?", "Save Changes", wxYES_NO | wxCANCEL))
 	{
 		case wxYES:
 		{
-			if (this->sequence_editor->GetFilename() == wxEmptyString)
-			{
-				wxFileDialog* file_dialog = new wxFileDialog(this, "Save File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_SAVE);
-				bool result;
-
-				if (file_dialog->ShowModal() == wxID_OK)
-				{
-					if (this->sequence_editor->SaveAs(file_dialog->GetPath()))
-					{
-						result = true;
-					}
-					else
-					{
-						wxMessageBox("Cannot save the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
-						result = false;
-					}
-				}
-				else
-				{
-					return false;
-				}
-
-				delete file_dialog;
-				return result;
-			}
-			else
-			{
-				if (this->sequence_editor->Save())
-				{
-					return true;
-				}
-				else
-				{
-					wxMessageBox("Cannot save the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
-					return false;
-				}
-			}
+			return this->Save();
 		}
 		case wxCANCEL:
 		{
@@ -526,6 +498,52 @@ bool Window::SaveChanges()
 			return true;
 		}
 	}
+}
+
+bool Window::Save()
+{
+	if (this->sequence_editor->GetFilename() == wxEmptyString)
+	{
+		return this->SaveAs();
+	}
+	else
+	{
+		if (this->sequence_editor->Save())
+		{
+			return true;
+		}
+		else
+		{
+			wxMessageBox("Cannot save the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
+			return false;
+		}
+	}
+}
+
+bool Window::SaveAs()
+{
+	wxFileDialog* file_dialog = new wxFileDialog(this, "Save File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_SAVE);
+	bool result;
+
+	if (file_dialog->ShowModal() == wxID_OK)
+	{
+		if (this->sequence_editor->SaveAs(file_dialog->GetPath()))
+		{
+			result = true;
+		}
+		else
+		{
+			wxMessageBox("Cannot save the specified MIDI file.", "Error", wxOK | wxICON_ERROR);
+			result = false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	delete file_dialog;
+	return result;
 }
 
 Window::~Window()

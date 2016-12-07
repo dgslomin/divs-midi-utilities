@@ -64,6 +64,7 @@ public:
 	SequenceEditor(Window* window, SequenceEditor* existing_sequence_editor = NULL);
 	~SequenceEditor();
 	bool IsModified();
+	bool IsLastEditorForSequence();
 	wxString GetFilename();
 	void New();
 	bool Load(wxString filename);

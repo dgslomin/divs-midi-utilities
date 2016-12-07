@@ -5,6 +5,7 @@
 #include <vector>
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
+#include <wx/filename.h>
 #include <midifile.h>
 #include "seqer.h"
 #include "sequence-editor.h"
@@ -54,6 +55,11 @@ SequenceEditor::~SequenceEditor()
 bool SequenceEditor::IsModified()
 {
 	return this->sequence->is_modified;
+}
+
+bool SequenceEditor::IsLastEditorForSequence()
+{
+    return (this->sequence->sequence_editors.size() == 1);
 }
 
 wxString SequenceEditor::GetFilename()
@@ -1532,6 +1538,7 @@ void SequenceEditor::RefreshData()
 
 void SequenceEditor::RefreshDisplay()
 {
+    this->window->SetTitle((this->sequence->filename == wxEmptyString) ? "Seqer" : wxFileName(this->sequence->filename).GetFullName() + " - Seqer");
 	this->window->SetStatusText(this->event_list->GetColumnLabel(this->current_row_number, this->current_column_number), 0);
 	this->Refresh();
 }

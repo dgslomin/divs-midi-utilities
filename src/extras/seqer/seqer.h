@@ -31,6 +31,8 @@ public:
 	Window(Application* application, Window* existing_window = NULL);
 	~Window();
 	bool SaveChanges();
+	bool Save();
+	bool SaveAs();
 };
 
 class StepSizeDialog: public wxDialog
