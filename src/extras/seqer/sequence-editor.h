@@ -61,10 +61,14 @@ public:
 	int insertion_velocity;
 	int insertion_end_velocity;
 
-	SequenceEditor(Window* window, Sequence* sequence);
+	SequenceEditor(Window* window, SequenceEditor* existing_sequence_editor = NULL);
 	~SequenceEditor();
+	bool IsModified();
+	wxString GetFilename();
 	void New();
 	bool Load(wxString filename);
+	bool Save();
+	bool SaveAs(wxString filename);
 	void SetStepSize(StepSize* step_size);
 	void ZoomIn();
 	void ZoomOut();
@@ -123,9 +127,11 @@ class Sequence
 public:
 	std::list<SequenceEditor*> sequence_editors;
 	wxCommandProcessor* undo_command_processor;
+	wxString filename;
 	MidiFile_t midi_file;
+	bool is_modified;
 
-	Sequence(MidiFile_t midi_file);
+	Sequence();
 	~Sequence();
     void AddSequenceEditor(SequenceEditor* sequence_editor);
     void RemoveSequenceEditor(SequenceEditor* sequence_editor);

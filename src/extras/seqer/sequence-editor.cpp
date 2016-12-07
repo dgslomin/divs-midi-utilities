@@ -19,10 +19,10 @@
 #define CANVAS_BORDER wxBORDER_DEFAULT
 #endif
 
-SequenceEditor::SequenceEditor(Window* window, Sequence* sequence): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
+SequenceEditor::SequenceEditor(Window* window, SequenceEditor* existing_sequence_editor): wxScrolledCanvas(window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | CANVAS_BORDER)
 {
 	this->window = window;
-	this->sequence = sequence;
+	this->sequence = (existing_sequence_editor == NULL) ? new Sequence() : existing_sequence_editor->sequence;
 	this->sequence->AddSequenceEditor(this);
 	this->event_list = new EventList(this);
 	this->piano_roll = new PianoRoll(this);
@@ -51,11 +51,20 @@ SequenceEditor::~SequenceEditor()
 	delete this->step_size;
 }
 
+bool SequenceEditor::IsModified()
+{
+	return this->sequence->is_modified;
+}
+
+wxString SequenceEditor::GetFilename()
+{
+	return this->sequence->filename;
+}
+
 void SequenceEditor::New()
 {
-	// TODO: prompt for save
 	this->sequence->RemoveSequenceEditor(this);
-	this->sequence = new Sequence(NULL);
+	this->sequence = new Sequence();
 	this->sequence->AddSequenceEditor(this);
 	this->current_row_number = 0;
 	this->last_row_number = 0;
@@ -65,17 +74,49 @@ void SequenceEditor::New()
 
 bool SequenceEditor::Load(wxString filename)
 {
-	// TODO: prompt for save
 	MidiFile_t new_midi_file = MidiFile_load((char *)(filename.ToStdString().c_str()));
 	if (new_midi_file == NULL) return false;
 	this->sequence->RemoveSequenceEditor(this);
-	this->sequence = new Sequence(new_midi_file);
+	this->sequence = new Sequence();
+	this->sequence->AddSequenceEditor(this);
+	this->sequence->filename = filename;
+	MidiFile_free(this->sequence->midi_file);
+	this->sequence->midi_file = new_midi_file;
 	this->current_row_number = 0;
 	this->last_row_number = 0;
 	this->current_column_number = 0;
 	this->SetStepSize(new StepsPerMeasureSize(this));
 	this->RefreshData();
 	return true;
+}
+
+bool SequenceEditor::Save()
+{
+	if (this->sequence->filename == wxEmptyString) return false;
+
+	if (MidiFile_save(this->sequence->midi_file, (char *)(this->sequence->filename.ToStdString().c_str())) == 0)
+	{
+		this->sequence->is_modified = false;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool SequenceEditor::SaveAs(wxString filename)
+{
+	if (MidiFile_save(this->sequence->midi_file, (char *)(filename.ToStdString().c_str())) == 0)
+	{
+		this->sequence->filename = filename;
+		this->sequence->is_modified = false;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void SequenceEditor::SetStepSize(StepSize* step_size)
@@ -1830,10 +1871,12 @@ EventType_t SequenceEditor::GetEventType(MidiFileEvent_t event)
 	return EVENT_TYPE_INVALID;
 }
 
-Sequence::Sequence(MidiFile_t midi_file)
+Sequence::Sequence()
 {
 	this->undo_command_processor = new wxCommandProcessor();
-	this->midi_file = (midi_file == NULL) ? MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960) : midi_file;
+	this->filename = wxEmptyString;
+	this->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
+	this->is_modified = false;
 }
 
 Sequence::~Sequence()
@@ -1855,6 +1898,7 @@ void Sequence::RemoveSequenceEditor(SequenceEditor* sequence_editor)
 
 void Sequence::RefreshData()
 {
+	this->is_modified = true;
 	for (std::list<SequenceEditor*>::iterator sequence_editor_iterator = this->sequence_editors.begin(); sequence_editor_iterator != this->sequence_editors.end(); sequence_editor_iterator++) (*sequence_editor_iterator)->RefreshData();
 }
 

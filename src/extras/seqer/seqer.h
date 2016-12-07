@@ -28,8 +28,9 @@ public:
 	Application* application;
 	SequenceEditor* sequence_editor;
 
-	Window(Application* application, Sequence* sequence);
+	Window(Application* application, Window* existing_window = NULL);
 	~Window();
+	bool SaveChanges();
 };
 
 class StepSizeDialog: public wxDialog
