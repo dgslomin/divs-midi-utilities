@@ -99,7 +99,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 			file_menu->Append(SEQER_ID_NEW_WINDOW, "New &Window\tCtrl+Shift+N");
 			file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O");
 			file_menu->Append(wxID_SAVE, "&Save\tCtrl+S");
-			file_menu->Append(wxID_SAVEAS, "Save &As...");
+			file_menu->Append(wxID_SAVEAS, "Save &As...\tCtrl+Shift+S");
 			file_menu->AppendSeparator();
 			file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W");
 		menu_bar->Append(file_menu, "&File");
@@ -136,7 +136,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		wxMenu* view_menu = new wxMenu();
 			view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
 			view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
-			view_menu->Append(SEQER_ID_STEP_SIZE, "&Step Size...\tCtrl+Shift+S");
+			view_menu->Append(SEQER_ID_STEP_SIZE, "Ste&p Size...\tCtrl+Shift+P");
 			view_menu->AppendSeparator();
 			view_menu->Append(SEQER_ID_FILTER, "&Filter...\tCtrl+Shift+F");
 		menu_bar->Append(view_menu, "&View");
