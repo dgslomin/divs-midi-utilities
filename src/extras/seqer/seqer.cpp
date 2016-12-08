@@ -386,6 +386,8 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_ABOUT);
 
 	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {
+		this->SetCursor(wxCURSOR_BLANK);
+
 		int keycode = event.GetKeyCode();
 		int modifiers = event.GetModifiers();
 
@@ -608,6 +610,11 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		{
 			event.Skip();
 		}
+	});
+
+	this->Bind(wxEVT_MOTION, [=](wxMouseEvent& event) {
+		this->SetCursor(wxCURSOR_NONE);
+		event.Skip();
 	});
 
 	this->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
