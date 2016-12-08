@@ -6,6 +6,8 @@ class EventList;
 #include <wx/wx.h>
 #include "sequence-editor.h"
 
+#define EVENT_LIST_LAST_COLUMN_NUMBER 7
+
 class EventList
 {
 public:

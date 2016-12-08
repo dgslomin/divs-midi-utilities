@@ -424,7 +424,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
 		{
-			this->sequence_editor->GoToColumn(7);
+			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
 		}
 #ifdef __WXOSX__
 		else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
@@ -449,7 +449,39 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
 		{
-			this->sequence_editor->GoToColumn(7);
+			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+		}
+		else if ((event.GetKeyCode() == 'A') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->GoToColumn(1);
+		}
+		else if ((event.GetKeyCode() == 'E') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+		}
+		else if ((event.GetKeyCode() == 'P') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->RowUp();
+		}
+		else if ((event.GetKeyCode() == 'N') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->RowDown();
+		}
+		else if ((event.GetKeyCode() == 'B') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->ColumnLeft();
+		}
+		else if ((event.GetKeyCode() == 'F') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->ColumnRight();
+		}
+		else if ((event.GetKeyCode() == 'D') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->DeleteRow();
+		}
+		else if ((event.GetKeyCode() == 'H') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		{
+			this->sequence_editor->DeleteRow();
 		}
 #endif
 		else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
