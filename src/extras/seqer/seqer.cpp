@@ -240,6 +240,13 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_CLOSE);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		for (wxWindowList::compatibility_iterator window_iterator = wxTopLevelWindows.GetFirst(); window_iterator != NULL; window_iterator = window_iterator->GetNext())
+		{
+			if (!window_iterator->GetData()->Close()) return;
+		}
+	}, wxID_EXIT);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		this->sequence_editor->sequence->undo_command_processor->Undo();
 	}, wxID_UNDO);
 
