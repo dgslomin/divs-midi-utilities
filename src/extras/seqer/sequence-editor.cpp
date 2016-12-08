@@ -41,6 +41,17 @@ SequenceEditor::SequenceEditor(Window* window, SequenceEditor* existing_sequence
 #endif
 	this->DisableKeyboardScrolling();
 	this->SetBackgroundColour(*wxWHITE);
+
+	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {
+		this->SetCursor(wxCURSOR_BLANK);
+		event.Skip();
+	});
+
+	this->Bind(wxEVT_MOTION, [=](wxMouseEvent& event) {
+		this->SetCursor(wxCURSOR_ARROW);
+		event.Skip();
+	});
+
 	this->RefreshData();
 }
 
