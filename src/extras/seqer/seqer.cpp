@@ -386,123 +386,223 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_ABOUT);
 
 	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {
-		if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_NONE))
+		int keycode = event.GetKeyCode();
+		int modifiers = event.GetModifiers();
+
+		if ((keycode == WXK_UP) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->RowUp();
 		}
-		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_DOWN) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->RowDown();
 		}
-		else if ((event.GetKeyCode() == WXK_PAGEUP) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_PAGEUP) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->PageUp();
 		}
-		else if ((event.GetKeyCode() == WXK_PAGEDOWN) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_PAGEDOWN) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->PageDown();
 		}
-		else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_HOME) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToFirstRow();
 		}
-		else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_END) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToLastRow();
 		}
-		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_LEFT) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->ColumnLeft();
 		}
-		else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_RIGHT) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->ColumnRight();
 		}
-		else if ((event.GetKeyCode() == WXK_HOME) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_HOME) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->GoToColumn(1);
 		}
-		else if ((event.GetKeyCode() == WXK_END) && (event.GetModifiers() == wxMOD_NONE))
+		else if ((keycode == WXK_END) && (modifiers == wxMOD_NONE))
 		{
 			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
 		}
 #ifdef __WXOSX__
-		else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_ALT))
+		else if ((keycode == WXK_UP) && (modifiers == wxMOD_ALT))
 		{
 			this->sequence_editor->PageUp();
 		}
-		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_ALT))
+		else if ((keycode == WXK_DOWN) && (modifiers == wxMOD_ALT))
 		{
 			this->sequence_editor->PageDown();
 		}
-		else if ((event.GetKeyCode() == WXK_UP) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_UP) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToFirstRow();
 		}
-		else if ((event.GetKeyCode() == WXK_DOWN) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_DOWN) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToLastRow();
 		}
-		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_LEFT) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToColumn(1);
 		}
-		else if ((event.GetKeyCode() == WXK_RIGHT) && (event.GetModifiers() == wxMOD_CONTROL))
+		else if ((keycode == WXK_RIGHT) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
 		}
-		else if ((event.GetKeyCode() == 'A') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'A') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->GoToColumn(1);
 		}
-		else if ((event.GetKeyCode() == 'E') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'E') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
 		}
-		else if ((event.GetKeyCode() == 'P') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'P') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->RowUp();
 		}
-		else if ((event.GetKeyCode() == 'N') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'N') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->RowDown();
 		}
-		else if ((event.GetKeyCode() == 'B') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'B') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->ColumnLeft();
 		}
-		else if ((event.GetKeyCode() == 'F') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'F') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->ColumnRight();
 		}
-		else if ((event.GetKeyCode() == 'D') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'D') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->DeleteRow();
 		}
-		else if ((event.GetKeyCode() == 'H') && (event.GetModifiers() == wxMOD_RAW_CONTROL))
+		else if ((keycode == 'H') && (modifiers == wxMOD_RAW_CONTROL))
 		{
 			this->sequence_editor->DeleteRow();
 		}
 #endif
-		else if ((event.GetKeyCode() == '=') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
+		else if ((keycode == '=') && ((modifiers & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 		{
 			// make ctrl+plus ignore whether shift is pressed
 			this->ProcessCommand(wxID_ZOOM_IN);
 		}
-		else if ((event.GetKeyCode() == '-') && ((event.GetModifiers() & ~wxMOD_SHIFT) == wxMOD_CONTROL))
+		else if ((keycode == '-') && ((modifiers & ~wxMOD_SHIFT) == wxMOD_CONTROL))
 		{
 			// make ctrl+minus ignore whether shift is pressed
 			this->ProcessCommand(wxID_ZOOM_OUT);
 		}
-		else if ((event.GetKeyCode() == WXK_LEFT) && (event.GetModifiers() == wxMOD_SHIFT))
+		else if ((keycode == WXK_LEFT) && (modifiers == wxMOD_SHIFT))
 		{
 			// make shift+left be a synonym for shift+right
 			this->ProcessCommand(SEQER_ID_SELECT_CURRENT);
 		}
-		else if (event.GetKeyCode() == WXK_BACK)
+		else if ((keycode == WXK_BACK) && (modifiers == wxMOD_NONE))
 		{
 			// make backspace be a synonym for delete
 			this->ProcessCommand(wxID_DELETE);
+		}
+		else if ((keycode == ']') && (modifiers == wxMOD_NONE))
+		{
+			// although these are listed in the menu, they don't work automatically on WXGTK
+			this->ProcessCommand(SEQER_ID_SMALL_INCREASE);
+		}
+		else if ((keycode == '[') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_SMALL_DECREASE);
+		}
+		else if ((keycode == ']') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_LARGE_INCREASE);
+		}
+		else if ((keycode == '[') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_LARGE_DECREASE);
+		}
+		else if ((keycode == '=') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_QUANTIZE);
+		}
+		else if ((keycode == 'A') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_A);
+		}
+		else if ((keycode == 'B') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_B);
+		}
+		else if ((keycode == 'C') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_C);
+		}
+		else if ((keycode == 'D') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_D);
+		}
+		else if ((keycode == 'E') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_E);
+		}
+		else if ((keycode == 'F') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_F);
+		}
+		else if ((keycode == 'G') && (modifiers == wxMOD_NONE))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_NOTE_G);
+		}
+		else if ((keycode == 'C') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_CONTROL_CHANGE);
+		}
+		else if ((keycode == 'P') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_PROGRAM_CHANGE);
+		}
+		else if ((keycode == 'A') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_AFTERTOUCH);
+		}
+		else if ((keycode == 'B') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_PITCH_BEND);
+		}
+		else if ((keycode == 'S') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_SYSTEM_EXCLUSIVE);
+		}
+		else if ((keycode == 'X') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_TEXT);
+		}
+		else if ((keycode == 'L') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_LYRIC);
+		}
+		else if ((keycode == 'M') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_MARKER);
+		}
+		else if ((keycode == 'O') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_PORT);
+		}
+		else if ((keycode == 'T') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_TEMPO);
+		}
+		else if ((keycode == 'I') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_TIME_SIGNATURE);
+		}
+		else if ((keycode == 'K') && (modifiers == wxMOD_SHIFT))
+		{
+			this->ProcessCommand(SEQER_ID_INSERT_KEY_SIGNATURE);
 		}
 		else
 		{
