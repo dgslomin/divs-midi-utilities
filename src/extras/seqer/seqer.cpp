@@ -382,7 +382,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_PREFERENCES);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin", "About", wxOK);
+		wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin\nProvided under terms of the BSD license.", "About", wxOK);
 	}, wxID_ABOUT);
 
 	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {
