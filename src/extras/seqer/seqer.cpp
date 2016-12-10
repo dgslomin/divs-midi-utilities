@@ -8,6 +8,10 @@
 #include "sequence-editor.h"
 #include "music-math.h"
 
+#ifndef WXMSW
+#include "seqer.xpm"
+#endif
+
 enum
 {
 	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
@@ -91,6 +95,7 @@ bool Application::OnInit()
 Window::Window(Application* application, Window* existing_window): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
 	this->application = application;
+	this->SetIcon(wxICON(seqer));
 	this->CreateStatusBar();
 
 	wxMenuBar* menu_bar = new wxMenuBar();

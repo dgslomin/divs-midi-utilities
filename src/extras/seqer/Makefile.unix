@@ -18,7 +18,7 @@ endif
 seqer: seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o
 	$(LD) seqer seqer.o sequence-editor.o event-list.o piano-roll.o music-math.o color.o midifile.o $(LIBS)
 
-seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h
+seqer.o: seqer.cpp ../../midifile/midifile.h seqer.h sequence-editor.h music-math.h seqer.xpm
 	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
 
 sequence-editor.o: sequence-editor.cpp ../../midifile/midifile.h seqer.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h

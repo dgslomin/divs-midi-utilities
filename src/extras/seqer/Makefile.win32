@@ -1,12 +1,12 @@
 
-WXDIR=c:\wxWidgets-3.0.1
+WXDIR=c:\wxWidgets-3.1.0
 WXLIBDIR=$(WXDIR)\lib\vc_lib
 WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
-WXLIBS=$(WXLIBDIR)\wxbase30ud.lib $(WXLIBDIR)\wxmsw30ud_core.lib $(WXLIBDIR)\wxmsw30ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
+WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: seqer.obj sequence-editor.obj event-list.obj piano-roll.obj music-math.obj color.obj midifile.obj
-	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj sequence-editor.obj event-list.obj piano-roll.obj music-math.obj color.obj midifile.obj kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: seqer.obj sequence-editor.obj event-list.obj piano-roll.obj music-math.obj color.obj midifile.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj sequence-editor.obj event-list.obj piano-roll.obj music-math.obj color.obj midifile.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
@@ -31,6 +31,9 @@ color.obj: color.cpp
 midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
 
+seqer.res: seqer.rc seqer.ico
+	rc /nologo $(WXINCLUDES) /r /fo seqer.res seqer.rc
+
 clean:
 	@if exist seqer.obj del seqer.obj
 	@if exist sequence-editor.obj del sequence-editor.obj
@@ -39,6 +42,7 @@ clean:
 	@if exist music-math.obj del music-math.obj
 	@if exist color.obj del color.obj
 	@if exist midifile.obj del midifile.obj
+	@if exist seqer.res del seqer.res
 	@if exist seqer.ilk del seqer.ilk
 	@if exist seqer.pdb del seqer.pdb
 	@if exist seqer.suo del seqer.suo
