@@ -1,5 +1,5 @@
 /* XPM */
-static char * seqer_xpm[] = {
+static const char * seqer_xpm[] = {
 "256 256 145 2",
 "  	c None",
 ". 	c #070707",
