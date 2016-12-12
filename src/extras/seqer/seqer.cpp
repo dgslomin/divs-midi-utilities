@@ -8,7 +8,7 @@
 #include "sequence-editor.h"
 #include "music-math.h"
 
-#ifndef WXMSW
+#ifndef __WXMSW__
 #include "seqer.xpm"
 #endif
 
@@ -51,6 +51,7 @@ enum
 	SEQER_ID_INSERT_TEMPO,
 	SEQER_ID_INSERT_TIME_SIGNATURE,
 	SEQER_ID_INSERT_KEY_SIGNATURE,
+	SEQER_ID_OVERWRITE,
 	SEQER_ID_PLAY,
 	SEQER_ID_RECORD,
 	SEQER_ID_STOP,
@@ -169,6 +170,12 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 			insert_menu->Append(SEQER_ID_INSERT_TEMPO, "&Tempo\tShift+T");
 			insert_menu->Append(SEQER_ID_INSERT_TIME_SIGNATURE, "T&ime Signature\tShift+I");
 			insert_menu->Append(SEQER_ID_INSERT_KEY_SIGNATURE, "&Key Signature\tShift+K");
+			insert_menu->AppendSeparator();
+#ifdef __WXOSX__
+			insert_menu->Append(SEQER_ID_OVERWRITE, "&Overwrite\tKP_Enter", "", wxITEM_CHECK);
+#else
+			insert_menu->Append(SEQER_ID_OVERWRITE, "&Overwrite\tInsert", "", wxITEM_CHECK);
+#endif
 		menu_bar->Append(insert_menu, "&Insert");
 		wxMenu* transport_menu = new wxMenu();
 			transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
@@ -387,7 +394,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_PREFERENCES);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		wxMessageBox("Seqer\na MIDI sequencer\nby Div Slomin\nProvided under terms of the BSD license.", "About", wxOK);
+		wxMessageBox("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license", "About", wxOK);
 	}, wxID_ABOUT);
 
 	this->Bind(wxEVT_CHAR_HOOK, [=](wxKeyEvent& event) {

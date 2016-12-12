@@ -24,9 +24,9 @@
 
 <p>Different tracks and channels are displayed intermingled, distinguished by properties in the event list.  For those occasions where this is overwhelming, the display can be filtered according to these and other properties.</p>
 
-<p>Newly inserted events share their properties (track, channel, etc.) with the most recently edited event.  Newly inserted notes share their octave with the most recently edited note, and inherit their accidentals from the key signature (as specified in a key signature event).  Their duration will be equal to the step size.  All of these can be overridden where necessary by editing the appropriate property after the event is inserted.</p>
+<p>Newly inserted events share their properties (track, channel, etc.) with the most recently edited event.  Notes are added by typing the letter of their name.  Newly inserted notes share their octave with the most recently edited note, and inherit their accidentals from the key signature (as specified in a key signature event).  Their duration will be equal to the step size.  All of these can be overridden where necessary by editing the appropriate property after the event is inserted.</p>
 
-<p>Properties can be edited by typing in a value, or can be increased or decreased in small or large amounts, as appropriate for the property in question.  The small increment for time is one pixel at the current step zoom, and the large increment is a full step.  The small increment for pitch is a chromatic step, and the large increment is an octave.  Certain properties can also be quantized, such as rounding time to the nearest step.</p>
+<p>Properties can be edited by typing in a value, or can be increased or decreased in small or large amounts, as appropriate for the property in question.  The small increment for time is one pixel at the current step zoom, and the large increment is a full step.  The small increment for pitch is a chromatic step, and the large increment is an octave.  Certain properties can also be quantized, such as rounding time to the nearest step.  Overwrite mode lets you re-input the pitches of existing notes the same way as you would insert new notes.</p>
 
 <h3>Recording, playback, and ports (not yet implemented)</h3>
 
@@ -75,6 +75,8 @@
 <li>The notion of keeping tools small in their scope and providing interfaces by which they can interact with other tools to form a greater system as a whole:  from the Unix command line.</li>
 
 <li>The notion of inserting notes whose octave and accidentals are inferred from context:  from notation programs like Sibelius.</li>
+
+<li>The notion of having overwrite versus insert modes even in the absence of more exotic editing modes:  from word processors like Word.</li>
 
 <li>The notion of markers as a core navigation interface, and the notion of recordable macros that can be repeated via a held-down key:  from Vi.</li>
 
