@@ -27,6 +27,7 @@ void PianoRoll::RefreshData()
 
 void PianoRoll::OnDraw(wxDC& dc)
 {
+	MidiFileEvent_t current_row_event = (this->sequence_editor->current_row_number < this->sequence_editor->rows.size()) ? this->sequence_editor->rows[this->sequence_editor->current_row_number].event : NULL;
 	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
 	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
 	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
@@ -80,7 +81,9 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 					if ((event_y <= last_y) && (end_event_y >= first_y))
 					{
+						if (event == current_row_event) dc.SetBrush(wxBrush(ColorShade(*wxWHITE, 80)));
 						dc.DrawRectangle((note - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
+						if (event == current_row_event) dc.SetBrush(pass_brushes[pass]);
 					}
 				}
 			}
