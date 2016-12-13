@@ -370,6 +370,10 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		this->sequence_editor->InsertMarker();
 	}, SEQER_ID_INSERT_MARKER);
 
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& event) {
+		this->sequence_editor->SetOverwriteMode(event.IsChecked());
+	}, SEQER_ID_OVERWRITE);
+
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		this->sequence_editor->GoToNextMarker();
 	}, SEQER_ID_NEXT_MARKER);

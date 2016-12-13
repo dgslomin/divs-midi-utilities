@@ -36,6 +36,7 @@ SequenceEditor::SequenceEditor(Window* window, SequenceEditor* existing_sequence
 	this->insertion_note_number = 60;
 	this->insertion_velocity = 64;
 	this->insertion_end_velocity = 0;
+	this->overwrite_mode = false;
 #ifndef __WXOSX__
 	this->SetDoubleBuffered(true);
 #endif
@@ -167,6 +168,11 @@ void SequenceEditor::SetFilters(std::vector<int> filtered_event_types, std::vect
 	this->RefreshDisplay();
 }
 
+void SequenceEditor::SetOverwriteMode(bool overwrite_mode)
+{
+	this->overwrite_mode = overwrite_mode;
+}
+
 void SequenceEditor::RowUp()
 {
 	this->SetCurrentRowNumber(std::max<long>(this->current_row_number - 1, 0));
@@ -290,34 +296,61 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 
 void SequenceEditor::InsertNote(int diatonic)
 {
-	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
-	long start_step_number = this->GetStepNumberFromRowNumber(this->current_row_number);
-	long start_tick = this->step_size->GetTickFromStep(start_step_number);
-	long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
-	int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
-	this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
-	MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, this->insertion_end_velocity);
-	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-	this->sequence->RefreshData();
-	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+	if (this->overwrite_mode && (this->current_row_number < this->rows.size()) && MidiFileEvent_isNoteStartEvent(this->rows[this->current_row_number].event))
+	{
+		MidiFileEvent_t event = this->rows[this->current_row_number].event;
+		MidiFileTrack_t track = MidiFileEvent_getTrack(event);
+		int note_number = MidiFileNoteStartEvent_getNote(event);
+		long start_tick = MidiFileEvent_getTick(event);
+		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
+		int new_note_number = this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
+		MidiFileNoteStartEvent_setNote(event, new_note_number);
+		this->sequence->RefreshData();
 
-	this->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_detach(event);
-			MidiFileEvent_detach(end_event);
-			this->sequence->RefreshData();
-		},
-		[=]{
-			MidiFileEvent_delete(event);
-			MidiFileEvent_delete(end_event);
-		},
-		[=]{
-			MidiFileEvent_setTrack(event, track);
-			MidiFileEvent_setTrack(end_event, track);
-			this->sequence->RefreshData();
-		},
-		NULL
-	));
+		this->sequence->undo_command_processor->Submit(new UndoCommand(
+			[=]{
+				MidiFileNoteStartEvent_setNote(event, note_number);
+				this->sequence->RefreshData();
+			},
+			NULL,
+			[=]{
+				MidiFileNoteStartEvent_setNote(event, new_note_number);
+				this->sequence->RefreshData();
+			},
+			NULL
+		));
+	}
+	else
+	{
+		MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
+		long start_step_number = this->GetStepNumberFromRowNumber(this->current_row_number);
+		long start_tick = this->step_size->GetTickFromStep(start_step_number);
+		long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
+		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
+		this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
+		MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, this->insertion_end_velocity);
+		MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+		this->sequence->RefreshData();
+		this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
+
+		this->sequence->undo_command_processor->Submit(new UndoCommand(
+			[=]{
+				MidiFileEvent_detach(event);
+				MidiFileEvent_detach(end_event);
+				this->sequence->RefreshData();
+			},
+			[=]{
+				MidiFileEvent_delete(event);
+				MidiFileEvent_delete(end_event);
+			},
+			[=]{
+				MidiFileEvent_setTrack(event, track);
+				MidiFileEvent_setTrack(end_event, track);
+				this->sequence->RefreshData();
+			},
+			NULL
+		));
+	}
 }
 
 void SequenceEditor::InsertMarker()

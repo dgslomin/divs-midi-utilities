@@ -60,6 +60,7 @@ public:
 	int insertion_note_number;
 	int insertion_velocity;
 	int insertion_end_velocity;
+	bool overwrite_mode;
 
 	SequenceEditor(Window* window, SequenceEditor* existing_sequence_editor = NULL);
 	~SequenceEditor();
@@ -74,6 +75,7 @@ public:
 	void ZoomIn();
 	void ZoomOut();
 	void SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels);
+	void SetOverwriteMode(bool overwrite_mode);
 	void RowUp();
 	void RowDown();
 	void PageUp();
