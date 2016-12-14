@@ -1,5 +1,6 @@
 
 #include <functional>
+#include <set>
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
@@ -251,10 +252,18 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		this->Close();
 	}, wxID_CLOSE);
 
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& event) {
+		std::set<SequenceEditor*> modified_sequence_editors;
+
 		for (wxWindowList::compatibility_iterator window_iterator = wxTopLevelWindows.GetFirst(); window_iterator != NULL; window_iterator = window_iterator->GetNext())
 		{
-			if (!window_iterator->GetData()->Close()) return;
+			Window* window = (Window*)(window_iterator->GetData());
+			if (window->sequence_editor->IsModified()) modified_sequence_editors.insert(window->sequence_editor);
+		}
+
+		if (modified_sequence_editors.empty() || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK))
+		{
+			event.Skip();
 		}
 	}, wxID_EXIT);
 
