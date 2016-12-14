@@ -71,7 +71,7 @@ bool SequenceEditor::IsModified()
 
 bool SequenceEditor::IsLastEditorForSequence()
 {
-    return (this->sequence->sequence_editors.size() == 1);
+	return (this->sequence->sequence_editors.size() == 1);
 }
 
 wxString SequenceEditor::GetFilename()
@@ -115,6 +115,7 @@ bool SequenceEditor::Save()
 	if (MidiFile_save(this->sequence->midi_file, (char *)(this->sequence->filename.ToStdString().c_str())) == 0)
 	{
 		this->sequence->is_modified = false;
+		this->sequence->RefreshDisplay();
 		return true;
 	}
 	else
@@ -1582,7 +1583,13 @@ void SequenceEditor::RefreshData()
 
 void SequenceEditor::RefreshDisplay()
 {
-    this->window->SetTitle((this->sequence->filename == wxEmptyString) ? "Seqer" : wxFileName(this->sequence->filename).GetFullName() + " - Seqer");
+#ifdef __WXOSX__
+	this->window->SetTitle(wxString::Format("%s - Seqer", (this->sequence->filename == wxEmptyString) ? "Untitled" : wxFileName(this->sequence->filename).GetFullName()));
+	this->window->OSXSetModified(this->sequence->is_modified);
+#else
+	this->window->SetTitle(wxString::Format("%s%s - Seqer", this->sequence->is_modified ? "*" : "", (this->sequence->filename == wxEmptyString) ? "Untitled" : wxFileName(this->sequence->filename).GetFullName()));
+#endif
+
 	this->window->SetStatusText(this->event_list->GetColumnLabel(this->current_row_number, this->current_column_number), 0);
 	this->Refresh();
 }

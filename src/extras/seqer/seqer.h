@@ -30,6 +30,7 @@ public:
 
 	Window(Application* application, Window* existing_window = NULL);
 	~Window();
+	bool SaveChangesIfNeeded();
 	bool SaveChanges();
 	bool Save();
 	bool SaveAs();

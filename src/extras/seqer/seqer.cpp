@@ -217,7 +217,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	this->Bind(wxEVT_MENU_HIGHLIGHT, [=](wxMenuEvent&) {});
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		if (!this->SaveChanges()) return;
+		if (!this->SaveChangesIfNeeded()) return;
 		this->sequence_editor->New();
 	}, wxID_NEW);
 
@@ -226,7 +226,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, SEQER_ID_NEW_WINDOW);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		if (!this->SaveChanges()) return;
+		if (!this->SaveChangesIfNeeded()) return;
 		wxFileDialog* file_dialog = new wxFileDialog(this, "Open File", "", "", "MIDI Files (*.mid)|*.mid|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 		if (file_dialog->ShowModal() == wxID_OK)
@@ -253,17 +253,29 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_CLOSE);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& event) {
-		std::set<SequenceEditor*> modified_sequence_editors;
+		std::set<Sequence*> sequences;
+		bool is_modified = false;
 
 		for (wxWindowList::compatibility_iterator window_iterator = wxTopLevelWindows.GetFirst(); window_iterator != NULL; window_iterator = window_iterator->GetNext())
 		{
 			Window* window = (Window*)(window_iterator->GetData());
-			if (window->sequence_editor->IsModified()) modified_sequence_editors.insert(window->sequence_editor);
+			sequences.insert(window->sequence_editor->sequence);
+			if (window->sequence_editor->IsModified()) is_modified = true;
 		}
 
-		if (modified_sequence_editors.empty() || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK))
+		if (sequences.size() == 1)
 		{
-			event.Skip();
+			if (!is_modified || this->SaveChanges())
+			{
+				event.Skip();
+			}
+		}
+		else
+		{
+			if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK))
+			{
+				event.Skip();
+			}
 		}
 	}, wxID_EXIT);
 
@@ -636,17 +648,21 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	});
 
 	this->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-		if (!this->SaveChanges()) return;
+		if (!this->SaveChangesIfNeeded()) return;
 		event.Skip();
 	});
 
 	this->sequence_editor = new SequenceEditor(this, (existing_window == NULL) ? NULL : existing_window->sequence_editor);
 }
 
-bool Window::SaveChanges()
+bool Window::SaveChangesIfNeeded()
 {
 	if (!(this->sequence_editor->IsModified() && this->sequence_editor->IsLastEditorForSequence())) return true;
+	return this->SaveChanges();
+}
 
+bool Window::SaveChanges()
+{
 	switch (wxMessageBox("Do you want to save changes to the current file?", "Save Changes", wxYES_NO | wxCANCEL))
 	{
 		case wxYES:
