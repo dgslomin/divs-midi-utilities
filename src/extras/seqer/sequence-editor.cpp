@@ -130,6 +130,7 @@ bool SequenceEditor::SaveAs(wxString filename)
 	{
 		this->sequence->filename = filename;
 		this->sequence->is_modified = false;
+		this->sequence->RefreshDisplay();
 		return true;
 	}
 	else

@@ -81,7 +81,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 					if ((event_y <= last_y) && (end_event_y >= first_y))
 					{
-						if (event == current_row_event) dc.SetBrush(wxBrush(ColorShade(*wxWHITE, 80)));
+						if (event == current_row_event) dc.SetBrush(wxBrush(this->lighter_line_color));
 						dc.DrawRectangle((note - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
 						if (event == current_row_event) dc.SetBrush(pass_brushes[pass]);
 					}
