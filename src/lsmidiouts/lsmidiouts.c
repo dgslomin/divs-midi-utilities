@@ -1,6 +1,7 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {

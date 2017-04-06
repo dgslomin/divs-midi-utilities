@@ -1,4 +1,8 @@
 *.o
+*.obj
 bin/*
+*.exe
 .*.swp
 *.res
+*.ilk
+*.pdb

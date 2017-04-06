@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
 	if (midiOutOpen(&midi_out, midi_out_number, 0, 0, 0) != MMSYSERR_NOERROR)
 	{
-		printf("Cannot open MIDI output port #%d.\n");
+		printf("Cannot open MIDI output port #%d.\n", midi_out_number);
 		return 1;
 	}
 
