@@ -54,8 +54,8 @@ enum
 	SEQER_ID_INSERT_KEY_SIGNATURE,
 	SEQER_ID_OVERWRITE,
 	SEQER_ID_PLAY,
-	SEQER_ID_RECORD,
 	SEQER_ID_STOP,
+	SEQER_ID_RECORD,
 	SEQER_ID_STEP_RECORD,
 	SEQER_ID_NEXT_MARKER,
 	SEQER_ID_PREVIOUS_MARKER,
@@ -180,8 +180,8 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		menu_bar->Append(insert_menu, "&Insert");
 		wxMenu* transport_menu = new wxMenu();
 			transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
-			transport_menu->Append(SEQER_ID_RECORD, "&Record\tCtrl+R");
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
+			transport_menu->Append(SEQER_ID_RECORD, "&Record\tCtrl+R");
 			transport_menu->Append(SEQER_ID_STEP_RECORD, "S&tep Record\tCtrl+T", "", wxITEM_CHECK);
 			transport_menu->AppendSeparator();
 #ifdef __WXOSX__
