@@ -76,6 +76,9 @@ public:
 	void ZoomOut();
 	void SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels);
 	void SetOverwriteMode(bool overwrite_mode);
+	void SelectCurrent();
+	void SelectAll();
+	void SelectNone();
 	void RowUp();
 	void RowDown();
 	void PageUp();

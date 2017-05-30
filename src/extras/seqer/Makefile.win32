@@ -13,7 +13,7 @@ seqer.exe: seqer.obj sequence-editor.obj event-list.obj piano-roll.obj music-mat
 seqer.obj: seqer.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h music-math.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
 
-sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h seqer.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h
+sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h event-list.h music-math.h piano-roll.h sequence-editor.h seqer.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c sequence-editor.cpp
 
 event-list.obj: event-list.cpp ..\..\midifile\midifile.h sequence-editor.h event-list.h piano-roll.h music-math.h color.h

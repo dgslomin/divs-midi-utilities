@@ -198,7 +198,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		wxMenu* tools_menu = new wxMenu();
 			tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
 			tools_menu->AppendSeparator();
-			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+M");
+			tools_menu->Append(SEQER_ID_RECORD_MACRO, "&Record Macro...\tCtrl+Shift+R");
 			tools_menu->Append(SEQER_ID_MACROS, "&Macros...");
 			tools_menu->AppendSeparator();
 #ifdef __WXOSX__
@@ -290,6 +290,18 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		this->sequence_editor->DeleteRow();
 	}, wxID_DELETE);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->SelectCurrent();
+	}, SEQER_ID_SELECT_CURRENT);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->SelectAll();
+	}, wxID_SELECTALL);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		this->sequence_editor->SelectNone();
+	}, SEQER_ID_SELECT_NONE);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		this->sequence_editor->EnterValue();

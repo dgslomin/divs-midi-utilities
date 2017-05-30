@@ -1,5 +1,4 @@
 
-#include <math.h>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -7,12 +6,11 @@
 #include <wx/cmdproc.h>
 #include <wx/filename.h>
 #include <midifile.h>
-#include "seqer.h"
-#include "sequence-editor.h"
 #include "event-list.h"
-#include "piano-roll.h"
 #include "music-math.h"
-#include "color.h"
+#include "piano-roll.h"
+#include "sequence-editor.h"
+#include "seqer.h"
 
 #ifdef __WXMSW__
 #define CANVAS_BORDER wxBORDER_THEME
@@ -173,6 +171,18 @@ void SequenceEditor::SetFilters(std::vector<int> filtered_event_types, std::vect
 void SequenceEditor::SetOverwriteMode(bool overwrite_mode)
 {
 	this->overwrite_mode = overwrite_mode;
+}
+
+void SequenceEditor::SelectCurrent()
+{
+}
+
+void SequenceEditor::SelectAll()
+{
+}
+
+void SequenceEditor::SelectNone()
+{
 }
 
 void SequenceEditor::RowUp()

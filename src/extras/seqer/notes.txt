@@ -15,7 +15,7 @@ A vertical piano roll functions as an additional, graphical column in the table,
 
 TODO:
 	event grid
-		insert/delete/edit operations
+		remaining insert/delete/edit operations
 		mouse support for navigate/select
 	piano roll
 		mouse support for select
