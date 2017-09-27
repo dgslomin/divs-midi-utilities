@@ -7,10 +7,6 @@ class Row;
 class Step;
 class RowLocator;
 class UndoCommand;
-class Row;
-class Cell;
-class EmptyRow;
-class EmptyRowTimeCell;
 
 #include <functional>
 #include <list>
@@ -143,10 +139,10 @@ public:
 
 	Sequence();
 	~Sequence();
-	void AddSequenceEditor(SequenceEditor* sequence_editor);
-	void RemoveSequenceEditor(SequenceEditor* sequence_editor);
-	void RefreshData();
-	void RefreshDisplay();
+    void AddSequenceEditor(SequenceEditor* sequence_editor);
+    void RemoveSequenceEditor(SequenceEditor* sequence_editor);
+    void RefreshData();
+    void RefreshDisplay();
 };
 
 class Row
@@ -187,48 +183,6 @@ public:
 	~UndoCommand();
 	bool Do();
 	bool Undo();
-};
-
-class Row
-{
-public:
-	SequenceEditor* sequence_editor;
-	long step_number;
-	MidiFileEvent_t event;
-	wxString label = wxEmptyString;
-	Cell*[7] cells;
-
-	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-	virtual void Delete();
-};
-
-class Cell
-{
-public:
-	Row* row;
-	wxString label = wxEmptyString;
-
-	Cell(Row* row);
-	virtual wxString GetValueText();
-	virtual void EnterValue();
-	virtual void SmallIncrease();
-	virtual void SmallDecrease();
-	virtual void LargeIncrease();
-	virtual void LargeDecrease();
-	virtual void Quantize();
-};
-
-class EmptyRow: public Row
-{
-public:
-	EmptyRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-}
-
-class EmptyRowTimeCell: public Cell
-{
-public:
-	EmptyRowTimeCell(Row* row);
-	wxString GetValueText();
 };
 
 #endif

@@ -28,8 +28,6 @@ public:
 	long GetXFromColumnNumber(long column_number);
 	long GetYFromRowNumber(long row_number);
 	long GetRowNumberFromY(long y);
-	wxString GetCellText(long row_number, long column_number);
-	wxString GetColumnLabel(long row_number, long column_number);
 };
 
 #endif
