@@ -10,8 +10,8 @@
 #include "event-types.h"
 #include "music-math.h"
 #include "piano-roll.h"
-#include "sequence-editor.h"
 #include "seqer.h"
+#include "sequence-editor.h"
 
 #ifdef __WXMSW__
 #define CANVAS_BORDER wxBORDER_THEME

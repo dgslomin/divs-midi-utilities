@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "control-change-event.h"
+#include "sequence-editor.h"
 
 ControlChangeEventType::ControlChangeEventType()
 {

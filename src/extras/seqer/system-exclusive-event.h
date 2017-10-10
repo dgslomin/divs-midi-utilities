@@ -8,6 +8,7 @@ class SystemExclusiveEventTrackCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
+#include "event-types.h"
 #include "sequence-editor.h"
 
 class SystemExclusiveEventType: public EventType

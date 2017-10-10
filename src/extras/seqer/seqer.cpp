@@ -5,9 +5,9 @@
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
 #include <midifile.h>
+#include "music-math.h"
 #include "seqer.h"
 #include "sequence-editor.h"
-#include "music-math.h"
 
 #ifndef __WXMSW__
 #include "seqer.xpm"

@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "port-event.h"
+#include "sequence-editor.h"
 
 PortEventType::PortEventType()
 {

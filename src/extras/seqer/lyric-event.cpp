@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "lyric-event.h"
+#include "sequence-editor.h"
 
 LyricEventType::LyricEventType()
 {

@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "marker-event.h"
+#include "sequence-editor.h"
 
 void SequenceEditor::InsertMarker()
 {

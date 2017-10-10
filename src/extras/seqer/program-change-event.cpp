@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "program-change-event.h"
+#include "sequence-editor.h"
 
 ProgramChangeEventType::ProgramChangeEventType()
 {

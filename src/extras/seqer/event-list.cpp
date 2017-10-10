@@ -2,11 +2,11 @@
 #include <algorithm>
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
-#include "event-list.h"
-#include "piano-roll.h"
-#include "music-math.h"
 #include "color.h"
+#include "event-list.h"
+#include "music-math.h"
+#include "piano-roll.h"
+#include "sequence-editor.h"
 
 EventList::EventList(SequenceEditor* sequence_editor)
 {

@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "pitch-bend-event.h"
+#include "sequence-editor.h"
 
 PitchBendEventType::PitchBendEventType()
 {

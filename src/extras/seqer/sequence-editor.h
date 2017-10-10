@@ -17,11 +17,11 @@ class UndoCommand;
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
 #include <midifile.h>
-#include "seqer.h"
-#include "event-types.h"
 #include "event-list.h"
-#include "piano-roll.h"
+#include "event-types.h"
 #include "music-math.h"
+#include "piano-roll.h"
+#include "seqer.h"
 
 class SequenceEditor: public wxScrolledCanvas
 {
