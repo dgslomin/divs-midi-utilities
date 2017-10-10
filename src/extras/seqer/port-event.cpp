@@ -31,7 +31,7 @@ PortEventRow::PortEventRow(SequenceEditor* sequence_editor, long step_number, Mi
 	this->cells[6] = new Cell(this);
 }
 
-PortEventTimeCell(Row* row): Cell(row)
+PortEventTimeCell::PortEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString PortEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-PortEventTrackCell(Row* row): Cell(row)
+PortEventTrackCell::PortEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -51,7 +51,7 @@ wxString PortEventTrackCell::GetValueText()
 	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
 }
 
-PortEventNameCell(Row* row): Cell(row)
+PortEventNameCell::PortEventNameCell(Row* row): Cell(row)
 {
 	this->label = wxString("Name");
 }

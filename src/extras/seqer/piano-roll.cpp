@@ -66,7 +66,9 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence_editor->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-			if (MidiFileEvent_isNoteStartEvent(event) && this->sequence_editor->Filter(event))
+            EventType* event_type = event_types->GetEventType(event);
+
+			if (MidiFileEvent_isNoteStartEvent(event) && this->sequence_editor->Filter(event_type, event))
 			{
 				int note = MidiFileNoteOnEvent_getNote(event);
 

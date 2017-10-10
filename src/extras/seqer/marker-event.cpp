@@ -62,7 +62,7 @@ void MarkerEventRow::Delete()
 	MidiFileEvent_detach(event);
 	sequence_editor->sequence->RefreshData();
 
-	this->sequence->undo_command_processor->Submit(new UndoCommand(
+	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
 		[=]{
 			MidiFileEvent_setTrack(event, track);
 			sequence_editor->sequence->RefreshData();
@@ -78,7 +78,7 @@ void MarkerEventRow::Delete()
 	));
 }
 
-MarkerEventTimeCell(Row* row): Cell(row)
+MarkerEventTimeCell::MarkerEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -88,7 +88,7 @@ wxString MarkerEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-void MarkerEventTimeCell:SmallIncrease()
+void MarkerEventTimeCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
@@ -112,7 +112,7 @@ void MarkerEventTimeCell:SmallIncrease()
 	));
 }
 
-void MarkerEventTimeCell:SmallDecrease()
+void MarkerEventTimeCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
@@ -136,7 +136,7 @@ void MarkerEventTimeCell:SmallDecrease()
 	));
 }
 
-void MarkerEventTimeCell:LargeIncrease()
+void MarkerEventTimeCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
@@ -163,7 +163,7 @@ void MarkerEventTimeCell:LargeIncrease()
 	));
 }
 
-void MarkerEventTimeCell:LargeDecrease()
+void MarkerEventTimeCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
@@ -190,7 +190,7 @@ void MarkerEventTimeCell:LargeDecrease()
 	));
 }
 
-void MarkerEventTimeCell:Quantize()
+void MarkerEventTimeCell::Quantize()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
@@ -214,7 +214,7 @@ void MarkerEventTimeCell:Quantize()
 	));
 }
 
-MarkerEventNameCell(Row* row): Cell(row)
+MarkerEventNameCell::MarkerEventNameCell(Row* row): Cell(row)
 {
 	this->label = wxString("Name");
 }
@@ -228,7 +228,7 @@ void MarkerEventNameCell::EnterValue()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	MidiFileEvent_t event = this->row->event;
-	wxTextEntryDialog* dialog = new wxTextEntryDialog(this, "Name", "Edit Marker", MidiFileMarkerEvent_getText(event));
+	wxTextEntryDialog* dialog = new wxTextEntryDialog(sequence_editor, "Name", "Edit Marker", MidiFileMarkerEvent_getText(event));
 
 	if (dialog->ShowModal() == wxID_OK)
 	{

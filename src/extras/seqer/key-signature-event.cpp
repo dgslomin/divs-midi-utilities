@@ -31,7 +31,7 @@ KeySignatureEventRow::KeySignatureEventRow(SequenceEditor* sequence_editor, long
 	this->cells[6] = new Cell(this);
 }
 
-KeySignatureEventTimeCell(Row* row): Cell(row)
+KeySignatureEventTimeCell::KeySignatureEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString KeySignatureEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-KeySignatureEventKeySignatureCell(Row* row): Cell(row)
+KeySignatureEventKeySignatureCell::KeySignatureEventKeySignatureCell(Row* row): Cell(row)
 {
 	this->label = wxString("Key signature");
 }

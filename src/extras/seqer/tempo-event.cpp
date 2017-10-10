@@ -31,7 +31,7 @@ TempoEventRow::TempoEventRow(SequenceEditor* sequence_editor, long step_number, 
 	this->cells[6] = new Cell(this);
 }
 
-TempoEventTimeCell(Row* row): Cell(row)
+TempoEventTimeCell::TempoEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString TempoEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-TempoEventTempoCell(Row* row): Cell(row)
+TempoEventTempoCell::TempoEventTempoCell(Row* row): Cell(row)
 {
 	this->label = wxString("Tempo");
 }

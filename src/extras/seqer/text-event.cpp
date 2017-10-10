@@ -31,7 +31,7 @@ TextEventRow::TextEventRow(SequenceEditor* sequence_editor, long step_number, Mi
 	this->cells[6] = new Cell(this);
 }
 
-TextEventTimeCell(Row* row): Cell(row)
+TextEventTimeCell::TextEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString TextEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-TextEventTrackCell(Row* row): Cell(row)
+TextEventTrackCell::TextEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -51,7 +51,7 @@ wxString TextEventTrackCell::GetValueText()
 	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
 }
 
-TextEventTextCell(Row* row): Cell(row)
+TextEventTextCell::TextEventTextCell(Row* row): Cell(row)
 {
 	this->label = wxString("Text");
 }

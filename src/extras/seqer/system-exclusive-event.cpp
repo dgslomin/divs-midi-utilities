@@ -31,7 +31,7 @@ SystemExclusiveEventRow::SystemExclusiveEventRow(SequenceEditor* sequence_editor
 	this->cells[6] = new Cell(this);
 }
 
-SystemExclusiveEventTimeCell(Row* row): Cell(row)
+SystemExclusiveEventTimeCell::SystemExclusiveEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString SystemExclusiveEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-SystemExclusiveEventTrackCell(Row* row): Cell(row)
+SystemExclusiveEventTrackCell::SystemExclusiveEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }

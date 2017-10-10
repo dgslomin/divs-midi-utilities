@@ -16,14 +16,14 @@ class TimeSignatureEventType: public EventType
 public:
 	TimeSignatureEventType();
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(MidiFileEvent_t event);
+	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class TimeSignatureEventRow: public Row
 {
 public:
 	TimeSignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-}:
+};
 
 class TimeSignatureEventTimeCell: public Cell
 {

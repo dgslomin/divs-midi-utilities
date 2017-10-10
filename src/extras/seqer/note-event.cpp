@@ -95,6 +95,7 @@ void NoteEventRow::Delete()
 	SequenceEditor* sequence_editor = this->sequence_editor;
 	MidiFileEvent_t event = this->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+    MidiFileTrack_t track = MidiFileEvent_getTrack(event);
 	MidiFileEvent_detach(event);
 	MidiFileEvent_detach(end_event);
 	sequence_editor->sequence->RefreshData();
@@ -118,7 +119,7 @@ void NoteEventRow::Delete()
 	));
 }
 
-NoteEventTimeCell(Row* row): SequenceEditorCell(row)
+NoteEventTimeCell::NoteEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -284,7 +285,7 @@ void NoteEventTimeCell::Quantize()
 	));
 }
 
-NoteEventTrackCell(Row* row): SequenceEditorCell(row)
+NoteEventTrackCell::NoteEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -350,7 +351,7 @@ void NoteEventTrackCell::SmallDecrease()
 	));
 }
 
-NoteEventChannelCell(Row* row): SequenceEditorCell(row)
+NoteEventChannelCell::NoteEventChannelCell(Row* row): Cell(row)
 {
 	this->label = wxString("Channel");
 }
@@ -406,7 +407,7 @@ void NoteEventChannelCell::SmallDecrease()
 	));
 }
 
-NoteEventNoteCell(Row* row): SequenceEditorCell(row)
+NoteEventNoteCell::NoteEventNoteCell(Row* row): Cell(row)
 {
 	this->label = wxString("Note");
 }
@@ -508,7 +509,7 @@ void NoteEventNoteCell::LargeDecrease()
 	));
 }
 
-NoteEventVelocityCell(Row* row): SequenceEditorCell(row)
+NoteEventVelocityCell::NoteEventVelocityCell(Row* row): Cell(row)
 {
 	this->label = wxString("Velocity");
 }
@@ -610,7 +611,7 @@ void NoteEventVelocityCell::LargeDecrease()
 	));
 }
 
-NoteEventEndTimeCell(Row* row): SequenceEditorCell(row)
+NoteEventEndTimeCell::NoteEventEndTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("End time");
 }
@@ -751,7 +752,7 @@ void NoteEventEndTimeCell::Quantize()
 	));
 }
 
-NoteEventEndVelocityCell(Row* row): SequenceEditorCell(row)
+NoteEventEndVelocityCell::NoteEventEndVelocityCell(Row* row): Cell(row)
 {
 	this->label = wxString("End velocity");
 }

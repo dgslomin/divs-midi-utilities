@@ -31,7 +31,7 @@ LyricEventRow::LyricEventRow(SequenceEditor* sequence_editor, long step_number, 
 	this->cells[6] = new Cell(this);
 }
 
-LyricEventTimeCell(Row* row): Cell(row)
+LyricEventTimeCell::LyricEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString LyricEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-LyricEventTrackCell(Row* row): Cell(row)
+LyricEventTrackCell::LyricEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -51,7 +51,7 @@ wxString LyricEventTrackCell::GetValueText()
 	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
 }
 
-LyricEventLyricCell(Row* row): Cell(row)
+LyricEventLyricCell::LyricEventLyricCell(Row* row): Cell(row)
 {
 	this->label = wxString("Lyric");
 }

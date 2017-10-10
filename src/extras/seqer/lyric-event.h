@@ -17,7 +17,7 @@ class LyricEventType: public EventType
 public:
 	LyricEventType();
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(MidiFileEvent_t event);
+	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class LyricEventRow: public Row

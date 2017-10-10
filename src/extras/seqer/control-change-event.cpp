@@ -31,7 +31,7 @@ ControlChangeEventRow::ControlChangeEventRow(SequenceEditor* sequence_editor, lo
 	this->cells[6] = new Cell(this);
 }
 
-ControlChangeEventTimeCell(Row* row): Cell(row)
+ControlChangeEventTimeCell::ControlChangeEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString ControlChangeEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-ControlChangeEventTrackCell(Row* row): Cell(row)
+ControlChangeEventTrackCell::ControlChangeEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -51,7 +51,7 @@ wxString ControlChangeEventTrackCell::GetValueText()
 	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
 }
 
-ControlChangeEventChannelCell(Row* row): Cell(row)
+ControlChangeEventChannelCell::ControlChangeEventChannelCell(Row* row): Cell(row)
 {
 	this->label = wxString("Channel");
 }
@@ -61,7 +61,7 @@ wxString ControlChangeEventChannelCell::GetValueText()
 	return wxString::Format("%d", MidiFileControlChangeEvent_getChannel(this->row->event) + 1);
 }
 
-ControlChangeEventNumberCell(Row* row): Cell(row)
+ControlChangeEventNumberCell::ControlChangeEventNumberCell(Row* row): Cell(row)
 {
 	this->label = wxString("Number");
 }
@@ -71,7 +71,7 @@ wxString ControlChangeEventNumberCell::GetValueText()
 	return wxString::Format("%d", MidiFileControlChangeEvent_getNumber(this->row->event) + 1);
 }
 
-ControlChangeEventValueCell(Row* row): Cell(row)
+ControlChangeEventValueCell::ControlChangeEventValueCell(Row* row): Cell(row)
 {
 	this->label = wxString("Value");
 }

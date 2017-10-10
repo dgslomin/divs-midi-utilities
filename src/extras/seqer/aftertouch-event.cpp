@@ -31,7 +31,7 @@ AftertouchEventRow::AftertouchEventRow(SequenceEditor* sequence_editor, long ste
 	this->cells[6] = new Cell(this);
 }
 
-AftertouchEventTimeCell(Row* row): Cell(row)
+AftertouchEventTimeCell::AftertouchEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString AftertouchEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-AftertouchEventTrackCell(Row* row): Cell(row)
+AftertouchEventTrackCell::AftertouchEventTrackCell(Row* row): Cell(row)
 {
 	this->label = wxString("Track");
 }
@@ -51,7 +51,7 @@ wxString AftertouchEventTrackCell::GetValueText()
 	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
 }
 
-AftertouchEventChannelCell(Row* row): Cell(row)
+AftertouchEventChannelCell::AftertouchEventChannelCell(Row* row): Cell(row)
 {
 	this->label = wxString("Channel");
 }
@@ -68,7 +68,7 @@ wxString AftertouchEventChannelCell::GetValueText()
 	}
 }
 
-AftertouchEventNoteCell(Row* row): Cell(row)
+AftertouchEventNoteCell::AftertouchEventNoteCell(Row* row): Cell(row)
 {
 	this->label = wxString("Note");
 }
@@ -85,7 +85,7 @@ wxString AftertouchEventNoteCell::GetValueText()
 	}
 }
 
-AftertouchEventAmountCell(Row* row): Cell(row)
+AftertouchEventAmountCell::AftertouchEventAmountCell(Row* row): Cell(row)
 {
 	this->label = wxString("Amount");
 }

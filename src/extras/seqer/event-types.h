@@ -24,7 +24,7 @@ public:
 	wxString name;
 
 	virtual bool MatchesEvent(MidiFileEvent_t event) = 0;
-	virtual bool GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
+	virtual Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 #endif

@@ -31,7 +31,7 @@ TimeSignatureEventRow::TimeSignatureEventRow(SequenceEditor* sequence_editor, lo
 	this->cells[6] = new Cell(this);
 }
 
-TimeSignatureEventTimeCell(Row* row): Cell(row)
+TimeSignatureEventTimeCell::TimeSignatureEventTimeCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time");
 }
@@ -41,7 +41,7 @@ wxString TimeSignatureEventTimeCell::GetValueText()
 	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
 }
 
-TimeSignatureEventTimeSignatureCell(Row* row): Cell(row)
+TimeSignatureEventTimeSignatureCell::TimeSignatureEventTimeSignatureCell(Row* row): Cell(row)
 {
 	this->label = wxString("Time signature");
 }

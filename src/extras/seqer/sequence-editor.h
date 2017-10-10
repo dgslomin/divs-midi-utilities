@@ -143,7 +143,7 @@ public:
 	long step_number;
 	MidiFileEvent_t event;
 	wxString label = wxEmptyString;
-	Cell*[7] cells;
+	Cell* cells[7];
 
 	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 	virtual void Delete();
@@ -169,7 +169,7 @@ class EmptyRow: public Row
 {
 public:
 	EmptyRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-}
+};
 
 class EmptyRowTimeCell: public Cell
 {
