@@ -1,6 +1,7 @@
 #ifndef AFTERTOUCH_EVENT_INCLUDED
 #define AFTERTOUCH_EVENT_INCLUDED
 
+class AftertouchEventType;
 class AftertouchEventRow;
 class AftertouchEventTimeCell;
 class AftertouchEventTrackCell;
@@ -11,6 +12,14 @@ class AftertouchEventAmountCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class AftertouchEventType: public EventType
+{
+public:
+	AftertouchEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class AftertouchEventRow: public Row
 {

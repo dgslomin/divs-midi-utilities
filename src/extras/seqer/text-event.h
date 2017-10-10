@@ -1,6 +1,7 @@
 #ifndef TEXT_EVENT_INCLUDED
 #define TEXT_EVENT_INCLUDED
 
+class TextEventType;
 class TextEventRow;
 class TextEventTimeCell;
 class TextEventTrackCell;
@@ -9,6 +10,14 @@ class TextEventTextCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class TextEventType: public EventType
+{
+public:
+	TextEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class TextEventRow: public Row
 {

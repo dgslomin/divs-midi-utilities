@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "key-signature-event.h"
 
+KeySignatureEventType::KeySignatureEventType()
+{
+	this->name = wxString("Key signature");
+}
+
+bool KeySignatureEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isKeySignatureEvent(event);
+}
+
+Row* KeySignatureEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new KeySignatureEventRow(sequence_editor, step_number, event);
+}
+
 KeySignatureEventRow::KeySignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Key");

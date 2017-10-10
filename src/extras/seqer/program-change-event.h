@@ -1,6 +1,7 @@
 #ifndef PROGRAM_CHANGE_EVENT_INCLUDED
 #define PROGRAM_CHANGE_EVENT_INCLUDED
 
+class ProgramChangeEventType;
 class ProgramChangeEventRow;
 class ProgramChangeEventTimeCell;
 class ProgramChangeEventTrackCell;
@@ -10,6 +11,14 @@ class ProgramChangeEventNumberCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class ProgramChangeEventType: public EventType
+{
+public:
+	ProgramChangeEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class ProgramChangeEventRow: public Row
 {

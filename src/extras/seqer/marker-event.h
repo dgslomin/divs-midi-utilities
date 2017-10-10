@@ -1,6 +1,7 @@
 #ifndef MARKER_EVENT_INCLUDED
 #define MARKER_EVENT_INCLUDED
 
+class MarkerEventType;
 class MarkerEventRow;
 class MarkerEventTimeCell;
 class MarkerEventNameCell;
@@ -8,6 +9,14 @@ class MarkerEventNameCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class MarkerEventType: public EventType
+{
+public:
+	MarkerEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class MarkerEventRow: public Row
 {

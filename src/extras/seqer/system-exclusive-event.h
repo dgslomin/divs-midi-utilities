@@ -1,6 +1,7 @@
 #ifndef SYSTEM_EXCLUSIVE_EVENT_INCLUDED
 #define SYSTEM_EXCLUSIVE_EVENT_INCLUDED
 
+class SystemExclusiveEventType;
 class SystemExclusiveEventRow;
 class SystemExclusiveEventTimeCell;
 class SystemExclusiveEventTrackCell;
@@ -8,6 +9,14 @@ class SystemExclusiveEventTrackCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class SystemExclusiveEventType: public EventType
+{
+public:
+	SystemExclusiveEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class SystemExclusiveEventRow: public Row
 {

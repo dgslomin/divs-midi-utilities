@@ -27,6 +27,21 @@ void SequenceEditor::InsertMarker()
 	));
 }
 
+MarkerEventType::MarkerEventType()
+{
+	this->name = wxString("Marker");
+}
+
+bool MarkerEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isMarkerEvent(event);
+}
+
+Row* MarkerEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new MarkerEventRow(sequence_editor, step_number, event);
+}
+
 MarkerEventRow::MarkerEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Marker");

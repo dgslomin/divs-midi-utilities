@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "program-change-event.h"
 
+ProgramChangeEventType::ProgramChangeEventType()
+{
+	this->name = wxString("Program change");
+}
+
+bool ProgramChangeEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE);
+}
+
+Row* ProgramChangeEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new ProgramChangeEventRow(sequence_editor, step_number, event);
+}
+
 ProgramChangeEventRow::ProgramChangeEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Prog");

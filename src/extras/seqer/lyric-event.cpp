@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "lyric-event.h"
 
+LyricEventType::LyricEventType()
+{
+	this->name = wxString("Lyric");
+}
+
+bool LyricEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isLyricEvent(event);
+}
+
+Row* LyricEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new LyricEventRow(sequence_editor, step_number, event);
+}
+
 LyricEventRow::LyricEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Lyric");

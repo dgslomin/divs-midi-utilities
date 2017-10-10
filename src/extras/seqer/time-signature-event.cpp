@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "time-signature-event.h"
 
+TimeSignatureEventType::TimeSignatureEventType()
+{
+	this->name = wxString("Time signature");
+}
+
+bool TimeSignatureEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isTimeSignatureEvent(event);
+}
+
+Row* TimeSignatureEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new TimeSignatureEventRow(sequence_editor, step_number, event);
+}
+
 TimeSignatureEventRow::TimeSignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Ctrl");

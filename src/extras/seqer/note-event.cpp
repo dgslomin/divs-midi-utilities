@@ -1,8 +1,8 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "sequence-editor.h"
 #include "note-event.h"
+#include "sequence-editor.h"
 
 void SequenceEditor::InsertNote(int diatonic)
 {
@@ -61,6 +61,21 @@ void SequenceEditor::InsertNote(int diatonic)
 			NULL
 		));
 	}
+}
+
+NoteEventType::NoteEventType()
+{
+	this->name = wxString("Note");
+}
+
+bool NoteEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isNoteStartEvent(event);
+}
+
+Row* NoteEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new NoteEventRow(sequence_editor, step_number, event);
 }
 
 NoteEventRow::NoteEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)

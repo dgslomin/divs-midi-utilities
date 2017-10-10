@@ -1,6 +1,7 @@
 #ifndef KEY_SIGNATURE_EVENT_INCLUDED
 #define KEY_SIGNATURE_EVENT_INCLUDED
 
+class KeySignatureEventType;
 class KeySignatureEventRow;
 class KeySignatureEventTimeCell;
 class KeySignatureEventKeySignatureCell;
@@ -8,6 +9,14 @@ class KeySignatureEventKeySignatureCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class KeySignatureEventType: public EventType
+{
+public:
+	KeySignatureEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class KeySignatureEventRow: public Row
 {

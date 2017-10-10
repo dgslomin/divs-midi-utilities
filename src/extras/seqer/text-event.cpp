@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "text-event.h"
 
+TextEventType::TextEventType()
+{
+	this->name = wxString("Text");
+}
+
+bool TextEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isTextEvent(event);
+}
+
+Row* TextEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new TextEventRow(sequence_editor, step_number, event);
+}
+
 TextEventRow::TextEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Ctrl");

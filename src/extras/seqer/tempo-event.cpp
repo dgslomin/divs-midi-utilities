@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "tempo-event.h"
 
+TempoEventType::TempoEventType()
+{
+	this->name = wxString("Tempo");
+}
+
+bool TempoEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isTempoEvent(event);
+}
+
+Row* TempoEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new TempoEventRow(sequence_editor, step_number, event);
+}
+
 TempoEventRow::TempoEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Tempo");

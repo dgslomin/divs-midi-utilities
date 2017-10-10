@@ -1,6 +1,7 @@
 #ifndef TEMPO_EVENT_INCLUDED
 #define TEMPO_EVENT_INCLUDED
 
+class TempoEventType;
 class TempoEventRow;
 class TempoEventTimeCell;
 class TempoEventTempoCell;
@@ -8,6 +9,14 @@ class TempoEventTempoCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class TempoEventType: public EventType
+{
+public:
+	TempoEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class TempoEventRow: public Row
 {

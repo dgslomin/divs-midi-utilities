@@ -7,6 +7,7 @@
 #include <wx/filename.h>
 #include <midifile.h>
 #include "event-list.h"
+#include "event-types.h"
 #include "music-math.h"
 #include "piano-roll.h"
 #include "sequence-editor.h"
@@ -157,7 +158,7 @@ void SequenceEditor::ZoomOut()
 	this->SetStepSize(this->step_size->ZoomOut());
 }
 
-void SequenceEditor::SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels)
+void SequenceEditor::SetFilters(std::vector<EventType*> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels)
 {
 	RowLocator row_locator = this->GetLocatorFromRowNumber(this->current_row_number);
 	this->filtered_event_types = filtered_event_types;
@@ -359,7 +360,8 @@ void SequenceEditor::RefreshData()
 
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-			if (!this->Filter(event)) continue;
+            EventType* event_type = event_types->GetEventType(event);
+			if (!this->Filter(event_type, event)) continue;
 
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
 
@@ -370,7 +372,7 @@ void SequenceEditor::RefreshData()
 				this->steps.push_back(Step(this->rows.size() - 1));
 			}
 
-			this->rows.push_back(Row(step_number, event));
+			this->rows.push_back(event_type->GetRow(this, step_number, event));
 
 			if (step_number == last_step_number)
 			{
@@ -561,10 +563,9 @@ MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row
 	return MidiFile_getLatestTimeSignatureEventForTick(this->sequence->midi_file, this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(row_number)));
 }
 
-bool SequenceEditor::Filter(MidiFileEvent_t event)
+bool SequenceEditor::Filter(EventType* event_type, MidiFileEvent_t event)
 {
-	EventType_t event_type = this->GetEventType(event);
-	if (event_type == EVENT_TYPE_INVALID) return false;
+	if (event_type == NULL) return false;
 
 	if (this->filtered_event_types.size() > 0)
 	{
@@ -656,87 +657,6 @@ long SequenceEditor::GetRowNumberFromLocator(RowLocator row_locator)
 			return row_number;
 		}
 	}
-}
-
-wxString SequenceEditor::GetEventTypeName(EventType_t event_type)
-{
-	switch (event_type)
-	{
-		case EVENT_TYPE_NOTE:
-		{
-			return wxString("Note");
-		}
-		case EVENT_TYPE_CONTROL_CHANGE:
-		{
-			return wxString("Control change");
-		}
-		case EVENT_TYPE_PROGRAM_CHANGE:
-		{
-			return wxString("Program change");
-		}
-		case EVENT_TYPE_AFTERTOUCH:
-		{
-			return wxString("Aftertouch");
-		}
-		case EVENT_TYPE_PITCH_BEND:
-		{
-			return wxString("Pitch bend");
-		}
-		case EVENT_TYPE_SYSTEM_EXCLUSIVE:
-		{
-			return wxString("System exclusive");
-		}
-		case EVENT_TYPE_TEXT:
-		{
-			return wxString("Text");
-		}
-		case EVENT_TYPE_LYRIC:
-		{
-			return wxString("Lyric");
-		}
-		case EVENT_TYPE_MARKER:
-		{
-			return wxString("Marker");
-		}
-		case EVENT_TYPE_PORT:
-		{
-			return wxString("Port");
-		}
-		case EVENT_TYPE_TEMPO:
-		{
-			return wxString("Tempo");
-		}
-		case EVENT_TYPE_TIME_SIGNATURE:
-		{
-			return wxString("Time signature");
-		}
-		case EVENT_TYPE_KEY_SIGNATURE:
-		{
-			return wxString("Key signature");
-		}
-		default:
-		{
-			return wxEmptyString;
-		}
-	}
-}
-
-EventType_t SequenceEditor::GetEventType(MidiFileEvent_t event)
-{
-	if (MidiFileEvent_isNoteStartEvent(event)) return EVENT_TYPE_NOTE;
-	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE) return EVENT_TYPE_CONTROL_CHANGE;
-	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE) return EVENT_TYPE_PROGRAM_CHANGE;
-	if ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE) || (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE)) return EVENT_TYPE_AFTERTOUCH;
-	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PITCH_WHEEL) return EVENT_TYPE_PITCH_BEND;
-	if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_SYSEX) return EVENT_TYPE_SYSTEM_EXCLUSIVE;
-	if (MidiFileEvent_isTextEvent(event)) return EVENT_TYPE_TEXT;
-	if (MidiFileEvent_isLyricEvent(event)) return EVENT_TYPE_LYRIC;
-	if (MidiFileEvent_isMarkerEvent(event)) return EVENT_TYPE_MARKER;
-	if (MidiFileEvent_isPortEvent(event)) return EVENT_TYPE_PORT;
-	if (MidiFileEvent_isTempoEvent(event)) return EVENT_TYPE_TEMPO;
-	if (MidiFileEvent_isTimeSignatureEvent(event)) return EVENT_TYPE_TIME_SIGNATURE;
-	if (MidiFileEvent_isKeySignatureEvent(event)) return EVENT_TYPE_KEY_SIGNATURE;
-	return EVENT_TYPE_INVALID;
 }
 
 Sequence::Sequence()

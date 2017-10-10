@@ -1,6 +1,7 @@
 #ifndef TIME_SIGNATURE_EVENT_INCLUDED
 #define TIME_SIGNATURE_EVENT_INCLUDED
 
+class TimeSignatureEventType;
 class TimeSignatureEventRow;
 class TimeSignatureEventTimeCell;
 class TimeSignatureEventTimeSignatureCell;
@@ -8,6 +9,14 @@ class TimeSignatureEventTimeSignatureCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class TimeSignatureEventType: public EventType
+{
+public:
+	TimeSignatureEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class TimeSignatureEventRow: public Row
 {

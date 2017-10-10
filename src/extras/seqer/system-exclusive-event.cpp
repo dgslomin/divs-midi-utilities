@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "system-exclusive-event.h"
 
+SystemExclusiveEventType::SystemExclusiveEventType()
+{
+	this->name = wxString("System exclusive");
+}
+
+bool SystemExclusiveEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_SYSEX);
+}
+
+Row* SystemExclusiveEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new SystemExclusiveEventRow(sequence_editor, step_number, event);
+}
+
 SystemExclusiveEventRow::SystemExclusiveEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Sysex");

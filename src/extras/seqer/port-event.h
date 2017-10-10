@@ -1,6 +1,7 @@
 #ifndef PORT_EVENT_INCLUDED
 #define PORT_EVENT_INCLUDED
 
+class PortEventType;
 class PortEventRow;
 class PortEventTimeCell;
 class PortEventTrackCell;
@@ -9,6 +10,14 @@ class PortEventNameCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class PortEventType: public EventType
+{
+public:
+	PortEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class PortEventRow: public Row
 {

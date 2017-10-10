@@ -1,6 +1,7 @@
 #ifndef NOTE_EVENT_INCLUDED
 #define NOTE_EVENT_INCLUDED
 
+class NoteEventType;
 class NoteEventRow;
 class NoteEventTimeCell;
 class NoteEventTrackCell;
@@ -13,6 +14,14 @@ class NoteEventEndVelocityCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class NoteEventType: public EventType
+{
+public:
+	NoteEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class NoteEventRow: public Row
 {

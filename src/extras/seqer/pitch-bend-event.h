@@ -1,6 +1,7 @@
 #ifndef PITCH_BEND_EVENT_INCLUDED
 #define PITCH_BEND_EVENT_INCLUDED
 
+class PitchBendEventType;
 class PitchBendEventRow;
 class PitchBendEventTimeCell;
 class PitchBendEventTrackCell;
@@ -10,6 +11,14 @@ class PitchBendEventValueCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class PitchBendEventType: public EventType
+{
+public:
+	PitchBendEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class PitchBendEventRow: public Row
 {

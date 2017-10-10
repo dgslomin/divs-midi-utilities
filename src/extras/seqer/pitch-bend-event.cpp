@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "pitch-bend-event.h"
 
+PitchBendEventType::PitchBendEventType()
+{
+	this->name = wxString("Pitch bend");
+}
+
+bool PitchBendEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PITCH_WHEEL);
+}
+
+Row* PitchBendEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new PitchBendEventRow(sequence_editor, step_number, event);
+}
+
 PitchBendEventRow::PitchBendEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Bend");

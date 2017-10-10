@@ -1,6 +1,7 @@
 #ifndef CONTROL_CHANGE_EVENT_INCLUDED
 #define CONTROL_CHANGE_EVENT_INCLUDED
 
+class ControlChangeEventType;
 class ControlChangeEventRow;
 class ControlChangeEventTimeCell;
 class ControlChangeEventTrackCell;
@@ -11,6 +12,14 @@ class ControlChangeEventValueCell;
 #include <wx/wx.h>
 #include <midifile.h>
 #include "sequence-editor.h"
+
+class ControlChangeEventType: public EventType
+{
+public:
+	ControlChangeEventType();
+	bool MatchesEvent(MidiFileEvent_t event);
+	Row* GetRow(MidiFileEvent_t event);
+};
 
 class ControlChangeEventRow: public Row
 {

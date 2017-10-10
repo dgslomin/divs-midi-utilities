@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "port-event.h"
 
+PortEventType::PortEventType()
+{
+	this->name = wxString("Port");
+}
+
+bool PortEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return MidiFileEvent_isPortEvent(event);
+}
+
+Row* PortEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new PortEventRow(sequence_editor, step_number, event);
+}
+
 PortEventRow::PortEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Port");

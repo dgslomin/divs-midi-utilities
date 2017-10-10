@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "control-change-event.h"
 
+ControlChangeEventType::ControlChangeEventType()
+{
+	this->name = wxString("Control change");
+}
+
+bool ControlChangeEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE);
+}
+
+Row* ControlChangeEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new ControlChangeEventRow(sequence_editor, step_number, event);
+}
+
 ControlChangeEventRow::ControlChangeEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Ctrl");

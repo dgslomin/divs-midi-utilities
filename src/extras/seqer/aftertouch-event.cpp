@@ -4,6 +4,21 @@
 #include "sequence-editor.h"
 #include "aftertouch-event.h"
 
+AftertouchEventType::AftertouchEventType()
+{
+	this->name = wxString("Aftertouch");
+}
+
+bool AftertouchEventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE) || (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE));
+}
+
+Row* AftertouchEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+{
+	return new AftertouchEventRow(sequence_editor, step_number, event);
+}
+
 AftertouchEventRow::AftertouchEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
 	this->label = wxString("Touch");
