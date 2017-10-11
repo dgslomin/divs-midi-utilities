@@ -411,7 +411,7 @@ void SequenceEditor::RefreshDisplay()
 	this->window->SetTitle(wxString::Format("%s%s - Seqer", this->sequence->is_modified ? "*" : "", (this->sequence->filename == wxEmptyString) ? "Untitled" : wxFileName(this->sequence->filename).GetFullName()));
 #endif
 
-	// TODO this->window->SetStatusText(this->rows[this->current_row_number]->cells[this->current_column_number]->label, 0);
+	this->window->SetStatusText(this->rows[this->current_row_number]->cells[this->current_column_number]->label, 0);
 	this->Refresh();
 }
 
