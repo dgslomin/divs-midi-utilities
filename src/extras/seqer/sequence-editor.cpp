@@ -1,13 +1,13 @@
 
 #include <algorithm>
 #include <functional>
-#include <vector>
+#include <set>
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
 #include <wx/filename.h>
 #include <midifile.h>
 #include "event-list.h"
-#include "event-types.h"
+#include "event-type.h"
 #include "music-math.h"
 #include "piano-roll.h"
 #include "seqer.h"
@@ -58,6 +58,7 @@ SequenceEditor::SequenceEditor(Window* window, SequenceEditor* existing_sequence
 SequenceEditor::~SequenceEditor()
 {
 	this->sequence->RemoveSequenceEditor(this);
+	this->ClearData();
 	delete this->event_list;
 	delete this->piano_roll;
 	delete this->step_size;
@@ -158,7 +159,7 @@ void SequenceEditor::ZoomOut()
 	this->SetStepSize(this->step_size->ZoomOut());
 }
 
-void SequenceEditor::SetFilters(std::vector<EventType*> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels)
+void SequenceEditor::SetFilters(std::set<EventType*> filtered_event_types, std::set<MidiFileTrack_t> filtered_tracks, std::set<int> filtered_channels)
 {
 	RowLocator row_locator = this->GetLocatorFromRowNumber(this->current_row_number);
 	this->filtered_event_types = filtered_event_types;
@@ -238,7 +239,7 @@ void SequenceEditor::GoToNextMarker()
 {
 	for (long row_number = this->current_row_number + 1; row_number < this->rows.size(); row_number++)
 	{
-		if (MidiFileEvent_isMarkerEvent(this->rows[row_number].event))
+		if (MidiFileEvent_isMarkerEvent(this->rows[row_number]->event))
 		{
 			this->SetCurrentRowNumber(row_number);
 			return;
@@ -266,7 +267,7 @@ void SequenceEditor::GoToPreviousMarker()
 {
 	for (long row_number = std::min<long>(this->current_row_number, this->rows.size()) - 1; row_number >= 0; row_number--)
 	{
-		if (MidiFileEvent_isMarkerEvent(this->rows[row_number].event))
+		if (MidiFileEvent_isMarkerEvent(this->rows[row_number]->event))
 		{
 			this->SetCurrentRowNumber(row_number);
 			return;
@@ -294,7 +295,7 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 {
 	for (long row_number = 0; row_number < this->rows.size(); row_number++)
 	{
-		MidiFileEvent_t event = rows[row_number].event;
+		MidiFileEvent_t event = rows[row_number]->event;
 
 		if (MidiFileEvent_isMarkerEvent(event) && (marker_name.Cmp(MidiFileMarkerEvent_getText(event)) == 0))
 		{
@@ -310,7 +311,7 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 void SequenceEditor::DeleteRow()
 {
 	if (this->current_row_number >= this->rows.size()) return;
-	this->rows[this->current_row_number]->cells[this->current_column_number]->Delete();
+	this->rows[this->current_row_number]->Delete();
 }
 
 void SequenceEditor::EnterValue()
@@ -349,10 +350,18 @@ void SequenceEditor::Quantize()
 	this->rows[this->current_row_number]->cells[this->current_column_number]->Quantize();
 }
 
+void SequenceEditor::ClearData()
+{
+	for (int row_number = 0; row_number < this->rows.size(); row_number++) delete this->rows[row_number];
+	this->rows.clear();
+
+	for (int step_number = 0; step_number < this->steps.size(); step_number++) delete this->steps[step_number];
+	this->steps.clear();
+}
+
 void SequenceEditor::RefreshData()
 {
-	this->rows.clear();
-	this->steps.clear();
+	this->ClearData();
 
 	if (this->sequence->midi_file != NULL)
 	{
@@ -360,7 +369,7 @@ void SequenceEditor::RefreshData()
 
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-            EventType* event_type = event_types->GetEventType(event);
+            EventType* event_type = event_type_manager->GetEventType(event);
 			if (!this->Filter(event_type, event)) continue;
 
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
@@ -368,19 +377,19 @@ void SequenceEditor::RefreshData()
 			while (last_step_number < step_number - 1)
 			{
 				last_step_number++;
-				this->rows.push_back(Row(last_step_number, NULL));
-				this->steps.push_back(Step(this->rows.size() - 1));
+				this->rows.push_back(new Row(this, last_step_number, NULL));
+				this->steps.push_back(new Step(this->rows.size() - 1));
 			}
 
 			this->rows.push_back(event_type->GetRow(this, step_number, event));
 
 			if (step_number == last_step_number)
 			{
-				this->steps[this->steps.size() - 1].last_row_number++;
+				this->steps[this->steps.size() - 1]->last_row_number++;
 			}
 			else
 			{
-				this->steps.push_back(Step(this->rows.size() - 1));
+				this->steps.push_back(new Step(this->rows.size() - 1));
 			}
 
 			last_step_number = step_number;
@@ -402,7 +411,7 @@ void SequenceEditor::RefreshDisplay()
 	this->window->SetTitle(wxString::Format("%s%s - Seqer", this->sequence->is_modified ? "*" : "", (this->sequence->filename == wxEmptyString) ? "Untitled" : wxFileName(this->sequence->filename).GetFullName()));
 #endif
 
-	this->window->SetStatusText(this->sequence_editor->rows[row_number]->cells[column_number]->label, 0);
+	// TODO this->window->SetStatusText(this->rows[this->current_row_number]->cells[this->current_column_number]->label, 0);
 	this->Refresh();
 }
 
@@ -459,11 +468,11 @@ long SequenceEditor::GetFirstRowNumberFromStepNumber(long step_number)
 	}
 	else if (step_number < this->steps.size())
 	{
-		return this->steps[step_number].first_row_number;
+		return this->steps[step_number]->first_row_number;
 	}
 	else
 	{
-		return this->steps[this->steps.size() - 1].last_row_number + step_number - this->steps.size() + 1;
+		return this->steps[this->steps.size() - 1]->last_row_number + step_number - this->steps.size() + 1;
 	}
 }
 
@@ -475,11 +484,11 @@ long SequenceEditor::GetLastRowNumberFromStepNumber(long step_number)
 	}
 	else if (step_number < this->steps.size())
 	{
-		return this->steps[step_number].last_row_number;
+		return this->steps[step_number]->last_row_number;
 	}
 	else
 	{
-		return this->steps[this->steps.size() - 1].last_row_number + step_number - this->steps.size() + 1;
+		return this->steps[this->steps.size() - 1]->last_row_number + step_number - this->steps.size() + 1;
 	}
 }
 
@@ -491,11 +500,11 @@ long SequenceEditor::GetStepNumberFromRowNumber(long row_number)
 	}
 	else if (row_number < this->rows.size())
 	{
-		return this->rows[row_number].step_number;
+		return this->rows[row_number]->step_number;
 	}
 	else
 	{
-		return this->rows[this->rows.size() - 1].step_number + row_number - this->rows.size() + 1;
+		return this->rows[this->rows.size() - 1]->step_number + row_number - this->rows.size() + 1;
 	}
 }
 
@@ -513,7 +522,7 @@ long SequenceEditor::GetTickFromRowNumber(long row_number)
 {
 	if (row_number < this->rows.size())
 	{
-		MidiFileEvent_t event = this->rows[row_number].event;
+		MidiFileEvent_t event = this->rows[row_number]->event;
 		if (event != NULL) return MidiFileEvent_getTick(event);
 	}
 
@@ -530,7 +539,7 @@ long SequenceEditor::GetRowNumberFromTick(long tick)
 	{
 		for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 		{
-			if (MidiFileEvent_getTick(this->rows[row_number].event) >= tick) return row_number;
+			if (MidiFileEvent_getTick(this->rows[row_number]->event) >= tick) return row_number;
 		}
 	}
 
@@ -549,7 +558,7 @@ long SequenceEditor::GetRowNumberForEvent(MidiFileEvent_t event)
 {
 	for (long i = 0; i < this->rows.size(); i++)
 	{
-		if (rows[i].event == event)
+		if (rows[i]->event == event)
 		{
 			return i;
 		}
@@ -566,55 +575,9 @@ MidiFileEvent_t SequenceEditor::GetLatestTimeSignatureEventForRowNumber(long row
 bool SequenceEditor::Filter(EventType* event_type, MidiFileEvent_t event)
 {
 	if (event_type == NULL) return false;
-
-	if (this->filtered_event_types.size() > 0)
-	{
-		bool matched = false;
-
-		for (int i = 0; i < this->filtered_event_types.size(); i++)
-		{
-			if (event_type == this->filtered_event_types[i])
-			{
-				matched = true;
-				break;
-			}
-		}
-
-		if (!matched) return false;
-	}
-
-	if (this->filtered_tracks.size() > 0)
-	{
-		bool matched = false;
-
-		for (int i = 0; i < this->filtered_tracks.size(); i++)
-		{
-			if (this->filtered_tracks[i] == MidiFileTrack_getNumber(MidiFileEvent_getTrack(event)))
-			{
-				matched = true;
-				break;
-			}
-		}
-
-		if (!matched) return false;
-	}
-
-	if ((this->filtered_channels.size() > 0) && MidiFileEvent_isVoiceEvent(event))
-	{
-		bool matched = false;
-
-		for (int i = 0; i < this->filtered_channels.size(); i++)
-		{
-			if (this->filtered_channels[i] == MidiFileVoiceEvent_getChannel(event))
-			{
-				matched = true;
-				break;
-			}
-		}
-
-		if (!matched) return false;
-	}
-
+	if (!this->filtered_event_types.empty() && this->filtered_event_types.find(event_type) == this->filtered_event_types.end()) return false;
+	if (!this->filtered_tracks.empty() && this->filtered_tracks.find(MidiFileEvent_getTrack(event)) == this->filtered_tracks.end()) return false;
+	if (!this->filtered_channels.empty() && MidiFileEvent_isVoiceEvent(event) && this->filtered_channels.find(MidiFileVoiceEvent_getChannel(event)) == this->filtered_channels.end()) return false;
 	return true;
 }
 
@@ -633,7 +596,7 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 RowLocator SequenceEditor::GetLocatorFromRowNumber(long row_number)
 {
 	RowLocator row_locator = RowLocator();
-	row_locator.event = (row_number < this->rows.size()) ? this->rows[row_number].event : NULL;
+	row_locator.event = (row_number < this->rows.size()) ? this->rows[row_number]->event : NULL;
 	row_locator.tick = this->GetTickFromRowNumber(row_number);
 	return row_locator;
 }
@@ -708,11 +671,16 @@ Row::Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t even
 	this->event = event;
 }
 
+Row::~Row()
+{
+	for (int cell_number = 0; cell_number < 7; cell_number++) delete this->cells[cell_number];
+}
+
 void Row::Delete()
 {
 }
 
-Cell(Row* row)
+Cell::Cell(Row* row)
 {
 	this->row = row;
 }

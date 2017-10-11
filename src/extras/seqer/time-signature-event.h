@@ -8,7 +8,7 @@ class TimeSignatureEventTimeSignatureCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "event-types.h"
+#include "event-type.h"
 #include "sequence-editor.h"
 
 class TimeSignatureEventType: public EventType

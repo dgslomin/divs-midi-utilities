@@ -3,6 +3,7 @@
 #include <midifile.h>
 #include "color.h"
 #include "event-list.h"
+#include "event-type.h"
 #include "music-math.h"
 #include "piano-roll.h"
 #include "sequence-editor.h"
@@ -27,7 +28,7 @@ void PianoRoll::RefreshData()
 
 void PianoRoll::OnDraw(wxDC& dc)
 {
-	MidiFileEvent_t current_row_event = (this->sequence_editor->current_row_number < this->sequence_editor->rows.size()) ? this->sequence_editor->rows[this->sequence_editor->current_row_number].event : NULL;
+	MidiFileEvent_t current_row_event = (this->sequence_editor->current_row_number < this->sequence_editor->rows.size()) ? this->sequence_editor->rows[this->sequence_editor->current_row_number]->event : NULL;
 	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
 	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
 	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
@@ -66,7 +67,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence_editor->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-            EventType* event_type = event_types->GetEventType(event);
+            EventType* event_type = event_type_manager->GetEventType(event);
 
 			if (MidiFileEvent_isNoteStartEvent(event) && this->sequence_editor->Filter(event_type, event))
 			{

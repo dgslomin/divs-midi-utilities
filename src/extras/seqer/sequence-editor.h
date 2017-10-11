@@ -13,12 +13,13 @@ class UndoCommand;
 
 #include <functional>
 #include <list>
+#include <set>
 #include <vector>
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
 #include <midifile.h>
 #include "event-list.h"
-#include "event-types.h"
+#include "event-type.h"
 #include "music-math.h"
 #include "piano-roll.h"
 #include "seqer.h"
@@ -31,11 +32,11 @@ public:
 	EventList* event_list;
 	PianoRoll* piano_roll;
 	StepSize* step_size;
-	std::vector<Row> rows;
-	std::vector<Step> steps;
-	std::vector<EventType*> filtered_event_types;
-	std::vector<int> filtered_tracks;
-	std::vector<int> filtered_channels;
+	std::vector<Row*> rows;
+	std::vector<Step*> steps;
+	std::set<EventType*> filtered_event_types;
+	std::set<MidiFileTrack_t> filtered_tracks;
+	std::set<int> filtered_channels;
 	long current_row_number;
 	long last_row_number;
 	long current_column_number;
@@ -58,7 +59,7 @@ public:
 	void SetStepSize(StepSize* step_size);
 	void ZoomIn();
 	void ZoomOut();
-	void SetFilters(std::vector<EventType*> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels);
+	void SetFilters(std::set<EventType*> filtered_event_types, std::set<MidiFileTrack_t> filtered_tracks, std::set<int> filtered_channels);
 	void SetOverwriteMode(bool overwrite_mode);
 	void SelectCurrent();
 	void SelectAll();
@@ -85,6 +86,7 @@ public:
 	void LargeDecrease();
 	void Quantize();
 
+	void ClearData();
 	void RefreshData();
 	void RefreshDisplay();
 	void OnDraw(wxDC& dc);
@@ -146,6 +148,7 @@ public:
 	Cell* cells[7];
 
 	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
+	~Row();
 	virtual void Delete();
 };
 

@@ -6,9 +6,9 @@
 
 void SequenceEditor::InsertNote(int diatonic)
 {
-	if (this->overwrite_mode && (this->current_row_number < this->rows.size()) && MidiFileEvent_isNoteStartEvent(this->rows[this->current_row_number].event))
+	if (this->overwrite_mode && (this->current_row_number < this->rows.size()) && MidiFileEvent_isNoteStartEvent(this->rows[this->current_row_number]->event))
 	{
-		MidiFileEvent_t event = this->rows[this->current_row_number].event;
+		MidiFileEvent_t event = this->rows[this->current_row_number]->event;
 		MidiFileTrack_t track = MidiFileEvent_getTrack(event);
 		int note_number = MidiFileNoteStartEvent_getNote(event);
 		long start_tick = MidiFileEvent_getTick(event);

@@ -11,6 +11,7 @@ class AftertouchEventAmountCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
+#include "event-type.h"
 #include "sequence-editor.h"
 
 class AftertouchEventType: public EventType
