@@ -5,6 +5,7 @@
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
 #include <midifile.h>
+#include "event-list.h"
 #include "event-type.h"
 #include "music-math.h"
 #include "seqer.h"
@@ -477,7 +478,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == WXK_END) && (modifiers == wxMOD_NONE))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 #ifdef __WXOSX__
 		else if ((keycode == WXK_UP) && (modifiers == wxMOD_ALT))
@@ -502,7 +503,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == WXK_RIGHT) && (modifiers == wxMOD_CONTROL))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 		else if ((keycode == 'A') && (modifiers == wxMOD_RAW_CONTROL))
 		{
@@ -510,7 +511,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == 'E') && (modifiers == wxMOD_RAW_CONTROL))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 		else if ((keycode == 'P') && (modifiers == wxMOD_RAW_CONTROL))
 		{

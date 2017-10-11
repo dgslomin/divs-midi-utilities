@@ -145,7 +145,7 @@ public:
 	long step_number;
 	MidiFileEvent_t event;
 	wxString label = wxEmptyString;
-	Cell* cells[7];
+	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
 
 	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 	~Row();
@@ -171,7 +171,7 @@ public:
 class EmptyRow: public Row
 {
 public:
-	EmptyRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
+	EmptyRow(SequenceEditor* sequence_editor, long step_number);
 };
 
 class EmptyRowTimeCell: public Cell

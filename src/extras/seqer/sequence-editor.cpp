@@ -225,13 +225,13 @@ void SequenceEditor::ColumnLeft()
 
 void SequenceEditor::ColumnRight()
 {
-	this->current_column_number = std::min<long>(this->current_column_number + 1, 7);
+	this->current_column_number = std::min<long>(this->current_column_number + 1, EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 	this->RefreshDisplay();
 }
 
 void SequenceEditor::GoToColumn(int column_number)
 {
-	this->current_column_number = std::min<long>(std::max<long>(column_number, 1), 7);
+	this->current_column_number = std::min<long>(std::max<long>(column_number, 1), EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 	this->RefreshDisplay();
 }
 
@@ -317,7 +317,7 @@ void SequenceEditor::DeleteRow()
 void SequenceEditor::EnterValue()
 {
 	if (this->current_row_number >= this->rows.size()) return;
-    this->rows[this->current_row_number]->cells[this->current_column_number]->EnterValue();
+	this->rows[this->current_row_number]->cells[this->current_column_number]->EnterValue();
 }
 
 void SequenceEditor::SmallIncrease()
@@ -362,14 +362,13 @@ void SequenceEditor::ClearData()
 void SequenceEditor::RefreshData()
 {
 	this->ClearData();
+	long last_step_number = -1;
 
 	if (this->sequence->midi_file != NULL)
 	{
-		long last_step_number = -1;
-
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-            EventType* event_type = event_type_manager->GetEventType(event);
+			EventType* event_type = event_type_manager->GetEventType(event);
 			if (!this->Filter(event_type, event)) continue;
 
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
@@ -377,7 +376,7 @@ void SequenceEditor::RefreshData()
 			while (last_step_number < step_number - 1)
 			{
 				last_step_number++;
-				this->rows.push_back(new Row(this, last_step_number, NULL));
+				this->rows.push_back(new EmptyRow(this, last_step_number));
 				this->steps.push_back(new Step(this->rows.size() - 1));
 			}
 
@@ -394,6 +393,13 @@ void SequenceEditor::RefreshData()
 
 			last_step_number = step_number;
 		}
+	}
+
+	while (this->rows.size() <= this->current_row_number)
+	{
+		last_step_number++;
+		this->rows.push_back(new EmptyRow(this, last_step_number));
+		this->steps.push_back(new Step(this->rows.size() - 1));
 	}
 
 	this->event_list->RefreshData();
@@ -673,7 +679,7 @@ Row::Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t even
 
 Row::~Row()
 {
-	for (int cell_number = 0; cell_number < 7; cell_number++) delete this->cells[cell_number];
+	for (int cell_number = 0; cell_number < EVENT_LIST_NUMBER_OF_COLUMNS; cell_number++) delete this->cells[cell_number];
 }
 
 void Row::Delete()
@@ -704,20 +710,28 @@ void Cell::SmallDecrease()
 
 void Cell::LargeIncrease()
 {
-    this->SmallIncrease();
+	this->SmallIncrease();
 }
 
 void Cell::LargeDecrease()
 {
-    this->SmallDecrease();
+	this->SmallDecrease();
 }
 
 void Cell::Quantize()
 {
 }
 
-EmptyRow::EmptyRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
+EmptyRow::EmptyRow(SequenceEditor* sequence_editor, long step_number): Row(sequence_editor, step_number, NULL)
 {
+    this->cells[0] = new EmptyRowTimeCell(this);
+    this->cells[1] = new Cell(this);
+    this->cells[2] = new Cell(this);
+    this->cells[3] = new Cell(this);
+    this->cells[4] = new Cell(this);
+    this->cells[5] = new Cell(this);
+    this->cells[6] = new Cell(this);
+    this->cells[7] = new Cell(this);
 }
 
 EmptyRowTimeCell::EmptyRowTimeCell(Row* row): Cell(row)
@@ -726,7 +740,7 @@ EmptyRowTimeCell::EmptyRowTimeCell(Row* row): Cell(row)
 
 wxString EmptyRowTimeCell::GetValueText()
 {
-    SequenceEditor* sequence_editor = this->row->sequence_editor;
+	SequenceEditor* sequence_editor = this->row->sequence_editor;
 	long step_number = this->row->step_number;
 	return sequence_editor->step_size->GetTimeStringFromTick(sequence_editor->step_size->GetTickFromStep(step_number));
 }

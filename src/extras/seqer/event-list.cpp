@@ -60,7 +60,7 @@ void EventList::OnDraw(wxDC& dc)
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
-		for (long column_number = 0; column_number < 8; column_number++)
+		for (long column_number = 0; column_number < EVENT_LIST_NUMBER_OF_COLUMNS; column_number++)
 		{
 			wxString cell_text = this->sequence_editor->rows[row_number]->cells[column_number]->GetValueText();
 			if (!cell_text.IsEmpty()) dc.DrawText(cell_text, this->GetXFromColumnNumber(column_number) + (column_number == 0 ? 1 : 0), this->GetYFromRowNumber(row_number) + 1);

@@ -95,7 +95,7 @@ void NoteEventRow::Delete()
 	SequenceEditor* sequence_editor = this->sequence_editor;
 	MidiFileEvent_t event = this->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-    MidiFileTrack_t track = MidiFileEvent_getTrack(event);
+	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
 	MidiFileEvent_detach(event);
 	MidiFileEvent_detach(end_event);
 	sequence_editor->sequence->RefreshData();
