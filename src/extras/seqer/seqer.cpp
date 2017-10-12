@@ -73,6 +73,8 @@ IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
 {
+	wxMessageBox("Are you ready to rumble?", "Attach debugger now", wxOK);
+
 #ifdef __WXOSX__
 	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else

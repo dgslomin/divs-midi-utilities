@@ -14,7 +14,7 @@ aftertouch-event.obj: aftertouch-event.cpp ..\..\midifile\midifile.h aftertouch-
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c aftertouch-event.cpp
 
 color.obj: color.cpp
-	cl /nologo $(FLAGS) /c color.cpp
+	cl /nologo $(FLAGS) $(WXINCLUDES) /c color.cpp
 
 control-change-event.obj: control-change-event.cpp ..\..\midifile\midifile.h control-change-event.h sequence-editor.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c control-change-event.cpp
@@ -102,7 +102,7 @@ clean:
 	@if exist seqer.ilk del seqer.ilk
 	@if exist seqer.pdb del seqer.pdb
 	@if exist seqer.suo del seqer.suo
-	@if exist vc100.pdb del vc100.pdb
+	@if exist vc*.pdb del vc*.pdb
 
 reallyclean: clean
 	@if exist seqer.exe del seqer.exe
