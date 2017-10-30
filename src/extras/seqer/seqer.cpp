@@ -5,9 +5,9 @@
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
 #include <midifile.h>
+#include "music-math.h"
 #include "seqer.h"
 #include "sequence-editor.h"
-#include "music-math.h"
 
 #ifndef __WXMSW__
 #include "seqer.xpm"
@@ -71,6 +71,8 @@ IMPLEMENT_APP(Application)
 
 bool Application::OnInit()
 {
+	wxMessageBox("Are you ready to rumble?", "Attach debugger now", wxOK);
+
 #ifdef __WXOSX__
 	this->default_event_list_font = wxFont(wxFontInfo(10).FaceName("Lucida Grande"));
 #else
@@ -476,7 +478,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == WXK_END) && (modifiers == wxMOD_NONE))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 #ifdef __WXOSX__
 		else if ((keycode == WXK_UP) && (modifiers == wxMOD_ALT))
@@ -501,7 +503,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == WXK_RIGHT) && (modifiers == wxMOD_CONTROL))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 		else if ((keycode == 'A') && (modifiers == wxMOD_RAW_CONTROL))
 		{
@@ -509,7 +511,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		}
 		else if ((keycode == 'E') && (modifiers == wxMOD_RAW_CONTROL))
 		{
-			this->sequence_editor->GoToColumn(EVENT_LIST_LAST_COLUMN_NUMBER);
+			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
 		else if ((keycode == 'P') && (modifiers == wxMOD_RAW_CONTROL))
 		{
@@ -820,17 +822,17 @@ void FilterDialog::Run(Window* window)
 	{
 		wxArrayInt selections;
 
-		std::vector<int> filtered_event_types;
+		std::set<EventType*> filtered_event_types;
 		dialog->event_type_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) filtered_event_types.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_event_types.insert((EventType*)(dialog->event_type_list_box->GetClientData(selections[i])));
 
-		std::vector<int> filtered_tracks;
+		std::set<MidiFileTrack_t> filtered_tracks;
 		dialog->track_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) filtered_tracks.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_tracks.insert((MidiFileTrack_t)(dialog->track_list_box->GetClientData(selections[i])));
 
-		std::vector<int> filtered_channels;
+		std::set<int> filtered_channels;
 		dialog->channel_list_box->GetSelections(selections);
-		for (int i = 0; i < selections.GetCount(); i++) filtered_channels.push_back(selections[i]);
+		for (int i = 0; i < selections.GetCount(); i++) filtered_channels.insert(selections[i]);
 
 		window->sequence_editor->SetFilters(filtered_event_types, filtered_tracks, filtered_channels);
 	}
@@ -880,11 +882,19 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	event_type_label->Bind(wxEVT_LEFT_DOWN, event_type_label_click_callback);
 	event_type_label->Bind(wxEVT_LEFT_DCLICK, event_type_label_click_callback);
 
-	wxArrayString event_type_names;
-	for (int i = 0; i < EVENT_TYPE_HIGHEST; i++) event_type_names.Add(this->window->sequence_editor->GetEventTypeName((EventType_t)(i)));
-	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, event_type_names, wxLB_MULTIPLE);
-	for (int i = 0; i < this->window->sequence_editor->filtered_event_types.size(); i++) this->event_type_list_box->SetSelection(this->window->sequence_editor->filtered_event_types[i]);
+	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
+
+	for (int i = 0; i < EventTypeManager::GetInstance()->event_types.size(); i++)
+	{
+		EventType* event_type = EventTypeManager::GetInstance()->event_types[i];
+		this->event_type_list_box->Append(event_type->name, event_type);
+
+		if (this->window->sequence_editor->filtered_event_types.find(event_type) != this->window->sequence_editor->filtered_event_types.end())
+		{
+			this->event_type_list_box->SetSelection(this->event_type_list_box->GetCount() - 1);
+		}
+	}
 
 	wxBoxSizer* track_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(track_sizer, wxSizerFlags().Proportion(1).Expand());
@@ -918,11 +928,18 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	track_label->Bind(wxEVT_LEFT_DOWN, track_label_click_callback);
 	track_label->Bind(wxEVT_LEFT_DCLICK, track_label_click_callback);
 
-	wxArrayString tracks;
-	for (int i = 0; i < MidiFile_getNumberOfTracks(this->window->sequence_editor->sequence->midi_file); i++) tracks.Add(wxString::Format("%d", i));
-	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, tracks, wxLB_MULTIPLE);
-	for (int i = 0; i < this->window->sequence_editor->filtered_tracks.size(); i++) this->track_list_box->SetSelection(this->window->sequence_editor->filtered_tracks[i]);
+	this->track_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	track_sizer->Add(this->track_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT));
+
+	for (MidiFileTrack_t track = MidiFile_getFirstTrack(this->window->sequence_editor->sequence->midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		this->track_list_box->Append(wxString::Format("%d", MidiFileTrack_getNumber(track)), track);
+
+		if (this->window->sequence_editor->filtered_tracks.find(track) != this->window->sequence_editor->filtered_tracks.end())
+		{
+			this->track_list_box->SetSelection(this->track_list_box->GetCount() - 1);
+		}
+	}
 
 	wxBoxSizer* channel_sizer = new wxBoxSizer(wxVERTICAL);
 	controls_sizer->Add(channel_sizer, wxSizerFlags().Proportion(1).Expand());
@@ -956,11 +973,18 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	channel_label->Bind(wxEVT_LEFT_DOWN, channel_label_click_callback);
 	channel_label->Bind(wxEVT_LEFT_DCLICK, channel_label_click_callback);
 
-	wxArrayString channels;
-	for (int i = 1; i <= 16; i++) channels.Add(wxString::Format("%d", i));
-	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, channels, wxLB_MULTIPLE);
-	for (int i = 0; i < this->window->sequence_editor->filtered_channels.size(); i++) this->channel_list_box->SetSelection(this->window->sequence_editor->filtered_channels[i]);
+	this->channel_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	channel_sizer->Add(this->channel_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
+
+	for (int channel = 0; channel < 16; channel++)
+	{
+		this->channel_list_box->Append(wxString::Format("%d", channel + 1));
+
+		if (this->window->sequence_editor->filtered_channels.find(channel) != this->window->sequence_editor->filtered_channels.end())
+		{
+			this->channel_list_box->SetSelection(this->channel_list_box->GetCount() - 1);
+		}
+	}
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());

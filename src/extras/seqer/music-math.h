@@ -7,6 +7,7 @@ class MeasuresPerStepSize;
 class SecondsPerStepSize;
 
 #include <wx/wx.h>
+#include "seqer.h"
 #include "sequence-editor.h"
 
 wxString GetNoteNameFromNumber(int note_number);

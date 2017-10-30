@@ -2,42 +2,31 @@
 #define SEQUENCE_EDITOR_INCLUDED
 
 class SequenceEditor;
-class Sequence;
-class Row;
+class EventList;
+class PianoRoll;
 class Step;
+class Row;
+class Cell;
+class EmptyRow;
+class EmptyRowTimeCell;
+class EventTypeManager;
+class EventType;
+class EventTypeCell;
 class RowLocator;
 class UndoCommand;
+class Sequence;
 
 #include <functional>
 #include <list>
+#include <set>
 #include <vector>
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
 #include <midifile.h>
-#include "seqer.h"
-#include "event-list.h"
-#include "piano-roll.h"
 #include "music-math.h"
+#include "seqer.h"
 
-typedef enum
-{
-	EVENT_TYPE_INVALID = -1,
-	EVENT_TYPE_NOTE,
-	EVENT_TYPE_CONTROL_CHANGE,
-	EVENT_TYPE_PROGRAM_CHANGE,
-	EVENT_TYPE_AFTERTOUCH,
-	EVENT_TYPE_PITCH_BEND,
-	EVENT_TYPE_SYSTEM_EXCLUSIVE,
-	EVENT_TYPE_TEXT,
-	EVENT_TYPE_LYRIC,
-	EVENT_TYPE_MARKER,
-	EVENT_TYPE_PORT,
-	EVENT_TYPE_TEMPO,
-	EVENT_TYPE_TIME_SIGNATURE,
-	EVENT_TYPE_KEY_SIGNATURE,
-	EVENT_TYPE_HIGHEST
-}
-EventType_t;
+#define EVENT_LIST_NUMBER_OF_COLUMNS 8
 
 class SequenceEditor: public wxScrolledCanvas
 {
@@ -47,13 +36,12 @@ public:
 	EventList* event_list;
 	PianoRoll* piano_roll;
 	StepSize* step_size;
-	std::vector<Row> rows;
-	std::vector<Step> steps;
-	std::vector<int> filtered_event_types;
-	std::vector<int> filtered_tracks;
-	std::vector<int> filtered_channels;
+	std::vector<Row*> rows;
+	std::vector<Step*> steps;
+	std::set<EventType*> filtered_event_types;
+	std::set<MidiFileTrack_t> filtered_tracks;
+	std::set<int> filtered_channels;
 	long current_row_number;
-	long last_row_number;
 	long current_column_number;
 	int insertion_track_number;
 	int insertion_channel_number;
@@ -74,7 +62,7 @@ public:
 	void SetStepSize(StepSize* step_size);
 	void ZoomIn();
 	void ZoomOut();
-	void SetFilters(std::vector<int> filtered_event_types, std::vector<int> filtered_tracks, std::vector<int> filtered_channels);
+	void SetFilters(std::set<EventType*> filtered_event_types, std::set<MidiFileTrack_t> filtered_tracks, std::set<int> filtered_channels);
 	void SetOverwriteMode(bool overwrite_mode);
 	void SelectCurrent();
 	void SelectAll();
@@ -101,6 +89,7 @@ public:
 	void LargeDecrease();
 	void Quantize();
 
+	void ClearData();
 	void RefreshData();
 	void RefreshDisplay();
 	void OnDraw(wxDC& dc);
@@ -110,9 +99,9 @@ public:
 	long GetNumberOfVisibleRows();
 	long GetFirstVisibleY();
 	long GetLastVisibleY();
+	Row* GetRow(long row_number);
 	long GetFirstRowNumberFromStepNumber(long step_number);
 	long GetLastRowNumberFromStepNumber(long step_number);
-	long GetStepNumberFromRowNumber(long row_number);
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
 	long GetTickFromRowNumber(long row_number);
@@ -120,38 +109,52 @@ public:
 	long GetNumberOfTicksPerPixel(long step_number);
 	long GetRowNumberForEvent(MidiFileEvent_t event);
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
-	bool Filter(MidiFileEvent_t event);
+	bool Filter(EventType* event_type, MidiFileEvent_t event);
 	void SetCurrentRowNumber(long current_row_number);
 	RowLocator GetLocatorFromRowNumber(long row_number);
 	long GetRowNumberFromLocator(RowLocator row_locator);
-	wxString GetEventTypeName(EventType_t event_type);
-	EventType_t GetEventType(MidiFileEvent_t event);
 };
 
-class Sequence
+class EventList
 {
 public:
-	std::list<SequenceEditor*> sequence_editors;
-	wxCommandProcessor* undo_command_processor;
-	wxString filename;
-	MidiFile_t midi_file;
-	bool is_modified;
+	SequenceEditor *sequence_editor;
+	wxFont font;
+	wxColour current_cell_border_color;
+	long row_height;
+	long column_widths[EVENT_LIST_NUMBER_OF_COLUMNS];
 
-	Sequence();
-	~Sequence();
-    void AddSequenceEditor(SequenceEditor* sequence_editor);
-    void RemoveSequenceEditor(SequenceEditor* sequence_editor);
-    void RefreshData();
-    void RefreshDisplay();
+	EventList(SequenceEditor* sequence_editor);
+	void RefreshData();
+	void OnDraw(wxDC& dc);
+	long GetVisibleWidth();
+	long GetFirstVisibleRowNumber();
+	long GetLastVisibleRowNumber();
+	long GetColumnWidth(long column_number);
+	long GetXFromColumnNumber(long column_number);
+	long GetYFromRowNumber(long row_number);
+	long GetRowNumberFromY(long y);
 };
 
-class Row
+class PianoRoll
 {
 public:
-	long step_number;
-	MidiFileEvent_t event;
+	SequenceEditor *sequence_editor;
+	long first_note;
+	long last_note;
+	long key_width;
+	wxColour darker_line_color;
+	wxColour lighter_line_color;
+	wxColour lightest_line_color;
+	wxColour white_key_color;
+	wxColour black_key_color;
+	wxColour shadow_color;
 
-	Row(long step_number, MidiFileEvent_t event);
+	PianoRoll(SequenceEditor* sequence_editor);
+	void RefreshData();
+	void OnDraw(wxDC& dc);
+	long GetWidth();
+	long GetYFromStepNumber(double step_number);
 };
 
 class Step
@@ -161,6 +164,82 @@ public:
 	long last_row_number;
 
 	Step(long row_number);
+};
+
+class Row
+{
+public:
+	SequenceEditor* sequence_editor;
+	long step_number;
+	MidiFileEvent_t event;
+	EventType* event_type;
+	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
+
+	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
+	~Row();
+	virtual void Delete();
+	long GetTick();
+};
+
+class Cell
+{
+public:
+	Row* row;
+	wxString label = wxEmptyString;
+
+	Cell(Row* row);
+	virtual wxString GetValueText();
+	virtual void EnterValue();
+	virtual void SmallIncrease();
+	virtual void SmallDecrease();
+	virtual void LargeIncrease();
+	virtual void LargeDecrease();
+	virtual void Quantize();
+};
+
+class EmptyRow: public Row
+{
+public:
+	EmptyRow(SequenceEditor* sequence_editor, long step_number);
+};
+
+class EmptyRowTimeCell: public Cell
+{
+public:
+	EmptyRowTimeCell(Row* row);
+	wxString GetValueText();
+};
+
+class EventTypeManager
+{
+public:
+	std::vector<EventType*> event_types;
+
+	static EventTypeManager* GetInstance();
+
+private:
+	EventTypeManager();
+
+public:
+	EventType* GetEventType(MidiFileEvent_t event);
+};
+
+class EventType
+{
+public:
+	wxString name;
+	wxString short_name;
+
+	virtual ~EventType() = 0;
+	virtual bool MatchesEvent(MidiFileEvent_t event) = 0;
+	virtual Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event) = 0;
+};
+
+class EventTypeCell: public Cell
+{
+public:
+	EventTypeCell(Row* row);
+	wxString GetValueText();
 };
 
 class RowLocator
@@ -183,6 +262,23 @@ public:
 	~UndoCommand();
 	bool Do();
 	bool Undo();
+};
+
+class Sequence
+{
+public:
+	std::list<SequenceEditor*> sequence_editors;
+	wxCommandProcessor* undo_command_processor;
+	wxString filename;
+	MidiFile_t midi_file;
+	bool is_modified;
+
+	Sequence();
+	~Sequence();
+	void AddSequenceEditor(SequenceEditor* sequence_editor);
+	void RemoveSequenceEditor(SequenceEditor* sequence_editor);
+	void RefreshData();
+	void RefreshDisplay();
 };
 
 #endif
