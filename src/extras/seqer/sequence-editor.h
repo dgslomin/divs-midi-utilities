@@ -174,6 +174,7 @@ public:
 	MidiFileEvent_t event;
 	EventType* event_type;
 	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
+	bool selected;
 
 	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 	~Row();

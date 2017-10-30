@@ -185,14 +185,29 @@ void SequenceEditor::SetOverwriteMode(bool overwrite_mode)
 
 void SequenceEditor::SelectCurrent()
 {
+	Row* row = this->GetRow(this->current_row_number);
+	row->selected = !(row->selected);
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::SelectAll()
 {
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		this->GetRow(row_number)->selected = true;
+	}
+
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::SelectNone()
 {
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		this->GetRow(row_number)->selected = false;
+	}
+
+	this->RefreshDisplay();
 }
 
 void SequenceEditor::RowUp()
@@ -816,6 +831,7 @@ Row::Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t even
 	this->step_number = step_number;
 	this->event = event;
 	this->event_type = NULL;
+	this->selected = false;
 }
 
 Row::~Row()
