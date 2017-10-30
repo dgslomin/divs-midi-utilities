@@ -4,9 +4,16 @@
 #include "sequence-editor.h"
 #include "text-event.h"
 
+TextEventType* TextEventType::GetInstance()
+{
+	static TextEventType* instance = new TextEventType();
+	return instance;
+}
+
 TextEventType::TextEventType()
 {
 	this->name = wxString("Text");
+	this->short_name = wxString("Text");
 }
 
 bool TextEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* TextEventType::GetRow(SequenceEditor* sequence_editor, long step_number, Mi
 
 TextEventRow::TextEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Ctrl");
-	this->cells[0] = new TextEventTimeCell(this);
-	this->cells[1] = new TextEventTrackCell(this);
-	this->cells[2] = new Cell(this);
-	this->cells[3] = new TextEventTextCell(this);
-	this->cells[4] = new Cell(this);
+	this->event_type = TextEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new TextEventTimeCell(this);
+	this->cells[2] = new TextEventTrackCell(this);
+	this->cells[3] = new Cell(this);
+	this->cells[4] = new TextEventTextCell(this);
 	this->cells[5] = new Cell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 TextEventTimeCell::TextEventTimeCell(Row* row): Cell(row)

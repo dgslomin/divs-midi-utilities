@@ -7,7 +7,7 @@
 void SequenceEditor::InsertMarker()
 {
 	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1);
-	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(this->GetStepNumberFromRowNumber(this->current_row_number)), (char *)(""));
+	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(this->GetRow(this->current_row_number)->step_number), (char *)(""));
 	this->sequence->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 
@@ -27,9 +27,16 @@ void SequenceEditor::InsertMarker()
 	));
 }
 
+MarkerEventType* MarkerEventType::GetInstance()
+{
+	static MarkerEventType* instance = new MarkerEventType();
+	return instance;
+}
+
 MarkerEventType::MarkerEventType()
 {
 	this->name = wxString("Marker");
+	this->short_name = wxString("Marker");
 }
 
 bool MarkerEventType::MatchesEvent(MidiFileEvent_t event)
@@ -44,14 +51,15 @@ Row* MarkerEventType::GetRow(SequenceEditor* sequence_editor, long step_number, 
 
 MarkerEventRow::MarkerEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Marker");
-	this->cells[0] = new MarkerEventTimeCell(this);
-	this->cells[1] = new Cell(this);
+	this->event_type = MarkerEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new MarkerEventTimeCell(this);
 	this->cells[2] = new Cell(this);
-	this->cells[3] = new MarkerEventNameCell(this);
-	this->cells[4] = new Cell(this);
+	this->cells[3] = new Cell(this);
+	this->cells[4] = new MarkerEventNameCell(this);
 	this->cells[5] = new Cell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 void MarkerEventRow::Delete()

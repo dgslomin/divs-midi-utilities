@@ -33,7 +33,7 @@ void SequenceEditor::InsertNote(int diatonic)
 	else
 	{
 		MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1);
-		long start_step_number = this->GetStepNumberFromRowNumber(this->current_row_number);
+		long start_step_number = this->GetRow(this->current_row_number)->step_number;
 		long start_tick = this->step_size->GetTickFromStep(start_step_number);
 		long end_tick = this->step_size->GetTickFromStep(start_step_number + 1);
 		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
@@ -63,9 +63,16 @@ void SequenceEditor::InsertNote(int diatonic)
 	}
 }
 
+NoteEventType* NoteEventType::GetInstance()
+{
+	static NoteEventType* instance = new NoteEventType();
+	return instance;
+}
+
 NoteEventType::NoteEventType()
 {
 	this->name = wxString("Note");
+	this->short_name = wxString("Note");
 }
 
 bool NoteEventType::MatchesEvent(MidiFileEvent_t event)
@@ -80,14 +87,15 @@ Row* NoteEventType::GetRow(SequenceEditor* sequence_editor, long step_number, Mi
 
 NoteEventRow::NoteEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Note");
-	this->cells[0] = new NoteEventTimeCell(this);
-	this->cells[1] = new NoteEventTrackCell(this);
-	this->cells[2] = new NoteEventChannelCell(this);
-	this->cells[3] = new NoteEventNoteCell(this);
-	this->cells[4] = new NoteEventVelocityCell(this);
-	this->cells[5] = new NoteEventEndTimeCell(this);
-	this->cells[6] = new NoteEventEndVelocityCell(this);
+	this->event_type = NoteEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new NoteEventTimeCell(this);
+	this->cells[2] = new NoteEventTrackCell(this);
+	this->cells[3] = new NoteEventChannelCell(this);
+	this->cells[4] = new NoteEventNoteCell(this);
+	this->cells[5] = new NoteEventVelocityCell(this);
+	this->cells[6] = new NoteEventEndTimeCell(this);
+	this->cells[7] = new NoteEventEndVelocityCell(this);
 }
 
 void NoteEventRow::Delete()

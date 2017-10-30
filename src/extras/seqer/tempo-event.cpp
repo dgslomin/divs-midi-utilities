@@ -4,9 +4,16 @@
 #include "sequence-editor.h"
 #include "tempo-event.h"
 
+TempoEventType* TempoEventType::GetInstance()
+{
+	static TempoEventType* instance = new TempoEventType();
+	return instance;
+}
+
 TempoEventType::TempoEventType()
 {
 	this->name = wxString("Tempo");
+	this->short_name = wxString("Tempo");
 }
 
 bool TempoEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* TempoEventType::GetRow(SequenceEditor* sequence_editor, long step_number, M
 
 TempoEventRow::TempoEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Tempo");
-	this->cells[0] = new TempoEventTimeCell(this);
-	this->cells[1] = new Cell(this);
+	this->event_type = TempoEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new TempoEventTimeCell(this);
 	this->cells[2] = new Cell(this);
-	this->cells[3] = new TempoEventTempoCell(this);
-	this->cells[4] = new Cell(this);
+	this->cells[3] = new Cell(this);
+	this->cells[4] = new TempoEventTempoCell(this);
 	this->cells[5] = new Cell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 TempoEventTimeCell::TempoEventTimeCell(Row* row): Cell(row)

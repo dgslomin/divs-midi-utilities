@@ -8,13 +8,19 @@ class MarkerEventNameCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "event-type.h"
 #include "sequence-editor.h"
+
+extern MarkerEventType* marker_event_type;
 
 class MarkerEventType: public EventType
 {
 public:
+	static MarkerEventType* GetInstance();
+
+private:
 	MarkerEventType();
+
+public:
 	bool MatchesEvent(MidiFileEvent_t event);
 	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };

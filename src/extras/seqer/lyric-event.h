@@ -9,13 +9,17 @@ class LyricEventLyricCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "event-type.h"
 #include "sequence-editor.h"
 
 class LyricEventType: public EventType
 {
 public:
+	static LyricEventType* GetInstance();
+
+private:
 	LyricEventType();
+
+public:
 	bool MatchesEvent(MidiFileEvent_t event);
 	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };

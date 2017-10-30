@@ -2,14 +2,19 @@
 #define SEQUENCE_EDITOR_INCLUDED
 
 class SequenceEditor;
-class Sequence;
+class EventList;
+class PianoRoll;
 class Step;
 class Row;
 class Cell;
 class EmptyRow;
 class EmptyRowTimeCell;
+class EventTypeManager;
+class EventType;
+class EventTypeCell;
 class RowLocator;
 class UndoCommand;
+class Sequence;
 
 #include <functional>
 #include <list>
@@ -18,11 +23,10 @@ class UndoCommand;
 #include <wx/wx.h>
 #include <wx/cmdproc.h>
 #include <midifile.h>
-#include "event-list.h"
-#include "event-type.h"
 #include "music-math.h"
-#include "piano-roll.h"
 #include "seqer.h"
+
+#define EVENT_LIST_NUMBER_OF_COLUMNS 8
 
 class SequenceEditor: public wxScrolledCanvas
 {
@@ -38,7 +42,6 @@ public:
 	std::set<MidiFileTrack_t> filtered_tracks;
 	std::set<int> filtered_channels;
 	long current_row_number;
-	long last_row_number;
 	long current_column_number;
 	int insertion_track_number;
 	int insertion_channel_number;
@@ -96,9 +99,9 @@ public:
 	long GetNumberOfVisibleRows();
 	long GetFirstVisibleY();
 	long GetLastVisibleY();
+	Row* GetRow(long row_number);
 	long GetFirstRowNumberFromStepNumber(long step_number);
 	long GetLastRowNumberFromStepNumber(long step_number);
-	long GetStepNumberFromRowNumber(long row_number);
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
 	long GetTickFromRowNumber(long row_number);
@@ -112,21 +115,46 @@ public:
 	long GetRowNumberFromLocator(RowLocator row_locator);
 };
 
-class Sequence
+class EventList
 {
 public:
-	std::list<SequenceEditor*> sequence_editors;
-	wxCommandProcessor* undo_command_processor;
-	wxString filename;
-	MidiFile_t midi_file;
-	bool is_modified;
+	SequenceEditor *sequence_editor;
+	wxFont font;
+	wxColour current_cell_border_color;
+	long row_height;
+	long column_widths[EVENT_LIST_NUMBER_OF_COLUMNS];
 
-	Sequence();
-	~Sequence();
-	void AddSequenceEditor(SequenceEditor* sequence_editor);
-	void RemoveSequenceEditor(SequenceEditor* sequence_editor);
+	EventList(SequenceEditor* sequence_editor);
 	void RefreshData();
-	void RefreshDisplay();
+	void OnDraw(wxDC& dc);
+	long GetVisibleWidth();
+	long GetFirstVisibleRowNumber();
+	long GetLastVisibleRowNumber();
+	long GetColumnWidth(long column_number);
+	long GetXFromColumnNumber(long column_number);
+	long GetYFromRowNumber(long row_number);
+	long GetRowNumberFromY(long y);
+};
+
+class PianoRoll
+{
+public:
+	SequenceEditor *sequence_editor;
+	long first_note;
+	long last_note;
+	long key_width;
+	wxColour darker_line_color;
+	wxColour lighter_line_color;
+	wxColour lightest_line_color;
+	wxColour white_key_color;
+	wxColour black_key_color;
+	wxColour shadow_color;
+
+	PianoRoll(SequenceEditor* sequence_editor);
+	void RefreshData();
+	void OnDraw(wxDC& dc);
+	long GetWidth();
+	long GetYFromStepNumber(double step_number);
 };
 
 class Step
@@ -144,12 +172,13 @@ public:
 	SequenceEditor* sequence_editor;
 	long step_number;
 	MidiFileEvent_t event;
-	wxString label = wxEmptyString;
+	EventType* event_type;
 	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
 
 	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 	~Row();
 	virtual void Delete();
+	long GetTick();
 };
 
 class Cell
@@ -181,6 +210,38 @@ public:
 	wxString GetValueText();
 };
 
+class EventTypeManager
+{
+public:
+	std::vector<EventType*> event_types;
+
+	static EventTypeManager* GetInstance();
+
+private:
+	EventTypeManager();
+
+public:
+	EventType* GetEventType(MidiFileEvent_t event);
+};
+
+class EventType
+{
+public:
+	wxString name;
+	wxString short_name;
+
+	virtual ~EventType() = 0;
+	virtual bool MatchesEvent(MidiFileEvent_t event) = 0;
+	virtual Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event) = 0;
+};
+
+class EventTypeCell: public Cell
+{
+public:
+	EventTypeCell(Row* row);
+	wxString GetValueText();
+};
+
 class RowLocator
 {
 public:
@@ -201,6 +262,23 @@ public:
 	~UndoCommand();
 	bool Do();
 	bool Undo();
+};
+
+class Sequence
+{
+public:
+	std::list<SequenceEditor*> sequence_editors;
+	wxCommandProcessor* undo_command_processor;
+	wxString filename;
+	MidiFile_t midi_file;
+	bool is_modified;
+
+	Sequence();
+	~Sequence();
+	void AddSequenceEditor(SequenceEditor* sequence_editor);
+	void RemoveSequenceEditor(SequenceEditor* sequence_editor);
+	void RefreshData();
+	void RefreshDisplay();
 };
 
 #endif

@@ -4,9 +4,16 @@
 #include "aftertouch-event.h"
 #include "sequence-editor.h"
 
+AftertouchEventType* AftertouchEventType::GetInstance()
+{
+	static AftertouchEventType* instance = new AftertouchEventType();
+	return instance;
+}
+
 AftertouchEventType::AftertouchEventType()
 {
 	this->name = wxString("Aftertouch");
+	this->short_name = wxString("Touch");
 }
 
 bool AftertouchEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* AftertouchEventType::GetRow(SequenceEditor* sequence_editor, long step_numb
 
 AftertouchEventRow::AftertouchEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Touch");
-	this->cells[0] = new AftertouchEventTimeCell(this);
-	this->cells[1] = new AftertouchEventTrackCell(this);
-	this->cells[2] = new AftertouchEventChannelCell(this);
-	this->cells[3] = new AftertouchEventNoteCell(this);
-	this->cells[4] = new AftertouchEventAmountCell(this);
-	this->cells[5] = new Cell(this);
+	this->event_type = AftertouchEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new AftertouchEventTimeCell(this);
+	this->cells[2] = new AftertouchEventTrackCell(this);
+	this->cells[3] = new AftertouchEventChannelCell(this);
+	this->cells[4] = new AftertouchEventNoteCell(this);
+	this->cells[5] = new AftertouchEventAmountCell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 AftertouchEventTimeCell::AftertouchEventTimeCell(Row* row): Cell(row)

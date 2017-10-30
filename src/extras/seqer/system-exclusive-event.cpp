@@ -4,9 +4,16 @@
 #include "sequence-editor.h"
 #include "system-exclusive-event.h"
 
+SystemExclusiveEventType* SystemExclusiveEventType::GetInstance()
+{
+	static SystemExclusiveEventType* instance = new SystemExclusiveEventType();
+	return instance;
+}
+
 SystemExclusiveEventType::SystemExclusiveEventType()
 {
 	this->name = wxString("System exclusive");
+	this->short_name = wxString("Sysex");
 }
 
 bool SystemExclusiveEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* SystemExclusiveEventType::GetRow(SequenceEditor* sequence_editor, long step
 
 SystemExclusiveEventRow::SystemExclusiveEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Sysex");
-	this->cells[0] = new SystemExclusiveEventTimeCell(this);
-	this->cells[1] = new SystemExclusiveEventTrackCell(this);
-	this->cells[2] = new Cell(this);
+	this->event_type = SystemExclusiveEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new SystemExclusiveEventTimeCell(this);
+	this->cells[2] = new SystemExclusiveEventTrackCell(this);
 	this->cells[3] = new Cell(this);
 	this->cells[4] = new Cell(this);
 	this->cells[5] = new Cell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 SystemExclusiveEventTimeCell::SystemExclusiveEventTimeCell(Row* row): Cell(row)

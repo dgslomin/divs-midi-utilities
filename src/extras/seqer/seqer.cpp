@@ -5,8 +5,6 @@
 #include <wx/aboutdlg.h>
 #include <wx/fontpicker.h>
 #include <midifile.h>
-#include "event-list.h"
-#include "event-type.h"
 #include "music-math.h"
 #include "seqer.h"
 #include "sequence-editor.h"
@@ -887,9 +885,9 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 	this->event_type_list_box = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE);
 	event_type_sizer->Add(this->event_type_list_box, wxSizerFlags().Proportion(1).Expand().Border(wxTOP));
 
-	for (int i = 0; i < event_type_manager->event_types.size(); i++)
+	for (int i = 0; i < EventTypeManager::GetInstance()->event_types.size(); i++)
 	{
-		EventType* event_type = event_type_manager->event_types[i];
+		EventType* event_type = EventTypeManager::GetInstance()->event_types[i];
 		this->event_type_list_box->Append(event_type->name, event_type);
 
 		if (this->window->sequence_editor->filtered_event_types.find(event_type) != this->window->sequence_editor->filtered_event_types.end())

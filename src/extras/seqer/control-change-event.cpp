@@ -4,9 +4,16 @@
 #include "control-change-event.h"
 #include "sequence-editor.h"
 
+ControlChangeEventType* ControlChangeEventType::GetInstance()
+{
+	static ControlChangeEventType* instance = new ControlChangeEventType();
+	return instance;
+}
+
 ControlChangeEventType::ControlChangeEventType()
 {
 	this->name = wxString("Control change");
+	this->short_name = wxString("Ctrl");
 }
 
 bool ControlChangeEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* ControlChangeEventType::GetRow(SequenceEditor* sequence_editor, long step_n
 
 ControlChangeEventRow::ControlChangeEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Ctrl");
-	this->cells[0] = new ControlChangeEventTimeCell(this);
-	this->cells[1] = new ControlChangeEventTrackCell(this);
-	this->cells[2] = new ControlChangeEventChannelCell(this);
-	this->cells[3] = new ControlChangeEventNumberCell(this);
-	this->cells[4] = new ControlChangeEventValueCell(this);
-	this->cells[5] = new Cell(this);
+	this->event_type = ControlChangeEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new ControlChangeEventTimeCell(this);
+	this->cells[2] = new ControlChangeEventTrackCell(this);
+	this->cells[3] = new ControlChangeEventChannelCell(this);
+	this->cells[4] = new ControlChangeEventNumberCell(this);
+	this->cells[5] = new ControlChangeEventValueCell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 ControlChangeEventTimeCell::ControlChangeEventTimeCell(Row* row): Cell(row)

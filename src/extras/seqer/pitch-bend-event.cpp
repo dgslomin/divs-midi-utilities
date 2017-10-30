@@ -4,9 +4,16 @@
 #include "pitch-bend-event.h"
 #include "sequence-editor.h"
 
+PitchBendEventType* PitchBendEventType::GetInstance()
+{
+	static PitchBendEventType* instance = new PitchBendEventType();
+	return instance;
+}
+
 PitchBendEventType::PitchBendEventType()
 {
 	this->name = wxString("Pitch bend");
+	this->short_name = wxString("Bend");
 }
 
 bool PitchBendEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* PitchBendEventType::GetRow(SequenceEditor* sequence_editor, long step_numbe
 
 PitchBendEventRow::PitchBendEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Bend");
-	this->cells[0] = new PitchBendEventTimeCell(this);
-	this->cells[1] = new PitchBendEventTrackCell(this);
-	this->cells[2] = new PitchBendEventChannelCell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new PitchBendEventValueCell(this);
-	this->cells[5] = new Cell(this);
+	this->event_type = PitchBendEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new PitchBendEventTimeCell(this);
+	this->cells[2] = new PitchBendEventTrackCell(this);
+	this->cells[3] = new PitchBendEventChannelCell(this);
+	this->cells[4] = new Cell(this);
+	this->cells[5] = new PitchBendEventValueCell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 PitchBendEventTimeCell::PitchBendEventTimeCell(Row* row): Cell(row)

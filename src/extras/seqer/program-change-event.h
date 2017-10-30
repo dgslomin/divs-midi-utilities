@@ -10,13 +10,17 @@ class ProgramChangeEventNumberCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "event-type.h"
 #include "sequence-editor.h"
 
 class ProgramChangeEventType: public EventType
 {
 public:
+	static ProgramChangeEventType* GetInstance();
+
+private:
 	ProgramChangeEventType();
+
+public:
 	bool MatchesEvent(MidiFileEvent_t event);
 	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };

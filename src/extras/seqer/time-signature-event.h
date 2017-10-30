@@ -8,13 +8,17 @@ class TimeSignatureEventTimeSignatureCell;
 
 #include <wx/wx.h>
 #include <midifile.h>
-#include "event-type.h"
 #include "sequence-editor.h"
 
 class TimeSignatureEventType: public EventType
 {
 public:
+	static TimeSignatureEventType* GetInstance();
+
+private:
 	TimeSignatureEventType();
+
+public:
 	bool MatchesEvent(MidiFileEvent_t event);
 	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };

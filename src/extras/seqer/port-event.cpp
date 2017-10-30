@@ -4,9 +4,16 @@
 #include "port-event.h"
 #include "sequence-editor.h"
 
+PortEventType* PortEventType::GetInstance()
+{
+	static PortEventType* instance = new PortEventType();
+	return instance;
+}
+
 PortEventType::PortEventType()
 {
 	this->name = wxString("Port");
+	this->short_name = wxString("Port");
 }
 
 bool PortEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,14 +28,15 @@ Row* PortEventType::GetRow(SequenceEditor* sequence_editor, long step_number, Mi
 
 PortEventRow::PortEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
 {
-	this->label = wxString("Port");
-	this->cells[0] = new PortEventTimeCell(this);
-	this->cells[1] = new PortEventTrackCell(this);
-	this->cells[2] = new Cell(this);
-	this->cells[3] = new PortEventNameCell(this);
-	this->cells[4] = new Cell(this);
+	this->event_type = PortEventType::GetInstance();
+	this->cells[0] = new EventTypeCell(this);
+	this->cells[1] = new PortEventTimeCell(this);
+	this->cells[2] = new PortEventTrackCell(this);
+	this->cells[3] = new Cell(this);
+	this->cells[4] = new PortEventNameCell(this);
 	this->cells[5] = new Cell(this);
 	this->cells[6] = new Cell(this);
+	this->cells[7] = new Cell(this);
 }
 
 PortEventTimeCell::PortEventTimeCell(Row* row): Cell(row)
