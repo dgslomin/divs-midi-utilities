@@ -192,21 +192,13 @@ void SequenceEditor::SelectCurrent()
 
 void SequenceEditor::SelectAll()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
-	{
-		this->GetRow(row_number)->selected = true;
-	}
-
+	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->GetRow(row_number)->selected = true;
 	this->RefreshDisplay();
 }
 
 void SequenceEditor::SelectNone()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
-	{
-		this->GetRow(row_number)->selected = false;
-	}
-
+	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->GetRow(row_number)->selected = false;
 	this->RefreshDisplay();
 }
 
@@ -333,43 +325,36 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 
 void SequenceEditor::DeleteRow()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->Delete();
 }
 
 void SequenceEditor::EnterValue()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->EnterValue();
 }
 
 void SequenceEditor::SmallIncrease()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->SmallIncrease();
 }
 
 void SequenceEditor::SmallDecrease()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->SmallDecrease();
 }
 
 void SequenceEditor::LargeIncrease()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->LargeIncrease();
 }
 
 void SequenceEditor::LargeDecrease()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->LargeDecrease();
 }
 
 void SequenceEditor::Quantize()
 {
-	if (this->current_row_number >= this->rows.size()) return;
 	this->GetRow(this->current_row_number)->cells[this->current_column_number]->Quantize();
 }
 
