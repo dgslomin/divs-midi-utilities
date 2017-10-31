@@ -549,10 +549,7 @@ long SequenceEditor::GetRowNumberForEvent(MidiFileEvent_t event)
 {
 	for (long i = 0; i < this->rows.size(); i++)
 	{
-		if (this->GetRow(i)->event == event)
-		{
-			return i;
-		}
+		if (this->GetRow(i)->event == event) return i;
 	}
 
 	return -1;
@@ -623,6 +620,8 @@ void EventList::RefreshData()
 
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
 	this->current_cell_border_color = ColorShade(button_color, 25);
+	this->selected_row_background_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+	this->selected_row_text_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
 	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
@@ -645,7 +644,16 @@ void EventList::OnDraw(wxDC& dc)
 	long piano_roll_width = this->sequence_editor->piano_roll->GetWidth();
 	long width = this->GetVisibleWidth();
 
+	dc.SetPen(wxNullPen);
+	dc.SetBrush(wxBrush(this->selected_row_background_color));
+
+	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
+	{
+		if (this->sequence_editor->GetRow(row_number)->selected) dc.DrawRectangle(piano_roll_width, this->GetYFromRowNumber(row_number), width, this->row_height);
+	}
+
 	dc.SetPen(wxPen(this->sequence_editor->piano_roll->lighter_line_color));
+	dc.SetBrush(wxNullBrush);
 
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{
@@ -655,15 +663,20 @@ void EventList::OnDraw(wxDC& dc)
 	}
 
 	dc.SetPen(this->current_cell_border_color);
+	dc.SetBrush(wxNullBrush);
 	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
 	dc.SetFont(this->font);
+	wxPen selected_row_pen = wxPen(this->selected_row_text_color);
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
+		Row* row = this->sequence_editor->GetRow(row_number);
+		dc.SetPen(row->selected ? selected_row_pen : *wxBLACK_PEN);
+
 		for (long column_number = 0; column_number < EVENT_LIST_NUMBER_OF_COLUMNS; column_number++)
 		{
-			wxString cell_text = this->sequence_editor->GetRow(row_number)->cells[column_number]->GetValueText();
+			wxString cell_text = row->cells[column_number]->GetValueText();
 			if (!cell_text.IsEmpty()) dc.DrawText(cell_text, this->GetXFromColumnNumber(column_number) + (column_number == 0 ? 1 : 0), this->GetYFromRowNumber(row_number) + 1);
 		}
 	}
