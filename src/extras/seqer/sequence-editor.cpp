@@ -95,7 +95,7 @@ void SequenceEditor::New()
 	this->sequence = new Sequence();
 	this->sequence->AddSequenceEditor(this);
 	this->current_row_number = 0;
-	this->current_column_number = 0;
+	this->current_column_number = 1;
 	this->RefreshData();
 }
 
@@ -110,7 +110,7 @@ bool SequenceEditor::Load(wxString filename)
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
 	this->current_row_number = 0;
-	this->current_column_number = 0;
+	this->current_column_number = 1;
 	this->SetStepSize(new StepsPerMeasureSize(this));
 	this->RefreshData();
 	return true;
