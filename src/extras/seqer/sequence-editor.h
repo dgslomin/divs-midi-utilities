@@ -150,7 +150,14 @@ public:
 	wxColour lightest_line_color;
 	wxColour white_key_color;
 	wxColour black_key_color;
-	wxColour shadow_color;
+	wxColour event_line_color;
+	wxColour event_fill_color;
+	wxColour selected_event_line_color;
+	wxColour selected_event_fill_color;
+	wxColour current_event_line_color;
+	wxColour current_event_fill_color;
+	wxColour current_selected_event_line_color;
+	wxColour current_selected_event_fill_color;
 
 	PianoRoll(SequenceEditor* sequence_editor);
 	void RefreshData();

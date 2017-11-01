@@ -730,16 +730,23 @@ PianoRoll::PianoRoll(SequenceEditor* sequence_editor)
 void PianoRoll::RefreshData()
 {
 	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+	wxColour highlight_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 	this->darker_line_color = ColorShade(button_color, 80);
 	this->lighter_line_color = ColorShade(button_color, 85);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(button_color, 90);
-	this->shadow_color = ColorShade(button_color, 75);
+	this->event_line_color = ColorShade(button_color, 50);
+	this->event_fill_color = ColorShade(button_color, 60);
+	this->selected_event_line_color = ColorShade(highlight_color, 30);
+	this->selected_event_fill_color = ColorShade(highlight_color, 40);
+	this->current_event_line_color = ColorShade(button_color, 10);
+	this->current_event_fill_color = ColorShade(button_color, 20);
+	this->current_selected_event_line_color = ColorShade(highlight_color, 10);
+	this->current_selected_event_fill_color = ColorShade(highlight_color, 20);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
 {
-	MidiFileEvent_t current_row_event = this->sequence_editor->GetRow(this->sequence_editor->current_row_number)->event;
 	wxPen pens[] = {wxPen(this->darker_line_color), wxPen(this->lighter_line_color)};
 	wxBrush brushes[] = {wxBrush(this->white_key_color), wxBrush(this->black_key_color)};
 	long key_pens[] = {0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1};
@@ -767,38 +774,66 @@ void PianoRoll::OnDraw(wxDC& dc)
 		dc.DrawLine(0, y, width, y);
 	}
 
-	const wxPen pass_pens[] = {wxPen(this->shadow_color), *wxBLACK_PEN};
-	const wxBrush pass_brushes[] = {wxBrush(this->shadow_color), *wxWHITE_BRUSH};
-	const long pass_offsets[] = {1, 0};
+	wxPen event_pen = wxPen(this->event_line_color);
+	wxBrush event_brush = wxBrush(this->event_fill_color);
+	wxPen selected_event_pen = wxPen(this->selected_event_line_color);
+	wxBrush selected_event_brush = wxBrush(this->selected_event_fill_color);
+	wxPen current_event_pen = wxPen(this->current_event_line_color);
+	wxBrush current_event_brush = wxBrush(this->current_event_fill_color);
+	wxPen current_selected_event_pen = wxPen(this->current_selected_event_line_color);
+	wxBrush current_selected_event_brush = wxBrush(this->current_selected_event_fill_color);
 
-	for (int pass = 0; pass < 2; pass++)
+	for (int row_number = 0; row_number < this->sequence_editor->rows.size(); row_number++)
 	{
-		dc.SetPen(pass_pens[pass]);
-		dc.SetBrush(pass_brushes[pass]);
+		Row* row = this->sequence_editor->GetRow(row_number);
 
-		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence_editor->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+		if (row->event_type == NoteEventType::GetInstance() && this->sequence_editor->Filter(row->event_type, row->event))
 		{
-			EventType* event_type = EventTypeManager::GetInstance()->GetEventType(event);
+			int note = MidiFileNoteOnEvent_getNote(row->event);
 
-			if (MidiFileEvent_isNoteStartEvent(event) && this->sequence_editor->Filter(event_type, event))
+			if ((note >= this->first_note) && (note <= this->last_note))
 			{
-				int note = MidiFileNoteOnEvent_getNote(event);
+				double event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(row->event));
+				long event_y = this->GetYFromStepNumber(event_step_number);
 
-				if ((note >= this->first_note) && (note <= this->last_note))
+				MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(row->event);
+				double end_event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(end_event));
+				long end_event_y = this->GetYFromStepNumber(end_event_step_number);
+
+				if ((event_y <= last_y) && (end_event_y >= first_y))
 				{
-					double event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(event));
-					long event_y = this->GetYFromStepNumber(event_step_number);
+					long event_x = (note - this->first_note) * this->key_width - 1;
+					long event_width = this->key_width + 1;
+					long event_height = end_event_y - event_y;
 
-					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-					double end_event_step_number = this->sequence_editor->GetFractionalStepNumberFromTick(MidiFileEvent_getTick(end_event));
-					long end_event_y = this->GetYFromStepNumber(end_event_step_number);
-
-					if ((event_y <= last_y) && (end_event_y >= first_y))
+					if (row_number == this->sequence_editor->current_row_number)
 					{
-						if (event == current_row_event) dc.SetBrush(wxBrush(this->lighter_line_color));
-						dc.DrawRectangle((note - this->first_note) * this->key_width - 1 + pass_offsets[pass], event_y + pass_offsets[pass], this->key_width + 1, end_event_y - event_y);
-						if (event == current_row_event) dc.SetBrush(pass_brushes[pass]);
+						if (row->selected)
+						{
+							dc.SetPen(current_selected_event_pen);
+							dc.SetBrush(current_selected_event_brush);
+						}
+						else
+						{
+							dc.SetPen(current_event_pen);
+							dc.SetBrush(current_event_brush);
+						}
 					}
+					else
+					{
+						if (row->selected)
+						{
+							dc.SetPen(selected_event_pen);
+							dc.SetBrush(selected_event_brush);
+						}
+						else
+						{
+							dc.SetPen(event_pen);
+							dc.SetBrush(event_brush);
+						}
+					}
+
+					dc.DrawRectangle(event_x, event_y, event_width, event_height);
 				}
 			}
 		}
