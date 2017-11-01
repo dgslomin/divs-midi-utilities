@@ -787,7 +787,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 	{
 		Row* row = this->sequence_editor->GetRow(row_number);
 
-		if (row->event_type == NoteEventType::GetInstance() && this->sequence_editor->Filter(row->event_type, row->event))
+		if (row->event_type == NoteEventType::GetInstance())
 		{
 			int note = MidiFileNoteOnEvent_getNote(row->event);
 
