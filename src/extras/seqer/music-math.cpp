@@ -108,6 +108,8 @@ int GetFinerMeasureDivision(int existing_measure_division, int time_signature_nu
 
 int GetCoarserMeasureDivision(int existing_measure_division, int time_signature_numerator)
 {
+	if (existing_measure_division <= 1) return 1;
+
 	if (existing_measure_division <= time_signature_numerator)
 	{
 		for (int coarser_measure_division = existing_measure_division - 1; true; coarser_measure_division--)
@@ -143,7 +145,9 @@ int GetEquivalentMeasureDivision(int source_measure_division, int source_time_si
 {
 	if ((source_time_signature_numerator == target_time_signature_numerator) && (source_time_signature_denominator == target_time_signature_denominator)) return source_measure_division;
 	double raw_target_measure_division = (double)(source_measure_division * target_time_signature_numerator * source_time_signature_denominator) / (double)(source_time_signature_numerator * target_time_signature_denominator);
-	int coarser_target_measure_division = GetCoarserOrEqualMeasureDivision((int)(raw_target_measure_division), target_time_signature_numerator);
+	int raw_target_measure_division_int = (int)(raw_target_measure_division);
+	if (raw_target_measure_division_int < 1) raw_target_measure_division_int = 1;
+	int coarser_target_measure_division = GetCoarserOrEqualMeasureDivision(raw_target_measure_division_int, target_time_signature_numerator);
 	int finer_target_measure_division = GetFinerMeasureDivision(coarser_target_measure_division, target_time_signature_numerator);
 	return ((double)(finer_target_measure_division) - raw_target_measure_division < raw_target_measure_division - (double)(coarser_target_measure_division)) ? finer_target_measure_division : coarser_target_measure_division;
 }
