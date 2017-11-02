@@ -325,7 +325,15 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 
 void SequenceEditor::DeleteRow()
 {
-	this->GetRow(this->current_row_number)->Delete();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->Delete();
+		}
+	}
 }
 
 void SequenceEditor::EnterValue()
@@ -335,27 +343,67 @@ void SequenceEditor::EnterValue()
 
 void SequenceEditor::SmallIncrease()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->SmallIncrease();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->cells[this->current_column_number]->SmallIncrease();
+		}
+	}
 }
 
 void SequenceEditor::SmallDecrease()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->SmallDecrease();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->cells[this->current_column_number]->SmallDecrease();
+		}
+	}
 }
 
 void SequenceEditor::LargeIncrease()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->LargeIncrease();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->cells[this->current_column_number]->LargeIncrease();
+		}
+	}
 }
 
 void SequenceEditor::LargeDecrease()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->LargeDecrease();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->cells[this->current_column_number]->LargeDecrease();
+		}
+	}
 }
 
 void SequenceEditor::Quantize()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->Quantize();
+	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	{
+		Row* row = this->GetRow(row_number);
+
+		if (row_number == this->current_row_number || row->selected)
+		{
+			row->cells[this->current_column_number]->Quantize();
+		}
+	}
 }
 
 void SequenceEditor::ClearData()
@@ -741,8 +789,8 @@ void PianoRoll::RefreshData()
 	this->selected_event_fill_color = ColorShade(highlight_color, 40);
 	this->current_event_line_color = ColorShade(button_color, 10);
 	this->current_event_fill_color = ColorShade(button_color, 20);
-	this->current_selected_event_line_color = ColorShade(highlight_color, 10);
-	this->current_selected_event_fill_color = ColorShade(highlight_color, 20);
+	this->current_selected_event_line_color = ColorShade(highlight_color, 15);
+	this->current_selected_event_fill_color = ColorShade(highlight_color, 25);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
