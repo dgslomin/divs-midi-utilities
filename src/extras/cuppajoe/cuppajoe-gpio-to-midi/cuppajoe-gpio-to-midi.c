@@ -1,10 +1,15 @@
 
 /*
- * This is the lowest software layer of Cuppajoe, responsible for converting GPIO to MIDI.
+ * This is the lowest software layer of Cuppajoe, responsible for converting
+ * from Raspberry Pi GPIO to MIDI.
  *
- * Matrix logic adapted from public domain example code by James "Bald Engineer" Lewis.
+ * Matrix logic adapted from public domain example code by James "Bald
+ * Engineer" Lewis.
+ *
  * Debounce logic adapted from public domain example code by Kenneth A. Kuhn.
- * MCP3008 ADC SPI logic adapted from public domain example code by Limor "Ladyada" Fried.
+ *
+ * MCP3008 ADC SPI logic adapted from public domain example code by Limor
+ * "Ladyada" Fried.
  */
 
 #include <stdio.h>
@@ -15,13 +20,13 @@
 
 #define NUMBER_OF_BUTTON_ROWS 4
 #define NUMBER_OF_BUTTON_COLUMNS 4
-int button_row_gpio_pin_numbers[] = {1, 2, 3, 4}; /* TODO */
-int button_column_gpio_pin_numbers[] = {5, 6, 7, 8}; /* TODO */
+int button_row_gpio_pin_numbers[] = {0, 1, 2, 3};
+int button_column_gpio_pin_numbers[] = {4, 5, 6, 7};
 #define NUMBER_OF_ANALOG_INPUTS 4
-#define SPI_MOSI_GPIO_PIN_NUMBER 9 /* TODO */
-#define SPI_MISO_GPIO_PIN_NUMBER 10 /* TODO */
-#define SPI_CLK_GPIO_PIN_NUMBER 11 /* TODO */
-#define SPI_CS_GPIO_PIN_NUMBER 12 /* TODO */
+#define SPI_MOSI_GPIO_PIN_NUMBER 21
+#define SPI_MISO_GPIO_PIN_NUMBER 22
+#define SPI_CLK_GPIO_PIN_NUMBER 23
+#define SPI_CS_GPIO_PIN_NUMBER 24
 #define SAMPLE_FREQUENCY_HZ 10
 #define BUTTON_DEBOUNCE_TIME_SECS 0.3
 #define MIDI_CLIENT_NAME "Cuppajoe GPIO to MIDI"
@@ -214,12 +219,7 @@ void sampling_loop(void)
 
 void setup_midi(void)
 {
-	if (snd_seq_open(&midi_client, "default", SND_SEQ_OPEN_OUTPUT, 0) < 0)
-	{
-		fprintf(stderr, "Cannot open the ALSA sequencer.\n");
-		exit(1);
-	}
-
+	snd_seq_open(&midi_client, "default", SND_SEQ_OPEN_OUTPUT, 0);
 	snd_seq_set_client_name(midi_client, MIDI_CLIENT_NAME);
 	midi_port = snd_seq_create_simple_port(midi_client, MIDI_PORT_NAME, SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 }
@@ -237,7 +237,7 @@ void setup_gpio(void)
 		current_analog_input_values[analog_input_number] = 0;
 	}
 
-	wiringPiSetupGpio();
+	wiringPiSetup();
 
 	for (int button_row_number = 0; button_row_number < NUMBER_OF_BUTTON_ROWS; button_row_number++)
 	{
