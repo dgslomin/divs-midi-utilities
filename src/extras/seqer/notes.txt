@@ -81,3 +81,16 @@ One measure per step is not exactly the same as one step per measure, since the 
 
 In "seconds per step" mode, zoom in and out moves through factors of two just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
 
+
+
+
+
+
+
+
+Piano roll formatting:
+
+data to express: current, selected, track, velocity
+available primitives: fill color, fill shade, border color, border shade, border thickness
+preferences: avoid color, avoid high difference in shade between fill and border
+

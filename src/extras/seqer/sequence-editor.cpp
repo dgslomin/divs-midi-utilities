@@ -692,7 +692,7 @@ void EventList::OnDraw(wxDC& dc)
 	long piano_roll_width = this->sequence_editor->piano_roll->GetWidth();
 	long width = this->GetVisibleWidth();
 
-	dc.SetPen(wxNullPen);
+	dc.SetPen(wxPen(this->selected_row_background_color));
 	dc.SetBrush(wxBrush(this->selected_row_background_color));
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
@@ -701,7 +701,7 @@ void EventList::OnDraw(wxDC& dc)
 	}
 
 	dc.SetPen(wxPen(this->sequence_editor->piano_roll->lighter_line_color));
-	dc.SetBrush(wxNullBrush);
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 
 	for (long step_number = first_step_number; step_number <= last_step_number; step_number++)
 	{
@@ -711,16 +711,16 @@ void EventList::OnDraw(wxDC& dc)
 	}
 
 	dc.SetPen(this->current_cell_border_color);
-	dc.SetBrush(wxNullBrush);
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
 	dc.SetFont(this->font);
-	wxPen selected_row_pen = wxPen(this->selected_row_text_color);
+	dc.SetBackgroundMode(wxTRANSPARENT);
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
 		Row* row = this->sequence_editor->GetRow(row_number);
-		dc.SetPen(row->selected ? selected_row_pen : *wxBLACK_PEN);
+		dc.SetTextForeground(row->selected ? this->selected_row_text_color : *wxBLACK);
 
 		for (long column_number = 0; column_number < EVENT_LIST_NUMBER_OF_COLUMNS; column_number++)
 		{
