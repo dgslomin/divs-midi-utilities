@@ -28,6 +28,7 @@ void list_ports(void)
 	snd_seq_port_info_t *port_info;
 
 	snd_seq_open(&sequencer, "default", SND_SEQ_OPEN_DUPLEX, 0);
+	snd_seq_set_client_name(sequencer, "ALSA MIDI Cable Utility");
 	snd_seq_client_info_malloc(&client_info);
 	snd_seq_port_info_malloc(&port_info);
 
@@ -70,6 +71,7 @@ void list_connections(void)
 	snd_seq_query_subscribe_t *subscriptions;
 
 	snd_seq_open(&sequencer, "default", SND_SEQ_OPEN_DUPLEX, 0);
+	snd_seq_set_client_name(sequencer, "ALSA MIDI Cable Utility");
 	snd_seq_client_info_malloc(&client_info);
 	snd_seq_client_info_malloc(&connected_client_info);
 	snd_seq_port_info_malloc(&port_info);
@@ -111,6 +113,8 @@ void list_connections(void)
 
 snd_seq_addr_t *get_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability)
 {
+	snd_seq_client_info_set_client(client_info, -1);
+
 	while (snd_seq_query_next_client(sequencer, client_info) >= 0)
 	{
 		if (strcmp(snd_seq_client_info_get_name(client_info), client_name) == 0) {
@@ -150,6 +154,7 @@ void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_
 	snd_seq_port_subscribe_t *subscription;
 
 	snd_seq_open(&sequencer, "default", SND_SEQ_OPEN_DUPLEX, 0);
+	snd_seq_set_client_name(sequencer, "ALSA MIDI Cable Utility");
 	snd_seq_client_info_malloc(&client_info);
 	snd_seq_port_info_malloc(&port_info);
 	snd_seq_port_subscribe_malloc(&subscription);
