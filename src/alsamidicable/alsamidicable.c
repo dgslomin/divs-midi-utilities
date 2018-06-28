@@ -32,6 +32,8 @@ void list_ports(void)
 	snd_seq_client_info_malloc(&client_info);
 	snd_seq_port_info_malloc(&port_info);
 
+	snd_seq_client_info_set_client(client_info, -1);
+
 	while (snd_seq_query_next_client(sequencer, client_info) >= 0)
 	{
 		snd_seq_port_info_set_client(port_info, snd_seq_client_info_get_client(client_info));
@@ -77,6 +79,8 @@ void list_connections(void)
 	snd_seq_port_info_malloc(&port_info);
 	snd_seq_port_info_malloc(&connected_port_info);
 	snd_seq_query_subscribe_malloc(&subscriptions);
+
+	snd_seq_client_info_set_client(client_info, -1);
 
 	while (snd_seq_query_next_client(sequencer, client_info) >= 0)
 	{
