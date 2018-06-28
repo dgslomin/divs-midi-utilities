@@ -2,7 +2,7 @@
 cuppajoe-gpio-to-midi: cuppajoe-gpio-to-midi.o
 	gcc -o cuppajoe-gpio-to-midi cuppajoe-gpio-to-midi.o -lasound -lwiringPi
 
-cuppjoe-gpio-to-midi.o: cuppajoe-gpio-to-midi.c
+cuppajoe-gpio-to-midi.o: cuppajoe-gpio-to-midi.c
 	gcc -c cuppajoe-gpio-to-midi.c
 
 clean:
