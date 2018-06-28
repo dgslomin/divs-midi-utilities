@@ -120,7 +120,7 @@ void sample_analog_input(int analog_input_number)
 
 void sample_analog_inputs()
 {
-	for (int analog_input_number = 0; analog_input_number < 4; analog_input_number++)
+	for (int analog_input_number = 0; analog_input_number < NUMBER_OF_ANALOG_INPUTS; analog_input_number++)
 	{
 		sample_analog_input(analog_input_number);
 	}
