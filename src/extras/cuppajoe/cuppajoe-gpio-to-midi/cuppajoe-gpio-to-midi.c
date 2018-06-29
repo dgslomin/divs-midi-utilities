@@ -32,7 +32,7 @@ int button_column_gpio_pin_numbers[] = {4, 5, 6, 7};
 #define MIDI_CLIENT_NAME "Cuppajoe GPIO to MIDI"
 #define MIDI_PORT_NAME "out"
 #define MIDI_CHANNEL 0
-#define MIDI_BASE_NOTE 64
+#define MIDI_BASE_NOTE 60
 #define MIDI_BASE_CONTROLLER_NUMBER 16
 
 #define NUMBER_OF_BUTTONS (NUMBER_OF_BUTTON_ROWS * NUMBER_OF_BUTTON_COLUMNS)
