@@ -48,13 +48,21 @@ int left_joystick_y = 64;
 int right_joystick_x = 64;
 int right_joystick_y = 64;
 
+int scale_degree_to_note_number(int scale_degree)
+{
+	int note_number = current_octave + current_key + scale_degree - (scale_degree < current_lowest_scale_degree ? 12 : 0);
+	if (note_number < 0) return 0;
+	if (note_number > 127) return 127;
+	return note_number;
+}
+
 void transpose_held_notes(void)
 {
 	for (int scale_degree = 0; scale_degree < NUMBER_OF_NOTE_BUTTONS; scale_degree++)
 	{
 		if (held_notes[scale_degree] >= 0)
 		{
-			int new_note_number = current_octave + current_key + scale_degree - (scale_degree < current_lowest_scale_degree ? 12 : 0);
+			int new_note_number = scale_degree_to_note_number(scale_degree);
 
 			if (held_notes[scale_degree] != new_note_number)
 			{
@@ -101,7 +109,7 @@ void handle_note(int note_number, int pressed)
 		}
 		else
 		{
-			int output_note_number = current_octave + current_key + scale_degree - (scale_degree < current_lowest_scale_degree ? 12 : 0);
+			int output_note_number = scale_degree_to_note_number(scale_degree);
 
 			snd_seq_ev_clear(&midi_output_event);
 			snd_seq_ev_set_source(&midi_output_event, midi_output_port);
