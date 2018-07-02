@@ -28,6 +28,13 @@ int note_button_to_scale_degree_map[] = {10, 11, 5, 4, 8, 9, 3, 2, 6, 7, 1, 0};
 #define RIGHT_JOYSTICK_X_CONTROLLER_NUMBER 18
 #define RIGHT_JOYSTICK_Y_CONTROLLER_NUMBER 19
 #define EXPRESSION_CONTROLLER_NUMBER 11
+#define MOD_WHEEL_CONTROLLER_NUMBER 1
+#define FREQUENCY_CUTOFF_CONTROLLER_NUMBER 74
+#define RESONANCE_CONTROLLER_NUMBER 71
+#define ATTACK_TIME_CONTROLLER_NUMBER 73
+#define RELEASE_TIME_CONTROLLER_NUMBER 72
+#define REVERB_LEVEL_CONTROLLER_NUMBER 91
+#define CHORUS_LEVEL_CONTROLLER_NUMBER 93
 
 snd_seq_t *midi_client;
 int midi_input_port;
@@ -38,9 +45,11 @@ int held_notes[NUMBER_OF_NOTE_BUTTONS];
 int current_key = 0;
 int current_lowest_scale_degree = 0;
 int current_octave = 60;
-int current_expression_value = 0;
+int current_controller_number = EXPRESSION_CONTROLLER_NUMBER;
+int current_controller_value = -1;
 int set_key = 0;
 int set_lowest_scale_degree = 0;
+int set_controller_number = 0;
 int octave_joystick_x = 0;
 int octave_joystick_y = 0;
 int left_joystick_x = 64;
@@ -107,6 +116,67 @@ void handle_note(int note_number, int pressed)
 				transpose_held_notes();
 			}
 		}
+		else if (set_controller_number)
+		{
+			if (pressed)
+			{
+				switch (scale_degree)
+				{
+					case 0:
+					{
+						current_controller_number = EXPRESSION_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 1:
+					{
+						current_controller_number = MOD_WHEEL_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 2:
+					{
+						current_controller_number = FREQUENCY_CUTOFF_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 3:
+					{
+						current_controller_number = RESONANCE_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 4:
+					{
+						current_controller_number = ATTACK_TIME_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 5:
+					{
+						current_controller_number = RELEASE_TIME_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 6:
+					{
+						current_controller_number = REVERB_LEVEL_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					case 7:
+					{
+						current_controller_number = CHORUS_LEVEL_CONTROLLER_NUMBER;
+						current_controller_value = -1;
+						break;
+					}
+					default:
+					{
+						break;
+					}
+				}
+			}
+		}
 		else
 		{
 			int output_note_number = scale_degree_to_note_number(scale_degree);
@@ -145,7 +215,7 @@ void handle_note(int note_number, int pressed)
 			}
 			case ACTION_BUTTON_2_NOTE_NUMBER:
 			{
-				/* TODO */
+				set_controller_number = pressed;
 				break;
 			}
 			case ACTION_BUTTON_3_NOTE_NUMBER:
@@ -161,17 +231,17 @@ void handle_note(int note_number, int pressed)
 	}
 }
 
-void handle_expression_knob(double knob_value)
+void handle_controller_knob(double knob_value)
 {
-	int expression_value = (int)(127 * knob_value);
+	int controller_value = (int)(127 * knob_value);
 
-	if (current_expression_value != expression_value)
+	if (current_controller_value != controller_value)
 	{
-		current_expression_value = expression_value;
+		current_controller_value = controller_value;
 		snd_seq_ev_clear(&midi_output_event);
 		snd_seq_ev_set_source(&midi_output_event, midi_output_port);
 		snd_seq_ev_set_subs(&midi_output_event);
-		snd_seq_ev_set_controller(&midi_output_event, MIDI_CHANNEL, EXPRESSION_CONTROLLER_NUMBER, expression_value);
+		snd_seq_ev_set_controller(&midi_output_event, MIDI_CHANNEL, current_controller_number, controller_value);
 		snd_seq_event_output_direct(midi_client, &midi_output_event);
 	}
 }
@@ -259,13 +329,13 @@ void handle_controller(int controller_number, int value)
 		case LEFT_JOYSTICK_X_CONTROLLER_NUMBER:
 		{
 			left_joystick_x = value;
-			handle_joystick_as_knob(left_joystick_x, left_joystick_y, &handle_expression_knob);
+			handle_joystick_as_knob(left_joystick_x, left_joystick_y, &handle_controller_knob);
 			break;
 		}
 		case LEFT_JOYSTICK_Y_CONTROLLER_NUMBER:
 		{
 			left_joystick_y = value;
-			handle_joystick_as_knob(left_joystick_x, left_joystick_y, &handle_expression_knob);
+			handle_joystick_as_knob(left_joystick_x, left_joystick_y, &handle_controller_knob);
 			break;
 		}
 		case RIGHT_JOYSTICK_X_CONTROLLER_NUMBER:
