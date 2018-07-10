@@ -787,7 +787,7 @@ void PianoRoll::RefreshData()
 	this->event_fill_color = ColorShade(button_color, 60);
 	this->selected_event_line_color = ColorShade(highlight_color, 25);
 	this->selected_event_fill_color = ColorShade(highlight_color, 35);
-	this->current_event_line_color = ColorShade(button_color, 10);
+	this->current_event_line_color = ColorShade(button_color, 15);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -825,6 +825,11 @@ void PianoRoll::OnDraw(wxDC& dc)
 	wxBrush selected_event_brush = wxBrush(this->selected_event_fill_color);
 	wxPen current_event_pen = wxPen(this->current_event_line_color, 2);
 
+	long current_event_x = -1;
+	long current_event_y;
+	long current_event_width;
+	long current_event_height;
+
 	for (int row_number = 0; row_number < this->sequence_editor->rows.size(); row_number++)
 	{
 		Row* row = this->sequence_editor->GetRow(row_number);
@@ -848,37 +853,36 @@ void PianoRoll::OnDraw(wxDC& dc)
 					long event_width = this->key_width + 1;
 					long event_height = end_event_y - event_y;
 
-					if (row_number == this->sequence_editor->current_row_number)
+					if (row->selected)
 					{
-						dc.SetPen(current_event_pen);
-
-						if (row->selected)
-						{
-							dc.SetBrush(selected_event_brush);
-						}
-						else
-						{
-							dc.SetBrush(event_brush);
-						}
+						dc.SetPen(selected_event_pen);
+						dc.SetBrush(selected_event_brush);
 					}
 					else
 					{
-						if (row->selected)
-						{
-							dc.SetPen(selected_event_pen);
-							dc.SetBrush(selected_event_brush);
-						}
-						else
-						{
-							dc.SetPen(event_pen);
-							dc.SetBrush(event_brush);
-						}
+						dc.SetPen(event_pen);
+						dc.SetBrush(event_brush);
 					}
 
 					dc.DrawRectangle(event_x, event_y, event_width, event_height);
+
+					if (row_number == this->sequence_editor->current_row_number)
+					{
+						current_event_x = event_x;
+						current_event_y = event_y;
+						current_event_width = event_width;
+						current_event_height = event_height;
+					}
 				}
 			}
 		}
+	}
+
+	if (current_event_x >= 0)
+	{
+		dc.SetPen(current_event_pen);
+		dc.SetBrush(wxNullBrush);
+		dc.DrawRectangle(current_event_x, current_event_y, current_event_width + 1, current_event_height);
 	}
 }
 
