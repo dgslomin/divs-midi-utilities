@@ -155,9 +155,6 @@ public:
 	wxColour selected_event_line_color;
 	wxColour selected_event_fill_color;
 	wxColour current_event_line_color;
-	wxColour current_event_fill_color;
-	wxColour current_selected_event_line_color;
-	wxColour current_selected_event_fill_color;
 
 	PianoRoll(SequenceEditor* sequence_editor);
 	void RefreshData();

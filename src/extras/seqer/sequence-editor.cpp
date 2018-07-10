@@ -785,12 +785,9 @@ void PianoRoll::RefreshData()
 	this->black_key_color = ColorShade(button_color, 90);
 	this->event_line_color = ColorShade(button_color, 50);
 	this->event_fill_color = ColorShade(button_color, 60);
-	this->selected_event_line_color = ColorShade(highlight_color, 30);
-	this->selected_event_fill_color = ColorShade(highlight_color, 40);
+	this->selected_event_line_color = ColorShade(highlight_color, 25);
+	this->selected_event_fill_color = ColorShade(highlight_color, 35);
 	this->current_event_line_color = ColorShade(button_color, 10);
-	this->current_event_fill_color = ColorShade(button_color, 20);
-	this->current_selected_event_line_color = ColorShade(highlight_color, 15);
-	this->current_selected_event_fill_color = ColorShade(highlight_color, 25);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -826,10 +823,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 	wxBrush event_brush = wxBrush(this->event_fill_color);
 	wxPen selected_event_pen = wxPen(this->selected_event_line_color);
 	wxBrush selected_event_brush = wxBrush(this->selected_event_fill_color);
-	wxPen current_event_pen = wxPen(this->current_event_line_color);
-	wxBrush current_event_brush = wxBrush(this->current_event_fill_color);
-	wxPen current_selected_event_pen = wxPen(this->current_selected_event_line_color);
-	wxBrush current_selected_event_brush = wxBrush(this->current_selected_event_fill_color);
+	wxPen current_event_pen = wxPen(this->current_event_line_color, 2);
 
 	for (int row_number = 0; row_number < this->sequence_editor->rows.size(); row_number++)
 	{
@@ -856,15 +850,15 @@ void PianoRoll::OnDraw(wxDC& dc)
 
 					if (row_number == this->sequence_editor->current_row_number)
 					{
+						dc.SetPen(current_event_pen);
+
 						if (row->selected)
 						{
-							dc.SetPen(current_selected_event_pen);
-							dc.SetBrush(current_selected_event_brush);
+							dc.SetBrush(selected_event_brush);
 						}
 						else
 						{
-							dc.SetPen(current_event_pen);
-							dc.SetBrush(current_event_brush);
+							dc.SetBrush(event_brush);
 						}
 					}
 					else
