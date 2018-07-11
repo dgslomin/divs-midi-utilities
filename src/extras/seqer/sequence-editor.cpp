@@ -666,9 +666,8 @@ void EventList::RefreshData()
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 
-	this->current_cell_border_color = ColorShade(*wxBLACK, 25);
-	this->selected_row_background_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-	this->selected_row_text_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
+	this->current_cell_border_color = ColorShade(*wxBLACK, 15);
+	this->selected_row_background_color = ColorShade(*wxBLACK, 90);
 
 	this->column_widths[0] = dc.GetTextExtent("Marker#").GetWidth();
 	this->column_widths[1] = dc.GetTextExtent(this->sequence_editor->step_size->GetTimeStringFromTick(0) + "###").GetWidth();
@@ -709,17 +708,17 @@ void EventList::OnDraw(wxDC& dc)
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
 	}
 
-	dc.SetPen(this->sequence_editor->GetRow(this->sequence_editor->current_row_number)->selected ? this->selected_row_text_color : this->current_cell_border_color);
+	dc.SetPen(this->current_cell_border_color);
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
 	dc.SetFont(this->font);
 	dc.SetBackgroundMode(wxTRANSPARENT);
+	dc.SetTextForeground(*wxBLACK);
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
 		Row* row = this->sequence_editor->GetRow(row_number);
-		dc.SetTextForeground(row->selected ? this->selected_row_text_color : *wxBLACK);
 
 		for (long column_number = 0; column_number < EVENT_LIST_NUMBER_OF_COLUMNS; column_number++)
 		{
@@ -776,15 +775,14 @@ PianoRoll::PianoRoll(SequenceEditor* sequence_editor)
 
 void PianoRoll::RefreshData()
 {
-	wxColour highlight_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 	this->darker_line_color = ColorShade(*wxBLACK, 80);
 	this->lighter_line_color = ColorShade(*wxBLACK, 85);
 	this->white_key_color = *wxWHITE;
 	this->black_key_color = ColorShade(*wxBLACK, 90);
 	this->event_line_color = ColorShade(*wxBLACK, 50);
 	this->event_fill_color = ColorShade(*wxBLACK, 60);
-	this->selected_event_line_color = ColorShade(highlight_color, 25);
-	this->selected_event_fill_color = ColorShade(highlight_color, 35);
+	this->selected_event_line_color = ColorShade(*wxBLACK, 25);
+	this->selected_event_fill_color = ColorShade(*wxBLACK, 35);
 	this->current_event_line_color = ColorShade(*wxBLACK, 15);
 }
 

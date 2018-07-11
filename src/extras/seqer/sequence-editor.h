@@ -122,7 +122,6 @@ public:
 	wxFont font;
 	wxColour current_cell_border_color;
 	wxColour selected_row_background_color;
-	wxColour selected_row_text_color;
 	long row_height;
 	long column_widths[EVENT_LIST_NUMBER_OF_COLUMNS];
 
