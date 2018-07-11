@@ -666,8 +666,7 @@ void EventList::RefreshData()
 	dc.SetFont(this->font);
 	this->row_height = dc.GetCharHeight();
 
-	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-	this->current_cell_border_color = ColorShade(button_color, 25);
+	this->current_cell_border_color = ColorShade(*wxBLACK, 25);
 	this->selected_row_background_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 	this->selected_row_text_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
@@ -710,7 +709,7 @@ void EventList::OnDraw(wxDC& dc)
 		dc.DrawLine(piano_roll_width, y, piano_roll_width + width, y);
 	}
 
-	dc.SetPen(this->current_cell_border_color);
+	dc.SetPen(this->sequence_editor->GetRow(this->sequence_editor->current_row_number)->selected ? this->selected_row_text_color : this->current_cell_border_color);
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dc.DrawRectangle(this->GetXFromColumnNumber(this->sequence_editor->current_column_number) - 1, this->GetYFromRowNumber(this->sequence_editor->current_row_number), this->GetColumnWidth(this->sequence_editor->current_column_number) + 1, this->row_height + 1);
 
@@ -777,17 +776,16 @@ PianoRoll::PianoRoll(SequenceEditor* sequence_editor)
 
 void PianoRoll::RefreshData()
 {
-	wxColour button_color = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
 	wxColour highlight_color = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-	this->darker_line_color = ColorShade(button_color, 80);
-	this->lighter_line_color = ColorShade(button_color, 85);
+	this->darker_line_color = ColorShade(*wxBLACK, 80);
+	this->lighter_line_color = ColorShade(*wxBLACK, 85);
 	this->white_key_color = *wxWHITE;
-	this->black_key_color = ColorShade(button_color, 90);
-	this->event_line_color = ColorShade(button_color, 50);
-	this->event_fill_color = ColorShade(button_color, 60);
+	this->black_key_color = ColorShade(*wxBLACK, 90);
+	this->event_line_color = ColorShade(*wxBLACK, 50);
+	this->event_fill_color = ColorShade(*wxBLACK, 60);
 	this->selected_event_line_color = ColorShade(highlight_color, 25);
 	this->selected_event_fill_color = ColorShade(highlight_color, 35);
-	this->current_event_line_color = ColorShade(button_color, 15);
+	this->current_event_line_color = ColorShade(*wxBLACK, 15);
 }
 
 void PianoRoll::OnDraw(wxDC& dc)
@@ -881,7 +879,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 	if (current_event_x >= 0)
 	{
 		dc.SetPen(current_event_pen);
-		dc.SetBrush(wxNullBrush);
+		dc.SetBrush(*wxTRANSPARENT_BRUSH);
 		dc.DrawRectangle(current_event_x, current_event_y, current_event_width + 1, current_event_height);
 	}
 }
