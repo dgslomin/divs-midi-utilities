@@ -3,7 +3,9 @@
 #include <set>
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
+#include <wx/filename.h>
 #include <wx/fontpicker.h>
+#include <wx/stdpaths.h>
 #include <midifile.h>
 #include "music-math.h"
 #include "seqer.h"
@@ -431,6 +433,18 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		PreferencesDialog::Run(this);
 	}, wxID_PREFERENCES);
+
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
+		wxFileName help_file = wxFileName(wxStandardPaths::Get().GetDataDir(), "seqer.html");
+
+		if (!help_file.FileExists())
+		{
+			help_file = wxFileName(wxStandardPaths::Get().GetExecutablePath());
+			help_file.SetFullName("seqer.html");
+		}
+
+		if (help_file.FileExists()) wxLaunchDefaultBrowser(help_file.GetFullPath());
+	}, wxID_HELP_CONTENTS);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
 		wxMessageBox("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license", "About", wxOK);
