@@ -10,10 +10,18 @@ LD=`$(WXCONFIG) --ld`
 LIBS=`$(WXCONFIG) --libs`
 
 ifeq ("$(shell uname -s)", "Darwin")
+
+all: Seqer.app/Contents/MacOS/Seqer Seqer.app/Contents/Resources/seqer.html
+
 Seqer.app/Contents/MacOS/Seqer: seqer
 	-mkdir -p Seqer.app/Contents/MacOS
 	cp seqer Seqer.app/Contents/MacOS/Seqer
 	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
+
+Seqer.app/Contents/Resources/seqer.html: seqer.html
+	-mkdir -p Seqer.app/Contents/Resources
+	cp seqer.html Seqer.app/Contents/Resources/
+
 endif
 
 seqer: aftertouch-event.o color.o control-change-event.o key-signature-event.o lyric-event.o marker-event.o midifile.o music-math.o note-event.o pitch-bend-event.o port-event.o program-change-event.o seqer.o sequence-editor.o system-exclusive-event.o tempo-event.o text-event.o time-signature-event.o

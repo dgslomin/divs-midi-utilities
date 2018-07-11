@@ -73,6 +73,8 @@ public:
 	void PageDown();
 	void GoToFirstRow();
 	void GoToLastRow();
+	void ScrollUp();
+	void ScrollDown();
 	void ColumnLeft();
 	void ColumnRight();
 	void GoToColumn(int column_number);

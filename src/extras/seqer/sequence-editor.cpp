@@ -232,6 +232,50 @@ void SequenceEditor::GoToLastRow()
 	this->SetCurrentRowNumber(this->rows.size() - 1);
 }
 
+void SequenceEditor::ScrollUp()
+{
+	long first_visible_row_number = this->event_list->GetFirstVisibleRowNumber();
+
+	if (first_visible_row_number == 0)
+	{
+		this->RowUp();
+	}
+	else
+	{
+		long last_visible_row_number = this->event_list->GetLastVisibleRowNumber();
+
+		first_visible_row_number--;
+		last_visible_row_number--;
+
+		if (this->current_row_number > last_visible_row_number - 2)
+		{
+			this->current_row_number--;
+		}
+
+		this->Scroll(wxDefaultCoord, first_visible_row_number);
+		this->UpdateScrollbar();
+		this->RefreshDisplay();
+	}
+}
+
+void SequenceEditor::ScrollDown()
+{
+	long first_visible_row_number = this->event_list->GetFirstVisibleRowNumber();
+	long last_visible_row_number = this->event_list->GetLastVisibleRowNumber();
+
+	first_visible_row_number++;
+	last_visible_row_number++;
+
+	if (this->current_row_number < first_visible_row_number)
+	{
+		this->current_row_number++;
+	}
+
+	this->Scroll(wxDefaultCoord, first_visible_row_number);
+	this->UpdateScrollbar();
+	this->RefreshDisplay();
+}
+
 void SequenceEditor::ColumnLeft()
 {
 	this->current_column_number = std::max<long>(this->current_column_number - 1, 1);

@@ -494,15 +494,15 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 		{
 			this->sequence_editor->GoToColumn(EVENT_LIST_NUMBER_OF_COLUMNS - 1);
 		}
-#ifdef __WXOSX__
 		else if ((keycode == WXK_UP) && (modifiers == wxMOD_ALT))
 		{
-			this->sequence_editor->PageUp();
+			this->sequence_editor->ScrollUp();
 		}
 		else if ((keycode == WXK_DOWN) && (modifiers == wxMOD_ALT))
 		{
-			this->sequence_editor->PageDown();
+			this->sequence_editor->ScrollDown();
 		}
+#ifdef __WXOSX__
 		else if ((keycode == WXK_UP) && (modifiers == wxMOD_CONTROL))
 		{
 			this->sequence_editor->GoToFirstRow();
