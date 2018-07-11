@@ -854,7 +854,7 @@ void FilterDialog::Run(Window* window)
 	dialog->Destroy();
 }
 
-FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", wxDefaultPosition, wxSize(500, 450), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	this->window = window;
 
@@ -1002,8 +1002,6 @@ FilterDialog::FilterDialog(Window* window): wxDialog(NULL, wxID_ANY, "Filter", w
 
 	wxSizer* button_sizer = this->CreateButtonSizer(wxOK | wxCANCEL);
 	outer_sizer->Add(button_sizer, wxSizerFlags().Align(wxALIGN_CENTER).Border());
-
-	outer_sizer->Fit(this);
 }
 
 void PreferencesDialog::Run(Window* window)
