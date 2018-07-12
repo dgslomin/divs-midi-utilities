@@ -65,10 +65,10 @@ class PreferencesDialog: public wxDialog
 {
 public:
 	Window* window;
-	wxFontPickerCtrl* event_list_font_picker;
 	wxTextCtrl* piano_roll_first_note_text_box;
 	wxTextCtrl* piano_roll_last_note_text_box;
 	wxTextCtrl* piano_roll_key_width_text_box;
+	wxFontPickerCtrl* event_list_font_picker;
 
 	static void Run(Window* window);
 	PreferencesDialog(Window* window);

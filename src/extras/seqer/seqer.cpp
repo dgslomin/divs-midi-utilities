@@ -1010,6 +1010,10 @@ void PreferencesDialog::Run(Window* window)
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
+		long key_width = -1;
+		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
+		if (key_width >= 0) window->sequence_editor->piano_roll->key_width = key_width;
+
 		window->sequence_editor->event_list->font = dialog->event_list_font_picker->GetSelectedFont();
 
 		long first_note = GetNoteNumberFromName(dialog->piano_roll_first_note_text_box->GetValue());
@@ -1020,10 +1024,6 @@ void PreferencesDialog::Run(Window* window)
 			window->sequence_editor->piano_roll->first_note = first_note;
 			window->sequence_editor->piano_roll->last_note = last_note;
 		}
-
-		long key_width = -1;
-		dialog->piano_roll_key_width_text_box->GetValue().ToCLong(&key_width);
-		if (key_width >= 0) window->sequence_editor->piano_roll->key_width = key_width;
 
 		window->sequence_editor->RefreshData();
 	}
@@ -1038,25 +1038,8 @@ PreferencesDialog::PreferencesDialog(Window* window): wxDialog(NULL, wxID_ANY, "
 	wxBoxSizer* outer_sizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(outer_sizer);
 
-	wxStaticBoxSizer* event_list_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Event list");
-	outer_sizer->Add(event_list_settings_section, wxSizerFlags().Expand().Border());
-	wxFlexGridSizer* event_list_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
-	event_list_settings_section->Add(event_list_settings_sizer, wxSizerFlags().Expand().Border());
-	event_list_settings_sizer->AddGrowableCol(1, 1);
-
-	event_list_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Fo&nt"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
-	this->event_list_font_picker = new wxFontPickerCtrl(this, wxID_ANY, this->window->sequence_editor->event_list->font, wxDefaultPosition, wxDefaultSize, wxFNTP_FONTDESC_AS_LABEL);
-	event_list_settings_sizer->Add(this->event_list_font_picker, wxSizerFlags().Expand());
-	wxButton* default_event_list_font_button = new wxButton(this, wxID_ANY, "Default");
-	event_list_settings_sizer->Add(default_event_list_font_button, wxSizerFlags().Expand());
-
-	default_event_list_font_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
-		this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
-		event.Skip();
-	});
-
 	wxStaticBoxSizer* piano_roll_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Piano roll");
-	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	outer_sizer->Add(piano_roll_settings_section, wxSizerFlags().Expand().Border());
 	wxFlexGridSizer* piano_roll_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
 	piano_roll_settings_section->Add(piano_roll_settings_sizer, wxSizerFlags().Expand().Border());
 	piano_roll_settings_sizer->AddGrowableCol(1, 1);
@@ -1091,6 +1074,23 @@ PreferencesDialog::PreferencesDialog(Window* window): wxDialog(NULL, wxID_ANY, "
 
 	default_piano_roll_key_width_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
 		this->piano_roll_key_width_text_box->SetValue(wxString::Format("%ld", this->window->application->default_piano_roll_key_width));
+		event.Skip();
+	});
+
+	wxStaticBoxSizer* event_list_settings_section = new wxStaticBoxSizer(wxVERTICAL, this, "Event list");
+	outer_sizer->Add(event_list_settings_section, wxSizerFlags().Expand().Border(wxRIGHT | wxBOTTOM | wxLEFT));
+	wxFlexGridSizer* event_list_settings_sizer = new wxFlexGridSizer(3, wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+	event_list_settings_section->Add(event_list_settings_sizer, wxSizerFlags().Expand().Border());
+	event_list_settings_sizer->AddGrowableCol(1, 1);
+
+	event_list_settings_sizer->Add(new wxStaticText(this, wxID_ANY, "Fo&nt"), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT));
+	this->event_list_font_picker = new wxFontPickerCtrl(this, wxID_ANY, this->window->sequence_editor->event_list->font, wxDefaultPosition, wxDefaultSize, wxFNTP_FONTDESC_AS_LABEL);
+	event_list_settings_sizer->Add(this->event_list_font_picker, wxSizerFlags().Expand());
+	wxButton* default_event_list_font_button = new wxButton(this, wxID_ANY, "Default");
+	event_list_settings_sizer->Add(default_event_list_font_button, wxSizerFlags().Expand());
+
+	default_event_list_font_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+		this->event_list_font_picker->SetSelectedFont(this->window->application->default_event_list_font);
 		event.Skip();
 	});
 

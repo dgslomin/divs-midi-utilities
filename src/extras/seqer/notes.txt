@@ -14,12 +14,13 @@ A vertical piano roll functions as an additional, graphical column in the table,
 
 
 TODO:
+	selection/clipboard infrastructure
+	save preferences
 	event grid
 		remaining insert/delete/edit operations
 		mouse support for navigate/select
 	piano roll
 		mouse support for select
-	selection/clipboard infrastructure
 	realtime MIDI infrastructure
 		mapping from port name strings (arbitrarily user-selectable) to actual output ports
 		no arming of tracks; record should always target the current track
