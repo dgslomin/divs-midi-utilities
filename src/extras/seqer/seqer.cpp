@@ -435,7 +435,7 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	}, wxID_PREFERENCES);
 
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) {
-		wxFileName help_file = wxFileName(wxStandardPaths::Get().GetDataDir(), "seqer.html");
+		wxFileName help_file = wxFileName(wxStandardPaths::Get().GetResourcesDir(), "seqer.html");
 
 		if (!help_file.FileExists())
 		{
