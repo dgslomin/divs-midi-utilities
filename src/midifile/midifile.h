@@ -194,6 +194,7 @@ MidiFileEventType_t MidiFileEvent_getType(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteStartEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event);
+int MidiFileEvent_isPressureEvent(MidiFileEvent_t event);
 int MidiFileEvent_isTextEvent(MidiFileEvent_t event);
 int MidiFileEvent_isLyricEvent(MidiFileEvent_t event);
 int MidiFileEvent_isMarkerEvent(MidiFileEvent_t event);
@@ -271,6 +272,13 @@ int MidiFileNoteEndEvent_setNote(MidiFileEvent_t event, int note);
 int MidiFileNoteEndEvent_getVelocity(MidiFileEvent_t event);
 int MidiFileNoteEndEvent_setVelocity(MidiFileEvent_t event, int velocity); /* caution:  will replace a note on event with a note off */
 MidiFileEvent_t MidiFileNoteEndEvent_getNoteStartEvent(MidiFileEvent_t event);
+
+int MidiFilePressureEvent_getChannel(MidiFileEvent_t event);
+int MidiFilePressureEvent_setChannel(MidiFileEvent_t event, int channel);
+int MidiFilePressureEvent_getNote(MidiFileEvent_t event); /* -1 for channel pressure */
+int MidiFilePressureEvent_setNote(MidiFileEvent_t event, int note); /* will replace channel pressure with key pressure and vice versa as needed */
+int MidiFilePressureEvent_getAmount(MidiFileEvent_t event);
+int MidiFilePressureEvent_setAmount(MidiFileEvent_t event, int amount);
 
 char *MidiFileTextEvent_getText(MidiFileEvent_t event);
 int MidiFileTextEvent_setText(MidiFileEvent_t event, char *text);

@@ -2262,6 +2262,11 @@ int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event)
 	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NOTE_OFF) || ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NOTE_ON) && (MidiFileNoteOnEvent_getVelocity(event) == 0)));
 }
 
+int MidiFileEvent_isPressureEvent(MidiFileEvent_t event)
+{
+	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE) || (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE));
+}
+
 int MidiFileEvent_isTextEvent(MidiFileEvent_t event)
 {
 	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_META) && (MidiFileMetaEvent_getNumber(event) == 0x1));
@@ -2854,6 +2859,125 @@ MidiFileEvent_t MidiFileNoteEndEvent_getNoteStartEvent(MidiFileEvent_t event)
 	}
 
 	return NULL;
+}
+
+int MidiFilePressureEvent_getChannel(MidiFileEvent_t event)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			return MidiFileKeyPressureEvent_getChannel(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return MidiFileChannelPressureEvent_getChannel(event);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
+int MidiFilePressureEvent_setChannel(MidiFileEvent_t event, int channel)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			return MidiFileKeyPressureEvent_setChannel(event, channel);
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return MidiFileChannelPressureEvent_setChannel(event, channel);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
+int MidiFilePressureEvent_getNote(MidiFileEvent_t event)
+{
+	return MidiFileKeyPressureEvent_getNote(event);
+}
+
+int MidiFilePressureEvent_setNote(MidiFileEvent_t event, int note)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			if (note < 0)
+			{
+				int amount = MidiFileKeyPressureEvent_getAmount(event);
+				event->type = MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE;
+				return MidiFileChannelPressureEvent_setAmount(event, amount);
+			}
+			else
+			{
+				return MidiFileKeyPressureEvent_setNote(event, note);
+			}
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			if (note < 0)
+			{
+				return 0;
+			}
+			else
+			{
+				int amount = MidiFileChannelPressureEvent_getAmount(event);
+				event->type = MIDI_FILE_EVENT_TYPE_KEY_PRESSURE;
+				MidiFileKeyPressureEvent_setAmount(event, amount);
+				return MidiFileKeyPressureEvent_setNote(event, note);
+			}
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
+int MidiFilePressureEvent_getAmount(MidiFileEvent_t event)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			return MidiFileKeyPressureEvent_getAmount(event);
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return MidiFileChannelPressureEvent_getAmount(event);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
+int MidiFilePressureEvent_setAmount(MidiFileEvent_t event, int amount)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			return MidiFileKeyPressureEvent_setAmount(event, amount);
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return MidiFileChannelPressureEvent_setAmount(event, amount);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
 }
 
 char *MidiFileTextEvent_getText(MidiFileEvent_t event)
