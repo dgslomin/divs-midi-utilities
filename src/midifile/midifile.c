@@ -2191,6 +2191,72 @@ MidiFileEvent_t MidiFileEvent_getNextEvent(MidiFileEvent_t event)
 	return MidiFileEvent_getNextEventInTrack(event);
 }
 
+int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previous_event)
+{
+	if (event == NULL || previous_event == NULL || event->track != previous_event->track || event->tick != previous_event->tick) return -1;
+	if (event->previous_event_in_track == previous_event) return 0;
+	remove_event(event);
+	event->previous_event_in_track = previous_event;
+	event->previous_event_in_file = previous_event;
+	event->next_event_in_track = previous_event->next_event_in_track;
+	event->next_event_in_file = previous_event->next_event_in_file;
+
+	if (previous_event->next_event_in_track == NULL)
+	{
+		previous_event->track->last_event = event;
+	}
+	else
+	{
+		previous_event->next_event_in_track->previous_event_in_track = event;
+	}
+
+	if (previous_event->next_event_in_file == NULL)
+	{
+		previous_event->track->midi_file->last_event = event;
+	}
+	else
+	{
+		previous_event->next_event_in_file->previous_event_in_file = event;
+	}
+
+	previous_event->next_event_in_track = event;
+	previous_event->next_event_in_file = event;
+	return 0;
+}
+
+int MidiFileEvent_setNextEvent(MidiFileEvent_t event, MidiFileEvent_t next_event)
+{
+	if (event == NULL || next_event == NULL || event->track != next_event->track || event->tick != next_event->tick) return -1;
+	if (event->next_event_in_track == next_event) return 0;
+	remove_event(event);
+	event->previous_event_in_track = next_event->previous_event_in_track;
+	event->previous_event_in_file = next_event->previous_event_in_file;
+	event->next_event_in_track = next_event;
+	event->next_event_in_file = next_event;
+
+	if (next_event->previous_event_in_track == NULL)
+	{
+		next_event->track->first_event = event;
+	}
+	else
+	{
+		next_event->previous_event_in_track->next_event_in_track = event;
+	}
+
+	if (next_event->previous_event_in_file == NULL)
+	{
+		next_event->track->midi_file->first_event = event;
+	}
+	else
+	{
+		next_event->previous_event_in_file->next_event_in_file = event;
+	}
+
+	next_event->previous_event_in_track = event;
+	next_event->previous_event_in_file = event;
+	return 0;
+}
+
 MidiFileEvent_t MidiFileEvent_getPreviousEventInTrack(MidiFileEvent_t event)
 {
 	if (event == NULL) return NULL;
