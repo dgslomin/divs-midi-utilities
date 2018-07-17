@@ -184,7 +184,7 @@ MidiFileTrack_t MidiFileEvent_getTrack(MidiFileEvent_t event);
 int MidiFileEvent_setTrack(MidiFileEvent_t event, MidiFileTrack_t track);
 MidiFileEvent_t MidiFileEvent_getPreviousEvent(MidiFileEvent_t event); /* deprecated:  use MidiFileEvent_getPreviousEventInTrack() */
 MidiFileEvent_t MidiFileEvent_getNextEvent(MidiFileEvent_t event); /* deprecated:  use MidiFileEvent_getNextEventInTrack() */
-int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previous_event); /* if they have the same track and tick */
+int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previous_event);
 int MidiFileEvent_setNextEvent(MidiFileEvent_t event, MidiFileEvent_t next_event);
 MidiFileEvent_t MidiFileEvent_getPreviousEventInTrack(MidiFileEvent_t event);
 MidiFileEvent_t MidiFileEvent_getNextEventInTrack(MidiFileEvent_t event);

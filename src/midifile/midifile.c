@@ -251,13 +251,80 @@ static void write_variable_length_quantity(FILE *out, unsigned long value)
 	fwrite(buffer + offset, 1, 4 - offset, out);
 }
 
-static void add_event(MidiFileEvent_t new_event)
+static void add_event_before(MidiFileEvent_t new_event, MidiFileEvent_t next_event)
+{
+	/* Add in proper sorted order.  Search forwards to optimize for inserting. */
+
+	MidiFileEvent_t event;
+
+	for (event = new_event->track->first_event; (event != NULL) && (event->tick < new_event->tick); event = event->next_event_in_track) {}
+
+	if ((event != NULL) && (next_event != NULL) && (event->track == next_event->track) && (event->tick == next_event->tick))
+	{
+		while (event != next_event) event = event->next_event_in_track;
+	}
+
+	new_event->next_event_in_track = event;
+
+	if (event == NULL)
+	{
+		new_event->previous_event_in_track = new_event->track->last_event;
+		new_event->track->last_event = new_event;
+	}
+	else
+	{
+		new_event->previous_event_in_track = event->previous_event_in_track;
+		event->previous_event_in_track = new_event;
+	}
+
+	if (new_event->previous_event_in_track == NULL)
+	{
+		new_event->track->first_event = new_event;
+	}
+	else
+	{
+		new_event->previous_event_in_track->next_event_in_track = new_event;
+	}
+
+	for (event = new_event->track->midi_file->first_event; (event != NULL) && (new_event->tick > event->tick); event = event->next_event_in_file) {}
+
+	new_event->next_event_in_file = event;
+
+	if (event == NULL)
+	{
+		new_event->previous_event_in_file = new_event->track->midi_file->last_event;
+		new_event->track->midi_file->last_event = new_event;
+	}
+	else
+	{
+		new_event->previous_event_in_file = event->previous_event_in_file;
+		event->previous_event_in_file = new_event;
+	}
+
+	if (new_event->previous_event_in_file == NULL)
+	{
+		new_event->track->midi_file->first_event = new_event;
+	}
+	else
+	{
+		new_event->previous_event_in_file->next_event_in_file = new_event;
+	}
+
+	if (new_event->tick > new_event->track->end_tick) new_event->track->end_tick = new_event->tick;
+}
+
+static void add_event_after(MidiFileEvent_t new_event, MidiFileEvent_t previous_event)
 {
 	/* Add in proper sorted order.  Search backwards to optimize for appending. */
 
 	MidiFileEvent_t event;
 
-	for (event = new_event->track->last_event; (event != NULL) && (new_event->tick < event->tick); event = event->previous_event_in_track) {}
+	for (event = new_event->track->last_event; (event != NULL) && (event->tick > new_event->tick); event = event->previous_event_in_track) {}
+
+	if ((event != NULL) && (previous_event != NULL) && (event->track == previous_event->track) && (event->tick == previous_event->tick))
+	{
+		while (event != previous_event) event = event->previous_event_in_track;
+	}
 
 	new_event->previous_event_in_track = event;
 
@@ -306,6 +373,11 @@ static void add_event(MidiFileEvent_t new_event)
 	}
 
 	if (new_event->tick > new_event->track->end_tick) new_event->track->end_tick = new_event->tick;
+}
+
+static void add_event(MidiFileEvent_t new_event)
+{
+	add_event_after(new_event, NULL);
 }
 
 static void remove_event(MidiFileEvent_t event)
@@ -2193,67 +2265,31 @@ MidiFileEvent_t MidiFileEvent_getNextEvent(MidiFileEvent_t event)
 
 int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previous_event)
 {
-	if (event == NULL || previous_event == NULL || event->track != previous_event->track || event->tick != previous_event->tick) return -1;
-	if (event->previous_event_in_track == previous_event) return 0;
+	if (event == NULL) return -1;
 	remove_event(event);
-	event->previous_event_in_track = previous_event;
-	event->previous_event_in_file = previous_event;
-	event->next_event_in_track = previous_event->next_event_in_track;
-	event->next_event_in_file = previous_event->next_event_in_file;
 
-	if (previous_event->next_event_in_track == NULL)
+	if (previous_event != NULL)
 	{
-		previous_event->track->last_event = event;
-	}
-	else
-	{
-		previous_event->next_event_in_track->previous_event_in_track = event;
+		event->track = previous_event->track;
+		event->tick = previous_event->tick;
 	}
 
-	if (previous_event->next_event_in_file == NULL)
-	{
-		previous_event->track->midi_file->last_event = event;
-	}
-	else
-	{
-		previous_event->next_event_in_file->previous_event_in_file = event;
-	}
-
-	previous_event->next_event_in_track = event;
-	previous_event->next_event_in_file = event;
+	add_event_after(event, previous_event);
 	return 0;
 }
 
 int MidiFileEvent_setNextEvent(MidiFileEvent_t event, MidiFileEvent_t next_event)
 {
-	if (event == NULL || next_event == NULL || event->track != next_event->track || event->tick != next_event->tick) return -1;
-	if (event->next_event_in_track == next_event) return 0;
+	if (event == NULL) return -1;
 	remove_event(event);
-	event->previous_event_in_track = next_event->previous_event_in_track;
-	event->previous_event_in_file = next_event->previous_event_in_file;
-	event->next_event_in_track = next_event;
-	event->next_event_in_file = next_event;
 
-	if (next_event->previous_event_in_track == NULL)
+	if (next_event != NULL)
 	{
-		next_event->track->first_event = event;
-	}
-	else
-	{
-		next_event->previous_event_in_track->next_event_in_track = event;
+		event->track = next_event->track;
+		event->tick = next_event->tick;
 	}
 
-	if (next_event->previous_event_in_file == NULL)
-	{
-		next_event->track->midi_file->first_event = event;
-	}
-	else
-	{
-		next_event->previous_event_in_file->next_event_in_file = event;
-	}
-
-	next_event->previous_event_in_track = event;
-	next_event->previous_event_in_file = event;
+	add_event_before(event, next_event);
 	return 0;
 }
 
