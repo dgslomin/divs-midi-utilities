@@ -17,31 +17,7 @@ MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file)
 
 int MidiFile_hasSelection(MidiFile_t midi_file)
 {
-	if (midi_file == NULL) return 0;
-
-	for (MidiFileTrack_t track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
-	{
-		if (MidiFileTrack_hasSelection(track)) return 1;
-	}
-
-	return 0;
-}
-
-int MidiFile_clearSelection(MidiFile_t midi_file)
-{
-	if (midi_file == NULL) return -1;
-
-	for (MidiFileTrack_t track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
-	{
-		MidiFileTrack_clearSelection(track);
-	}
-
-	return 0;
-}
-
-int MidiFileTrack_hasSelection(MidiFileTrack_t track)
-{
-	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
 		if (MidiFileEvent_isSelectionStartEvent(event)) return 1;
 	}
@@ -49,15 +25,15 @@ int MidiFileTrack_hasSelection(MidiFileTrack_t track)
 	return 0;
 }
 
-int MidiFileTrack_clearSelection(MidiFileTrack_t track)
+int MidiFile_clearSelection(MidiFile_t midi_file)
 {
 	MidiFileEvent_t next_event;
 
-	if (track == NULL) return -1;
+	if (midi_file == NULL) return -1;
 
-	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(track); event != NULL; event = next_event)
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
 	{
-		next_event = MidiFileEvent_getNextEventInTrack(event);
+		next_event = MidiFileEvent_getNextEventInFile(event);
 		if (MidiFileEvent_isSelectionStartEvent(event) || MidiFileEvent_isSelectionEndEvent(event)) MidiFileEvent_delete(event);
 	}
 

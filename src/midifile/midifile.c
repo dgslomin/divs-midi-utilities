@@ -1705,6 +1705,32 @@ long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker)
 	return -1;
 }
 
+MidiFileEvent_t MidiFile_getFirstEventForTick(MidiFile_t midi_file, long tick)
+{
+	MidiFileEvent_t first_event_for_tick = NULL;
+	MidiFileEvent_t event;
+
+	for (event = MidiFile_getLastEvent(midi_file); (event != NULL) && (MidiFileEvent_getTick(event) >= tick); event = MidiFileEvent_getPreviousEventInFile(event))
+	{
+		if (MidiFileEvent_getTick(event) == tick) first_event_for_tick = event;
+	}
+
+	return first_event_for_tick;
+}
+
+MidiFileEvent_t MidiFile_getLastEventForTick(MidiFile_t midi_file, long tick)
+{
+	MidiFileEvent_t last_event_for_tick = NULL;
+	MidiFileEvent_t event;
+
+	for (event = MidiFile_getFirstEvent(midi_file); (event != NULL) && (MidiFileEvent_getTick(event) <= tick); event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_getTick(event) == tick) last_event_for_tick = event;
+	}
+
+	return last_event_for_tick;
+}
+
 MidiFileEvent_t MidiFile_getLatestTempoEventForTick(MidiFile_t midi_file, long tick)
 {
 	MidiFileEvent_t tempo_event = NULL;
@@ -1812,6 +1838,32 @@ int MidiFileTrack_setEndTick(MidiFileTrack_t track, long end_tick)
 	if ((track == NULL) || ((track->last_event != NULL) && (end_tick < track->last_event->tick))) return -1;
 	track->end_tick = end_tick;
 	return 0;
+}
+
+MidiFileEvent_t MidiFileTrack_getFirstEventForTick(MidiFileTrack_t track, long tick)
+{
+	MidiFileEvent_t first_event_for_tick = NULL;
+	MidiFileEvent_t event;
+
+	for (event = MidiFileTrack_getLastEvent(track); (event != NULL) && (MidiFileEvent_getTick(event) >= tick); event = MidiFileEvent_getPreviousEventInTrack(event))
+	{
+		if (MidiFileEvent_getTick(event) == tick) first_event_for_tick = event;
+	}
+
+	return first_event_for_tick;
+}
+
+MidiFileEvent_t MidiFileTrack_getLastEventForTick(MidiFileTrack_t track, long tick)
+{
+	MidiFileEvent_t last_event_for_tick = NULL;
+	MidiFileEvent_t event;
+
+	for (event = MidiFileTrack_getFirstEvent(track); (event != NULL) && (MidiFileEvent_getTick(event) <= tick); event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_getTick(event) == tick) last_event_for_tick = event;
+	}
+
+	return last_event_for_tick;
 }
 
 MidiFileTrack_t MidiFileTrack_createTrackBefore(MidiFileTrack_t track)
@@ -2265,7 +2317,7 @@ MidiFileEvent_t MidiFileEvent_getNextEvent(MidiFileEvent_t event)
 
 int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previous_event)
 {
-	if (event == NULL) return -1;
+	if ((event == NULL) || (event == previous_event)) return -1;
 	remove_event(event);
 
 	if (previous_event != NULL)
@@ -2280,7 +2332,7 @@ int MidiFileEvent_setPreviousEvent(MidiFileEvent_t event, MidiFileEvent_t previo
 
 int MidiFileEvent_setNextEvent(MidiFileEvent_t event, MidiFileEvent_t next_event)
 {
-	if (event == NULL) return -1;
+	if ((event == NULL) || (event == next_event)) return -1;
 	remove_event(event);
 
 	if (next_event != NULL)
