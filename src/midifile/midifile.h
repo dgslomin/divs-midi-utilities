@@ -100,6 +100,9 @@ MidiFileEventType_t;
 
 MidiFile_t MidiFile_load(char *filename);
 int MidiFile_save(MidiFile_t midi_file, const char* filename);
+MidiFile_t MidiFile_loadFromBuffer(unsigned char *buffer);
+int MidiFile_saveToBuffer(MidiFile_t midi_file, unsigned char *buffer);
+int MidiFile_getFileSize(MidiFile_t midi_file);
 
 MidiFile_t MidiFile_new(int file_format, MidiFileDivisionType_t division_type, int resolution);
 int MidiFile_free(MidiFile_t midi_file);
