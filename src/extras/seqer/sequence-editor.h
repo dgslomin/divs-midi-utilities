@@ -13,7 +13,7 @@ class EventTypeManager;
 class EventType;
 class EventTypeCell;
 class RowLocator;
-class UndoCommand;
+class UndoSnapshot;
 class Sequence;
 
 #include <functional>
@@ -257,17 +257,15 @@ public:
 	long tick;
 };
 
-class UndoCommand: public wxCommand
+class UndoSnapshot: public wxCommand
 {
 public:
-	std::function<void ()> undo_callback;
-	std::function<void ()> cleanup_when_undone_callback;
-	std::function<void ()> redo_callback;
-	std::function<void ()> cleanup_when_done_callback;
-	bool has_been_undone;
+	Sequence* sequence;
+    unsigned char* midi_file_buffer;
 
-	UndoCommand(std::function<void ()> undo_callback, std::function<void ()> cleanup_when_undone_callback, std::function<void ()> redo_callback, std::function<void ()> cleanup_when_done_callback);
-	~UndoCommand();
+	UndoSnapshot(Sequence* sequence);
+	~UndoSnapshot();
+    void Swap();
 	bool Do();
 	bool Undo();
 };

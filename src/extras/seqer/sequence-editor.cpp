@@ -1080,42 +1080,42 @@ wxString EventTypeCell::GetValueText()
 	return this->row->event_type->short_name;
 }
 
-UndoCommand::UndoCommand(std::function<void ()> undo_callback, std::function<void ()> cleanup_when_undone_callback, std::function<void ()> redo_callback, std::function<void ()> cleanup_when_done_callback): wxCommand(true)
+UndoSnapshot::UndoSnapshot(Sequence* sequence): wxCommand(true)
 {
-	this->undo_callback = undo_callback;
-	this->cleanup_when_undone_callback = cleanup_when_undone_callback;
-	this->redo_callback = redo_callback;
-	this->cleanup_when_done_callback = cleanup_when_done_callback;
-	this->has_been_undone = false;
+	this->sequence = sequence;
+	this->midi_file_buffer = NULL;
 }
 
-UndoCommand::~UndoCommand()
+UndoSnapshot::~UndoSnapshot()
 {
-	if (this->has_been_undone)
+	if (this->midi_file_buffer != NULL) free(this->midi_file_buffer);
+}
+
+void UndoSnapshot::Swap()
+{
+	unsigned char* midi_file_buffer_to_activate = this->midi_file_buffer;
+
+	this->midi_file_buffer = (unsigned char*)(malloc(MidiFile_getFileSize(this->sequence->midi_file)));
+	MidiFile_saveToBuffer(this->sequence->midi_file, this->midi_file_buffer);
+
+	if (midi_file_buffer_to_activate != NULL)
 	{
-		if (this->cleanup_when_undone_callback != NULL) this->cleanup_when_undone_callback();
-	}
-	else
-	{
-		if (this->cleanup_when_done_callback != NULL) this->cleanup_when_done_callback();
+		MidiFile_free(this->sequence->midi_file);
+		this->sequence->midi_file = MidiFile_loadFromBuffer(midi_file_buffer_to_activate);
+		this->sequence->RefreshData();
+		free(midi_file_buffer_to_activate);
 	}
 }
 
-bool UndoCommand::Do()
+bool UndoSnapshot::Do()
 {
-	if (this->has_been_undone)
-	{
-		if (this->redo_callback != NULL) this->redo_callback();
-		this->has_been_undone = false;
-	}
-
+	this->Swap();
 	return true;
 }
 
-bool UndoCommand::Undo()
+bool UndoSnapshot::Undo()
 {
-	if (this->undo_callback != NULL) this->undo_callback();
-	this->has_been_undone = true;
+	this->Swap();
 	return true;
 }
 

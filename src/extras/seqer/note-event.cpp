@@ -6,29 +6,16 @@
 
 void SequenceEditor::InsertNote(int diatonic)
 {
+	this->sequence->undo_command_processor->Submit(new UndoSnapshot(this->sequence));
+
 	if (this->overwrite_mode && (this->current_row_number < this->rows.size()) && MidiFileEvent_isNoteStartEvent(this->rows[this->current_row_number]->event))
 	{
-		MidiFileEvent_t event = this->rows[this->current_row_number]->event;
-		MidiFileTrack_t track = MidiFileEvent_getTrack(event);
-		int note_number = MidiFileNoteStartEvent_getNote(event);
+        MidiFileEvent_t event = this->rows[this->current_row_number]->event;
 		long start_tick = MidiFileEvent_getTick(event);
 		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 		int new_note_number = this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 		MidiFileNoteStartEvent_setNote(event, new_note_number);
 		this->sequence->RefreshData();
-
-		this->sequence->undo_command_processor->Submit(new UndoCommand(
-			[=]{
-				MidiFileNoteStartEvent_setNote(event, note_number);
-				this->sequence->RefreshData();
-			},
-			NULL,
-			[=]{
-				MidiFileNoteStartEvent_setNote(event, new_note_number);
-				this->sequence->RefreshData();
-			},
-			NULL
-		));
 	}
 	else
 	{
@@ -39,27 +26,8 @@ void SequenceEditor::InsertNote(int diatonic)
 		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 		this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 		MidiFileEvent_t event = MidiFileTrack_createNoteStartAndEndEvents(track, start_tick, end_tick, this->insertion_channel_number, this->insertion_note_number, this->insertion_velocity, this->insertion_end_velocity);
-		MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 		this->sequence->RefreshData();
 		this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
-
-		this->sequence->undo_command_processor->Submit(new UndoCommand(
-			[=]{
-				MidiFileEvent_detach(event);
-				MidiFileEvent_detach(end_event);
-				this->sequence->RefreshData();
-			},
-			[=]{
-				MidiFileEvent_delete(event);
-				MidiFileEvent_delete(end_event);
-			},
-			[=]{
-				MidiFileEvent_setTrack(event, track);
-				MidiFileEvent_setTrack(end_event, track);
-				this->sequence->RefreshData();
-			},
-			NULL
-		));
 	}
 }
 
@@ -100,31 +68,11 @@ NoteEventRow::NoteEventRow(SequenceEditor* sequence_editor, long step_number, Mi
 
 void NoteEventRow::Delete()
 {
-	SequenceEditor* sequence_editor = this->sequence_editor;
-	MidiFileEvent_t event = this->event;
-	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
-	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
-	MidiFileEvent_detach(event);
-	MidiFileEvent_detach(end_event);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTrack(event, track);
-			MidiFileEvent_setTrack(end_event, track);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_detach(event);
-			MidiFileEvent_detach(end_event);
-			sequence_editor->sequence->RefreshData();
-		},
-		[=]{
-			MidiFileEvent_delete(event);
-			MidiFileEvent_delete(end_event);
-		}
-	));
+    Sequence* sequence = this->sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
+	MidiFileEvent_delete(MidiFileNoteStartEvent_getNoteEndEvent(this->event));
+	MidiFileEvent_delete(this->event);
+	sequence->RefreshData();
 }
 
 NoteEventTimeCell::NoteEventTimeCell(Row* row): Cell(row)
@@ -140,6 +88,8 @@ wxString NoteEventTimeCell::GetValueText()
 void NoteEventTimeCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -148,28 +98,15 @@ void NoteEventTimeCell::SmallIncrease()
 	long new_end_tick = end_tick + (new_tick - tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
+	sequence->RefreshData();
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(event, tick);
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(event, new_tick);
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
 }
 
 void NoteEventTimeCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -178,28 +115,15 @@ void NoteEventTimeCell::SmallDecrease()
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
+	sequence->RefreshData();
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(event, tick);
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(event, new_tick);
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
 }
 
 void NoteEventTimeCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -211,28 +135,15 @@ void NoteEventTimeCell::LargeIncrease()
 	long new_end_tick = end_tick + (new_tick - tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
+	sequence->RefreshData();
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(event, tick);
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(event, new_tick);
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
 }
 
 void NoteEventTimeCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -244,28 +155,15 @@ void NoteEventTimeCell::LargeDecrease()
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
+	sequence->RefreshData();
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(event, tick);
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(event, new_tick);
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
 }
 
 void NoteEventTimeCell::Quantize()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -274,23 +172,8 @@ void NoteEventTimeCell::Quantize()
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
+	sequence->RefreshData();
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(event, tick);
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(event, new_tick);
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
 }
 
 NoteEventTrackCell::NoteEventTrackCell(Row* row): Cell(row)
@@ -306,6 +189,8 @@ wxString NoteEventTrackCell::GetValueText()
 void NoteEventTrackCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
@@ -313,27 +198,14 @@ void NoteEventTrackCell::SmallIncrease()
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
 	MidiFileEvent_setTrack(end_event, new_track);
 	MidiFileEvent_setTrack(event, new_track);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTrack(end_event, track);
-			MidiFileEvent_setTrack(event, track);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTrack(end_event, new_track);
-			MidiFileEvent_setTrack(event, new_track);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventTrackCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
@@ -341,22 +213,7 @@ void NoteEventTrackCell::SmallDecrease()
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
 	MidiFileEvent_setTrack(end_event, new_track);
 	MidiFileEvent_setTrack(event, new_track);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTrack(end_event, track);
-			MidiFileEvent_setTrack(event, track);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTrack(end_event, new_track);
-			MidiFileEvent_setTrack(event, new_track);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 NoteEventChannelCell::NoteEventChannelCell(Row* row): Cell(row)
@@ -372,47 +229,25 @@ wxString NoteEventChannelCell::GetValueText()
 void NoteEventChannelCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int channel_number = MidiFileNoteStartEvent_getChannel(event);
 	int new_channel_number = sequence_editor->insertion_channel_number = std::min<int>(channel_number + 1, 15);
 	MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setChannel(event, channel_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventChannelCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int channel_number = MidiFileNoteStartEvent_getChannel(event);
 	int new_channel_number = sequence_editor->insertion_channel_number = std::max<int>(channel_number - 1, 0);
 	MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setChannel(event, channel_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 NoteEventNoteCell::NoteEventNoteCell(Row* row): Cell(row)
@@ -428,93 +263,49 @@ wxString NoteEventNoteCell::GetValueText()
 void NoteEventNoteCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::min<int>(note_number + 1, 127);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, new_note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::max<int>(note_number - 1, 0);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, new_note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::min<int>(note_number + 12, 127);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, new_note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::max<int>(note_number - 12, 0);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setNote(event, new_note_number);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 NoteEventVelocityCell::NoteEventVelocityCell(Row* row): Cell(row)
@@ -530,93 +321,49 @@ wxString NoteEventVelocityCell::GetValueText()
 void NoteEventVelocityCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::min<int>(velocity + 1, 127);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::max<int>(velocity - 1, 1);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::min<int>(velocity + 8, 127);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::max<int>(velocity - 8, 1);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 NoteEventEndTimeCell::NoteEventEndTimeCell(Row* row): Cell(row)
@@ -632,56 +379,36 @@ wxString NoteEventEndTimeCell::GetValueText()
 void NoteEventEndTimeCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick));
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = std::max<long>(end_tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick)), tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -691,25 +418,14 @@ void NoteEventEndTimeCell::LargeIncrease()
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number + 1);
 	long new_end_tick = new_end_step_tick + (end_tick - end_step_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
@@ -719,45 +435,21 @@ void NoteEventEndTimeCell::LargeDecrease()
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number - 1);
 	long new_end_tick = std::max<long>(new_end_step_tick + (end_tick - end_step_tick), tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::Quantize()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(end_tick) + 1);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileEvent_setTick(end_event, end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileEvent_setTick(end_event, new_end_tick);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 NoteEventEndVelocityCell::NoteEventEndVelocityCell(Row* row): Cell(row)
@@ -773,96 +465,52 @@ wxString NoteEventEndVelocityCell::GetValueText()
 void NoteEventEndVelocityCell::SmallIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::min<int>(end_velocity + 1, 127);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::SmallDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::max<int>(end_velocity - 1, 0);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::LargeIncrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::min<int>(end_velocity + 8, 127);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::LargeDecrease()
 {
 	SequenceEditor* sequence_editor = this->row->sequence_editor;
+    Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = this->row->event;
 	MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::max<int>(end_velocity - 8, 0);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence_editor->sequence->RefreshData();
-
-	sequence_editor->sequence->undo_command_processor->Submit(new UndoCommand(
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL,
-		[=]{
-			MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-			sequence_editor->sequence->RefreshData();
-		},
-		NULL
-	));
+	sequence->RefreshData();
 }
 
