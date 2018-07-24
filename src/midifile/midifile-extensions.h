@@ -20,9 +20,9 @@
  * target of editing operations.  There should be only one caret; extras after
  * the first are ignored.
  * 
- * Selections are the editing "highlight", for marking multiple events as the
- * target of editing operations.  There can be multiple discontiguous
- * selections at once.
+ * Selections are the editing "highlight", for marking multiple events or time
+ * ranges as the target of editing operations.  There can be multiple
+ * discontiguous selections at once.
  */
 #ifdef __cplusplus
 extern "C"
@@ -37,8 +37,6 @@ MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file);
 int MidiFile_hasSelection(MidiFile_t midi_file);
 int MidiFile_clearSelection(MidiFile_t midi_file);
 
-int MidiFileTrack_hasSelection(MidiFileTrack_t track);
-int MidiFileTrack_clearSelection(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_createCaretEvent(MidiFileTrack_t track, long tick);
 MidiFileEvent_t MidiFileTrack_createSelectionStartEvent(MidiFileTrack_t track, long tick);
 MidiFileEvent_t MidiFileTrack_createSelectionEndEvent(MidiFileTrack_t track, long tick);
