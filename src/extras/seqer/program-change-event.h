@@ -2,7 +2,6 @@
 #define PROGRAM_CHANGE_EVENT_INCLUDED
 
 class ProgramChangeEventType;
-class ProgramChangeEventRow;
 class ProgramChangeEventTimeCell;
 class ProgramChangeEventTrackCell;
 class ProgramChangeEventChannelCell;
@@ -22,41 +21,34 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class ProgramChangeEventRow: public Row
-{
-public:
-	ProgramChangeEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class ProgramChangeEventTimeCell: public Cell
 {
 public:
-	ProgramChangeEventTimeCell(Row* row);
-	wxString GetValueText();
+	ProgramChangeEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class ProgramChangeEventTrackCell: public Cell
 {
 public:
-	ProgramChangeEventTrackCell(Row* row);
-	wxString GetValueText();
+	ProgramChangeEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class ProgramChangeEventChannelCell: public Cell
 {
 public:
-	ProgramChangeEventChannelCell(Row* row);
-	wxString GetValueText();
+	ProgramChangeEventChannelCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class ProgramChangeEventNumberCell: public Cell
 {
 public:
-	ProgramChangeEventNumberCell(Row* row);
-	wxString GetValueText();
+	ProgramChangeEventNumberCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

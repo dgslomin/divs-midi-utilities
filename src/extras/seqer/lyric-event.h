@@ -2,7 +2,6 @@
 #define LYRIC_EVENT_INCLUDED
 
 class LyricEventType;
-class LyricEventRow;
 class LyricEventTimeCell;
 class LyricEventTrackCell;
 class LyricEventLyricCell;
@@ -21,34 +20,27 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class LyricEventRow: public Row
-{
-public:
-	LyricEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class LyricEventTimeCell: public Cell
 {
 public:
-	LyricEventTimeCell(Row* row);
-	wxString GetValueText();
+	LyricEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class LyricEventTrackCell: public Cell
 {
 public:
-	LyricEventTrackCell(Row* row);
-	wxString GetValueText();
+	LyricEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class LyricEventLyricCell: public Cell
 {
 public:
-	LyricEventLyricCell(Row* row);
-	wxString GetValueText();
+	LyricEventLyricCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

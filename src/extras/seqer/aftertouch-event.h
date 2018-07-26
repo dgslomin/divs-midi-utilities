@@ -2,7 +2,6 @@
 #define AFTERTOUCH_EVENT_INCLUDED
 
 class AftertouchEventType;
-class AftertouchEventRow;
 class AftertouchEventTimeCell;
 class AftertouchEventTrackCell;
 class AftertouchEventChannelCell;
@@ -23,48 +22,41 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class AftertouchEventRow: public Row
-{
-public:
-	AftertouchEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class AftertouchEventTimeCell: public Cell
 {
 public:
-	AftertouchEventTimeCell(Row* row);
-	wxString GetValueText();
+	AftertouchEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class AftertouchEventTrackCell: public Cell
 {
 public:
-	AftertouchEventTrackCell(Row* row);
-	wxString GetValueText();
+	AftertouchEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class AftertouchEventChannelCell: public Cell
 {
 public:
-	AftertouchEventChannelCell(Row* row);
-	wxString GetValueText();
+	AftertouchEventChannelCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class AftertouchEventNoteCell: public Cell
 {
 public:
-	AftertouchEventNoteCell(Row* row);
-	wxString GetValueText();
+	AftertouchEventNoteCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class AftertouchEventAmountCell: public Cell
 {
 public:
-	AftertouchEventAmountCell(Row* row);
-	wxString GetValueText();
+	AftertouchEventAmountCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

@@ -4,15 +4,6 @@
 #include "marker-event.h"
 #include "sequence-editor.h"
 
-void SequenceEditor::InsertMarker()
-{
-	this->sequence->undo_command_processor->Submit(new UndoSnapshot(this->sequence));
-	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1);
-	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(this->GetRow(this->current_row_number)->step_number), (char *)(""));
-	this->sequence->RefreshData();
-	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
-}
-
 MarkerEventType* MarkerEventType::GetInstance()
 {
 	static MarkerEventType* instance = new MarkerEventType();
@@ -23,6 +14,14 @@ MarkerEventType::MarkerEventType()
 {
 	this->name = wxString("Marker");
 	this->short_name = wxString("Marker");
+	this->cells[0] = new EventTypeCell();
+	this->cells[1] = new MarkerEventTimeCell();
+	this->cells[2] = new Cell();
+	this->cells[3] = new Cell();
+	this->cells[4] = new MarkerEventNameCell();
+	this->cells[5] = new Cell();
+	this->cells[6] = new Cell();
+	this->cells[7] = new Cell();
 }
 
 bool MarkerEventType::MatchesEvent(MidiFileEvent_t event)
@@ -30,50 +29,21 @@ bool MarkerEventType::MatchesEvent(MidiFileEvent_t event)
 	return MidiFileEvent_isMarkerEvent(event);
 }
 
-Row* MarkerEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
-{
-	return new MarkerEventRow(sequence_editor, step_number, event);
-}
-
-MarkerEventRow::MarkerEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
-{
-	this->event_type = MarkerEventType::GetInstance();
-	this->cells[0] = new EventTypeCell(this);
-	this->cells[1] = new MarkerEventTimeCell(this);
-	this->cells[2] = new Cell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new MarkerEventNameCell(this);
-	this->cells[5] = new Cell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-void MarkerEventRow::Delete()
-{
-    Sequence* sequence = this->sequence_editor->sequence;
-	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->event;
-	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
-	MidiFileEvent_delete(event);
-	sequence->RefreshData();
-}
-
-MarkerEventTimeCell::MarkerEventTimeCell(Row* row): Cell(row)
+MarkerEventTimeCell::MarkerEventTimeCell()
 {
 	this->label = wxString("Time");
 }
 
-wxString MarkerEventTimeCell::GetValueText()
+wxString MarkerEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
 }
 
-void MarkerEventTimeCell::SmallIncrease()
+void MarkerEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-    Sequence* sequence = sequence_editor->sequence;
+	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick));
 	MidiFileEvent_setTick(event, new_tick);
@@ -81,12 +51,11 @@ void MarkerEventTimeCell::SmallIncrease()
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
-void MarkerEventTimeCell::SmallDecrease()
+void MarkerEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-    Sequence* sequence = sequence_editor->sequence;
+	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = std::max<long>(tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick)), 0);
 	MidiFileEvent_setTick(event, new_tick);
@@ -94,12 +63,11 @@ void MarkerEventTimeCell::SmallDecrease()
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
-void MarkerEventTimeCell::LargeIncrease()
+void MarkerEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-    Sequence* sequence = sequence_editor->sequence;
+	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long step_number = sequence_editor->GetStepNumberFromTick(tick);
 	long step_tick = sequence_editor->step_size->GetTickFromStep(step_number);
@@ -110,12 +78,11 @@ void MarkerEventTimeCell::LargeIncrease()
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
-void MarkerEventTimeCell::LargeDecrease()
+void MarkerEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-    Sequence* sequence = sequence_editor->sequence;
+	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long step_number = sequence_editor->GetStepNumberFromTick(tick);
 	long step_tick = sequence_editor->step_size->GetTickFromStep(step_number);
@@ -126,12 +93,11 @@ void MarkerEventTimeCell::LargeDecrease()
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
-void MarkerEventTimeCell::Quantize()
+void MarkerEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-    Sequence* sequence = sequence_editor->sequence;
+	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(tick));
 	MidiFileEvent_setTick(event, new_tick);
@@ -139,25 +105,24 @@ void MarkerEventTimeCell::Quantize()
 	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
-MarkerEventNameCell::MarkerEventNameCell(Row* row): Cell(row)
+MarkerEventNameCell::MarkerEventNameCell()
 {
 	this->label = wxString("Name");
 }
 
-wxString MarkerEventNameCell::GetValueText()
+wxString MarkerEventNameCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString(MidiFileMarkerEvent_getText(this->row->event));
+	return wxString(MidiFileMarkerEvent_getText(row->event));
 }
 
-void MarkerEventNameCell::EnterValue()
+void MarkerEventNameCell::EnterValue(SequenceEditor* sequence_editor, Row* row)
 {
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-	MidiFileEvent_t event = this->row->event;
+	MidiFileEvent_t event = row->event;
 	wxTextEntryDialog* dialog = new wxTextEntryDialog(sequence_editor, "Name", "Edit Marker", MidiFileMarkerEvent_getText(event));
 
 	if (dialog->ShowModal() == wxID_OK)
 	{
-    	Sequence* sequence = sequence_editor->sequence;
+		Sequence* sequence = sequence_editor->sequence;
 		sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 		wxString name = wxString(MidiFileMarkerEvent_getText(event));
 		wxString new_name = dialog->GetValue();
@@ -166,5 +131,14 @@ void MarkerEventNameCell::EnterValue()
 	}
 
 	dialog->Destroy();
+}
+
+void SequenceEditor::InsertMarker()
+{
+	this->sequence->undo_command_processor->Submit(new UndoSnapshot(this->sequence));
+	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1);
+	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(this->GetRow(this->current_row_number)->step_number), (char *)(""));
+	this->sequence->RefreshData();
+	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 }
 

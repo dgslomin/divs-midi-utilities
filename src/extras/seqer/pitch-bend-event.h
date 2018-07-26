@@ -2,7 +2,6 @@
 #define PITCH_BEND_EVENT_INCLUDED
 
 class PitchBendEventType;
-class PitchBendEventRow;
 class PitchBendEventTimeCell;
 class PitchBendEventTrackCell;
 class PitchBendEventChannelCell;
@@ -22,41 +21,34 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class PitchBendEventRow: public Row
-{
-public:
-	PitchBendEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class PitchBendEventTimeCell: public Cell
 {
 public:
-	PitchBendEventTimeCell(Row* row);
-	wxString GetValueText();
+	PitchBendEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class PitchBendEventTrackCell: public Cell
 {
 public:
-	PitchBendEventTrackCell(Row* row);
-	wxString GetValueText();
+	PitchBendEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class PitchBendEventChannelCell: public Cell
 {
 public:
-	PitchBendEventChannelCell(Row* row);
-	wxString GetValueText();
+	PitchBendEventChannelCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class PitchBendEventValueCell: public Cell
 {
 public:
-	PitchBendEventValueCell(Row* row);
-	wxString GetValueText();
+	PitchBendEventValueCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

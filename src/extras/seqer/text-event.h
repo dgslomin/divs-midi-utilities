@@ -2,7 +2,6 @@
 #define TEXT_EVENT_INCLUDED
 
 class TextEventType;
-class TextEventRow;
 class TextEventTimeCell;
 class TextEventTrackCell;
 class TextEventTextCell;
@@ -21,34 +20,27 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class TextEventRow: public Row
-{
-public:
-	TextEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class TextEventTimeCell: public Cell
 {
 public:
-	TextEventTimeCell(Row* row);
-	wxString GetValueText();
+	TextEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class TextEventTrackCell: public Cell
 {
 public:
-	TextEventTrackCell(Row* row);
-	wxString GetValueText();
+	TextEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class TextEventTextCell: public Cell
 {
 public:
-	TextEventTextCell(Row* row);
-	wxString GetValueText();
+	TextEventTextCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

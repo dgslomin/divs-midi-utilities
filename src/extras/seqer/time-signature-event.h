@@ -2,7 +2,6 @@
 #define TIME_SIGNATURE_EVENT_INCLUDED
 
 class TimeSignatureEventType;
-class TimeSignatureEventRow;
 class TimeSignatureEventTimeCell;
 class TimeSignatureEventTimeSignatureCell;
 
@@ -20,27 +19,20 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class TimeSignatureEventRow: public Row
-{
-public:
-	TimeSignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class TimeSignatureEventTimeCell: public Cell
 {
 public:
-	TimeSignatureEventTimeCell(Row* row);
-	wxString GetValueText();
+	TimeSignatureEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class TimeSignatureEventTimeSignatureCell: public Cell
 {
 public:
-	TimeSignatureEventTimeSignatureCell(Row* row);
-	wxString GetValueText();
+	TimeSignatureEventTimeSignatureCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

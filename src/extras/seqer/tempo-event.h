@@ -2,7 +2,6 @@
 #define TEMPO_EVENT_INCLUDED
 
 class TempoEventType;
-class TempoEventRow;
 class TempoEventTimeCell;
 class TempoEventTempoCell;
 
@@ -20,27 +19,20 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class TempoEventRow: public Row
-{
-public:
-	TempoEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class TempoEventTimeCell: public Cell
 {
 public:
-	TempoEventTimeCell(Row* row);
-	wxString GetValueText();
+	TempoEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class TempoEventTempoCell: public Cell
 {
 public:
-	TempoEventTempoCell(Row* row);
-	wxString GetValueText();
+	TempoEventTempoCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

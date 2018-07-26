@@ -2,7 +2,6 @@
 #define SYSTEM_EXCLUSIVE_EVENT_INCLUDED
 
 class SystemExclusiveEventType;
-class SystemExclusiveEventRow;
 class SystemExclusiveEventTimeCell;
 class SystemExclusiveEventTrackCell;
 
@@ -20,27 +19,20 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class SystemExclusiveEventRow: public Row
-{
-public:
-	SystemExclusiveEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class SystemExclusiveEventTimeCell: public Cell
 {
 public:
-	SystemExclusiveEventTimeCell(Row* row);
-	wxString GetValueText();
+	SystemExclusiveEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class SystemExclusiveEventTrackCell: public Cell
 {
 public:
-	SystemExclusiveEventTrackCell(Row* row);
-	wxString GetValueText();
+	SystemExclusiveEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

@@ -14,6 +14,7 @@
 #include "marker-event.h"
 #include "music-math.h"
 #include "note-event.h"
+#include "null-event.h"
 #include "pitch-bend-event.h"
 #include "port-event.h"
 #include "program-change-event.h"
@@ -305,7 +306,7 @@ void SequenceEditor::GoToNextMarker()
 		}
 	}
 
-	long current_tick = this->GetRow(this->current_row_number)->GetTick();
+	long current_tick = this->GetTickFromRow(this->GetRow(this->current_row_number));
 
 	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(MidiFile_getFirstTrack(this->sequence->midi_file)); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
 	{
@@ -333,7 +334,7 @@ void SequenceEditor::GoToPreviousMarker()
 		}
 	}
 
-	long current_tick = this->GetRow(this->current_row_number)->GetTick();
+	long current_tick = this->GetTickFromRow(this->GetRow(this->current_row_number));
 
 	for (MidiFileEvent_t event = MidiFileTrack_getLastEvent(MidiFile_getFirstTrack(this->sequence->midi_file)); event != NULL; event = MidiFileEvent_getPreviousEventInTrack(event))
 	{
@@ -375,14 +376,15 @@ void SequenceEditor::DeleteRow()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->Delete();
+			row->event_type->Delete(this, row);
 		}
 	}
 }
 
 void SequenceEditor::EnterValue()
 {
-	this->GetRow(this->current_row_number)->cells[this->current_column_number]->EnterValue();
+	Row* row = this->GetRow(this->current_row_number);
+	row->event_type->cells[this->current_column_number]->EnterValue(this, row);
 }
 
 void SequenceEditor::SmallIncrease()
@@ -393,7 +395,7 @@ void SequenceEditor::SmallIncrease()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->cells[this->current_column_number]->SmallIncrease();
+			row->event_type->cells[this->current_column_number]->SmallIncrease(this, row);
 		}
 	}
 }
@@ -406,7 +408,7 @@ void SequenceEditor::SmallDecrease()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->cells[this->current_column_number]->SmallDecrease();
+			row->event_type->cells[this->current_column_number]->SmallDecrease(this, row);
 		}
 	}
 }
@@ -419,7 +421,7 @@ void SequenceEditor::LargeIncrease()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->cells[this->current_column_number]->LargeIncrease();
+			row->event_type->cells[this->current_column_number]->LargeIncrease(this, row);
 		}
 	}
 }
@@ -432,7 +434,7 @@ void SequenceEditor::LargeDecrease()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->cells[this->current_column_number]->LargeDecrease();
+			row->event_type->cells[this->current_column_number]->LargeDecrease(this, row);
 		}
 	}
 }
@@ -445,7 +447,7 @@ void SequenceEditor::Quantize()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->cells[this->current_column_number]->Quantize();
+			row->event_type->cells[this->current_column_number]->Quantize(this, row);
 		}
 	}
 }
@@ -476,11 +478,11 @@ void SequenceEditor::RefreshData()
 			while (last_step_number < step_number - 1)
 			{
 				last_step_number++;
-				this->rows.push_back(new EmptyRow(this, last_step_number));
+				this->rows.push_back(new Row(last_step_number, NULL, NullEventType::GetInstance()));
 				this->steps.push_back(new Step(this->rows.size() - 1));
 			}
 
-			this->rows.push_back(event_type->GetRow(this, step_number, event));
+			this->rows.push_back(new Row(step_number, event, event_type));
 
 			if (step_number == last_step_number)
 			{
@@ -510,7 +512,7 @@ void SequenceEditor::RefreshDisplay()
 	this->window->SetTitle(wxString::Format("%s%s - Seqer", this->sequence->is_modified ? "*" : "", (this->sequence->filename == wxEmptyString) ? "Untitled" : wxFileName(this->sequence->filename).GetFullName()));
 #endif
 
-	this->window->SetStatusText(this->GetRow(this->current_row_number)->cells[this->current_column_number]->label, 0);
+	this->window->SetStatusText(this->GetRow(this->current_row_number)->event_type->cells[this->current_column_number]->label, 0);
 	this->Refresh();
 }
 
@@ -563,7 +565,7 @@ Row* SequenceEditor::GetRow(long row_number)
 {
 	while (this->rows.size() <= row_number)
 	{
-		this->rows.push_back(new EmptyRow(this, this->steps.size()));
+		this->rows.push_back(new Row(this->steps.size(), NULL, NullEventType::GetInstance()));
 		this->steps.push_back(new Step(this->rows.size() - 1));
 	}
 
@@ -610,6 +612,18 @@ long SequenceEditor::GetStepNumberFromTick(long tick)
 double SequenceEditor::GetFractionalStepNumberFromTick(long tick)
 {
 	return this->step_size->GetStepFromTick(tick);
+}
+
+long SequenceEditor::GetTickFromRow(Row* row)
+{
+	if (row->event == NULL)
+	{
+		return this->step_size->GetTickFromStep(row->step_number);
+	}
+	else
+	{
+		return MidiFileEvent_getTick(row->event);
+	}
 }
 
 long SequenceEditor::GetRowNumberFromTick(long tick)
@@ -673,7 +687,7 @@ RowLocator SequenceEditor::GetLocatorFromRowNumber(long row_number)
 	Row* row = this->GetRow(row_number);
 	RowLocator row_locator = RowLocator();
 	row_locator.event = row->event;
-	row_locator.tick = row->GetTick();
+	row_locator.tick = this->GetTickFromRow(row);
 	return row_locator;
 }
 
@@ -766,7 +780,7 @@ void EventList::OnDraw(wxDC& dc)
 
 		for (long column_number = 0; column_number < EVENT_LIST_NUMBER_OF_COLUMNS; column_number++)
 		{
-			wxString cell_text = row->cells[column_number]->GetValueText();
+			wxString cell_text = row->event_type->cells[column_number]->GetValueText(this->sequence_editor, row);
 			if (!cell_text.IsEmpty()) dc.DrawText(cell_text, this->GetXFromColumnNumber(column_number) + (column_number == 0 ? 1 : 0), this->GetYFromRowNumber(row_number) + 1);
 		}
 	}
@@ -944,93 +958,11 @@ Step::Step(long row_number)
 	this->last_row_number = row_number;
 }
 
-Row::Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
+Row::Row(long step_number, MidiFileEvent_t event, EventType* event_type)
 {
-	this->sequence_editor = sequence_editor;
 	this->step_number = step_number;
 	this->event = event;
-	this->event_type = NULL;
-	this->selected = false;
-}
-
-Row::~Row()
-{
-	for (int cell_number = 0; cell_number < EVENT_LIST_NUMBER_OF_COLUMNS; cell_number++) delete this->cells[cell_number];
-}
-
-void Row::Delete()
-{
-}
-
-long Row::GetTick()
-{
-	if (this->event == NULL)
-	{
-		return this->sequence_editor->step_size->GetTickFromStep(this->step_number);
-	}
-	else
-	{
-		return MidiFileEvent_getTick(this->event);
-	}
-}
-
-Cell::Cell(Row* row)
-{
-	this->row = row;
-}
-
-wxString Cell::GetValueText()
-{
-	return wxEmptyString;
-}
-
-void Cell::EnterValue()
-{
-}
-
-void Cell::SmallIncrease()
-{
-}
-
-void Cell::SmallDecrease()
-{
-}
-
-void Cell::LargeIncrease()
-{
-	this->SmallIncrease();
-}
-
-void Cell::LargeDecrease()
-{
-	this->SmallDecrease();
-}
-
-void Cell::Quantize()
-{
-}
-
-EmptyRow::EmptyRow(SequenceEditor* sequence_editor, long step_number): Row(sequence_editor, step_number, NULL)
-{
-	this->cells[0] = new Cell(this);
-	this->cells[1] = new EmptyRowTimeCell(this);
-	this->cells[2] = new Cell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new Cell(this);
-	this->cells[5] = new Cell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-EmptyRowTimeCell::EmptyRowTimeCell(Row* row): Cell(row)
-{
-}
-
-wxString EmptyRowTimeCell::GetValueText()
-{
-	SequenceEditor* sequence_editor = this->row->sequence_editor;
-	long step_number = this->row->step_number;
-	return sequence_editor->step_size->GetTimeStringFromTick(sequence_editor->step_size->GetTickFromStep(step_number));
+	this->event_type = event_type;
 }
 
 EventTypeManager* EventTypeManager::GetInstance()
@@ -1067,17 +999,53 @@ EventType* EventTypeManager::GetEventType(MidiFileEvent_t event)
 	return NULL;
 }
 
-EventType::~EventType()
+bool EventType::MatchesEvent(MidiFileEvent_t event)
+{
+	return false;
+}
+
+void EventType::Delete(SequenceEditor* sequence_editor, Row* row)
+{
+	Sequence* sequence = sequence_editor->sequence;
+	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
+	MidiFileEvent_delete(row->event);
+	sequence->RefreshData();
+}
+
+wxString Cell::GetValueText(SequenceEditor* sequence_editor, Row* row)
+{
+	return wxEmptyString;
+}
+
+void Cell::EnterValue(SequenceEditor* sequence_editor, Row* row)
 {
 }
 
-EventTypeCell::EventTypeCell(Row* row): Cell(row)
+void Cell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 {
 }
 
-wxString EventTypeCell::GetValueText()
+void Cell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->event_type->short_name;
+}
+
+void Cell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
+{
+	this->SmallIncrease(sequence_editor, row);
+}
+
+void Cell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
+{
+	this->SmallDecrease(sequence_editor, row);
+}
+
+void Cell::Quantize(SequenceEditor* sequence_editor, Row* row)
+{
+}
+
+wxString EventTypeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
+{
+	return row->event_type->short_name;
 }
 
 UndoSnapshot::UndoSnapshot(Sequence* sequence): wxCommand(true)

@@ -2,7 +2,6 @@
 #define PORT_EVENT_INCLUDED
 
 class PortEventType;
-class PortEventRow;
 class PortEventTimeCell;
 class PortEventTrackCell;
 class PortEventNameCell;
@@ -21,34 +20,27 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class PortEventRow: public Row
-{
-public:
-	PortEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class PortEventTimeCell: public Cell
 {
 public:
-	PortEventTimeCell(Row* row);
-	wxString GetValueText();
+	PortEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class PortEventTrackCell: public Cell
 {
 public:
-	PortEventTrackCell(Row* row);
-	wxString GetValueText();
+	PortEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class PortEventNameCell: public Cell
 {
 public:
-	PortEventNameCell(Row* row);
-	wxString GetValueText();
+	PortEventNameCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

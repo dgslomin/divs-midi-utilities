@@ -14,6 +14,14 @@ TextEventType::TextEventType()
 {
 	this->name = wxString("Text");
 	this->short_name = wxString("Text");
+	this->cells[0] = new EventTypeCell();
+	this->cells[1] = new TextEventTimeCell();
+	this->cells[2] = new TextEventTrackCell();
+	this->cells[3] = new Cell();
+	this->cells[4] = new TextEventTextCell();
+	this->cells[5] = new Cell();
+	this->cells[6] = new Cell();
+	this->cells[7] = new Cell();
 }
 
 bool TextEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,51 +29,33 @@ bool TextEventType::MatchesEvent(MidiFileEvent_t event)
 	return MidiFileEvent_isTextEvent(event);
 }
 
-Row* TextEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
-{
-	return new TextEventRow(sequence_editor, step_number, event);
-}
-
-TextEventRow::TextEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
-{
-	this->event_type = TextEventType::GetInstance();
-	this->cells[0] = new EventTypeCell(this);
-	this->cells[1] = new TextEventTimeCell(this);
-	this->cells[2] = new TextEventTrackCell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new TextEventTextCell(this);
-	this->cells[5] = new Cell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-TextEventTimeCell::TextEventTimeCell(Row* row): Cell(row)
+TextEventTimeCell::TextEventTimeCell()
 {
 	this->label = wxString("Time");
 }
 
-wxString TextEventTimeCell::GetValueText()
+wxString TextEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
 }
 
-TextEventTrackCell::TextEventTrackCell(Row* row): Cell(row)
+TextEventTrackCell::TextEventTrackCell()
 {
 	this->label = wxString("Track");
 }
 
-wxString TextEventTrackCell::GetValueText()
+wxString TextEventTrackCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
+	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row->event)));
 }
 
-TextEventTextCell::TextEventTextCell(Row* row): Cell(row)
+TextEventTextCell::TextEventTextCell()
 {
 	this->label = wxString("Text");
 }
 
-wxString TextEventTextCell::GetValueText()
+wxString TextEventTextCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString(MidiFileTextEvent_getText(this->row->event));
+	return wxString(MidiFileTextEvent_getText(row->event));
 }
 

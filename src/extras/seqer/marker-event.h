@@ -2,7 +2,6 @@
 #define MARKER_EVENT_INCLUDED
 
 class MarkerEventType;
-class MarkerEventRow;
 class MarkerEventTimeCell;
 class MarkerEventNameCell;
 
@@ -22,34 +21,26 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class MarkerEventRow: public Row
-{
-public:
-	MarkerEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-	void Delete();
 };
 
 class MarkerEventTimeCell: public Cell
 {
 public:
-	MarkerEventTimeCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
-	void Quantize();
+	MarkerEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
+	void Quantize(SequenceEditor* sequence_editor, Row* row);
 };
 
 class MarkerEventNameCell: public Cell
 {
 public:
-	MarkerEventNameCell(Row* row);
-	wxString GetValueText();
-	void EnterValue();
+	MarkerEventNameCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void EnterValue(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

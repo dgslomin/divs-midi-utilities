@@ -14,6 +14,14 @@ PortEventType::PortEventType()
 {
 	this->name = wxString("Port");
 	this->short_name = wxString("Port");
+	this->cells[0] = new EventTypeCell();
+	this->cells[1] = new PortEventTimeCell();
+	this->cells[2] = new PortEventTrackCell();
+	this->cells[3] = new Cell();
+	this->cells[4] = new PortEventNameCell();
+	this->cells[5] = new Cell();
+	this->cells[6] = new Cell();
+	this->cells[7] = new Cell();
 }
 
 bool PortEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,51 +29,33 @@ bool PortEventType::MatchesEvent(MidiFileEvent_t event)
 	return MidiFileEvent_isPortEvent(event);
 }
 
-Row* PortEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
-{
-	return new PortEventRow(sequence_editor, step_number, event);
-}
-
-PortEventRow::PortEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
-{
-	this->event_type = PortEventType::GetInstance();
-	this->cells[0] = new EventTypeCell(this);
-	this->cells[1] = new PortEventTimeCell(this);
-	this->cells[2] = new PortEventTrackCell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new PortEventNameCell(this);
-	this->cells[5] = new Cell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-PortEventTimeCell::PortEventTimeCell(Row* row): Cell(row)
+PortEventTimeCell::PortEventTimeCell()
 {
 	this->label = wxString("Time");
 }
 
-wxString PortEventTimeCell::GetValueText()
+wxString PortEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
 }
 
-PortEventTrackCell::PortEventTrackCell(Row* row): Cell(row)
+PortEventTrackCell::PortEventTrackCell()
 {
 	this->label = wxString("Track");
 }
 
-wxString PortEventTrackCell::GetValueText()
+wxString PortEventTrackCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
+	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row->event)));
 }
 
-PortEventNameCell::PortEventNameCell(Row* row): Cell(row)
+PortEventNameCell::PortEventNameCell()
 {
 	this->label = wxString("Name");
 }
 
-wxString PortEventNameCell::GetValueText()
+wxString PortEventNameCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString(MidiFilePortEvent_getName(this->row->event));
+	return wxString(MidiFilePortEvent_getName(row->event));
 }
 

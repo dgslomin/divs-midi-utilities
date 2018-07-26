@@ -6,11 +6,9 @@ class EventList;
 class PianoRoll;
 class Step;
 class Row;
-class Cell;
-class EmptyRow;
-class EmptyRowTimeCell;
 class EventTypeManager;
 class EventType;
+class Cell;
 class EventTypeCell;
 class RowLocator;
 class UndoSnapshot;
@@ -106,7 +104,7 @@ public:
 	long GetLastRowNumberFromStepNumber(long step_number);
 	long GetStepNumberFromTick(long tick);
 	double GetFractionalStepNumberFromTick(long tick);
-	long GetTickFromRowNumber(long row_number);
+	long GetTickFromRow(Row* row);
 	long GetRowNumberFromTick(long tick);
 	long GetNumberOfTicksPerPixel(long step_number);
 	long GetRowNumberForEvent(MidiFileEvent_t event);
@@ -176,46 +174,12 @@ public:
 class Row
 {
 public:
-	SequenceEditor* sequence_editor;
 	long step_number;
 	MidiFileEvent_t event;
-	EventType* event_type;
-	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
-	bool selected;
+    EventType* event_type;
+    bool selected = false; // TODO
 
-	Row(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-	~Row();
-	virtual void Delete();
-	long GetTick();
-};
-
-class Cell
-{
-public:
-	Row* row;
-	wxString label = wxEmptyString;
-
-	Cell(Row* row);
-	virtual wxString GetValueText();
-	virtual void EnterValue();
-	virtual void SmallIncrease();
-	virtual void SmallDecrease();
-	virtual void LargeIncrease();
-	virtual void LargeDecrease();
-	virtual void Quantize();
-};
-
-class EmptyRow: public Row
-{
-public:
-	EmptyRow(SequenceEditor* sequence_editor, long step_number);
-};
-
-class EmptyRowTimeCell: public Cell
-{
-public:
-	EmptyRowTimeCell(Row* row);
-	wxString GetValueText();
+	Row(long step_number, MidiFileEvent_t event, EventType* event_type);
 };
 
 class EventTypeManager
@@ -235,19 +199,32 @@ public:
 class EventType
 {
 public:
-	wxString name;
-	wxString short_name;
+	wxString name = wxEmptyString;
+	wxString short_name = wxEmptyString;
+	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
 
-	virtual ~EventType() = 0;
-	virtual bool MatchesEvent(MidiFileEvent_t event) = 0;
-	virtual Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event) = 0;
+	virtual bool MatchesEvent(MidiFileEvent_t event);
+	virtual void Delete(SequenceEditor* sequence_editor, Row* row);
+};
+
+class Cell
+{
+public:
+	wxString label = wxEmptyString;
+
+	virtual wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	virtual void EnterValue(SequenceEditor* sequence_editor, Row* row);
+	virtual void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	virtual void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	virtual void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	virtual void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
+	virtual void Quantize(SequenceEditor* sequence_editor, Row* row);
 };
 
 class EventTypeCell: public Cell
 {
 public:
-	EventTypeCell(Row* row);
-	wxString GetValueText();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class RowLocator
@@ -261,11 +238,11 @@ class UndoSnapshot: public wxCommand
 {
 public:
 	Sequence* sequence;
-    unsigned char* midi_file_buffer;
+	unsigned char* midi_file_buffer;
 
 	UndoSnapshot(Sequence* sequence);
 	~UndoSnapshot();
-    void Swap();
+	void Swap();
 	bool Do();
 	bool Undo();
 };

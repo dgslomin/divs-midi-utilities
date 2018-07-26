@@ -14,6 +14,14 @@ TimeSignatureEventType::TimeSignatureEventType()
 {
 	this->name = wxString("Time signature");
 	this->short_name = wxString("Time");
+	this->cells[0] = new EventTypeCell();
+	this->cells[1] = new TimeSignatureEventTimeCell();
+	this->cells[2] = new Cell();
+	this->cells[3] = new Cell();
+	this->cells[4] = new TimeSignatureEventTimeSignatureCell();
+	this->cells[5] = new Cell();
+	this->cells[6] = new Cell();
+	this->cells[7] = new Cell();
 }
 
 bool TimeSignatureEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,41 +29,23 @@ bool TimeSignatureEventType::MatchesEvent(MidiFileEvent_t event)
 	return MidiFileEvent_isTimeSignatureEvent(event);
 }
 
-Row* TimeSignatureEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
-{
-	return new TimeSignatureEventRow(sequence_editor, step_number, event);
-}
-
-TimeSignatureEventRow::TimeSignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
-{
-	this->event_type = TimeSignatureEventType::GetInstance();
-	this->cells[0] = new EventTypeCell(this);
-	this->cells[1] = new TimeSignatureEventTimeCell(this);
-	this->cells[2] = new Cell(this);
-	this->cells[3] = new Cell(this);
-	this->cells[4] = new TimeSignatureEventTimeSignatureCell(this);
-	this->cells[5] = new Cell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-TimeSignatureEventTimeCell::TimeSignatureEventTimeCell(Row* row): Cell(row)
+TimeSignatureEventTimeCell::TimeSignatureEventTimeCell()
 {
 	this->label = wxString("Time");
 }
 
-wxString TimeSignatureEventTimeCell::GetValueText()
+wxString TimeSignatureEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
 }
 
-TimeSignatureEventTimeSignatureCell::TimeSignatureEventTimeSignatureCell(Row* row): Cell(row)
+TimeSignatureEventTimeSignatureCell::TimeSignatureEventTimeSignatureCell()
 {
 	this->label = wxString("Time signature");
 }
 
-wxString TimeSignatureEventTimeSignatureCell::GetValueText()
+wxString TimeSignatureEventTimeSignatureCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString::Format("%d/%d", MidiFileTimeSignatureEvent_getNumerator(this->row->event), MidiFileTimeSignatureEvent_getDenominator(this->row->event));
+	return wxString::Format("%d/%d", MidiFileTimeSignatureEvent_getNumerator(row->event), MidiFileTimeSignatureEvent_getDenominator(row->event));
 }
 

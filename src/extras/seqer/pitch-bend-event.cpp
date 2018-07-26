@@ -14,6 +14,14 @@ PitchBendEventType::PitchBendEventType()
 {
 	this->name = wxString("Pitch bend");
 	this->short_name = wxString("Bend");
+	this->cells[0] = new EventTypeCell();
+	this->cells[1] = new PitchBendEventTimeCell();
+	this->cells[2] = new PitchBendEventTrackCell();
+	this->cells[3] = new PitchBendEventChannelCell();
+	this->cells[4] = new Cell();
+	this->cells[5] = new PitchBendEventValueCell();
+	this->cells[6] = new Cell();
+	this->cells[7] = new Cell();
 }
 
 bool PitchBendEventType::MatchesEvent(MidiFileEvent_t event)
@@ -21,61 +29,43 @@ bool PitchBendEventType::MatchesEvent(MidiFileEvent_t event)
 	return (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_PITCH_WHEEL);
 }
 
-Row* PitchBendEventType::GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event)
-{
-	return new PitchBendEventRow(sequence_editor, step_number, event);
-}
-
-PitchBendEventRow::PitchBendEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event): Row(sequence_editor, step_number, event)
-{
-	this->event_type = PitchBendEventType::GetInstance();
-	this->cells[0] = new EventTypeCell(this);
-	this->cells[1] = new PitchBendEventTimeCell(this);
-	this->cells[2] = new PitchBendEventTrackCell(this);
-	this->cells[3] = new PitchBendEventChannelCell(this);
-	this->cells[4] = new Cell(this);
-	this->cells[5] = new PitchBendEventValueCell(this);
-	this->cells[6] = new Cell(this);
-	this->cells[7] = new Cell(this);
-}
-
-PitchBendEventTimeCell::PitchBendEventTimeCell(Row* row): Cell(row)
+PitchBendEventTimeCell::PitchBendEventTimeCell()
 {
 	this->label = wxString("Time");
 }
 
-wxString PitchBendEventTimeCell::GetValueText()
+wxString PitchBendEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return this->row->sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(this->row->event));
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
 }
 
-PitchBendEventTrackCell::PitchBendEventTrackCell(Row* row): Cell(row)
+PitchBendEventTrackCell::PitchBendEventTrackCell()
 {
 	this->label = wxString("Track");
 }
 
-wxString PitchBendEventTrackCell::GetValueText()
+wxString PitchBendEventTrackCell::GetValueText(SequenceEditor* sequence_Editor, Row* row)
 {
-	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(this->row->event)));
+	return wxString::Format("%d", MidiFileTrack_getNumber(MidiFileEvent_getTrack(row->event)));
 }
 
-PitchBendEventChannelCell::PitchBendEventChannelCell(Row* row): Cell(row)
+PitchBendEventChannelCell::PitchBendEventChannelCell()
 {
 	this->label = wxString("Channel");
 }
 
-wxString PitchBendEventChannelCell::GetValueText()
+wxString PitchBendEventChannelCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString::Format("%d", MidiFilePitchWheelEvent_getChannel(this->row->event) + 1);
+	return wxString::Format("%d", MidiFilePitchWheelEvent_getChannel(row->event) + 1);
 }
 
-PitchBendEventValueCell::PitchBendEventValueCell(Row* row): Cell(row)
+PitchBendEventValueCell::PitchBendEventValueCell()
 {
 	this->label = wxString("Value");
 }
 
-wxString PitchBendEventValueCell::GetValueText()
+wxString PitchBendEventValueCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
 {
-	return wxString::Format("%d", MidiFilePitchWheelEvent_getValue(this->row->event));
+	return wxString::Format("%d", MidiFilePitchWheelEvent_getValue(row->event));
 }
 

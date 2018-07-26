@@ -2,7 +2,6 @@
 #define NOTE_EVENT_INCLUDED
 
 class NoteEventType;
-class NoteEventRow;
 class NoteEventTimeCell;
 class NoteEventTrackCell;
 class NoteEventChannelCell;
@@ -25,89 +24,82 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class NoteEventRow: public Row
-{
-public:
-	NoteEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-	void Delete();
+	void Delete(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventTimeCell: public Cell
 {
 public:
-	NoteEventTimeCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
-	void Quantize();
+	NoteEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
+	void Quantize(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventTrackCell: public Cell
 {
 public:
-	NoteEventTrackCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
+	NoteEventTrackCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventChannelCell: public Cell
 {
 public:
-	NoteEventChannelCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
+	NoteEventChannelCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventNoteCell: public Cell
 {
 public:
-	NoteEventNoteCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
+	NoteEventNoteCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventVelocityCell: public Cell
 {
 public:
-	NoteEventVelocityCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
+	NoteEventVelocityCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventEndTimeCell: public Cell
 {
 public:
-	NoteEventEndTimeCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
-	void Quantize();
+	NoteEventEndTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
+	void Quantize(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventEndVelocityCell: public Cell
 {
 public:
-	NoteEventEndVelocityCell(Row* row);
-	wxString GetValueText();
-	void SmallIncrease();
-	void SmallDecrease();
-	void LargeIncrease();
-	void LargeDecrease();
+	NoteEventEndVelocityCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
+	void SmallIncrease(SequenceEditor* sequence_editor, Row* row);
+	void SmallDecrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeIncrease(SequenceEditor* sequence_editor, Row* row);
+	void LargeDecrease(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif

@@ -2,7 +2,6 @@
 #define KEY_SIGNATURE_EVENT_INCLUDED
 
 class KeySignatureEventType;
-class KeySignatureEventRow;
 class KeySignatureEventTimeCell;
 class KeySignatureEventKeySignatureCell;
 
@@ -20,27 +19,20 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	Row* GetRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
-};
-
-class KeySignatureEventRow: public Row
-{
-public:
-	KeySignatureEventRow(SequenceEditor* sequence_editor, long step_number, MidiFileEvent_t event);
 };
 
 class KeySignatureEventTimeCell: public Cell
 {
 public:
-	KeySignatureEventTimeCell(Row* row);
-	wxString GetValueText();
+	KeySignatureEventTimeCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 class KeySignatureEventKeySignatureCell: public Cell
 {
 public:
-	KeySignatureEventKeySignatureCell(Row* row);
-	wxString GetValueText();
+	KeySignatureEventKeySignatureCell();
+	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
 };
 
 #endif
