@@ -44,6 +44,11 @@ NoteEventTimeCell::NoteEventTimeCell()
 	this->label = wxString("Time");
 }
 
+wxString NoteEventTimeCell::GetValueText(SequenceEditor* sequence_editor, Row* row)
+{
+	return sequence_editor->step_size->GetTimeStringFromTick(MidiFileEvent_getTick(row->event));
+}
+
 void NoteEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 {
 	Sequence* sequence = sequence_editor->sequence;
