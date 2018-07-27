@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/click-track: click-track.o midifile.o
+	$(CC) -o../../bin/click-track click-track.o midifile.o
+
+click-track.o: click-track.c ../midifile/midifile.h
+	$(CC) -I../midifile -c click-track.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f click-track.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/click-track
+

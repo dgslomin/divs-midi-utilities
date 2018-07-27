@@ -1,0 +1,17 @@
+
+..\..\bin\click-track.exe: click-track.obj midifile.obj
+	cl /nologo /Fe..\..\bin\click-track.exe click-track.obj midifile.obj
+
+click-track.obj: click-track.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c click-track.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist click-track.obj del click-track.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\click-track.exe del ..\..\bin\click-track.exe
+
