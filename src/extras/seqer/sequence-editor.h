@@ -10,7 +10,6 @@ class EventTypeManager;
 class EventType;
 class Cell;
 class EventTypeCell;
-class RowLocator;
 class UndoSnapshot;
 class Sequence;
 
@@ -111,8 +110,6 @@ public:
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(EventType* event_type, MidiFileEvent_t event);
 	void SetCurrentRowNumber(long current_row_number);
-	RowLocator GetLocatorFromRowNumber(long row_number);
-	long GetRowNumberFromLocator(RowLocator row_locator);
 };
 
 class EventList
@@ -225,13 +222,6 @@ class EventTypeCell: public Cell
 {
 public:
 	wxString GetValueText(SequenceEditor* sequence_editor, Row* row);
-};
-
-class RowLocator
-{
-public:
-	MidiFileEvent_t event;
-	long tick;
 };
 
 class UndoSnapshot: public wxCommand
