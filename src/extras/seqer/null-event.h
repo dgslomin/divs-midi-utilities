@@ -17,7 +17,7 @@ private:
 	NullEventType();
 
 public:
-    void Delete(SequenceEditor* sequence_editor, Row* row);
+    void DeleteRow(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NullEventTimeCell: public Cell

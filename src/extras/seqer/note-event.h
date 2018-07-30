@@ -24,7 +24,7 @@ private:
 
 public:
 	bool MatchesEvent(MidiFileEvent_t event);
-	void Delete(SequenceEditor* sequence_editor, Row* row);
+	void DeleteRow(SequenceEditor* sequence_editor, Row* row);
 };
 
 class NoteEventTimeCell: public Cell

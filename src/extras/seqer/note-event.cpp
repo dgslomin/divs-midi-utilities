@@ -29,14 +29,13 @@ bool NoteEventType::MatchesEvent(MidiFileEvent_t event)
 	return MidiFileEvent_isNoteStartEvent(event);
 }
 
-void NoteEventType::Delete(SequenceEditor* sequence_editor, Row* row)
+void NoteEventType::DeleteRow(SequenceEditor* sequence_editor, Row* row)
 {
 	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = row->event;
 	MidiFileEvent_delete(MidiFileNoteStartEvent_getNoteEndEvent(event));
 	MidiFileEvent_delete(event);
-	sequence->RefreshData();
 }
 
 NoteEventTimeCell::NoteEventTimeCell()
@@ -61,8 +60,6 @@ void NoteEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 	long new_end_tick = end_tick + (new_tick - tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void NoteEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -77,8 +74,6 @@ void NoteEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void NoteEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -96,8 +91,6 @@ void NoteEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
 	long new_end_tick = end_tick + (new_tick - tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void NoteEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -115,8 +108,6 @@ void NoteEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void NoteEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -131,8 +122,6 @@ void NoteEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	long new_end_tick = end_tick - (tick - new_tick);
 	MidiFileEvent_setTick(event, new_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 NoteEventTrackCell::NoteEventTrackCell()
@@ -156,7 +145,6 @@ void NoteEventTrackCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
 	MidiFileEvent_setTrack(end_event, new_track);
 	MidiFileEvent_setTrack(event, new_track);
-	sequence->RefreshData();
 }
 
 void NoteEventTrackCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -170,7 +158,6 @@ void NoteEventTrackCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
 	MidiFileEvent_setTrack(end_event, new_track);
 	MidiFileEvent_setTrack(event, new_track);
-	sequence->RefreshData();
 }
 
 NoteEventChannelCell::NoteEventChannelCell()
@@ -191,7 +178,6 @@ void NoteEventChannelCell::SmallIncrease(SequenceEditor* sequence_editor, Row* r
 	int channel_number = MidiFileNoteStartEvent_getChannel(event);
 	int new_channel_number = sequence_editor->insertion_channel_number = std::min<int>(channel_number + 1, 15);
 	MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-	sequence->RefreshData();
 }
 
 void NoteEventChannelCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -202,7 +188,6 @@ void NoteEventChannelCell::SmallDecrease(SequenceEditor* sequence_editor, Row* r
 	int channel_number = MidiFileNoteStartEvent_getChannel(event);
 	int new_channel_number = sequence_editor->insertion_channel_number = std::max<int>(channel_number - 1, 0);
 	MidiFileNoteStartEvent_setChannel(event, new_channel_number);
-	sequence->RefreshData();
 }
 
 NoteEventNoteCell::NoteEventNoteCell()
@@ -223,7 +208,6 @@ void NoteEventNoteCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::min<int>(note_number + 1, 127);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -234,7 +218,6 @@ void NoteEventNoteCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::max<int>(note_number - 1, 0);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -245,7 +228,6 @@ void NoteEventNoteCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::min<int>(note_number + 12, 127);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence->RefreshData();
 }
 
 void NoteEventNoteCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -256,7 +238,6 @@ void NoteEventNoteCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
 	int note_number = MidiFileNoteStartEvent_getNote(event);
 	int new_note_number = sequence_editor->insertion_note_number = std::max<int>(note_number - 12, 0);
 	MidiFileNoteStartEvent_setNote(event, new_note_number);
-	sequence->RefreshData();
 }
 
 NoteEventVelocityCell::NoteEventVelocityCell()
@@ -277,7 +258,6 @@ void NoteEventVelocityCell::SmallIncrease(SequenceEditor* sequence_editor, Row* 
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::min<int>(velocity + 1, 127);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -288,7 +268,6 @@ void NoteEventVelocityCell::SmallDecrease(SequenceEditor* sequence_editor, Row* 
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::max<int>(velocity - 1, 1);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -299,7 +278,6 @@ void NoteEventVelocityCell::LargeIncrease(SequenceEditor* sequence_editor, Row* 
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::min<int>(velocity + 8, 127);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventVelocityCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -310,7 +288,6 @@ void NoteEventVelocityCell::LargeDecrease(SequenceEditor* sequence_editor, Row* 
 	int velocity = MidiFileNoteStartEvent_getVelocity(event);
 	int new_velocity = sequence_editor->insertion_velocity = std::max<int>(velocity - 8, 1);
 	MidiFileNoteStartEvent_setVelocity(event, new_velocity);
-	sequence->RefreshData();
 }
 
 NoteEventEndTimeCell::NoteEventEndTimeCell()
@@ -333,7 +310,6 @@ void NoteEventEndTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* r
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick));
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -346,7 +322,6 @@ void NoteEventEndTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* r
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = std::max<long>(end_tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick)), tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -362,7 +337,6 @@ void NoteEventEndTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* r
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number + 1);
 	long new_end_tick = new_end_step_tick + (end_tick - end_step_tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -378,7 +352,6 @@ void NoteEventEndTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* r
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number - 1);
 	long new_end_tick = std::max<long>(new_end_step_tick + (end_tick - end_step_tick), tick);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
 }
 
 void NoteEventEndTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -391,7 +364,6 @@ void NoteEventEndTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(end_tick) + 1);
 	MidiFileEvent_setTick(end_event, new_end_tick);
-	sequence->RefreshData();
 }
 
 NoteEventEndVelocityCell::NoteEventEndVelocityCell()
@@ -413,7 +385,6 @@ void NoteEventEndVelocityCell::SmallIncrease(SequenceEditor* sequence_editor, Ro
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::min<int>(end_velocity + 1, 127);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -425,7 +396,6 @@ void NoteEventEndVelocityCell::SmallDecrease(SequenceEditor* sequence_editor, Ro
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::max<int>(end_velocity - 1, 0);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -437,7 +407,6 @@ void NoteEventEndVelocityCell::LargeIncrease(SequenceEditor* sequence_editor, Ro
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::min<int>(end_velocity + 8, 127);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence->RefreshData();
 }
 
 void NoteEventEndVelocityCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -449,7 +418,6 @@ void NoteEventEndVelocityCell::LargeDecrease(SequenceEditor* sequence_editor, Ro
 	int end_velocity = MidiFileNoteEndEvent_getVelocity(end_event);
 	int new_end_velocity = sequence_editor->insertion_end_velocity = std::max<int>(end_velocity - 8, 0);
 	MidiFileNoteEndEvent_setVelocity(end_event, new_end_velocity);
-	sequence->RefreshData();
 }
 
 void SequenceEditor::InsertNote(int diatonic)
@@ -463,7 +431,6 @@ void SequenceEditor::InsertNote(int diatonic)
 		int chromatic = GetChromaticFromDiatonicInKey(diatonic, MidiFileKeySignatureEvent_getNumber(MidiFile_getLatestKeySignatureEventForTick(this->sequence->midi_file, start_tick)));
 		int new_note_number = this->insertion_note_number = MatchNoteOctave(SetNoteChromatic(this->insertion_note_number, chromatic), this->insertion_note_number);
 		MidiFileNoteStartEvent_setNote(event, new_note_number);
-		this->sequence->RefreshData();
 	}
 	else
 	{

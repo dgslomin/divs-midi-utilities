@@ -47,8 +47,6 @@ void MarkerEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* ro
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick));
 	MidiFileEvent_setTick(event, new_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void MarkerEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -59,8 +57,6 @@ void MarkerEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* ro
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = std::max<long>(tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick)), 0);
 	MidiFileEvent_setTick(event, new_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void MarkerEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -74,8 +70,6 @@ void MarkerEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* ro
 	long new_step_tick = sequence_editor->step_size->GetTickFromStep(step_number + 1);
 	long new_tick = new_step_tick + (tick - step_tick);
 	MidiFileEvent_setTick(event, new_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void MarkerEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -89,8 +83,6 @@ void MarkerEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* ro
 	long new_step_tick = sequence_editor->step_size->GetTickFromStep(std::max<long>(step_number - 1, 0));
 	long new_tick = new_step_tick + (tick - step_tick);
 	MidiFileEvent_setTick(event, new_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 void MarkerEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -101,8 +93,6 @@ void MarkerEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(tick));
 	MidiFileEvent_setTick(event, new_tick);
-	sequence->RefreshData();
-	sequence_editor->SetCurrentRowNumber(sequence_editor->GetRowNumberForEvent(event));
 }
 
 MarkerEventNameCell::MarkerEventNameCell()
@@ -127,7 +117,6 @@ void MarkerEventNameCell::EnterValue(SequenceEditor* sequence_editor, Row* row)
 		wxString name = wxString(MidiFileMarkerEvent_getText(event));
 		wxString new_name = dialog->GetValue();
 		MidiFileMarkerEvent_setText(event, (char *)(new_name.ToStdString().c_str()));
-		sequence->RefreshData();
 	}
 
 	dialog->Destroy();

@@ -22,7 +22,7 @@ NullEventType::NullEventType()
 	this->cells[7] = new Cell();
 }
 
-void NullEventType::Delete(SequenceEditor* sequence_editor, Row* row)
+void NullEventType::DeleteRow(SequenceEditor* sequence_editor, Row* row)
 {
 }
 

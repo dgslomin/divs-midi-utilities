@@ -201,7 +201,7 @@ public:
 	Cell* cells[EVENT_LIST_NUMBER_OF_COLUMNS];
 
 	virtual bool MatchesEvent(MidiFileEvent_t event);
-	virtual void Delete(SequenceEditor* sequence_editor, Row* row);
+	virtual void DeleteRow(SequenceEditor* sequence_editor, Row* row);
 };
 
 class Cell

@@ -372,15 +372,18 @@ void SequenceEditor::DeleteRow()
 
 		if (row_number == this->current_row_number || row->selected)
 		{
-			row->event_type->Delete(this, row);
+			row->event_type->DeleteRow(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::EnterValue()
 {
 	Row* row = this->GetRow(this->current_row_number);
 	row->event_type->cells[this->current_column_number]->EnterValue(this, row);
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::SmallIncrease()
@@ -394,6 +397,8 @@ void SequenceEditor::SmallIncrease()
 			row->event_type->cells[this->current_column_number]->SmallIncrease(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::SmallDecrease()
@@ -407,6 +412,8 @@ void SequenceEditor::SmallDecrease()
 			row->event_type->cells[this->current_column_number]->SmallDecrease(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::LargeIncrease()
@@ -420,6 +427,8 @@ void SequenceEditor::LargeIncrease()
 			row->event_type->cells[this->current_column_number]->LargeIncrease(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::LargeDecrease()
@@ -433,6 +442,8 @@ void SequenceEditor::LargeDecrease()
 			row->event_type->cells[this->current_column_number]->LargeDecrease(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::Quantize()
@@ -446,6 +457,8 @@ void SequenceEditor::Quantize()
 			row->event_type->cells[this->current_column_number]->Quantize(this, row);
 		}
 	}
+
+	this->sequence->RefreshData();
 }
 
 void SequenceEditor::ClearData()
@@ -970,7 +983,7 @@ bool EventType::MatchesEvent(MidiFileEvent_t event)
 	return false;
 }
 
-void EventType::Delete(SequenceEditor* sequence_editor, Row* row)
+void EventType::DeleteRow(SequenceEditor* sequence_editor, Row* row)
 {
 	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
