@@ -33,7 +33,7 @@ extern "C"
 #define MIDI_FILE_SELECTION_START_LABEL "!selection-start"
 #define MIDI_FILE_SELECTION_END_LABEL "!selection-end"
 
-MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file);
+MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file, int create);
 int MidiFile_hasSelection(MidiFile_t midi_file);
 int MidiFile_clearSelection(MidiFile_t midi_file);
 
@@ -47,6 +47,9 @@ int MidiFileEvent_setSelected(MidiFileEvent_t event, int selected);
 int MidiFileEvent_isCaretEvent(MidiFileEvent_t event);
 int MidiFileEvent_isSelectionStartEvent(MidiFileEvent_t event);
 int MidiFileEvent_isSelectionEndEvent(MidiFileEvent_t event);
+
+int MidiFileCaretEvent_setTargetEvent(MidiFileEvent_t event, MidiFileEvent_t target_event);
+MidiFileEvent_t MidiFileCaretEvent_getTargetEvent(MidiFileEvent_t event);
 
 MidiFileEvent_t MidiFileSelectionStartEvent_getSelectionEndEvent(MidiFileEvent_t event);
 

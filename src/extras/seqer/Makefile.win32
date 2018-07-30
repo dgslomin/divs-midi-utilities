@@ -5,8 +5,8 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj music-math.obj note-event.obj null-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj music-math.obj note-event.obj null-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj midifile-extensions.obj music-math.obj note-event.obj null-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj midifile-extensions.obj music-math.obj note-event.obj null-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
@@ -52,7 +52,7 @@ program-change-event.obj: program-change-event.cpp ..\..\midifile\midifile.h pro
 seqer.obj: seqer.cpp ..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
 
-sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h null-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
+sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h ..\..\mdiifile\midifile-extensions.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h null-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c sequence-editor.cpp
 
 system-exclusive-event.obj: system-exclusive-event.cpp ..\..\midifile\midifile.h sequence-editor.h system-exclusive-event.h
@@ -61,7 +61,7 @@ system-exclusive-event.obj: system-exclusive-event.cpp ..\..\midifile\midifile.h
 tempo-event.obj: tempo-event.cpp ..\..\midifile\midifile.h sequence-editor.h tempo-event.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c tempo-event.cpp
 
-text-event.obj: text-event.cpp ..\..\midifile\midifile.h sequence-editor.h text-event.h
+text-event.obj: text-event.cpp ..\..\midifile\midifile.h ..\..\midifile\midifile-extensions.h sequence-editor.h text-event.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c text-event.cpp
 
 time-signature-event.obj: time-signature-event.cpp ..\..\midifile\midifile.h sequence-editor.h time-signature-event.h
@@ -78,6 +78,7 @@ clean:
     @if exist lyric-event.obj del lyric-event.obj
     @if exist marker-event.obj del marker-event.obj
     @if exist midifile.obj del midifile.obj
+    @if exist midifile-extensions.obj del midifile-extensions.obj
     @if exist music-math.obj del music-math.obj
     @if exist note-event.obj del note-event.obj
     @if exist null-event.obj del null-event.obj

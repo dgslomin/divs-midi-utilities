@@ -1,6 +1,7 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
+#include <midifile-extensions.h>
 #include "sequence-editor.h"
 #include "text-event.h"
 
@@ -26,7 +27,7 @@ TextEventType::TextEventType()
 
 bool TextEventType::MatchesEvent(MidiFileEvent_t event)
 {
-	return MidiFileEvent_isTextEvent(event);
+	return MidiFileEvent_isTextEvent(event) && !(MidiFileEvent_isCaretEvent(event) || MidiFileEvent_isSelectionStartEvent(event) || MidiFileEvent_isSelectionEndEvent(event));
 }
 
 TextEventTimeCell::TextEventTimeCell()

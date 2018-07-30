@@ -5,14 +5,21 @@
 #include <midifile.h>
 #include <midifile-extensions.h>
 
-MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file)
+MidiFileEvent_t MidiFile_getCaretEvent(MidiFile_t midi_file, int create)
 {
 	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
 		if (MidiFileEvent_isCaretEvent(event)) return event;
 	}
 
-	return NULL;
+	if (create)
+	{
+		return MidiFileTrack_createCaretEvent(MidiFile_getTrackByNumber(midi_file, 0, 1), 0);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 int MidiFile_hasSelection(MidiFile_t midi_file)
@@ -42,17 +49,17 @@ int MidiFile_clearSelection(MidiFile_t midi_file)
 
 MidiFileEvent_t MidiFileTrack_createCaretEvent(MidiFileTrack_t track, long tick)
 {
-	MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_CARET_LABEL);
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_CARET_LABEL);
 }
 
 MidiFileEvent_t MidiFileTrack_createSelectionStartEvent(MidiFileTrack_t track, long tick)
 {
-	MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_SELECTION_START_LABEL);
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_SELECTION_START_LABEL);
 }
 
 MidiFileEvent_t MidiFileTrack_createSelectionEndEvent(MidiFileTrack_t track, long tick)
 {
-	MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_SELECTION_END_LABEL);
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_SELECTION_END_LABEL);
 }
 
 int MidiFileEvent_isSelected(MidiFileEvent_t event)
@@ -111,6 +118,22 @@ int MidiFileEvent_isSelectionStartEvent(MidiFileEvent_t event)
 int MidiFileEvent_isSelectionEndEvent(MidiFileEvent_t event)
 {
 	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_SELECTION_END_LABEL) == 0));
+}
+
+int MidiFileCaretEvent_setTargetEvent(MidiFileEvent_t event, MidiFileEvent_t target_event)
+{
+	if ((! MidiFileEvent_isCaretEvent(event)) || (target_event == NULL)) return -1;
+	MidiFileEvent_setNextEvent(event, target_event);
+	return 0;
+}
+
+MidiFileEvent_t MidiFileCaretEvent_getTargetEvent(MidiFileEvent_t event)
+{
+	MidiFileEvent_t next_event;
+	if (! MidiFileEvent_isCaretEvent(event)) return NULL;
+	next_event = MidiFileEvent_getNextEventInTrack(event);
+	if ((next_event == NULL) || (MidiFileEvent_getTick(next_event) != MidiFileEvent_getTick(event))) return NULL;
+	return next_event;
 }
 
 MidiFileEvent_t MidiFileSelectionStartEvent_getSelectionEndEvent(MidiFileEvent_t event)

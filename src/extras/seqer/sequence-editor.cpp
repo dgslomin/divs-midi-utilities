@@ -6,6 +6,7 @@
 #include <wx/cmdproc.h>
 #include <wx/filename.h>
 #include <midifile.h>
+#include <midifile-extensions.h>
 #include "aftertouch-event.h"
 #include "control-change-event.h"
 #include "color.h"
@@ -246,7 +247,7 @@ void SequenceEditor::ScrollUp()
 
 		if (this->current_row_number > last_visible_row_number - 2)
 		{
-			this->current_row_number--;
+			this->SetCurrentRowNumber(this->current_row_number - 1);
 		}
 
 		this->Scroll(wxDefaultCoord, first_visible_row_number);
@@ -265,7 +266,7 @@ void SequenceEditor::ScrollDown()
 
 	if (this->current_row_number < first_visible_row_number)
 	{
-		this->current_row_number++;
+		this->SetCurrentRowNumber(this->current_row_number + 1);
 	}
 
 	this->Scroll(wxDefaultCoord, first_visible_row_number);
@@ -504,6 +505,23 @@ void SequenceEditor::RefreshData()
 
 			last_step_number = step_number;
 		}
+
+		MidiFileEvent_t caret_event = MidiFile_getCaretEvent(this->sequence->midi_file, 0);
+
+		if (caret_event != NULL)
+		{
+			MidiFileEvent_t caret_target_event = MidiFileCaretEvent_getTargetEvent(caret_event);
+
+			if (caret_target_event == NULL)
+			{
+				this->current_row_number = this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(MidiFileEvent_getTick(caret_event)));
+			}
+			else
+			{
+				int caret_target_row_number = this->GetRowNumberForEvent(caret_target_event);
+				if (caret_target_row_number >= 0) this->current_row_number = caret_target_row_number;
+			}
+		}
 	}
 
 	this->event_list->RefreshData();
@@ -686,7 +704,21 @@ bool SequenceEditor::Filter(EventType* event_type, MidiFileEvent_t event)
 
 void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
-	if (current_row_number >= 0) this->current_row_number = current_row_number;
+	if (current_row_number < 0) return;
+	Row* row = this->GetRow(current_row_number);
+	MidiFileEvent_t caret_event = MidiFile_getCaretEvent(this->sequence->midi_file, 1);
+
+	if (row->event == NULL)
+	{
+		MidiFileEvent_setTrack(caret_event, MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1));
+		MidiFileEvent_setTick(caret_event, this->GetTickFromRow(row));
+	}
+	else
+	{
+		MidiFileCaretEvent_setTargetEvent(caret_event, row->event);
+	}
+
+	this->current_row_number = current_row_number;
 	this->UpdateScrollbar();
 	this->RefreshDisplay();
 }
