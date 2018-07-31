@@ -110,6 +110,8 @@ public:
 	MidiFileEvent_t GetLatestTimeSignatureEventForRowNumber(long row_number);
 	bool Filter(EventType* event_type, MidiFileEvent_t event);
 	void SetCurrentRowNumber(long current_row_number);
+	bool RowIsSelected(Row* row);
+	void SelectRow(Row* row, bool selected);
 };
 
 class EventList

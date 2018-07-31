@@ -184,20 +184,21 @@ void SequenceEditor::SetOverwriteMode(bool overwrite_mode)
 void SequenceEditor::SelectCurrent()
 {
 	Row* row = this->GetRow(this->current_row_number);
-	row->selected = !(row->selected);
-	this->RefreshDisplay();
+	this->SelectRow(row, !this->RowIsSelected(row));
+	this->RefreshData();
 }
 
 void SequenceEditor::SelectAll()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->GetRow(row_number)->selected = true;
-	this->RefreshDisplay();
+	MidiFile_clearSelection(this->sequence->midi_file);
+	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->SelectRow(this->GetRow(row_number), true);
+	this->RefreshData();
 }
 
 void SequenceEditor::SelectNone()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->GetRow(row_number)->selected = false;
-	this->RefreshDisplay();
+	MidiFile_clearSelection(this->sequence->midi_file);
+	this->RefreshData();
 }
 
 void SequenceEditor::RowUp()
@@ -367,14 +368,18 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 
 void SequenceEditor::DeleteRow()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->DeleteRow(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->DeleteRow(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->DeleteRow(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -389,14 +394,18 @@ void SequenceEditor::EnterValue()
 
 void SequenceEditor::SmallIncrease()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->cells[this->current_column_number]->SmallIncrease(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->cells[this->current_column_number]->SmallIncrease(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->cells[this->current_column_number]->SmallIncrease(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -404,14 +413,18 @@ void SequenceEditor::SmallIncrease()
 
 void SequenceEditor::SmallDecrease()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->cells[this->current_column_number]->SmallDecrease(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->cells[this->current_column_number]->SmallDecrease(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->cells[this->current_column_number]->SmallDecrease(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -419,14 +432,18 @@ void SequenceEditor::SmallDecrease()
 
 void SequenceEditor::LargeIncrease()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->cells[this->current_column_number]->LargeIncrease(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->cells[this->current_column_number]->LargeIncrease(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->cells[this->current_column_number]->LargeIncrease(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -434,14 +451,18 @@ void SequenceEditor::LargeIncrease()
 
 void SequenceEditor::LargeDecrease()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->cells[this->current_column_number]->LargeDecrease(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->cells[this->current_column_number]->LargeDecrease(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->cells[this->current_column_number]->LargeDecrease(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -449,14 +470,18 @@ void SequenceEditor::LargeDecrease()
 
 void SequenceEditor::Quantize()
 {
-	for (long row_number = 0; row_number < this->rows.size(); row_number++)
+	if (MidiFile_hasSelection(this->sequence->midi_file))
 	{
-		Row* row = this->GetRow(row_number);
-
-		if (row_number == this->current_row_number || row->selected)
+		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
-			row->event_type->cells[this->current_column_number]->Quantize(this, row);
+			Row* row = this->GetRow(row_number);
+			if (this->RowIsSelected(row)) row->event_type->cells[this->current_column_number]->Quantize(this, row);
 		}
+	}
+	else
+	{
+		Row* row = this->GetRow(this->current_row_number);
+		row->event_type->cells[this->current_column_number]->Quantize(this, row);
 	}
 
 	this->sequence->RefreshData();
@@ -723,6 +748,31 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 	this->RefreshDisplay();
 }
 
+bool SequenceEditor::RowIsSelected(Row* row)
+{
+	if (row->event == NULL)
+	{
+		// TODO
+		return false;
+	}
+	else
+	{
+		return (MidiFileEvent_isSelected(row->event) != 0);
+	}
+}
+
+void SequenceEditor::SelectRow(Row* row, bool selected)
+{
+	if (row->event == NULL)
+	{
+		// TODO
+	}
+	else
+	{
+		MidiFileEvent_setSelected(row->event, selected ? 1 : 0);
+	}
+}
+
 EventList::EventList(SequenceEditor* sequence_editor)
 {
 	this->sequence_editor = sequence_editor;
@@ -764,7 +814,7 @@ void EventList::OnDraw(wxDC& dc)
 
 	for (long row_number = first_row_number; row_number <= last_row_number; row_number++)
 	{
-		if (this->sequence_editor->GetRow(row_number)->selected) dc.DrawRectangle(piano_roll_width, this->GetYFromRowNumber(row_number), width, this->row_height);
+		if (this->sequence_editor->RowIsSelected(this->sequence_editor->GetRow(row_number))) dc.DrawRectangle(piano_roll_width, this->GetYFromRowNumber(row_number), width, this->row_height);
 	}
 
 	dc.SetPen(wxPen(this->sequence_editor->piano_roll->lighter_line_color));
@@ -918,7 +968,7 @@ void PianoRoll::OnDraw(wxDC& dc)
 					long event_width = this->key_width + 1;
 					long event_height = end_event_y - event_y;
 
-					if (row->selected)
+					if (this->sequence_editor->RowIsSelected(row))
 					{
 						dc.SetPen(selected_event_pen);
 						dc.SetBrush(selected_event_brush);
