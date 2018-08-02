@@ -175,8 +175,7 @@ class Row
 public:
 	long step_number;
 	MidiFileEvent_t event;
-    EventType* event_type;
-    bool selected = false; // TODO
+    EventType* event_type; // can derive this from the event, but it's used often enough to be worth caching here
 
 	Row(long step_number, MidiFileEvent_t event, EventType* event_type);
 };

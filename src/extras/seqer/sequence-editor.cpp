@@ -531,21 +531,12 @@ void SequenceEditor::RefreshData()
 			last_step_number = step_number;
 		}
 
-		MidiFileEvent_t caret_event = MidiFile_getCaretEvent(this->sequence->midi_file, 0);
+		MidiFileEvent_t caret_target = MidiFile_getCaretTarget(this->sequence->midi_file);
 
-		if (caret_event != NULL)
+		if (caret_target != NULL)
 		{
-			MidiFileEvent_t caret_target_event = MidiFileCaretEvent_getTargetEvent(caret_event);
-
-			if (caret_target_event == NULL)
-			{
-				this->current_row_number = this->GetFirstRowNumberFromStepNumber(this->GetStepNumberFromTick(MidiFileEvent_getTick(caret_event)));
-			}
-			else
-			{
-				int caret_target_row_number = this->GetRowNumberForEvent(caret_target_event);
-				if (caret_target_row_number >= 0) this->current_row_number = caret_target_row_number;
-			}
+			int caret_target_row_number = this->GetRowNumberForEvent(caret_target);
+			if (caret_target_row_number >= 0) this->current_row_number = caret_target_row_number;
 		}
 	}
 
@@ -731,18 +722,8 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
 	if (current_row_number < 0) return;
 	Row* row = this->GetRow(current_row_number);
-	MidiFileEvent_t caret_event = MidiFile_getCaretEvent(this->sequence->midi_file, 1);
-
-	if (row->event == NULL)
-	{
-		MidiFileEvent_setTrack(caret_event, MidiFile_getTrackByNumber(this->sequence->midi_file, this->insertion_track_number, 1));
-		MidiFileEvent_setTick(caret_event, this->GetTickFromRow(row));
-	}
-	else
-	{
-		MidiFileCaretEvent_setTargetEvent(caret_event, row->event);
-	}
-
+	if (row->event == NULL) row->event = MidiFileTrack_getCreateEmptyStepEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
+	MidiFileEvent_setCaretTarget(row->event);
 	this->current_row_number = current_row_number;
 	this->UpdateScrollbar();
 	this->RefreshDisplay();
@@ -750,26 +731,34 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 
 bool SequenceEditor::RowIsSelected(Row* row)
 {
-	if (row->event == NULL)
-	{
-		// TODO
-		return false;
-	}
-	else
-	{
-		return (MidiFileEvent_isSelected(row->event) != 0);
-	}
+	return MidiFileEvent_isSelected(row->event);
 }
 
 void SequenceEditor::SelectRow(Row* row, bool selected)
 {
-	if (row->event == NULL)
+	if (row->event_type == NullEventType::GetInstance())
 	{
-		// TODO
+		if (selected)
+		{
+			if (row->event == NULL)
+			{
+				row->event = MidiFileTrack_createEmptyStepEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
+				MidiFileEvent_setSelected(row->event, 1);
+			}
+		}
+		else
+		{
+			if (row->event != NULL)
+			{
+				MidiFileEvent_setSelected(row->event, 0);
+				MidiFileEvent_delete(row->event);
+				row->event = NULL;
+			}
+		}
 	}
 	else
 	{
-		MidiFileEvent_setSelected(row->event, selected ? 1 : 0);
+		MidiFileEvent_setSelected(row->event, selected);
 	}
 }
 
