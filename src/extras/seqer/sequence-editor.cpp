@@ -190,14 +190,14 @@ void SequenceEditor::SelectCurrent()
 
 void SequenceEditor::SelectAll()
 {
-	MidiFile_clearSelection(this->sequence->midi_file);
+	MidiFile_clearSelections(this->sequence->midi_file);
 	for (long row_number = 0; row_number < this->rows.size(); row_number++) this->SelectRow(this->GetRow(row_number), true);
 	this->RefreshData();
 }
 
 void SequenceEditor::SelectNone()
 {
-	MidiFile_clearSelection(this->sequence->midi_file);
+	MidiFile_clearSelections(this->sequence->midi_file);
 	this->RefreshData();
 }
 
@@ -208,7 +208,7 @@ void SequenceEditor::RowUp()
 
 void SequenceEditor::RowDown()
 {
-	this->SetCurrentRowNumber(current_row_number + 1);
+	this->SetCurrentRowNumber(this->current_row_number + 1);
 }
 
 void SequenceEditor::PageUp()
@@ -218,7 +218,7 @@ void SequenceEditor::PageUp()
 
 void SequenceEditor::PageDown()
 {
-	this->SetCurrentRowNumber(current_row_number + this->GetNumberOfVisibleRows());
+	this->SetCurrentRowNumber(this->current_row_number + this->GetNumberOfVisibleRows());
 }
 
 void SequenceEditor::GoToFirstRow()
@@ -368,7 +368,7 @@ void SequenceEditor::GoToMarker(wxString marker_name)
 
 void SequenceEditor::DeleteRow()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -394,7 +394,7 @@ void SequenceEditor::EnterValue()
 
 void SequenceEditor::SmallIncrease()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -413,7 +413,7 @@ void SequenceEditor::SmallIncrease()
 
 void SequenceEditor::SmallDecrease()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -432,7 +432,7 @@ void SequenceEditor::SmallDecrease()
 
 void SequenceEditor::LargeIncrease()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -451,7 +451,7 @@ void SequenceEditor::LargeIncrease()
 
 void SequenceEditor::LargeDecrease()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -470,7 +470,7 @@ void SequenceEditor::LargeDecrease()
 
 void SequenceEditor::Quantize()
 {
-	if (MidiFile_hasSelection(this->sequence->midi_file))
+	if (MidiFile_getFirstSelection(this->sequence->midi_file) != NULL)
 	{
 		for (long row_number = 0; row_number < this->rows.size(); row_number++)
 		{
@@ -503,10 +503,21 @@ void SequenceEditor::RefreshData()
 
 	if (this->sequence->midi_file != NULL)
 	{
+		MidiFile_deleteOrphanEmptyAnnotationTargetEvents(this->sequence->midi_file);
+
 		for (MidiFileEvent_t event = MidiFile_getFirstEvent(this->sequence->midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 		{
-			EventType* event_type = EventTypeManager::GetInstance()->GetEventType(event);
-			if (!this->Filter(event_type, event)) continue;
+			EventType* event_type;
+
+			if (MidiFileEvent_isEmptyAnnotationTargetEvent(event))
+			{
+				event_type = NullEventType::GetInstance();
+			}
+			else
+			{
+				event_type = EventTypeManager::GetInstance()->GetEventType(event);
+				if (!this->Filter(event_type, event)) continue;
+			}
 
 			long step_number = this->GetStepNumberFromTick(MidiFileEvent_getTick(event));
 
@@ -529,14 +540,8 @@ void SequenceEditor::RefreshData()
 			}
 
 			last_step_number = step_number;
-		}
 
-		MidiFileEvent_t caret_target = MidiFile_getCaretTarget(this->sequence->midi_file);
-
-		if (caret_target != NULL)
-		{
-			int caret_target_row_number = this->GetRowNumberForEvent(caret_target);
-			if (caret_target_row_number >= 0) this->current_row_number = caret_target_row_number;
+			if (MidiFileEvent_isCaret(event)) this->current_row_number = this->rows.size() - 1;
 		}
 	}
 
@@ -722,8 +727,8 @@ void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
 	if (current_row_number < 0) return;
 	Row* row = this->GetRow(current_row_number);
-	if (row->event == NULL) row->event = MidiFileTrack_getCreateEmptyStepEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
-	MidiFileEvent_setCaretTarget(row->event);
+	if (row->event == NULL) row->event = MidiFileTrack_createEmptyAnnotationTargetEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
+	MidiFileEvent_setCaret(row->event, 1);
 	this->current_row_number = current_row_number;
 	this->UpdateScrollbar();
 	this->RefreshDisplay();
@@ -736,30 +741,12 @@ bool SequenceEditor::RowIsSelected(Row* row)
 
 void SequenceEditor::SelectRow(Row* row, bool selected)
 {
-	if (row->event_type == NullEventType::GetInstance())
+	if (selected && (row->event_type == NullEventType::GetInstance()) && (row->event == NULL))
 	{
-		if (selected)
-		{
-			if (row->event == NULL)
-			{
-				row->event = MidiFileTrack_createEmptyStepEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
-				MidiFileEvent_setSelected(row->event, 1);
-			}
-		}
-		else
-		{
-			if (row->event != NULL)
-			{
-				MidiFileEvent_setSelected(row->event, 0);
-				MidiFileEvent_delete(row->event);
-				row->event = NULL;
-			}
-		}
+		row->event = MidiFileTrack_createEmptyAnnotationTargetEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
 	}
-	else
-	{
-		MidiFileEvent_setSelected(row->event, selected);
-	}
+
+	MidiFileEvent_setSelected(row->event, selected);
 }
 
 EventList::EventList(SequenceEditor* sequence_editor)
@@ -1058,7 +1045,7 @@ void EventType::DeleteRow(SequenceEditor* sequence_editor, Row* row)
 {
 	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
-	MidiFileEvent_delete(row->event);
+	MidiFileEvent_deleteWithAnnotations(row->event);
 	sequence->RefreshData();
 }
 

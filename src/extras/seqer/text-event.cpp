@@ -27,7 +27,7 @@ TextEventType::TextEventType()
 
 bool TextEventType::MatchesEvent(MidiFileEvent_t event)
 {
-	return MidiFileEvent_isTextEvent(event) && !(MidiFileEvent_isCaretEvent(event) || MidiFileEvent_isSelectionStartEvent(event) || MidiFileEvent_isSelectionEndEvent(event));
+	return MidiFileEvent_isTextEvent(event) && !(MidiFileEvent_isCaretAnnotationEvent(event) || MidiFileEvent_isSelectionAnnotationEvent(event) || MidiFileEvent_isEmptyAnnotationTargetEvent(event));
 }
 
 TextEventTimeCell::TextEventTimeCell()

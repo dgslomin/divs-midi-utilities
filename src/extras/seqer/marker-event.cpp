@@ -1,6 +1,7 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
+#include <midifile-extensions.h>
 #include "marker-event.h"
 #include "sequence-editor.h"
 
@@ -46,7 +47,7 @@ void MarkerEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* ro
 	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick));
-	MidiFileEvent_setTick(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
 }
 
 void MarkerEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -56,7 +57,7 @@ void MarkerEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* ro
 	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = std::max<long>(tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick)), 0);
-	MidiFileEvent_setTick(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
 }
 
 void MarkerEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -69,7 +70,7 @@ void MarkerEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* ro
 	long step_tick = sequence_editor->step_size->GetTickFromStep(step_number);
 	long new_step_tick = sequence_editor->step_size->GetTickFromStep(step_number + 1);
 	long new_tick = new_step_tick + (tick - step_tick);
-	MidiFileEvent_setTick(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
 }
 
 void MarkerEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -82,7 +83,7 @@ void MarkerEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* ro
 	long step_tick = sequence_editor->step_size->GetTickFromStep(step_number);
 	long new_step_tick = sequence_editor->step_size->GetTickFromStep(std::max<long>(step_number - 1, 0));
 	long new_tick = new_step_tick + (tick - step_tick);
-	MidiFileEvent_setTick(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
 }
 
 void MarkerEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -92,7 +93,7 @@ void MarkerEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	MidiFileEvent_t event = row->event;
 	long tick = MidiFileEvent_getTick(event);
 	long new_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(tick));
-	MidiFileEvent_setTick(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
 }
 
 MarkerEventNameCell::MarkerEventNameCell()

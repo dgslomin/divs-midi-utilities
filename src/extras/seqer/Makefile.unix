@@ -42,7 +42,7 @@ key-signature-event.o: key-signature-event.cpp ../../midifile/midifile.h key-sig
 lyric-event.o: lyric-event.cpp ../../midifile/midifile.h lyric-event.h sequence-editor.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c lyric-event.cpp
 
-marker-event.o: marker-event.cpp ../../midifile/midifile.h marker-event.h sequence-editor.h
+marker-event.o: marker-event.cpp ../../midifile/midifile.h ../../midifile/midifile-extensions.h marker-event.h sequence-editor.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c marker-event.cpp
 
 midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
@@ -54,7 +54,7 @@ midifile-extensions.o: ../../midifile/midifile-extensions.c ../../midifile/midif
 music-math.o: music-math.cpp ../../midifile/midifile.h music-math.h seqer.h sequence-editor.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c music-math.cpp
 
-note-event.o: note-event.cpp ../../midifile/midifile.h note-event.h sequence-editor.h
+note-event.o: note-event.cpp ../../midifile/midifile.h ../../midifile/midifile-extensions.h note-event.h sequence-editor.h
 	$(CXX) $(CXXFLAGS) -I../../midifile -c note-event.cpp
 
 null-event.o: null-event.cpp ../../midifile/midifile.h null-event.h sequence-editor.h

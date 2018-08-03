@@ -13,16 +13,23 @@
  *
  * The caret is the editing "cursor", which marks where inserts should occur.
  * It also marks the target of editing operations when there is no selection.
- * It is represented by a specially labelled text event located immediately
- * prior to the target event.  There can only be one caret at a time.
+ * It is represented by an annotation - a specially labelled text event located
+ * immediately prior to the target event.  There can only be one caret at a
+ * time.
  *
  * Selections are the editing "highlight", for marking events as the target of
- * editing operations.  It is represented by a specially labelled text event
- * located immediately prior to each target event.  There can be many events
- * selected at the same time, and they do not have to be contiguous.
+ * editing operations.  It is represented by an annotation - a specially
+ * labelled text event located immediately prior to each target event.  There
+ * can be many events selected at the same time, and they do not have to be
+ * contiguous.
  *
- * An empty target event is useful if you want the cursor or selection to
- * target a tick where no real event occurs.
+ * An empty annotation target event is useful if you want the cursor or
+ * selection to target a tick where no real event occurs.  Don't forget to
+ * clean up the empty annotation targets that have become orphaned when their
+ * annotations have been removed.
+ *
+ * When you delete or move an event in the file, it makes sense to delete or
+ * move the annotations along with it.  Helper functions are provided for this.
  */
 
 #ifdef __cplusplus
@@ -30,26 +37,48 @@ extern "C"
 {
 #endif
 
-#define MIDI_FILE_CARET_LABEL "!caret"
+#define MIDI_FILE_CARET_ANNOTATION_LABEL "!caret"
 
-MidiFileEvent_t MidiFile_getCaretTarget(MidiFile_t midi_file);
-int MidiFile_clearCaretTarget(MidiFile_t midi_file);
-int MidiFileEvent_isCaretTarget(MidiFileEvent_t event);
-int MidiFileEvent_setCaretTarget(MidiFileEvent_t event);
-int MidiFileEvent_isCaretEvent(MidiFileEvent_t event);
+MidiFileEvent_t MidiFileTrack_createCaretAnnotationEvent(MidiFileTrack_t track, long tick);
+int MidiFileEvent_isCaretAnnotationEvent(MidiFileEvent_t event);
 
-#define MIDI_FILE_SELECTION_LABEL "!selection"
+MidiFileEvent_t MidiFile_getCaret(MidiFile_t midi_file);
+int MidiFile_clearCaret(MidiFile_t midi_file);
+int MidiFileEvent_isCaret(MidiFileEvent_t event);
+int MidiFileEvent_setCaret(MidiFileEvent_t event, int caret);
 
-int MidiFile_hasSelection(MidiFile_t midi_file);
-int MidiFile_clearSelection(MidiFile_t midi_file);
+
+
+#define MIDI_FILE_SELECTION_ANNOTATION_LABEL "!selection"
+
+MidiFileEvent_t MidiFileTrack_createSelectionAnnotationEvent(MidiFileTrack_t track, long tick);
+int MidiFileEvent_isSelectionAnnotationEvent(MidiFileEvent_t event);
+
+MidiFileEvent_t MidiFile_getFirstSelection(MidiFile_t midi_file);
+int MidiFile_clearSelections(MidiFile_t midi_file);
+MidiFileEvent_t MidiFileTrack_getFirstSelection(MidiFileTrack_t track);
+int MidiFileTrack_clearSelections(MidiFileTrack_t track);
+MidiFileEvent_t MidiFileEvent_getNextSelectionInTrack(MidiFileEvent_t event);
+MidiFileEvent_t MidiFileEvent_getNextSelectionInFile(MidiFileEvent_t event);
 int MidiFileEvent_isSelected(MidiFileEvent_t event);
 int MidiFileEvent_setSelected(MidiFileEvent_t event, int selected);
-int MidiFileEvent_isSelectionEvent(MidiFileEvent_t event);
 
-#define MIDIFILE_EMPTY_TARGET_LABEL "!empty-target"
 
-MidiFileEvent_t MidiFileTrack_createEmptyTargetEvent(MidiFileTrack_t track, long tick);
-int MidiFileEvent_isEmptyTargetEvent(MidiFileEvent_t event);
+
+#define MIDI_FILE_EMPTY_ANNOTATION_TARGET_LABEL "!empty-target"
+
+MidiFileEvent_t MidiFileTrack_createEmptyAnnotationTargetEvent(MidiFileTrack_t track, long tick);
+int MidiFileEvent_isEmptyAnnotationTargetEvent(MidiFileEvent_t event);
+
+int MidiFile_deleteOrphanEmptyAnnotationTargetEvents(MidiFile_t midi_file);
+int MidiFileEmptyAnnotationTargetEvent_isOrphan(MidiFileEvent_t event);
+
+
+
+int MidiFileEvent_deleteWithAnnotations(MidiFileEvent_t event);
+int MidiFileEvent_setTrackWithAnnotations(MidiFileEvent_t event, MidiFileTrack_t track);
+int MidiFileEvent_setTickWithAnnotations(MidiFileEvent_t event, long tick);
+
 
 #ifdef __cplusplus
 }

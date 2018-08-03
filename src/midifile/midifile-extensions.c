@@ -5,113 +5,278 @@
 #include <midifile.h>
 #include <midifile-extensions.h>
 
-MidiFileEvent_t MidiFile_getCaretTarget(MidiFile_t midi_file)
+MidiFileEvent_t MidiFileTrack_createCaretAnnotationEvent(MidiFileTrack_t track, long tick)
 {
-	for (MidiFileEvent_t caret_event = MidiFile_getFirstEvent(midi_file); caret_event != NULL; caret_event = MidiFileEvent_getNextEventInFile(caret_event))
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_CARET_ANNOTATION_LABEL);
+}
+
+int MidiFileEvent_isCaretAnnotationEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_CARET_ANNOTATION_LABEL) == 0));
+}
+
+MidiFileEvent_t MidiFile_getCaret(MidiFile_t midi_file)
+{
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		if (MidiFileEvent_isCaretEvent(caret_event)) return MidiFile_getNextEventInTrack(caret_event);
+		if (MidiFileEvent_isCaret(event)) return event;
 	}
 
 	return NULL;
 }
 
-int MidiFile_clearCaretTarget(MidiFile_t midi_file)
+int MidiFile_clearCaret(MidiFile_t midi_file)
 {
-	MidiFileEvent_t next_event;
-
 	if (midi_file == NULL) return -1;
 
-	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		next_event = MidiFileEvent_getNextEventInFile(event);
-		if (MidiFileEvent_isCaretEvent(event)) MidiFileEvent_delete(event);
+		if (MidiFileEvent_isCaret(event))
+		{
+			MidiFileEvent_setCaret(event, 0);
+			break;
+		}
 	}
 
 	return 0;
 }
 
-int MidiFileEvent_isCaretTarget(MidiFileEvent_t event)
+int MidiFileEvent_isCaret(MidiFileEvent_t event)
 {
-	return MidiFileEvent_isCaretEvent(MidiFileEvent_getPreviousEventInTrack(event));
-}
+	for (MidiFileEvent_t preceding_event = MidiFileEvent_getPreviousEventInTrack(event); (preceding_event != NULL) && (MidiFileEvent_getTick(preceding_event) == MidiFileEvent_getTick(event)); preceding_event = MidiFileEvent_getPreviousEventInTrack(preceding_event))
+	{
+		if (MidiFileEvent_isCaretAnnotationEvent(preceding_event))
+		{
+			return 1;
+		}
+		else if (!MidiFileEvent_isSelectionAnnotationEvent(preceding_event))
+		{
+			break;
+		}
+	}
 
-int MidiFile_setCaretTarget(MidiFileEvent_t event)
-{
-	if (event == NULL) return -1;
-	MidiFile_clearCaretTarget(MidiFileTrack_getMidiFile(MidiFileEvent_getTrack(event)));
-	MidiFileEvent_setNextEvent(MidiFileTrack_createTextEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event), MIDI_FILE_CARET_LABEL), event);
 	return 0;
 }
 
-int MidiFileEvent_isCaretEvent(MidiFileEvent_t event)
+int MidiFileEvent_setCaret(MidiFileEvent_t event, int caret)
 {
-	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_CARET_LABEL) == 0));
+	if (event == NULL) return -1;
+
+	if (caret)
+	{
+		if (!MidiFileEvent_isCaret(event))
+		{
+			MidiFileEvent_setNextEvent(MidiFileTrack_createCaretAnnotationEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event)), event);
+		}
+	}
+	else
+	{
+		for (MidiFileEvent_t preceding_event = MidiFileEvent_getPreviousEventInTrack(event); (preceding_event != NULL) && (MidiFileEvent_getTick(preceding_event) == MidiFileEvent_getTick(event)); preceding_event = MidiFileEvent_getPreviousEventInTrack(preceding_event))
+		{
+			if (MidiFileEvent_isCaretAnnotationEvent(preceding_event))
+			{
+				MidiFileEvent_delete(preceding_event);
+				break;
+			}
+			else if (!MidiFileEvent_isSelectionAnnotationEvent(preceding_event))
+			{
+				break;
+			}
+		}
+	}
+
+	return 0;
 }
 
-int MidiFile_hasSelection(MidiFile_t midi_file)
+MidiFileEvent_t MidiFileTrack_createSelectionAnnotationEvent(MidiFileTrack_t track, long tick)
+{
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_SELECTION_ANNOTATION_LABEL);
+}
+
+int MidiFileEvent_isSelectionAnnotationEvent(MidiFileEvent_t event)
+{
+	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_SELECTION_ANNOTATION_LABEL) == 0));
+}
+
+MidiFileEvent_t MidiFile_getFirstSelection(MidiFile_t midi_file)
 {
 	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		if (MidiFileEvent_isSelectionEvent(event)) return 1;
+		if (MidiFileEvent_isSelected(event)) return event;
 	}
 
-	return 0;
+	return NULL;
 }
 
-int MidiFile_clearSelection(MidiFile_t midi_file)
+int MidiFile_clearSelections(MidiFile_t midi_file)
 {
-	MidiFileEvent_t next_event;
-
 	if (midi_file == NULL) return -1;
 
-	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
-		next_event = MidiFileEvent_getNextEventInFile(event);
-		if (MidiFileEvent_isSelectionEvent(event)) MidiFileEvent_delete(event);
+		if (MidiFileEvent_isSelected(event)) MidiFileEvent_setSelected(event, 0);
 	}
 
 	return 0;
 }
 
-int MidiFileEvent_isSelectionEvent(MidiFileEvent_t event)
+MidiFileEvent_t MidiFileTrack_getFirstSelection(MidiFileTrack_t track)
 {
-	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_SELECTION_LABEL) == 0));
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isSelected(event)) return event;
+	}
+
+	return NULL;
+}
+
+int MidiFileTrack_clearSelections(MidiFileTrack_t track)
+{
+	if (track == NULL) return -1;
+
+	for (MidiFileEvent_t event = MidiFileTrack_getFirstEvent(track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isSelected(event)) MidiFileEvent_setSelected(event, 0);
+	}
+
+	return 0;
+}
+
+MidiFileEvent_t MidiFileEvent_getNextSelectionInTrack(MidiFileEvent_t event)
+{
+	for (event = MidiFileEvent_getNextEventInTrack(event); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	{
+		if (MidiFileEvent_isSelected(event)) return event;
+	}
+
+	return NULL;
+}
+
+MidiFileEvent_t MidiFileEvent_getNextSelectionInFile(MidiFileEvent_t event)
+{
+	for (event = MidiFileEvent_getNextEventInFile(event); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_isSelected(event)) return event;
+	}
+
+	return NULL;
 }
 
 int MidiFileEvent_isSelected(MidiFileEvent_t event)
 {
-	return MidiFileEvent_isSelectionEvent(MidiFileEvent_getPreviousEventInTrack(event));
+	for (MidiFileEvent_t preceding_event = MidiFileEvent_getPreviousEventInTrack(event); (preceding_event != NULL) && (MidiFileEvent_getTick(preceding_event) == MidiFileEvent_getTick(event)); preceding_event = MidiFileEvent_getPreviousEventInTrack(preceding_event))
+	{
+		if (MidiFileEvent_isSelectionAnnotationEvent(preceding_event))
+		{
+			return 1;
+		}
+		else if (!MidiFileEvent_isCaretAnnotationEvent(preceding_event))
+		{
+			break;
+		}
+	}
+
+	return 0;
 }
 
 int MidiFileEvent_setSelected(MidiFileEvent_t event, int selected)
 {
 	if (event == NULL) return -1;
 
-	if (MidiFileEvent_isSelected(event))
+	if (selected)
 	{
-		if (!selected)
+		if (!MidiFileEvent_isSelected(event))
 		{
-			MidiFileEvent_delete(MidiFileEvent_getPreviousEventInTrack(event));
+			MidiFileEvent_setNextEvent(MidiFileTrack_createSelectionAnnotationEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event)), event);
 		}
 	}
 	else
 	{
-		if (selected)
+		for (MidiFileEvent_t preceding_event = MidiFileEvent_getPreviousEventInTrack(event); (preceding_event != NULL) && (MidiFileEvent_getTick(preceding_event) == MidiFileEvent_getTick(event)); preceding_event = MidiFileEvent_getPreviousEventInTrack(preceding_event))
 		{
-			MidiFileEvent_setNextEvent(MidiFileTrack_createTextEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event), MIDI_FILE_SELECTION_LABEL), event);
+			if (MidiFileEvent_isSelectionAnnotationEvent(preceding_event))
+			{
+				MidiFileEvent_delete(preceding_event);
+				break;
+			}
+			else if (!MidiFileEvent_isCaretAnnotationEvent(preceding_event))
+			{
+				break;
+			}
 		}
 	}
 
 	return 0;
 }
 
-MidiFileEvent_t MidiFileTrack_createEmptyTargetEvent(MidiFileTrack_t track, long tick)
+MidiFileEvent_t MidiFileTrack_createEmptyAnnotationTargetEvent(MidiFileTrack_t track, long tick)
 {
-	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_EMPTY_TARGET_LABEL)
+	return MidiFileTrack_createTextEvent(track, tick, MIDI_FILE_EMPTY_ANNOTATION_TARGET_LABEL);
 }
 
-int MidiFileEvent_isEmptyTargetEvent(MidiFileEvent_t event)
+int MidiFileEvent_isEmptyAnnotationTargetEvent(MidiFileEvent_t event)
 {
-	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_EMPTY_TARGET_LABEL) == 0));
+	return (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), MIDI_FILE_EMPTY_ANNOTATION_TARGET_LABEL) == 0));
+}
+
+int MidiFile_deleteOrphanEmptyAnnotationTargetEvents(MidiFile_t midi_file)
+{
+	MidiFileEvent_t next_event;
+
+	if (midi_file == NULL) return -1;
+
+	for (MidiFileEvent_t event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
+	{
+		next_event = MidiFileEvent_getNextEventInFile(event);
+		if (MidiFileEmptyAnnotationTargetEvent_isOrphan(event)) MidiFileEvent_delete(event);
+	}
+
+	return 0;
+}
+
+int MidiFileEmptyAnnotationTargetEvent_isOrphan(MidiFileEvent_t event)
+{
+	return !((event == NULL) || MidiFileEvent_isCaret(event) || MidiFileEvent_isSelected(event));
+}
+
+int MidiFileEvent_deleteWithAnnotations(MidiFileEvent_t event)
+{
+	if (event == NULL) return -1;
+	MidiFileEvent_setCaret(event, 0);
+	MidiFileEvent_setSelected(event, 0);
+	MidiFileEvent_delete(event);
+	return 0;
+}
+
+int MidiFileEvent_setTrackWithAnnotations(MidiFileEvent_t event, MidiFileTrack_t track)
+{
+	int caret;
+	int selected;
+
+	if ((event == NULL) || (track == NULL)) return -1;
+	caret = MidiFileEvent_isCaret(event);
+	selected = MidiFileEvent_isSelected(event);
+	if (caret) MidiFileEvent_setCaret(event, 0);
+	if (selected) MidiFileEvent_setSelected(event, 0);
+	MidiFileEvent_setTrack(event, track);
+	if (caret) MidiFileEvent_setCaret(event, 1);
+	if (selected) MidiFileEvent_setSelected(event, 1);
+	return 0;
+}
+
+int MidiFileEvent_setTickWithAnnotations(MidiFileEvent_t event, long tick)
+{
+	int caret;
+	int selected;
+
+	if ((event == NULL) || (tick < 0)) return -1;
+	caret = MidiFileEvent_isCaret(event);
+	selected = MidiFileEvent_isSelected(event);
+	if (caret) MidiFileEvent_setCaret(event, 0);
+	if (selected) MidiFileEvent_setSelected(event, 0);
+	MidiFileEvent_setTick(event, tick);
+	if (caret) MidiFileEvent_setCaret(event, 1);
+	if (selected) MidiFileEvent_setSelected(event, 1);
+	return 0;
 }
 

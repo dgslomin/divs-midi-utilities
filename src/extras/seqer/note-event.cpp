@@ -1,6 +1,7 @@
 
 #include <wx/wx.h>
 #include <midifile.h>
+#include <midifile-extensions.h>
 #include "note-event.h"
 #include "sequence-editor.h"
 
@@ -34,8 +35,8 @@ void NoteEventType::DeleteRow(SequenceEditor* sequence_editor, Row* row)
 	Sequence* sequence = sequence_editor->sequence;
 	sequence->undo_command_processor->Submit(new UndoSnapshot(sequence));
 	MidiFileEvent_t event = row->event;
-	MidiFileEvent_delete(MidiFileNoteStartEvent_getNoteEndEvent(event));
-	MidiFileEvent_delete(event);
+	MidiFileEvent_deleteWithAnnotations(MidiFileNoteStartEvent_getNoteEndEvent(event));
+	MidiFileEvent_deleteWithAnnotations(event);
 }
 
 NoteEventTimeCell::NoteEventTimeCell()
@@ -58,8 +59,8 @@ void NoteEventTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row)
 	long new_tick = tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick));
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick + (new_tick - tick);
-	MidiFileEvent_setTick(event, new_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -72,8 +73,8 @@ void NoteEventTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
 	long new_tick = std::max<long>(tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(tick)), 0);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick - (tick - new_tick);
-	MidiFileEvent_setTick(event, new_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -89,8 +90,8 @@ void NoteEventTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
 	long new_tick = new_step_tick + (tick - step_tick);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick + (new_tick - tick);
-	MidiFileEvent_setTick(event, new_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -106,8 +107,8 @@ void NoteEventTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
 	long new_tick = new_step_tick + (tick - step_tick);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick - (tick - new_tick);
-	MidiFileEvent_setTick(event, new_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -120,8 +121,8 @@ void NoteEventTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	long new_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(tick));
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick - (tick - new_tick);
-	MidiFileEvent_setTick(event, new_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(event, new_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 NoteEventTrackCell::NoteEventTrackCell()
@@ -143,8 +144,8 @@ void NoteEventTrackCell::SmallIncrease(SequenceEditor* sequence_editor, Row* row
 	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
 	sequence_editor->insertion_track_number = MidiFileTrack_getNumber(track) + 1;
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
-	MidiFileEvent_setTrack(end_event, new_track);
-	MidiFileEvent_setTrack(event, new_track);
+	MidiFileEvent_setTrackWithAnnotations(end_event, new_track);
+	MidiFileEvent_setTrackWithAnnotations(event, new_track);
 }
 
 void NoteEventTrackCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -156,8 +157,8 @@ void NoteEventTrackCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row
 	MidiFileTrack_t track = MidiFileEvent_getTrack(event);
 	sequence_editor->insertion_track_number = std::max<int>(MidiFileTrack_getNumber(track) - 1, 0);
 	MidiFileTrack_t new_track = MidiFile_getTrackByNumber(sequence_editor->sequence->midi_file, sequence_editor->insertion_track_number, 1);
-	MidiFileEvent_setTrack(end_event, new_track);
-	MidiFileEvent_setTrack(event, new_track);
+	MidiFileEvent_setTrackWithAnnotations(end_event, new_track);
+	MidiFileEvent_setTrackWithAnnotations(event, new_track);
 }
 
 NoteEventChannelCell::NoteEventChannelCell()
@@ -309,7 +310,7 @@ void NoteEventEndTimeCell::SmallIncrease(SequenceEditor* sequence_editor, Row* r
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = end_tick + sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick));
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventEndTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -321,7 +322,7 @@ void NoteEventEndTimeCell::SmallDecrease(SequenceEditor* sequence_editor, Row* r
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = std::max<long>(end_tick - sequence_editor->GetNumberOfTicksPerPixel(sequence_editor->GetStepNumberFromTick(end_tick)), tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventEndTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* row)
@@ -336,7 +337,7 @@ void NoteEventEndTimeCell::LargeIncrease(SequenceEditor* sequence_editor, Row* r
 	long end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number);
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number + 1);
 	long new_end_tick = new_end_step_tick + (end_tick - end_step_tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventEndTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* row)
@@ -351,7 +352,7 @@ void NoteEventEndTimeCell::LargeDecrease(SequenceEditor* sequence_editor, Row* r
 	long end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number);
 	long new_end_step_tick = sequence_editor->step_size->GetTickFromStep(end_step_number - 1);
 	long new_end_tick = std::max<long>(new_end_step_tick + (end_tick - end_step_tick), tick);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 void NoteEventEndTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
@@ -363,7 +364,7 @@ void NoteEventEndTimeCell::Quantize(SequenceEditor* sequence_editor, Row* row)
 	long tick = MidiFileEvent_getTick(event);
 	long end_tick = MidiFileEvent_getTick(end_event);
 	long new_end_tick = sequence_editor->step_size->GetTickFromStep(sequence_editor->GetStepNumberFromTick(end_tick) + 1);
-	MidiFileEvent_setTick(end_event, new_end_tick);
+	MidiFileEvent_setTickWithAnnotations(end_event, new_end_tick);
 }
 
 NoteEventEndVelocityCell::NoteEventEndVelocityCell()
