@@ -236,7 +236,7 @@ int MidiFile_deleteOrphanEmptyAnnotationTargetEvents(MidiFile_t midi_file)
 
 int MidiFileEmptyAnnotationTargetEvent_isOrphan(MidiFileEvent_t event)
 {
-	return !((event == NULL) || MidiFileEvent_isCaret(event) || MidiFileEvent_isSelected(event));
+	return (MidiFileEvent_isEmptyAnnotationTargetEvent(event) && !MidiFileEvent_isCaret(event) && !MidiFileEvent_isSelected(event));
 }
 
 int MidiFileEvent_deleteWithAnnotations(MidiFileEvent_t event)
