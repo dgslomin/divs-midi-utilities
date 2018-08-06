@@ -126,8 +126,10 @@ void MarkerEventNameCell::EnterValue(SequenceEditor* sequence_editor, Row* row)
 void SequenceEditor::InsertMarker()
 {
 	this->sequence->undo_command_processor->Submit(new UndoSnapshot(this->sequence));
+    Row* row = this->GetRow(this->current_row_number);
+    this->PrepareRowForInsert(row);
 	MidiFileTrack_t track = MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1);
-	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(this->GetRow(this->current_row_number)->step_number), (char *)(""));
+	MidiFileEvent_t event = MidiFileTrack_createMarkerEvent(track, this->step_size->GetTickFromStep(row->step_number), (char *)(""));
 	this->sequence->RefreshData();
 	this->SetCurrentRowNumber(this->GetRowNumberForEvent(event));
 }

@@ -726,10 +726,14 @@ bool SequenceEditor::Filter(EventType* event_type, MidiFileEvent_t event)
 void SequenceEditor::SetCurrentRowNumber(long current_row_number)
 {
 	if (current_row_number < 0) return;
+
+	Row* old_row = this->GetRow(this->current_row_number);
+	if (old_row->event != NULL) MidiFileEvent_setCaret(old_row->event, 0);
+
+	this->current_row_number = current_row_number;
 	Row* row = this->GetRow(current_row_number);
 	if (row->event == NULL) row->event = MidiFileTrack_createEmptyAnnotationTargetEvent(MidiFile_getTrackByNumber(this->sequence->midi_file, 0, 1), this->GetTickFromRow(row));
 	MidiFileEvent_setCaret(row->event, 1);
-	this->current_row_number = current_row_number;
 	this->UpdateScrollbar();
 	this->RefreshDisplay();
 }
@@ -747,6 +751,11 @@ void SequenceEditor::SelectRow(Row* row, bool selected)
 	}
 
 	MidiFileEvent_setSelected(row->event, selected);
+}
+
+void SequenceEditor::PrepareRowForInsert(Row* row)
+{
+	if (MidiFileEvent_isEmptyAnnotationTargetEvent(row->event)) MidiFileEvent_deleteWithAnnotations(row->event);
 }
 
 EventList::EventList(SequenceEditor* sequence_editor)
