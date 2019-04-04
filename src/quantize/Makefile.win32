@@ -1,0 +1,17 @@
+
+..\..\bin\quantize.exe: quantize.obj midifile.obj
+	cl /nologo /Fe..\..\bin\quantize.exe quantize.obj midifile.obj
+
+quantize.obj: quantize.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c quantize.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist quantize.obj del quantize.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\quantize.exe del ..\..\bin\quantize.exe
+
