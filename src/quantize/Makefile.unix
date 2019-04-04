@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/quantize: quantize.o midifile.o
+	$(CC) -o../../bin/quantize quantize.o midifile.o
+
+quantize.o: quantize.c ../midifile/midifile.h
+	$(CC) -I../midifile -c quantize.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f quantize.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/quantize
+

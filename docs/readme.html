@@ -29,7 +29,7 @@ a { color: #FF6600 }
 
 <p>These utilities are free and open source, provided under terms of the <a href="http://www.opensource.org/licenses/bsd-license.php">BSD license</a>.  Specifically:</p>
 
-<p>&copy; Copyright 1998-2012 David G. Slomin, all rights reserved.</p>
+<p>&copy; Copyright 1998-2019 David G. Slomin, all rights reserved.</p>
 
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
 
@@ -42,6 +42,8 @@ a { color: #FF6600 }
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
 <h2>News</h2>
+
+<p>2019-04-04 - Several additions since the last formal release, though primarily work on my long-term sequencer project <em>Seqer</em> in the "extras" directory.  Added <em>alsamidicable</em>, <em>quantize</em>, <em>smooth-tempo</em>, more functionality in the <em>midifile</em> library, more <em>qwertymidi</em> maps, plus the usual bug fixes and tweaks.</p>
 
 <p>2012-10-06 - Added <em>onmessage</em>.  Added miscellaneous bug fixes and tweaks.  Merged many of my other experimental MIDI software projects of various vintages into the "extras" directory (no prebuilt binaries provided), including several incomplete attempts at writing sequencers using different widget kits.</p>
 
@@ -78,6 +80,18 @@ a { color: #FF6600 }
 <p>Usage: alsamidi2pipe [ --fifo &lt;fifo&gt;  ] [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
 
 <p>Usage: pipe2alsamidi [ --fifo &lt;fifo&gt;  ] [ --name &lt;client name&gt; ] [ --connect &lt;client name or number to which to connect&gt; &lt;port number&gt; ]</p>
+
+<h3>alsamidicable (Unix)</h3>
+
+<p>An alternative to <em>aconnect</em> that will wait for ports with the specified names to be created before connecting to them.  This allows it to be used in startup scripts which would otherwise have timing issues.</p>
+
+<p>Usage: alsamidicable --list-ports</p>
+
+<p>Usage: alsamidicable --list-connections</p>
+
+<p>Usage: alsamidicable --connect --from &lt;client&gt; &lt;port&gt; --to &lt;client&gt; &lt;port&gt;</p>
+
+<p>Usage: alsamidicable --disconnect --from &lt;client&gt; &lt;port&gt; --to &lt;client&gt; &lt;port&gt;</p>
 
 <h3>average-tempo (Windows, Unix), scale-tempo (Windows, Unix), offset-tempo (Windows, Unix), average-velocity (Windows, Unix), scale-velocity (Windows, Unix), and offset-velocity (Windows, Unix)</h3>
 
@@ -255,6 +269,12 @@ a { color: #FF6600 }
 
 <p>Usage: pulsar [ --in &lt;n&gt; ] [ --out &lt;n&gt; ] [ --pulse &lt;time before pulse&gt; &lt;length of pulse&gt; &lt;time after pulse&gt; ] ...</p>
 
+<h3>quantize (Windows, Unix)</h3>
+
+<p>A naive quantizer, by user request; I prefer metercasting, myself.  Rounds event timing to the nearest (specified division of a) quarter note.  Preserves note durations rather than lining up note off events with the grid; this avoids having a very clipped sound, but can potentially move the note off to the wrong side of a sustain pedal change.</p>
+
+<p>Usage: quantize --beat-division &lt;division&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+
 <h3>qwertymidi (Windows), delta (Windows), and imp (Windows)</h3>
 
 <p><em>Qwertymidi</em> is a command line/text mode interactive utility lets you use your computer keyboard as if it were a synthesizer keyboard.  It supports custom mapping of the keyboard layout by means of a config file.  A <a href="http://msdn.microsoft.com/en-us/library/aa299374%28v=VS.60%29.aspx">list of keyboard scan codes</a> will be useful for configuring the mapping.  Sample maps are included for the common piano-like tracker keyboard layout, the experimental von Janko piano keyboard layout from the 1850's, the Hayden concertina button layout, and a General MIDI drum kit.</p>
@@ -289,6 +309,12 @@ a { color: #FF6600 }
 
 <p>Usage: xmltosmf &lt;filename&gt;.xml &lt;filename&gt;.mid</p>
 
+<h3>smooth-tempo (Windows, Unix)</h3>
+
+<p>When metercasting, you often end up with a MIDI file that has lots of jittery little tempo changes.  This smooths them out using a three sample average.</p>
+
+<p>Usage: smooth-tempo [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+
 <h3>transpose (Unix)</h3>
 
 <p>This filter-style utility transposes incoming MIDI messages by a specified interval.</p>
@@ -319,12 +345,12 @@ a { color: #FF6600 }
 
 <h2>Related Links</h2>
 
-<p>You can find the latest version of these utilities on my <a href="http://www.sreal.com:8000/~div/midi-utilities/">website</a>.</p>
+<p>You can find the latest version of these utilities on my <a href="http://www.sreal.com/~div/midi-utilities/">website</a> or <a href="https://github.com/dgslomin/divs-midi-utilities/">Github</a>.</p>
 
 <p>On Windows, a MIDI loopback utility is necessary to get the most out of these programs.  It will provide extra Windows MIDI ports which allow you to wire multiple MIDI programs together instead of speaking directly to your sound card or synthesizer.  While several such programs exist, both free and commercial, I am currently using Tobias Erichsen's free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2012-10-06</p>
+last modified 2019-04-04</p>
 
 </body>
 </html>
