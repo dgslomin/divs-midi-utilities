@@ -112,6 +112,7 @@ public:
 	void SetCurrentRowNumber(long current_row_number);
 	bool RowIsSelected(Row* row);
 	void SelectRow(Row* row, bool selected);
+	void PrepareRowForInsert(Row* row);
 };
 
 class EventList
