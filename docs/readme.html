@@ -43,7 +43,7 @@ a { color: #FF6600 }
 
 <h2>News</h2>
 
-<p>2019-04-04 - Several additions since the last formal release, though primarily work on my long-term sequencer project <em>Seqer</em> in the "extras" directory.  Added <em>alsamidicable</em>, <em>quantize</em>, <em>smooth-tempo</em>, more functionality in the <em>midifile</em> library, more <em>qwertymidi</em> maps, plus the usual bug fixes and tweaks.</p>
+<p>2019-04-04 - Several additions since the last formal release, though primarily work on my long-term sequencer project <em>Seqer</em> in the "extras" directory.  Added <em>alsamidicable</em>, <em>click-track</em>, <em>quantize</em>, <em>smooth-tempo</em>, more functionality in the <em>midifile</em> library, more <em>qwertymidi</em> maps, plus the usual bug fixes and tweaks.</p>
 
 <p>2012-10-06 - Added <em>onmessage</em>.  Added miscellaneous bug fixes and tweaks.  Merged many of my other experimental MIDI software projects of various vintages into the "extras" directory (no prebuilt binaries provided), including several incomplete attempts at writing sequencers using different widget kits.</p>
 
@@ -128,6 +128,12 @@ a { color: #FF6600 }
 <p>Note that by default, the ALSA version does not connect up to an existing MIDI output port; rather it creates a new MIDI input port which you can then connect up as you see fit.  <em>aconnect</em>, <em>aconnectgui</em>, and <em>qjackctl</em> are common utilities which can be used to do this.</p>
 
 <p>The confirmation option allows you to specify a command to execute whenever a file is saved, so that you know your music is safe.  I use it to play a short audio file, in keeping with brainstorm's "interfaceless" design, but you can get fairly elaborate if you want.  The filename will be substituted for each <code>%s</code> in the command.</p>
+
+<h3>click-track (Windows, Unix)</h3>
+
+<p>Adds a click track that corresponds to the sequence's notion of beats.  Note that running <em>tempo-map</em> directly on this program's output will have no effect, but it can be useful as a starting point if you manually edit the clicks before running tempo-map.</p>
+
+<p>Usage: click-track --click-to-beat-ratio &lt;clicks&gt; &lt;beats&gt; [ --channel &lt;default 0&gt; [ --note &lt;default 64&gt; ] [ --velocity &lt;default 64&gt; ] [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
 <h3>fakesustain (Windows)</h3>
 
