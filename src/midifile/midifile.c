@@ -1033,7 +1033,7 @@ MidiFile_t MidiFile_loadFromBuffer(unsigned char *buffer)
 
 	if (buffer == NULL) return NULL;
 
-	MidiFileIO_newFromBuffer(buffer);
+	io = MidiFileIO_newFromBuffer(buffer);
 	midi_file = load_midi_file(io);
 	MidiFileIO_free(io);
 	return midi_file;

@@ -10,6 +10,28 @@ static void usage(char *program_name)
 	exit(1);
 }
 
+static MidiFileEvent_t MidiFileEvent_getPreviousNoteStartEventInFile(MidiFileEvent_t event)
+{
+	do
+	{
+		event = MidiFileEvent_getPreviousEventInFile(event);
+	}
+	while ((event != NULL) && !MidiFileEvent_isNoteStartEvent(event));
+
+	return event;
+}
+
+static MidiFileEvent_t MidiFileEvent_getNextNoteStartEventInFile(MidiFileEvent_t event)
+{
+	do
+	{
+		event = MidiFileEvent_getNextEventInFile(event);
+	}
+	while ((event != NULL) && !MidiFileEvent_isNoteStartEvent(event));
+
+	return event;
+}
+
 int main(int argc, char **argv)
 {
 	int i;
@@ -61,11 +83,11 @@ int main(int argc, char **argv)
 		long click_tick = MidiFileEvent_getTick(click_event);
 		float click_time = MidiFile_getTimeFromTick(midi_file, click_tick);
 
-		MidiFileEvent_t previous_event = MidiFileEvent_getPreviousEventInFile(click_event);
+		MidiFileEvent_t previous_event = MidiFileEvent_getPreviousNoteStartEventInFile(click_event);
 		long previous_tick = MidiFileEvent_getTick(previous_event);
 		float previous_time = MidiFile_getTimeFromTick(midi_file, previous_tick);
 
-		MidiFileEvent_t next_event = MidiFileEvent_getNextEventInFile(click_event);
+		MidiFileEvent_t next_event = MidiFileEvent_getNextNoteStartEventInFile(click_event);
 		long next_tick = MidiFileEvent_getTick(next_event);
 		float next_time = MidiFile_getTimeFromTick(midi_file, next_tick);
 
