@@ -43,6 +43,8 @@ a { color: #FF6600 }
 
 <h2>News</h2>
 
+<p>2019-08-07 - Added <em>align-clicks</em>.</p>
+
 <p>2019-04-04 - Several additions since the last formal release, though primarily work on my long-term sequencer project <em>Seqer</em> in the "extras" directory.  Added <em>alsamidicable</em>, <em>click-track</em>, <em>quantize</em>, <em>smooth-tempo</em>, more functionality in the <em>midifile</em> library, more <em>qwertymidi</em> maps, plus the usual bug fixes and tweaks.</p>
 
 <p>2012-10-06 - Added <em>onmessage</em>.  Added miscellaneous bug fixes and tweaks.  Merged many of my other experimental MIDI software projects of various vintages into the "extras" directory (no prebuilt binaries provided), including several incomplete attempts at writing sequencers using different widget kits.</p>
@@ -72,6 +74,12 @@ a { color: #FF6600 }
 <p>2003-01-20 - Fixed a critical bug in <em>brainstorm</em>.  Also made significant improvements to the build system and packaging.</p>
 
 <h2>The Utilities</h2>
+
+<h3>align-clicks (Windows, Unix)</h3>
+
+<p>Between the time when you record a click track and when you use it as input to <em>tempo-map</em>, you usually have to go through and manually align the click events with nearby notes that you played on the real tracks.  This is a heuristic attempt to do that alignment automatically.</p>
+
+<p>Usage: align-clicks --click-track &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
 <h3>alsamidi2pipe (Unix) and pipe2alsamidi (Unix)</h3>
 
@@ -131,7 +139,7 @@ a { color: #FF6600 }
 
 <h3>click-track (Windows, Unix)</h3>
 
-<p>Adds a click track that corresponds to the sequence's notion of beats.  Note that running <em>tempo-map</em> directly on this program's output will have no effect, but it can be useful as a starting point if you manually edit the clicks before running tempo-map.</p>
+<p>Adds a click track that corresponds to the sequence's notion of beats.  Note that running <em>tempo-map</em> directly on this program's output will have no effect, but it can be useful as a starting point if you manually edit the clicks before running <em>tempo-map</em>.</p>
 
 <p>Usage: click-track --click-to-beat-ratio &lt;clicks&gt; &lt;beats&gt; [ --channel &lt;default 0&gt; [ --note &lt;default 64&gt; ] [ --velocity &lt;default 64&gt; ] [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
 
@@ -356,7 +364,7 @@ a { color: #FF6600 }
 <p>On Windows, a MIDI loopback utility is necessary to get the most out of these programs.  It will provide extra Windows MIDI ports which allow you to wire multiple MIDI programs together instead of speaking directly to your sound card or synthesizer.  While several such programs exist, both free and commercial, I am currently using Tobias Erichsen's free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2019-04-04</p>
+last modified 2019-08-07</p>
 
 </body>
 </html>

@@ -1,0 +1,17 @@
+
+..\..\bin\align-clicks.exe: align-clicks.obj midifile.obj
+	cl /nologo /Fe..\..\bin\align-clicks.exe align-clicks.obj midifile.obj
+
+align-clicks.obj: align-clicks.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c align-clicks.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist align-clicks.obj del align-clicks.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\align-clicks.exe del ..\..\bin\align-clicks.exe
+

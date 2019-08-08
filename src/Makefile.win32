@@ -2,6 +2,7 @@
 HAVE_DIRECTSOUND=0
 
 all:
+	cd align-clicks && nmake -f Makefile.win32 /nologo
 	cd average-tempo && nmake -f Makefile.win32 /nologo
 	cd average-velocity && nmake -f Makefile.win32 /nologo
 !IF $(HAVE_DIRECTSOUND)
@@ -42,6 +43,7 @@ all:
 	cd xmltosmf && nmake -f Makefile.win32 /nologo
 
 clean:
+	cd align-clicks && nmake -f Makefile.win32 /nologo clean
 	cd average-tempo && nmake -f Makefile.win32 /nologo clean
 	cd average-velocity && nmake -f Makefile.win32 /nologo clean
 !IF $(HAVE_DIRECTSOUND)
@@ -82,6 +84,7 @@ clean:
 	cd xmltosmf && nmake -f Makefile.win32 /nologo clean
 
 reallyclean:
+	cd align-clicks && nmake -f Makefile.win32 /nologo reallyclean
 	cd average-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd average-velocity && nmake -f Makefile.win32 /nologo reallyclean
 !IF $(HAVE_DIRECTSOUND)

@@ -7,6 +7,7 @@ HAVE_ALSA=false
 HAVE_EXPAT=false
 
 all:
+	cd align-clicks && make -f Makefile.unix
 	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix; fi
 	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix; fi
 	cd average-tempo && make -f Makefile.unix
@@ -37,6 +38,7 @@ all:
 	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix; fi
 
 clean:
+	cd align-clicks && make -f Makefile.unix clean
 	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix clean; fi
 	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix clean; fi
 	cd average-tempo && make -f Makefile.unix clean
@@ -67,6 +69,7 @@ clean:
 	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix clean; fi
 
 reallyclean:
+	cd align-clicks && make -f Makefile.unix reallyclean
 	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix reallyclean; fi
 	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix reallyclean; fi
 	cd average-tempo && make -f Makefile.unix reallyclean

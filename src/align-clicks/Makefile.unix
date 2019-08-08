@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/align-clicks: align-clicks.o midifile.o
+	$(CC) -o../../bin/align-clicks align-clicks.o midifile.o
+
+align-clicks.o: align-clicks.c ../midifile/midifile.h
+	$(CC) -I../midifile -c align-clicks.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f align-clicks.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/align-clicks
+
