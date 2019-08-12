@@ -1,0 +1,41 @@
+
+WXCONFIG=wx-config
+CC=`$(WXCONFIG) --cc`
+EXTRA_CFLAGS=-g
+CFLAGS=`$(WXCONFIG) --cflags` $(EXTRA_CFLAGS)
+CXX=`$(WXCONFIG) --cxx`
+EXTRA_CXXFLAGS=-std=c++11 -g
+CXXFLAGS=`$(WXCONFIG) --cxxflags` $(EXTRA_CXXFLAGS)
+LD=`$(WXCONFIG) --ld`
+LIBS=`$(WXCONFIG) --libs`
+
+ifeq ("$(shell uname -s)", "Darwin")
+
+all: Seqer.app/Contents/MacOS/Seqer Seqer.app/Contents/Resources/seqer.html
+
+Seqer.app/Contents/MacOS/Seqer: seqer
+	-mkdir -p Seqer.app/Contents/MacOS
+	cp seqer Seqer.app/Contents/MacOS/Seqer
+	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
+
+Seqer.app/Contents/Resources/seqer.html: seqer.html
+	-mkdir -p Seqer.app/Contents/Resources
+	cp seqer.html Seqer.app/Contents/Resources/
+
+endif
+
+seqer: seqer.o midifile.o
+	$(LD) seqer seqer.o midifile.o $(LIBS)
+
+seqer.o: seqer.cpp seqer.h ../../midifile/midifile.h seqer.xpm
+	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
+
+midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
+
+clean:
+	rm -f seqer.o midifile.o
+
+reallyclean: clean
+	rm -f seqer Seqer.app/Contents/MacOS/Seqer
+
