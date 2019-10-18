@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/convert-time: convert-time.o midifile.o
+	$(CC) -o../../bin/convert-time convert-time.o midifile.o
+
+convert-time.o: convert-time.c ../midifile/midifile.h
+	$(CC) -I../midifile -c convert-time.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f convert-time.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/convert-time
+

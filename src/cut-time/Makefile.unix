@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/cut-time: cut-time.o midifile.o
+	$(CC) -o../../bin/cut-time cut-time.o midifile.o
+
+cut-time.o: cut-time.c ../midifile/midifile.h
+	$(CC) -I../midifile -c cut-time.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f cut-time.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/cut-time
+

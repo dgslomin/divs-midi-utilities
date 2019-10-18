@@ -1,0 +1,17 @@
+
+..\..\bin\convert-time.exe: convert-time.obj midifile.obj
+	cl /nologo /Fe..\..\bin\convert-time.exe convert-time.obj midifile.obj
+
+convert-time.obj: convert-time.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c convert-time.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist convert-time.obj del convert-time.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\convert-time.exe del ..\..\bin\convert-time.exe
+

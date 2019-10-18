@@ -54,7 +54,19 @@ static void display_events(MidiFileEvent_t event, void *user_data)
 			int i, data_length = MidiFileSysexEvent_getDataLength(event);
 			unsigned char *data = MidiFileSysexEvent_getData(event);
 			printf("\t\t<SysexEvent Tick=\"%ld\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileSysexEvent_getDataLength(event));
-			for (i = 0; i < data_length; i++) printf("%s%02X", ((i == 0) ? "" : " "), data[i]);
+
+			for (i = 0; i < data_length; i++)
+			{
+				if (((data[i] >= 'a') && (data[i] <= 'z')) || ((data[i] >= 'A') && (data[i] <= 'Z')) || ((data[i] >= '0') && (data[i] <= '9')) || (data[i] == '-') || (data[i] == '_') || (data[i] == '.') || (data[i] == '~'))
+				{
+					putchar(data[i]);
+				}
+				else
+				{
+					printf("%%%02X", data[i]);
+				}
+			}
+
 			printf("\"/>\n");
 			break;
 		}
@@ -63,7 +75,19 @@ static void display_events(MidiFileEvent_t event, void *user_data)
 			int i, data_length = MidiFileMetaEvent_getDataLength(event);
 			unsigned char *data = MidiFileMetaEvent_getData(event);
 			printf("\t\t<MetaEvent Tick=\"%ld\" Number=\"%d\" DataLength=\"%d\" Data=\"", MidiFileEvent_getTick(event), MidiFileMetaEvent_getNumber(event), MidiFileMetaEvent_getDataLength(event));
-			for (i = 0; i < data_length; i++) printf("%s%02X", ((i == 0) ? "" : " "), data[i]);
+
+			for (i = 0; i < data_length; i++)
+			{
+				if (((data[i] >= 'a') && (data[i] <= 'z')) || ((data[i] >= 'A') && (data[i] <= 'Z')) || ((data[i] >= '0') && (data[i] <= '9')) || (data[i] == '-') || (data[i] == '_') || (data[i] == '.') || (data[i] == '~'))
+				{
+					putchar(data[i]);
+				}
+				else
+				{
+					printf("%%%02X", data[i]);
+				}
+			}
+
 			printf("\"/>\n");
 			break;
 		}

@@ -14,6 +14,45 @@ static void usage(char *program_name)
 	exit(1);
 }
 
+static int hex_digit_char_to_int(char hex_digit)
+{
+	if (hex_digit >= '0' && hex_digit <= '9') return hex_digit - '0';
+	if (hex_digit >= 'a' && hex_digit <= 'f') return 10 + (hex_digit - 'a');
+	if (hex_digit >= 'A' && hex_digit <= 'F') return 10 + (hex_digit - 'A');
+	return -1;
+}
+
+static int url_unescape_length(char *escaped_string)
+{
+	int data_length = 0;
+
+	for ( ; escaped_string[0] != '\0'; escaped_string++)
+	{
+		if ((escaped_string[0] == '%') && (hex_digit_char_to_int(escaped_string[1]) >= 0) && (hex_digit_char_to_int(escaped_string[2]) >= 0)) escaped_string += 2;
+		data_length++;
+	}
+
+	return data_length;
+}
+
+static void url_unescape(char *escaped_string, unsigned char *data_buffer)
+{
+	for ( ; escaped_string[0] != '\0'; escaped_string++)
+	{
+		int digit_1, digit_2;
+
+		if ((escaped_string[0] == '%') && ((digit_1 = hex_digit_char_to_int(escaped_string[1])) >= 0) && ((digit_2 = hex_digit_char_to_int(escaped_string[2])) >= 0))
+		{
+			*(data_buffer++) = ((unsigned char)(digit_1) << 4) | (unsigned char)(digit_2);
+			escaped_string += 2;
+		}
+		else
+		{
+			*(data_buffer++) = (unsigned char)(escaped_string[0]);
+		}
+	}
+}
+
 static void xml_start_element_handler(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
 	if (strcmp(name, "MidiFile") == 0)
@@ -253,19 +292,12 @@ static void xml_start_element_handler(void *user_data, const XML_Char *name, con
 			}
 			else if (strcmp(attributes[i], "Data") == 0)
 			{
-				data_length = (strlen(attributes[i + 1]) + 1) / 3;
+				data_length = url_unescape_length(attributes[i + 1]);
 
 				if (data_length > 0)
 				{
-					int j;
 					data_buffer = (unsigned char *)(malloc(data_length));
-
-					for (j = 0; j < data_length; j++)
-					{
-						unsigned int data_byte;
-						sscanf(attributes[i + 1] + (j * 3), "%x", &data_byte);
-						data_buffer[j] = (unsigned char)(data_byte);
-					}
+					url_unescape(attributes[i + 1], data_buffer);
 				}
 			}
 		}
@@ -289,19 +321,12 @@ static void xml_start_element_handler(void *user_data, const XML_Char *name, con
 			}
 			else if (strcmp(attributes[i], "Data") == 0)
 			{
-				data_length = (strlen(attributes[i + 1]) + 1) / 3;
+				data_length = url_unescape_length(attributes[i + 1]);
 
 				if (data_length > 0)
 				{
-					int j;
 					data_buffer = (unsigned char *)(malloc(data_length));
-
-					for (j = 0; j < data_length; j++)
-					{
-						unsigned int data_byte;
-						sscanf(attributes[i + 1] + (j * 3), "%x", &data_byte);
-						data_buffer[j] = (unsigned char)(data_byte);
-					}
+					url_unescape(attributes[i + 1], data_buffer);
 				}
 			}
 		}
