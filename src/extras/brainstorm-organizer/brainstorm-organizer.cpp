@@ -40,7 +40,7 @@ private:
 	wxTextCtrl* nameTextBox;
 	std::string dir;
 	wxString oldName;
-    MidiOutput* midiOutput;
+	MidiOutput* midiOutput;
 	MidiFilePlayer_t midiFilePlayer;
 	MidiFile_t midiFile;
 	int midiFileLength;
@@ -131,7 +131,7 @@ bool Application::OnInit()
 
 	this->Bind(wxEVT_COMMAND_UPDATE_TIME_LABEL, &Application::OnUpdateTimeLabel, this);
 
-    this->midiOutput = new MidiOutput();
+	this->midiOutput = new MidiOutput();
 	this->midiFilePlayer = MidiFilePlayer_new(&Application::OnMidiFileEvent, this);
 	this->midiFile = NULL;
 
@@ -149,7 +149,7 @@ void Application::OnSelect(wxCommandEvent& WXUNUSED(event))
 
 void Application::OnMidiConfig(wxCommandEvent& WXUNUSED(event))
 {
-    this->midiOutput->DisplayConfigDialog();
+	this->midiOutput->DisplayConfigDialog();
 }
 
 void Application::OnOpenDirectory(wxCommandEvent& WXUNUSED(event))
@@ -224,8 +224,8 @@ void Application::OnStop(wxCommandEvent& WXUNUSED(event))
 {
 	MidiFilePlayer_pause(this->midiFilePlayer);
 	MidiFilePlayer_setTick(this->midiFilePlayer, 0);
-    this->midiFileCurrentTime = 0;
-    this->UpdateTimeLabel();
+	this->midiFileCurrentTime = 0;
+	this->UpdateTimeLabel();
 }
 
 void Application::OnBack(wxCommandEvent& WXUNUSED(event))
@@ -282,7 +282,7 @@ void Application::OnUpdateTimeLabel(wxThreadEvent& WXUNUSED(event))
 void Application::OnMidiFileEvent(MidiFileEvent_t event, void* userData)
 {
 	Application* application = static_cast<Application*>(userData);
-    application->midiOutput->SendMessage(event);
+	application->midiOutput->SendMessage(event);
 	int eventTime = (int)(MidiFile_getTimeFromTick(application->midiFile, MidiFileEvent_getTick(event)));
 
 	if (eventTime != application->midiFileCurrentTime)

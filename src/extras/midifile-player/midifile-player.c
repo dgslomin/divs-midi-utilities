@@ -19,6 +19,31 @@ struct MidiFilePlayer
 	MidiFilePlayerWaitLock_t wait_lock;
 };
 
+static void stop_held_notes(MidiFilePlayer_t player)
+{
+	MidiFile_t midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
+	long tick = MidiFilePlayer_getTick(player);
+	MidiFileTrack_t track = MidiFile_getTrackByNumber(midi_file, 1, 1);
+	MidiFileEvent_t note_event = MidiFileTrack_createNoteOffEvent(track, tick, 0, 0, 0);
+	MidiFileEvent_t sustain_event = MidiFileTrack_createControlChangeEvent(track, tick, 0, 64, 0);
+
+	for (int channel_number = 0; channel_number < 16; channel_number++)
+	{
+		MidiFileNoteOffEvent_setChannel(note_event, channel_number);
+		MidiFileControlChangeEvent_setChannel(sustain_event, channel_number);
+
+		for (int note_number = 0; note_number < 127; note_number++)
+		{
+			MidiFileNoteOffEvent_setNote(note_event, note_number);
+			(*(player->visitor_callback))(note_event, player->visitor_callback_user_data);
+		}
+
+		(*(player->visitor_callback))(sustain_event, player->visitor_callback_user_data);
+	}
+
+	MidiFile_free(midi_file);
+}
+
 static void *thread_main(void *arg)
 {
 	MidiFilePlayer_t player = (MidiFilePlayer_t)(arg);
@@ -40,9 +65,10 @@ static void *thread_main(void *arg)
 		}
 	}
 
-    player->relative_start_time = MidiFilePlayer_getCurrentTime() - player->absolute_start_time;
+	player->relative_start_time = MidiFilePlayer_getCurrentTime() - (player->absolute_start_time - player->relative_start_time);
 	player->is_running = 0;
 	player->should_shutdown = 0;
+	stop_held_notes(player);
 	return NULL;
 }
 
@@ -122,6 +148,7 @@ long MidiFilePlayer_getTick(MidiFilePlayer_t player)
 int MidiFilePlayer_setTick(MidiFilePlayer_t player, long tick)
 {
 	if ((player == NULL) || (player->midi_file == NULL)) return -1;
+	stop_held_notes(player);
 	player->relative_start_time = MidiFile_getTimeFromTick(player->midi_file, tick) * 1000;
 
 	for (player->event = MidiFile_getFirstEvent(player->midi_file); player->event != NULL; player->event = MidiFileEvent_getNextEventInFile(player->event))
