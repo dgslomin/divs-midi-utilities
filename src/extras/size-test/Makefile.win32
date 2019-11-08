@@ -1,0 +1,17 @@
+
+size-test.exe: size-test.obj midifile.obj
+	cl /nologo /Fesize-test.exe size-test.obj midifile.obj
+
+size-test.obj: size-test.c ..\..\midifile\midifile.h
+	cl /nologo /I..\..\midifile /c size-test.c
+
+midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
+	cl /nologo /I..\..\midifile /c ..\..\midifile\midifile.c
+
+clean:
+	@if exist size-test.obj del size-test.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist size-test.exe del size-test.exe
+
