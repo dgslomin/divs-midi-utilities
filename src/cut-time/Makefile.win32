@@ -1,0 +1,17 @@
+
+..\..\bin\cut-time.exe: cut-time.obj midifile.obj
+	cl /nologo /Fe..\..\bin\cut-time.exe cut-time.obj midifile.obj
+
+cut-time.obj: cut-time.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c cut-time.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist cut-time.obj del cut-time.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\cut-time.exe del ..\..\bin\cut-time.exe
+
