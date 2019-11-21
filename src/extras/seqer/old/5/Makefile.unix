@@ -27,11 +27,11 @@ endif
 seqer: seqer.o midifile.o
 	$(LD) seqer seqer.o midifile.o $(LIBS)
 
-seqer.o: seqer.cpp seqer.h ../../midifile/midifile.h seqer.xpm
-	$(CXX) $(CXXFLAGS) -I../../midifile -c seqer.cpp
+seqer.o: seqer.cpp seqer.h ../../../../midifile/midifile.h seqer.xpm
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c seqer.cpp
 
-midifile.o: ../../midifile/midifile.c ../../midifile/midifile.h
-	$(CC) $(CFLAGS) -I../../midifile -c ../../midifile/midifile.c
+midifile.o: ../../../../midifile/midifile.c ../../../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../../../midifile -c ../../../../midifile/midifile.c
 
 clean:
 	rm -f seqer.o midifile.o
