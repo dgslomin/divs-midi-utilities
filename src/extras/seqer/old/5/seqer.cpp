@@ -52,27 +52,20 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 			edit_menu->AppendSeparator();
 			edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 			edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
+			edit_menu->Append(SEQER_ID_SELECT_TIME_RANGE, "Select Ti&me Range");
+			edit_menu->AppendSeparator();
+			edit_menu->Append(SEQER_ID_CURSOR_NAVIGATION_MODE, "Cursor Navigation Mode");
+			edit_menu->Append(SEQER_ID_SCROLL_MODE, "Scroll Mode");
+			edit_menu->Append(SEQER_ID_ZOOM_MODE, "Zoom Mode");
+			edit_menu->Append(SEQER_ID_PANEL_NAVIGATION_MODE, "Panel Navigation Mode");
 		menu_bar->Append(edit_menu, "&Edit");
-		wxMenu* view_menu = new wxMenu();
-			view_menu->Append(SEQER_ID_VIEW_TRACK_LIST, "&Track List", "", wxITEM_RADIO);
-			view_menu->Append(SEQER_ID_VIEW_PIANO_ROLL, "&Piano Roll", "", wxITEM_RADIO);
-			view_menu->Append(SEQER_ID_VIEW_EVENT_LIST, "&Event List", "", wxITEM_RADIO);
-		menu_bar->Append(view_menu, "&View");
-		wxMenu* track_menu = new wxMenu();
-			track_menu->Append(SEQER_ID_NEW_TRACK, "&New Track");
-			track_menu->AppendSeparator();
-			track_menu->Append(SEQER_ID_TRACK_RENAME, "&Rename");
-			track_menu->Append(SEQER_ID_TRACK_INPUT_PORT, "&Input Port");
-			track_menu->Append(SEQER_ID_TRACK_OUTPUT_PORT, "&Output Port");
-			track_menu->AppendSeparator();
-			track_menu->Append(SEQER_ID_ARM_TRACK, "&Arm", "", wxITEM_CHECK);
-			track_menu->Append(SEQER_ID_MUTE_TRACK, "&Mute", "", wxITEM_CHECK);
-			track_menu->Append(SEQER_ID_SOLO_TRACK, "&Solo", "", wxITEM_CHECK);
-		menu_bar->Append(track_menu, "&Track");
 		wxMenu* transport_menu = new wxMenu();
 			transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
 			transport_menu->Append(SEQER_ID_STOP, "&Stop\tShift+Space");
 			transport_menu->Append(SEQER_ID_RECORD, "&Record\tCtrl+R");
+			transport_menu->AppendSeparator();
+			transport_menu->Append(SEQER_ID_SET_PLAYBACK_POSITION, "Set Playback Position");
+			transport_menu->Append(SEQER_ID_GO_TO_PLAYBACK_POSITION, "Go to Playback Position");
 			transport_menu->AppendSeparator();
 #ifdef __WXOSX__
 			transport_menu->Append(SEQER_ID_NEXT_MARKER, "&Next Marker\tAlt+Right");
@@ -103,12 +96,9 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 
 	// This prevents the default behavior of showing unhelpful help text in the status bar when the user navigates the menu.
 	this->Bind(wxEVT_MENU_HIGHLIGHT, [=](wxMenuEvent&) {});
-
-	this->sequence_editor = new SequenceEditor(this, (existing_window == NULL) ? NULL : existing_window->sequence_editor);
 }
 
 Window::~Window()
 {
-	delete this->sequence_editor;
 }
 
