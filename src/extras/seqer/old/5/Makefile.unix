@@ -24,17 +24,23 @@ Seqer.app/Contents/Resources/seqer.html: seqer.html
 
 endif
 
-seqer: seqer.o midifile.o
-	$(LD) seqer seqer.o midifile.o $(LIBS)
+seqer: application.o midifile.o sequence.o window.o
+	$(LD) seqer application.o midifile.o sequence.o window.o $(LIBS)
 
-seqer.o: seqer.cpp seqer.h ../../../../midifile/midifile.h seqer.xpm
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c seqer.cpp
+application.o: application.cpp application.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c application.cpp
 
 midifile.o: ../../../../midifile/midifile.c ../../../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../../../midifile -c ../../../../midifile/midifile.c
 
+sequence.o: sequence.cpp sequence.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c sequence.cpp
+
+window.o: window.cpp window.h ../../../../midifile/midifile.h seqer.xpm
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c window.cpp
+
 clean:
-	rm -f seqer.o midifile.o
+	rm -f application.o midifile.o sequence.o window.o
 
 reallyclean: clean
 	rm -f seqer Seqer.app/Contents/MacOS/Seqer

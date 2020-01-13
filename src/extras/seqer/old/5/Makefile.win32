@@ -5,23 +5,31 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: seqer.obj midifile.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe seqer.obj midifile.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: application.obj midifile.obj sequence.obj window.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe application.obj midifile.obj sequence.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
-seqer.obj: seqer.cpp seqer.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c seqer.cpp
+application.obj: application.cpp application.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c application.cpp
 
 midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) /I..\..\..\..\midifile /c ..\..\..\..\midifile\midifile.c
+
+sequence.obj: sequence.cpp sequence.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c sequence.cpp
+
+window.obj: window.cpp window.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c window.cpp
 
 seqer.res: seqer.rc seqer.ico
 	rc /nologo $(WXINCLUDES) /r /fo seqer.res seqer.rc
 
 clean:
-	@if exist seqer.obj del seqer.obj
+	@if exist application.obj del application.obj
 	@if exist midifile.obj del midifile.obj
+	@if exist sequence.obj del sequence.obj
+	@if exist window.obj del window.obj
 	@if exist seqer.res del seqer.res
 	@if exist seqer.ilk del seqer.ilk
 	@if exist seqer.pdb del seqer.pdb
