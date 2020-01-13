@@ -3,7 +3,7 @@
 
 /*
  * Div's Standard MIDI File API
- * Copyright 2003-2018 by David G. Slomin
+ * Copyright 2003-2020 by David G. Slomin
  * Provided under the terms of the BSD license
  *
  * Usage notes:
@@ -56,6 +56,13 @@
  *     a track or the file, but retains the rest of its properties.  It can
  *     be reattached to the same or a different file by setting its track
  *     property, or explicitly deleted.
+ *
+ * 13. Events can be marked as "selected", but while this is convenient to do
+ *     in memory, there is no standard for how it should be expressed in a file
+ *     on disk.  A mechanism for transforming selection flags into text events
+ *     is provided as an extension.  This will produce files that interoperate
+ *     perfectly with other MIDI software, but the other software is unlikely
+ *     to recognize the text events as signifying anything special.
  */
 
 #ifdef __cplusplus
@@ -122,6 +129,8 @@ MidiFileTrack_t MidiFile_getLastTrack(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getFirstEvent(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getLastEvent(MidiFile_t midi_file);
 int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
+int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label);
+int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label);
 
 float MidiFile_getBeatFromTick(MidiFile_t midi_file, long tick);
 long MidiFile_getTickFromBeat(MidiFile_t midi_file, float beat);
@@ -200,6 +209,8 @@ MidiFileEvent_t MidiFileEvent_getNextEventInFile(MidiFileEvent_t event);
 long MidiFileEvent_getTick(MidiFileEvent_t event);
 int MidiFileEvent_setTick(MidiFileEvent_t event, long tick);
 MidiFileEventType_t MidiFileEvent_getType(MidiFileEvent_t event);
+int MidiFileEvent_isSelected(MidiFileEvent_t event);
+int MidiFileEvent_setSelected(MidiFileEvent_t event, int is_selected);
 int MidiFileEvent_isNoteEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteStartEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event);

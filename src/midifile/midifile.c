@@ -119,6 +119,7 @@ struct MidiFileEvent
 	u;
 
 	int should_be_visited;
+	int is_selected;
 };
 
 struct MidiFileMeasureBeat
@@ -1321,6 +1322,44 @@ int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t vi
 		{
 			event->should_be_visited = 0;
 			(*visitor_callback)(event, user_data);
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label)
+{
+	MidiFileEvent_t event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_isSelected(event))
+		{
+			MidiFileEvent_setPreviousEvent(event, MidiFileTrack_createTextEvent(MidiFileEvent_getTrack(event), MidiFileEvent_getTick(event), label));
+			MidiFileEvent_setSelected(event, 0);
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label)
+{
+	MidiFileEvent_t event, next_event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
+	{
+		next_event = MidiFileEvent_getNextEventInFile(event);
+
+		if (MidiFileEvent_isTextEvent(event) && (strcmp(MidiFileTextEvent_getText(event), label) == 0))
+		{
+			MidiFileEvent_setSelected(next_event, 1);
+			MidiFileEvent_delete(event);
 		}
 	}
 
@@ -2646,6 +2685,19 @@ MidiFileEventType_t MidiFileEvent_getType(MidiFileEvent_t event)
 {
 	if (event == NULL) return MIDI_FILE_EVENT_TYPE_INVALID;
 	return event->type;
+}
+
+int MidiFileEvent_isSelected(MidiFileEvent_t event)
+{
+	if (event == NULL) return 0;
+	return event->is_selected;
+}
+
+int MidiFileEvent_setSelected(MidiFileEvent_t event, int is_selected)
+{
+	if (event == NULL) return -1;
+	event->is_selected = is_selected;
+	return 0;
 }
 
 int MidiFileEvent_isNoteEvent(MidiFileEvent_t event)
