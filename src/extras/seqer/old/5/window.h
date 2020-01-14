@@ -15,6 +15,7 @@ public:
 	bool use_linear_time;
 	int pixels_per_beat;
 	int pixels_per_second;
+	int scroll_x;
 
 	Window(Application* application, Window* existing_window = NULL);
 	~Window();

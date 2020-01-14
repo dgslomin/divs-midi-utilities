@@ -300,11 +300,11 @@ int Window::GetXFromTick(long tick)
 {
 	if (this->use_linear_time)
 	{
-		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second);
+		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second) - this->scroll_x;
 	}
 	else
 	{
-		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat);
+		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat) - this->scroll_x;
 	}
 }
 
@@ -312,11 +312,11 @@ long Window::GetTickFromX(int x)
 {
 	if (this->use_linear_time)
 	{
-		return MidiFile_getTickFromTime(this->sequence->midi_file, (float)(x) / this->pixels_per_second);
+		return MidiFile_getTickFromTime(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_second);
 	}
 	else
 	{
-		return MidiFile_getTickFromBeat(this->sequence->midi_file, (float)(x) / this->pixels_per_beat);
+		return MidiFile_getTickFromBeat(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_beat);
 	}
 }
 

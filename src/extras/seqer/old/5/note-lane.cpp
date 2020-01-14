@@ -18,7 +18,6 @@ void NoteLane::OnPaint(wxPaintEvent& event)
 	wxPaintDC dc(this);
 	int width;
 	int height;
-
 	this->GetSize(&width, &height);
 	this->PaintBackground(dc, width, height);
 	this->PaintNotes(dc, width, height);

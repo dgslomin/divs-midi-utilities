@@ -18,7 +18,6 @@ void ControlChangeLane::OnPaint(wxPaintEvent& event)
 	wxPaintDC dc(this);
 	int width;
 	int height;
-
 	this->GetSize(&width, &height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
