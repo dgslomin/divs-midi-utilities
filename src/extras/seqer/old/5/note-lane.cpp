@@ -1,9 +1,12 @@
 
 #include <wx/wx.h>
+#include "lane.h"
+#include "midifile.h"
+#include "note-lane.h"
+#include "window.h"
 
-NoteLane::NoteLane(Window* window): wxWindow(window, wxID_ANY)
+NoteLane::NoteLane(Window* window)
 {
-	this->Bind(wxEVT_PAINT, &OnPaint);
 }
 
 NoteLane::~NoteLane()
@@ -47,11 +50,11 @@ void NoteLane::PaintNotes(wxDC& dc)
 
 int NoteLane::GetYForNote(int note)
 {
-	return (note * this->note_height) - scroll_y;
+	return (note * this->note_height) - this->scroll_y;
 }
 
 int NoteLane::GetNoteForY(int y)
 {
-	return (y + scroll_y) / this->note_height;
+	return (y + this->scroll_y) / this->note_height;
 }
 

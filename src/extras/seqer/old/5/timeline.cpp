@@ -1,5 +1,7 @@
 
 #include <wx/wx.h>
+#include "timeline.h"
+#include "window.h"
 
 Timeline::Timeline(Window* window): wxWindow(window, wxID_ANY)
 {

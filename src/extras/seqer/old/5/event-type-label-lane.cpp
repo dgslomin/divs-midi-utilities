@@ -1,43 +1,48 @@
 
 #include <wx/wx.h>
+#include "label.h"
+#include "event-type-label-lane.h"
+#include "midifile.h"
 
-void OtherEventLane::GetLabels()
+void EventTypeLabelLane::PopulateLabels()
 {
+	this->labels.clear();
+
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEventInFile(this->window->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
-		char *label = NULL;
+		wxString label = NULL;
 
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
-			label = "Note";
+			label = wxString("Note");
 		}
 		else if ((MidiFileEvent_isNoteOffEvent(midi_event) && (MidiFileEvent_getNoteStartEvent(midi_event) == NULL))
 		{
-			label = "Off";
+			label = wxString("Off");
 		}
 		else if (MidiFileEvent_isTextEvent(midi_event))
 		{
-			label = "Text";
+			label = wxString("Text");
 		}
 		else if (MidiFileEvent_isLyricEvent(midi_event))
 		{
-			label = "Lyric";
+			label = wxString("Lyric");
 		}
 		else if (MidiFileEvent_isMarkerEvent(midi_event))
 		{
-			label = "Marker";
+			label = wxString("Marker");
 		}
 		else if (MidiFileEvent_isTempoEvent(midi_event))
 		{
-			label = "Tempo";
+			label = wxString("Tempo");
 		}
 		else if (MidiFileEvent_isTimeSignatureEvent(midi_event))
 		{
-			label = "Meter";
+			label = wxString("Meter");
 		}
 		else if (MidiFileEvent_isKeySignatureEvent(midi_event))
 		{
-			label = "Key";
+			label = wxString("Key");
 		}
 		else
 		{
@@ -45,41 +50,43 @@ void OtherEventLane::GetLabels()
 			{
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 				{
-					label = "Pressure";
+					label = wxString("Pressure");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 				{
-					label = "Control";
+					label = wxString("Control");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 				{
-					label = "Program";
+					label = wxString("Program");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 				{
-					label = "Pressure";
+					label = wxString("Pressure");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 				{
-					label = "Bend";
+					label = wxString("Bend");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_SYSEX:
 				{
-					label = "Sysex";
+					label = wxString("Sysex");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_META:
 				{
-					label = "Meta";
+					label = wxString("Meta");
 					break;
 				}
 			}
 		}
+
+		if (label != NULL) this->labels.push_back(Label(midi_event, label));
 	}
 }
 

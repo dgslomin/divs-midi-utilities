@@ -1,9 +1,11 @@
 
 #include <wx/wx.h>
+#include "control-change-lane.h"
+#include "midifile.h"
+#include "window.h"
 
-ControlChangeLane::ControlChangeLane(Window* window): wxWindow(window, wxID_ANY)
+ControlChangeLane::ControlChangeLane(Window* window)
 {
-	this->Bind(wxEVT_PAINT, &OnPaint);
 }
 
 ControlChangeLane::~ControlChangeLane()
@@ -27,13 +29,13 @@ void ControlChangeLane::OnPaint(wxPaintEvent& event)
 	}
 }
 
-int ControlChangeLane::GetYForValue(int note)
+int ControlChangeLane::GetYForValue(int value)
 {
-	return (note * this->value_height) - scroll_y;
+	return (value * this->value_height) - this->scroll_y;
 }
 
 int ControlChangeLane::GetValueForY(int y)
 {
-	return (y + scroll_y) / this->value_height;
+	return (y + this->scroll_y) / this->value_height;
 }
 

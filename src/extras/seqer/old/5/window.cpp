@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <midifile.h>
 #include "application.h"
+#include "sequence.h"
 #include "window.h"
 
 #ifndef __WXMSW__
@@ -29,7 +30,7 @@ Window::~Window()
 	this->sequence->RemoveWindow(this);
 }
 
-Window::CreateMenuBar()
+void Window::CreateMenuBar()
 {
 	wxMenuBar* menu_bar = new wxMenuBar();
 	CreateFileMenu(menu_bar);
@@ -43,7 +44,7 @@ Window::CreateMenuBar()
 	this->Bind(wxEVT_MENU_HIGHLIGHT, [=](wxMenuEvent&) {});
 }
 
-Window::CreateFileMenu(wxMenuBar* menu_bar)
+void Window::CreateFileMenu(wxMenuBar* menu_bar)
 {
 	wxMenu* file_menu = new wxMenu();
 
@@ -67,12 +68,12 @@ Window::CreateFileMenu(wxMenuBar* menu_bar)
 	file_menu->Append(wxID_CLOSE, "&Close\tCtrl+W");
 	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->Close(); }, wxID_CLOSE);
 
-	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& event) { this->Quit(event); }, wxID_EXIT);
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->Quit(); }, wxID_EXIT);
 
 	menu_bar->Append(file_menu, "&File");
 }
 
-Window::CreateEditMenu(wxMenuBar* menu_bar)
+void Window::CreateEditMenu(wxMenuBar* menu_bar)
 {
 	wxMenu* edit_menu = new wxMenu();
 	edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z");
@@ -94,7 +95,7 @@ Window::CreateEditMenu(wxMenuBar* menu_bar)
 	menu_bar->Append(edit_menu, "&Edit");
 }
 
-Window::CreateTransportMenu(wxMenuBar* menu_bar)
+void Window::CreateTransportMenu(wxMenuBar* menu_bar)
 {
 	wxMenu* transport_menu = new wxMenu();
 	transport_menu->Append(SEQER_ID_PLAY, "&Play\tSpace");
@@ -115,7 +116,7 @@ Window::CreateTransportMenu(wxMenuBar* menu_bar)
 	menu_bar->Append(transport_menu, "Trans&port");
 }
 
-Window::CreateToolsMenu(wxMenuBar* menu_bar)
+void Window::CreateToolsMenu(wxMenuBar* menu_bar)
 {
 	wxMenu* tools_menu = new wxMenu();
 	tools_menu->Append(SEQER_ID_EXTERNAL_UTILITY, "External &Utility...\tCtrl+Shift+U");
@@ -131,7 +132,7 @@ Window::CreateToolsMenu(wxMenuBar* menu_bar)
 	menu_bar->Append(tools_menu, "&Tools");
 }
 
-Window::CreateHelpMenu(wxMenubar* menu_bar)
+void Window::CreateHelpMenu(wxMenubar* menu_bar)
 {
 	wxMenu* help_menu = new wxMenu();
 	help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
@@ -269,7 +270,7 @@ bool Window::SaveAs()
 	return result;
 }
 
-bool Window::Quit(wxCommandEvent& event)
+void Window::Quit()
 {
 	std::set<Sequence*> sequences;
 	bool is_modified = false;
@@ -283,17 +284,11 @@ bool Window::Quit(wxCommandEvent& event)
 
 	if (sequences.size() == 1)
 	{
-		if (!is_modified || this->SaveChanges())
-		{
-			event.Skip();
-		}
+		if (!is_modified || this->SaveChanges()) wxExit();
 	}
 	else
 	{
-		if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK))
-		{
-			event.Skip();
-		}
+		if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK)) wxExit();
 	}
 }
 
