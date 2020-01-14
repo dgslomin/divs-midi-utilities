@@ -24,8 +24,8 @@ Seqer.app/Contents/Resources/seqer.html: seqer.html
 
 endif
 
-seqer: application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o sequence.o timeline.o window.o
-	$(LD) seqer application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o sequence.o timeline.o window.o $(LIBS)
+seqer: application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o timeline.o velocity-lane.o window.o
+	$(LD) seqer application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o timeline.o velocity-lane.o window.o $(LIBS)
 
 application.o: application.cpp application.h ../../../../midifile/midifile.h
 	$(CXX) $(CXXFLAGS) -I../../../../midifile -c application.cpp
@@ -51,17 +51,26 @@ midifile.o: ../../../../midifile/midifile.c ../../../../midifile/midifile.h
 note-lane.o: note-lane.cpp note-lane.h ../../../../midifile/midifile.h
 	$(CXX) $(CXXFLAGS) -I../../../../midifile -c note-lane.cpp
 
+numeric-value-lane.o: numeric-value-lane.cpp numeric-value-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c numeric-value-lane.cpp
+
 sequence.o: sequence.cpp sequence.h ../../../../midifile/midifile.h
 	$(CXX) $(CXXFLAGS) -I../../../../midifile -c sequence.cpp
 
+tempo-lane.o: tempo-lane.cpp tempo-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c tempo-lane.cpp
+
 timeline.o: timeline.cpp timeline.h ../../../../midifile/midifile.h
 	$(CXX) $(CXXFLAGS) -I../../../../midifile -c timeline.cpp
+
+velocity-lane.o: velocity-lane.cpp velocity-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c velocity-lane.cpp
 
 window.o: window.cpp window.h ../../../../midifile/midifile.h seqer.xpm
 	$(CXX) $(CXXFLAGS) -I../../../../midifile -c window.cpp
 
 clean:
-	rm -f application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o sequence.o timeline.o window.o
+	rm -f application.o control-change-lane.o event-type-label-lane.o label.o label-lane.o lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o timeline.o velocity-lane.o window.o
 
 reallyclean: clean
 	rm -f seqer Seqer.app/Contents/MacOS/Seqer

@@ -1,20 +1,21 @@
-#ifndef CONTROL_CHANGE_LANE_INCLUDED
-#define CONTROL_CHANGE_LANE_INCLUDED
+#ifndef VELOCITY_LANE_INCLUDED
+#define VELOCITY_LANE_INCLUDED
 
-class ControlChangeLane;
+class VelocityLane;
 
 #include <wx/wx.h>
 #include "midifile.h"
 #include "numeric-value-lane.h"
 #include "window.h"
 
-class ControlChangeLane: public NumericValueLane
+class VelocityLane: public NumericValueLane
 {
 public:
-	int controller_number;
+	int pixels_per_value;
+	int scroll_y;
 
-	ControlChangeLane(Window* window);
-	~ControlChangeLane();
+	VelocityLane(Window* window);
+	~VelocityLane();
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event);
 	virtual int GetValueFromEvent(MidiFileEvent_t midi_event);
 };
