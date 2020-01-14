@@ -46,7 +46,7 @@ wxRect NumericValueLane::GetRectFromEvent(MidiFileEvent_t midi_event)
 {
 	int x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event));
 	int y = this->GetYFromValue(this->GetValueFromEvent(midi_event));
-	return wxRect(x - 1, y - 1, 3, 3);
+	return wxRect(x - 2, y - 2, 5, 5);
 }
 
 int NumericValueLane::GetYFromValue(int value)

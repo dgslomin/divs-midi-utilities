@@ -15,7 +15,7 @@ LabelLane::~LabelLane()
 void LabelLane::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
-	int row_height = dc.GetCharHeight();
+	int row_height = dc.GetCharHeight() + 4;
 
 	this->PopulateLabels();
 	this->LayoutLabels();
@@ -23,7 +23,7 @@ void LabelLane::OnPaint(wxPaintEvent& event)
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
 		Label& label = this->labels[label_number];
-		dc.DrawText(label.text, label.x, label.row * row_height);
+		dc.DrawText(label.text, label.x + 2, (label.row * row_height) + 2);
 	}
 }
 
@@ -36,7 +36,7 @@ void LabelLane::LayoutLabels()
 	{
 		Label& label = this->labels[label_number];
 		label.x = this->window->GetXFromTick(MidiFileEvent_getTick(label.midi_event));
-		label.width = dc.GetTextExtent(label.text).GetWidth();
+		label.width = dc.GetTextExtent(label.text).GetWidth() + 4;
 
 		for (label.row = 0; label.row < row_ends.size(); label.row++)
 		{
@@ -59,7 +59,7 @@ void LabelLane::LayoutLabels()
 MidiFileEvent_t LabelLane::GetEventFromXY(int x, int y)
 {
 	wxPaintDC dc(this);
-	int row_height = dc.GetCharHeight();
+	int row_height = dc.GetCharHeight() + 4;
 
 	for (int label_number = this->labels.size() - 1; label_number >= 0; label_number--)
 	{
