@@ -20,7 +20,7 @@ void Timeline::OnPaint(wxPaintEvent& event)
 	long max_tick = this->window->GetTickFromX(this->GetSize().GetWidth());
 
 	this->PaintMeasureBeatTimeline(dc, min_tick, max_tick, 0);
-	this->PaintMeasureBeatTimeline(dc, min_tick, max_tick, dc.GetCharHeight());
+	this->PaintHourMinuteSecondTimeline(dc, min_tick, max_tick, dc.GetCharHeight());
 }
 
 void Timeline::PaintMeasureBeatTimeline(wxDC& dc, long min_tick, long max_tick, int y)
