@@ -10,11 +10,15 @@ class ControlChangeLane;
 class ControlChangeLane: public Lane
 {
 public:
-	ControlChangeLane(Window* window): Lane(window);
+	int controller_number;
+	int pixels_per_value;
+	int scroll_y;
+
+	ControlChangeLane(Window* window);
 	~ControlChangeLane();
 	virtual void OnPaint(wxPaintEvent& event);
-	int GetYForValue(int value);
-	int GetValueForY(int y);
+	virtual int GetYFromValue(int value);
+	virtual int GetValueFromY(int y);
 };
 
 #endif

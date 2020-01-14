@@ -3,12 +3,15 @@
 
 class Sequence;
 
+#include <list>
 #include <wx/wx.h>
+#include <wx/cmdproc.h>
 #include "midifile.h"
 #include "window.h"
 
 class Sequence
 {
+public:
 	std::list<Window*> windows;
 	wxCommandProcessor* undo_command_processor;
 	wxString filename;
@@ -17,12 +20,12 @@ class Sequence
 
 	Sequence();
 	~Sequence();
-	void AddWindow(Window* window);
-	void RemoveWindow(window* window);
-	void RefreshData();
-	void RefreshDisplay();
-	bool Save();
-	bool SaveAs(wxString filename);
+	virtual void AddWindow(Window* window);
+	virtual void RemoveWindow(Window* window);
+	virtual void RefreshData();
+	virtual void RefreshDisplay();
+	virtual bool Save();
+	virtual bool SaveAs(wxString filename);
 };
 
 #endif

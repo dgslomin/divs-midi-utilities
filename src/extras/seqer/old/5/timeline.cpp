@@ -5,7 +5,7 @@
 
 Timeline::Timeline(Window* window): wxWindow(window, wxID_ANY)
 {
-	this->Bind(wxEVT_PAINT, &OnPaint);
+	this->Bind(wxEVT_PAINT, [=](wxPaintEvent& event) { this->OnPaint(event); });
 }
 
 Timeline::~Timeline()

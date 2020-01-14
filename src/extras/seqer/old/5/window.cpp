@@ -1,19 +1,15 @@
 
+#include <set>
 #include <wx/wx.h>
 #include <midifile.h>
 #include "application.h"
+#include "ids.h"
 #include "sequence.h"
 #include "window.h"
 
 #ifndef __WXMSW__
 #include "seqer.xpm"
 #endif
-
-enum
-{
-	SEQER_ID_NEW_WINDOW = wxID_HIGHEST + 1,
-	SEQER_ID_HIGHEST
-};
 
 Window::Window(Application* application, Window* existing_window): wxFrame((wxFrame*)(NULL), wxID_ANY, "Seqer", wxDefaultPosition, wxSize(640, 480))
 {
@@ -132,7 +128,7 @@ void Window::CreateToolsMenu(wxMenuBar* menu_bar)
 	menu_bar->Append(tools_menu, "&Tools");
 }
 
-void Window::CreateHelpMenu(wxMenubar* menu_bar)
+void Window::CreateHelpMenu(wxMenuBar* menu_bar)
 {
 	wxMenu* help_menu = new wxMenu();
 	help_menu->Append(wxID_HELP_CONTENTS, "&User Manual");
@@ -289,6 +285,38 @@ void Window::Quit()
 	else
 	{
 		if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK)) wxExit();
+	}
+}
+
+void Window::RefreshData()
+{
+}
+
+void Window::RefreshDisplay()
+{
+}
+
+int Window::GetXFromTick(long tick)
+{
+	if (this->use_linear_time)
+	{
+		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second);
+	}
+	else
+	{
+		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat);
+	}
+}
+
+long Window::GetTickFromX(int x)
+{
+	if (this->use_linear_time)
+	{
+		return MidiFile_getTickFromTime(this->sequence->midi_file, (float)(x) / this->pixels_per_second);
+	}
+	else
+	{
+		return MidiFile_getTickFromBeat(this->sequence->midi_file, (float)(x) / this->pixels_per_beat);
 	}
 }
 

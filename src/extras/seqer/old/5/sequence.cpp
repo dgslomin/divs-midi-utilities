@@ -1,4 +1,5 @@
 
+#include <list>
 #include <wx/wx.h>
 #include <midifile.h>
 #include "window.h"

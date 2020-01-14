@@ -10,13 +10,18 @@ class ControlChaneLane;
 class NoteLane: public Lane
 {
 public:
-	NoteLane(Window* window): Lane(window);
+	int pixels_per_note;
+	int scroll_y;
+	wxBrush white_note_background_brush;
+	wxBrush black_note_background_brush;
+
+	NoteLane(Window* window);
 	~NoteLane();
 	virtual void OnPaint(wxPaintEvent& event);
-	void PaintBackground(wxDC& dc);
-	void PaintNotes(wxDC& dc);
-	int GetYForNote(int note);
-	int GetNoteForY(int y);
+	void PaintBackground(wxDC& dc, int width, int height);
+	void PaintNotes(wxDC& dc, int width, int height);
+	virtual int GetYFromNote(int note);
+	virtual int GetNoteFromY(int y);
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 class LabelLane;
 
+#include <vector>
 #include <wx/wx.h>
 #include "label.h"
 #include "lane.h"
@@ -13,7 +14,7 @@ class LabelLane: public Lane
 public:
 	std::vector<Label> labels;
 
-	LabelLane(Window* window): Lane(window);
+	LabelLane(Window* window);
 	~LabelLane();
 	virtual void OnPaint(wxPaintEvent& event);
 	virtual void PopulateLabels();

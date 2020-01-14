@@ -8,7 +8,7 @@ class Application;
 class Application: public wxApp
 {
 public:
-	bool OnInit();
+	virtual bool OnInit();
 };
 
 #endif

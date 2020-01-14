@@ -9,7 +9,9 @@ class Lane;
 class Lane: public wxWindow
 {
 public:
-	Lane(Window* window): wxWindow(window, wxID_ANY);
+	Window* window;
+
+	Lane(Window* window);
 	~Lane();
 	virtual void OnPaint(wxPaintEvent& event);
 };

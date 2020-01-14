@@ -1,9 +1,10 @@
 
 #include <wx/wx.h>
 #include "label-lane.h"
+#include "lane.h"
 #include "window.h"
 
-LabelLane::LabelLane(Window* window)
+LabelLane::LabelLane(Window* window): Lane(window)
 {
 }
 
@@ -21,7 +22,7 @@ void LabelLane::OnPaint(wxPaintEvent& event)
 
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
-		dc.DrawText(this->labels[label_number].x, this->labels[label_number].row * row_height, this->labels[label_number].text);
+		dc.DrawText(this->labels[label_number].text, this->labels[label_number].x, this->labels[label_number].row * row_height);
 	}
 }
 
@@ -39,17 +40,16 @@ void LabelLane::LayoutLabels()
 		this->labels[label_number].x = this->window->GetXFromTick(MidiFileEvent_getTick(this->labels[label_number].midi_event));
 		this->labels[label_number].width = dc.GetTextExtent(this->labels[label_number].text).GetWidth();
 
-		for (int row = 0; row < row_ends.size(); row++)
+		for (this->labels[label_number].row = 0; this->labels[label_number].row < row_ends.size(); this->labels[label_number].row++)
 		{
-			if (this->labels[label_number].x >= row_ends[row]) break;
+			if (this->labels[label_number].x >= row_ends[this->labels[label_number].row]) break;
 		}
 
-		this->labels[label_number].row = row;
 		int row_end = this->labels[label_number].x + this->labels[label_number].width;
 
-		if (row < row_ends.size())
+		if (this->labels[label_number].row < row_ends.size())
 		{
-			row_ends[row] = row_end;
+			row_ends[this->labels[label_number].row] = row_end;
 		}
 		else
 		{

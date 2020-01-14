@@ -5,19 +5,40 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: application.obj midifile.obj sequence.obj window.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe application.obj midifile.obj sequence.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj midifile.obj note-lane.obj sequence.obj timeline.obj window.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj midifile.obj note-lane.obj sequence.obj timeline.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
 application.obj: application.cpp application.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c application.cpp
 
+control-change-lane.obj: control-change-lane.cpp control-change-lane.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c control-change-lane.cpp
+
+event-type-label-lane.obj: event-type-label-lane.cpp event-type-label-lane.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c event-type-label-lane.cpp
+
+label.obj: label.cpp label.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c label.cpp
+
+label-lane.obj: label-lane.cpp label-lane.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c label-lane.cpp
+
+lane.obj: lane.cpp lane.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lane.cpp
+
 midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) /I..\..\..\..\midifile /c ..\..\..\..\midifile\midifile.c
 
+note-lane.obj: note-lane.cpp note-lane.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c note-lane.cpp
+
 sequence.obj: sequence.cpp sequence.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c sequence.cpp
+
+timeline.obj: timeline.cpp timeline.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c timeline.cpp
 
 window.obj: window.cpp window.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c window.cpp
@@ -27,8 +48,15 @@ seqer.res: seqer.rc seqer.ico
 
 clean:
 	@if exist application.obj del application.obj
+	@if exist control-change-lane.obj del control-change-lane.obj
+	@if exist event-type-label-lane.obj del event-type-label-lane.obj
+	@if exist label.obj del label.obj
+	@if exist label-lane.obj del label-lane.obj
+	@if exist lane.obj del lane.obj
 	@if exist midifile.obj del midifile.obj
+	@if exist note-lane.obj del note-lane.obj
 	@if exist sequence.obj del sequence.obj
+	@if exist timeline.obj del timeline.obj
 	@if exist window.obj del window.obj
 	@if exist seqer.res del seqer.res
 	@if exist seqer.ilk del seqer.ilk

@@ -9,7 +9,7 @@ class EventTypeLabelLane;
 class EventTypeLabelLane: public LabelLane
 {
 public:
-	EventTypeLabelLane(Window* window): LabelLane(window);
+	EventTypeLabelLane(Window* window);
 	~EventTypeLabelLane();
 	virtual void PopulateLabels();
 };

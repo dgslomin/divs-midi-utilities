@@ -1,22 +1,31 @@
 
 #include <wx/wx.h>
 #include "label.h"
+#include "label-lane.h"
 #include "event-type-label-lane.h"
 #include "midifile.h"
+
+EventTypeLabelLane::EventTypeLabelLane(Window* window): LabelLane(window)
+{
+}
+
+EventTypeLabelLane::~EventTypeLabelLane()
+{
+}
 
 void EventTypeLabelLane::PopulateLabels()
 {
 	this->labels.clear();
 
-	for (MidiFileEvent_t midi_event = MidiFile_getFirstEventInFile(this->window->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
-		wxString label = NULL;
+		wxString label = wxEmptyString;
 
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
 			label = wxString("Note");
 		}
-		else if ((MidiFileEvent_isNoteOffEvent(midi_event) && (MidiFileEvent_getNoteStartEvent(midi_event) == NULL))
+		else if (MidiFileEvent_isNoteEndEvent(midi_event) && (MidiFileNoteEndEvent_getNoteStartEvent(midi_event) == NULL))
 		{
 			label = wxString("Off");
 		}
@@ -83,10 +92,14 @@ void EventTypeLabelLane::PopulateLabels()
 					label = wxString("Meta");
 					break;
 				}
+				default:
+				{
+					break;
+				}
 			}
 		}
 
-		if (label != NULL) this->labels.push_back(Label(midi_event, label));
+		if (label != wxEmptyString) this->labels.push_back(Label(midi_event, label));
 	}
 }
 

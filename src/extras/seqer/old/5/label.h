@@ -15,7 +15,7 @@ public:
 	int width;
 	int row;
 	
-	Label(MidiFileEvent_t midi_event, wxString text)
+	Label(MidiFileEvent_t midi_event, wxString text);
 	~Label();
 };
 
