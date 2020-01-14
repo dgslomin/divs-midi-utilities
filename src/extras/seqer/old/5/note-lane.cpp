@@ -36,19 +36,38 @@ void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 
 void NoteLane::PaintNotes(wxDC& dc, int width, int height)
 {
+	wxRect bounds = wxRect(0, 0, width, height);
+
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
-			int start_x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event));
-			if (start_x > width) continue;
-			int end_x = this->window->GetXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
-			if (end_x < 0) continue;
-			int y = this->GetYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
-			if ((y < 0) || (y > height)) continue;
-			dc.DrawRectangle(start_x, y, end_x - start_x, this->pixels_per_note);
+			wxRect rect = this->GetRectFromEvent(midi_event);
+			if (rect.Intersects(bounds)) dc.DrawRectangle(rect);
 		}
 	}
+}
+
+MidiFileEvent_t NoteLane::GetEventFromXY(int x, int y)
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getLastEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isNoteStartEvent(midi_event))
+		{
+			wxRect rect = this->GetRectFromEvent(midi_event);
+			if (rect.Contains(x, y)) return midi_event;
+		}
+	}
+
+	return NULL;
+}
+
+wxRect NoteLane::GetRectFromEvent(MidiFileEvent_t midi_event)
+{
+	int start_x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event));
+	int end_x = this->window->GetXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
+	int y = this->GetYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
+	return wxRect(start_x, y, end_x - start_x, this->pixels_per_note);
 }
 
 int NoteLane::GetYFromNote(int note)

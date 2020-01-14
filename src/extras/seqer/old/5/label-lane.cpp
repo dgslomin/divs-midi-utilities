@@ -22,12 +22,9 @@ void LabelLane::OnPaint(wxPaintEvent& event)
 
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
-		dc.DrawText(this->labels[label_number].text, this->labels[label_number].x, this->labels[label_number].row * row_height);
+		Label& label = this->labels[label_number];
+		dc.DrawText(label.text, label.x, label.row * row_height);
 	}
-}
-
-void LabelLane::PopulateLabels()
-{
 }
 
 void LabelLane::LayoutLabels()
@@ -37,24 +34,40 @@ void LabelLane::LayoutLabels()
 
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
-		this->labels[label_number].x = this->window->GetXFromTick(MidiFileEvent_getTick(this->labels[label_number].midi_event));
-		this->labels[label_number].width = dc.GetTextExtent(this->labels[label_number].text).GetWidth();
+		Label& label = this->labels[label_number];
+		label.x = this->window->GetXFromTick(MidiFileEvent_getTick(label.midi_event));
+		label.width = dc.GetTextExtent(label.text).GetWidth();
 
-		for (this->labels[label_number].row = 0; this->labels[label_number].row < row_ends.size(); this->labels[label_number].row++)
+		for (label.row = 0; label.row < row_ends.size(); label.row++)
 		{
-			if (this->labels[label_number].x >= row_ends[this->labels[label_number].row]) break;
+			if (label.x >= row_ends[label.row]) break;
 		}
 
-		int row_end = this->labels[label_number].x + this->labels[label_number].width;
+		int row_end = label.x + label.width;
 
-		if (this->labels[label_number].row < row_ends.size())
+		if (label.row < row_ends.size())
 		{
-			row_ends[this->labels[label_number].row] = row_end;
+			row_ends[label.row] = row_end;
 		}
 		else
 		{
 			row_ends.push_back(row_end);
 		}
 	}
+}
+
+MidiFileEvent_t LabelLane::GetEventFromXY(int x, int y)
+{
+	wxPaintDC dc(this);
+	int row_height = dc.GetCharHeight();
+
+	for (int label_number = this->labels.size() - 1; label_number >= 0; label_number--)
+	{
+		Label& label = this->labels[label_number];
+		wxRect rect = wxRect(label.x, label.row * row_height, label.width, row_height);
+		if (rect.Contains(x, y)) return label.midi_event;
+	}
+
+	return NULL;
 }
 

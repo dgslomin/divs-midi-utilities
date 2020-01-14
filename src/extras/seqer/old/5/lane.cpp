@@ -13,7 +13,3 @@ Lane::~Lane()
 {
 }
 
-void Lane::OnPaint(wxPaintEvent& event)
-{
-}
-

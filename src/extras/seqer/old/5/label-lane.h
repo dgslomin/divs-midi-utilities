@@ -17,8 +17,9 @@ public:
 	LabelLane(Window* window);
 	~LabelLane();
 	virtual void OnPaint(wxPaintEvent& event);
-	virtual void PopulateLabels();
+	virtual void PopulateLabels() = 0;
 	virtual void LayoutLabels();
+	virtual MidiFileEvent_t GetEventFromXY(int x, int y);
 };
 
 #endif
