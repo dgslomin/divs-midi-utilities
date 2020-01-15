@@ -20,9 +20,29 @@ void LabelLane::OnPaint(wxPaintEvent& event)
 	this->PopulateLabels();
 	this->LayoutLabels();
 
+	dc.SetBackground(this->window->application->background_brush);
+	dc.Clear();
+
+	dc.SetBackgroundMode(wxTRANSPARENT);
+
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
 		Label& label = this->labels[label_number];
+
+		if (MidiFileEvent_isSelected(label.midi_event))
+		{
+			dc.SetPen(this->window->application->selected_event_pen);
+			dc.SetBrush(this->window->application->selected_event_brush);
+			dc.SetTextForeground(this->window->application->selected_event_text_color);
+		}
+		else
+		{
+			dc.SetPen(this->window->application->unselected_event_pen);
+			dc.SetBrush(this->window->application->unselected_event_brush);
+			dc.SetTextForeground(this->window->application->unselected_event_text_color);
+		}
+
+		dc.DrawRectangle(label.x, label.row * row_height, label.width, row_height);
 		dc.DrawText(label.text, label.x + 2, (label.row * row_height) + 2);
 	}
 }

@@ -25,11 +25,14 @@ void NoteLane::OnPaint(wxPaintEvent& event)
 
 void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 {
+	dc.SetBackground(this->window->application->background_brush);
+	dc.Clear();
+
 	bool black_note[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 
 	for (int note = this->GetNoteFromY(0), last_note = this->GetNoteFromY(height); note < last_note; note++)
 	{
-		dc.SetBrush(black_note[note % 12] ? this->black_note_background_brush : this->white_note_background_brush);
+		dc.SetBrush(black_note[note % 12] ? this->window->application->black_note_background_brush : this->window->application->white_note_background_brush);
 		dc.DrawRectangle(0, this->GetYFromNote(note), width, this->pixels_per_note);
 	}
 }
@@ -43,7 +46,22 @@ void NoteLane::PaintNotes(wxDC& dc, int width, int height)
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
 			wxRect rect = this->GetRectFromEvent(midi_event);
-			if (rect.Intersects(bounds)) dc.DrawRectangle(rect);
+
+			if (rect.Intersects(bounds))
+			{
+				if (MidiFileEvent_isSelected(midi_event))
+				{
+					dc.SetPen(this->window->application->selected_event_pen);
+					dc.SetBrush(this->window->application->selected_event_brush);
+				}
+				else
+				{
+					dc.SetPen(this->window->application->unselected_event_pen);
+					dc.SetBrush(this->window->application->unselected_event_brush);
+				}
+
+				dc.DrawRectangle(rect);
+			}
 		}
 	}
 }

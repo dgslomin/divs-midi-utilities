@@ -18,12 +18,30 @@ void NumericValueLane::OnPaint(wxPaintEvent& event)
 	wxPaintDC dc(this);
 	wxRect bounds = wxRect(this->GetSize());
 
+	dc.SetBackground(this->window->application->background_brush);
+	dc.Clear();
+
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
 		if (this->ShouldIncludeEvent(midi_event))
 		{
 			wxRect rect = this->GetRectFromEvent(midi_event);
-			if (rect.Intersects(bounds)) dc.DrawRectangle(rect);
+
+			if (rect.Intersects(bounds))
+			{
+				if (MidiFileEvent_isSelected(midi_event))
+				{
+					dc.SetPen(this->window->application->selected_event_pen);
+					dc.SetBrush(this->window->application->selected_event_brush);
+				}
+				else
+				{
+					dc.SetPen(this->window->application->unselected_event_pen);
+					dc.SetBrush(this->window->application->unselected_event_brush);
+				}
+
+				dc.DrawRectangle(rect);
+			}
 		}
 	}
 }
