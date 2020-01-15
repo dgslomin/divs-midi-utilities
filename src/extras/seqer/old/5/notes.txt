@@ -15,3 +15,9 @@ The playback caret is not the same as the editing caret but can be set from it. 
 
 The editing caret, playback caret, selected events, and selected time range are all stored as data inside the MIDI file not ephemerally in the view.  This allows the undo stack to be a simple list of file snapshots, as well as supporting external helper utilities.
 
+
+
+
+Lanes showing track or channel -specific values other than note lanes should inherit visibility and insertion settings from the nearest preceding note lane.  This will eliminate the need for view-specific vs. global track and channel settings and solve the problem of how to associate key pressure with a particular note. 
+
+
