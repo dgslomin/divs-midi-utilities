@@ -97,20 +97,14 @@ on enter key:
 			cursor_event = event
 			break
 		
-	if cursor_event == NULL:
-		if shift is not pressed:
-			for each event:
+	if shift is not pressed:
+		for each event:
+			if event != cursor_event:
 				event.is_selected = false
 
+	if cursor_event == NULL:
 		add event at point(cursor_x, cursor_y)
 		event.is_selected = true
 	else:
-		if cursor_event.is_selected:
-			cursor_event.is_selected = false
-		else:
-			if shift is not pressed:
-				for each event:
-					event.is_selected = false
-
-			cursor_event.is_selected = true
+		toggle cursor_event.is_selected
 
