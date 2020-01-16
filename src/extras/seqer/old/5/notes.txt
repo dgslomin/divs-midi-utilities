@@ -108,3 +108,131 @@ on enter key:
 	else:
 		toggle cursor_event.is_selected
 
+
+
+
+click on empty spot with shift:  set cursor
+click on empty spot with cursor:  clear selection, add event, select it
+click on empty spot:  clear selection, set cursor
+click on event with shift:  toggle event selection
+click on event:  clear selection, select event, set cursor
+drag from empty spot with shift:  select events dragged over
+drag from empty spot with cursor:  clear selection, add event, select it, move it, set cursor
+drag from empty spot:  clear selection, select events dragged over
+drag from event:  move selected events, set cursor
+enter key on empty spot:  clear selection, add event, select it
+enter key on event with shift:  toggle event selection
+enter key on event:  clear selection, select event
+
+
+on mouse down:
+	capture mouse
+	mouse_down = true
+	mouse_down_x = mouse.x
+	mouse_down_y = mouse.y
+	mouse_down_event = NULL
+	mouse_drag_horizontal_allowed = false
+	mouse_drag_vertical_allowed = false
+
+	for each event:
+		if event intersects point(mouse.x, mouse.y):
+			mouse_down_event = event
+			break
+
+	if mouse_down_event == NULL:
+		if shift is not pressed:
+			for each event:
+				event.is_selected = false
+
+			if mouse.x == cursor_x and mouse.y == cursor_y:
+				add event at point(mouse.x, mouse.y)
+				event.is_selected = true
+				mouse_down_event = event
+
+on mouse up:
+	if mouse_down_event == NULL:
+		if mouse.x == mouse_down_x and mouse.y == mouse_down_y:
+			cursor_x = mouse.x
+			cursor_y = mouse.y
+		else:
+			for each event:
+				if event intersects rect(mouse_down_x, mouse_down_y, mouse.x, mouse.y):
+					event.is_selected = true
+
+	else:
+		if (mouse_drag_horizontal_allowed and mouse.x != mouse_down_x) or (mouse_drag_vertical_allowed and mouse.y != mouse_down_y):
+			for each event:
+				if event.is_selected:
+					target_x = event.x
+					target_y = event.y
+
+					if mouse_drag_horizontal_allowed:
+						target_x += mouse_drag_x - mouse_down_x
+
+					if mouse_drag_vertical_allowed:
+						target_y += mouse_drag_y - mouse_down_y
+
+					move event to point(target_x, target_y)
+
+		cursor_x = mouse.x
+		cursor_y = mouse.y
+
+	mouse_down = false
+	release mouse
+
+on mouse motion:
+	if mouse_down:
+		mouse_drag_x = mouse.x
+		mouse_drag_y = mouse.y
+
+		if abs(mouse_drag_x - mouse.x) > mouse_drag_threshold:
+			mouse_drag_horizontal_allowed = true
+
+		if abs(mouse_drag_y - mouse.y) > mouse_drag_threshold:
+			mouse_drag_vertical_allowed = true
+
+		repaint
+
+on paint:
+	should_paint_selection_rect = mouse_down and mouse_down_event == NULL:
+
+	if should_paint_selection_rect:
+		paint selection rect(mouse_down_x, mouse_down_y, mouse_drag_x, mouse_drag_y)
+
+	for each event:
+		target_x = event.x
+		target_y = event.y
+
+		if event.is_selected and not should_paint_selection_rect:
+			if mouse_drag_horizontal_allowed:
+				target_x += mouse_drag_x - mouse_down_x
+
+			if mouse_drag_vertical_allowed:
+				target_y += mouse_drag_y - mouse_down_y
+
+		paint event at point(target_x, target_y)
+
+on enter key:
+	cursor_event = NULL
+
+	for each event:
+		if event intersects point(cursor_x, cursor_y):
+			cursor_event = event
+			break
+
+	if cursor_event == NULL:
+		if shift is not pressed:
+			for each event:
+				event.is_selected = false
+
+			add event at point(cursor_x, cursor_y)
+			event.is_selected = true
+	else:
+		if shift is pressed:
+			toggle cursor_event.is_selected
+		else:
+			for each event:
+				event.is_selected = false
+
+			cursor_event.is_selected = true
+
