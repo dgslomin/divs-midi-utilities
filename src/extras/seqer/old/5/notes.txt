@@ -32,7 +32,7 @@ on mouse down:
 
 	if shift is pressed:
 		if mouse_down_event != NULL:
-			mouse_down_event.is_selected = not mouse_down_event.is_selected
+			toggle mouse_down_event.is_selected
 
 	else:
 		for each event:
@@ -46,6 +46,7 @@ on mouse up:
 		if mouse_down_event == NULL:
 			if mouse.x == cursor_x and mouse.y == cursor_y:
 				add event at point(mouse.x, mouse.y)
+				event.is_selected = true
 			else:
 				cursor_x = mouse.x
 				cursor_y = mouse.y
@@ -89,26 +90,27 @@ on paint:
 			paint event at point(event.x, event.y)
 
 on enter key:
-	current_event = NULL
+	cursor_event = NULL
 
 	for each event:
 		if event intersects point(cursor_x, cursor_y):
-			current_event = event
+			cursor_event = event
 			break
 		
-	if current_event == NULL:
-		if shift is pressed:
-		else:
+	if cursor_event == NULL:
+		if shift is not pressed:
 			for each event:
 				event.is_selected = false
 
 		add event at point(cursor_x, cursor_y)
+		event.is_selected = true
 	else:
-		if shift is pressed:
-			current_event.is_selected = not current_event.is_selected
+		if cursor_event.is_selected:
+			cursor_event.is_selected = false
 		else:
-			for each event:
-				event.is_selected = false
+			if shift is not pressed:
+				for each event:
+					event.is_selected = false
 
-			current_event.is_selected = true
+			cursor_event.is_selected = true
 
