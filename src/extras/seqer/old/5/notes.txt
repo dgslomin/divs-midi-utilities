@@ -101,10 +101,10 @@ on mouse motion:
 		mouse_drag_x = mouse.x
 		mouse_drag_y = mouse.y
 
-		if abs(mouse_drag_x - mouse.x) > mouse_drag_threshold:
+		if abs(mouse_drag_x - mouse_down_x) > mouse_drag_threshold:
 			mouse_drag_horizontal_allowed = true
 
-		if abs(mouse_drag_y - mouse.y) > mouse_drag_threshold:
+		if abs(mouse_drag_y - mouse_down_y) > mouse_drag_threshold:
 			mouse_drag_vertical_allowed = true
 
 		repaint
