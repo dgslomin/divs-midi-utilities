@@ -63,6 +63,8 @@ void Lane::OnLeftDown(wxMouseEvent& event)
 	this->mouse_down_y = event.GetY();
 	this->mouse_down_midi_event = this->GetEventFromXY(this->mouse_down_x, this->mouse_down_y);
 	this->mouse_down_midi_event_is_new = false;
+	this->mouse_drag_x = this->mouse_down_x;
+	this->mouse_drag_y = this->mouse_down_y;
 	this->mouse_drag_x_allowed = false;
 	this->mouse_drag_y_allowed = false;
 
@@ -143,5 +145,83 @@ void Lane::OnMotion(wxMouseEvent& event)
 
 void Lane::OnChar(wxKeyEvent& event)
 {
+	switch (event.GetKeyCode())
+	{
+		case WXK_RETURN:
+		{
+			this->OnReturnChar(event);
+			break;
+		}
+		case WXK_SPACE:
+		{
+			this->OnSpaceChar(event);
+			break;
+		}
+		default:
+		{
+			event.Skip();
+			break;
+		}
+	}
+}
+
+void Lane::OnReturnChar(wxKeyEvent& event)
+{
+	bool selection_is_empty = true;
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isSelected(midi_event))
+		{
+			selection_is_empty = false;
+			break;
+		}
+	}
+
+	if (selection_is_empty)
+	{
+		MidiFileEvent_t cursor_midi_event = this->GetEventFromXY(this->cursor_x, this->cursor_y);
+
+		if (cursor_midi_event == NULL)
+		{
+			cursor_midi_event = this->AddEventAtXY(this->cursor_x, this->cursor_y);
+			MidiFileEvent_setSelected(cursor_midi_event, 1);
+		}
+		else
+		{
+			MidiFileEvent_setSelected(cursor_midi_event, 1);
+			this->window->FocusPropertyEditor();
+		}
+	}
+	else
+	{
+		this->window->FocusPropertyEditor();
+	}
+
+	event.Skip();
+}
+
+void Lane::OnSpaceChar(wxKeyEvent& event)
+{
+	MidiFileEvent_t cursor_midi_event = this->GetEventFromXY(this->cursor_x, this->cursor_y);
+
+	if (cursor_midi_event == NULL)
+	{
+		this->window->SelectNone();
+	}
+	else
+	{
+		if (event.ShiftDown())
+		{
+			MidiFileEvent_setSelected(cursor_midi_event, !MidiFileEvent_isSelected(cursor_midi_event));
+		}
+		else
+		{
+			this->window->SelectNone();
+			MidiFileEvent_setSelected(cursor_midi_event, 1);
+		}
+	}
+
+	event.Skip();
 }
 

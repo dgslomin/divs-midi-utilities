@@ -13,16 +13,6 @@ NoteLane::~NoteLane()
 {
 }
 
-void NoteLane::OnPaint(wxPaintEvent& event)
-{
-	wxPaintDC dc(this);
-	int width;
-	int height;
-	this->GetSize(&width, &height);
-	this->PaintBackground(dc, width, height);
-	this->PaintNotes(dc, width, height);
-}
-
 void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 {
 	dc.SetBackground(this->window->application->background_brush);
@@ -37,7 +27,7 @@ void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 	}
 }
 
-void NoteLane::PaintNotes(wxDC& dc, int width, int height)
+void NoteLane::PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset)
 {
 	wxRect bounds = wxRect(0, 0, width, height);
 
@@ -45,7 +35,7 @@ void NoteLane::PaintNotes(wxDC& dc, int width, int height)
 	{
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
-			wxRect rect = this->GetRectFromEvent(midi_event);
+			wxRect rect = this->GetRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
 
 			if (rect.Intersects(bounds))
 			{
@@ -72,7 +62,7 @@ MidiFileEvent_t NoteLane::GetEventFromXY(int x, int y)
 	{
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
-			wxRect rect = this->GetRectFromEvent(midi_event);
+			wxRect rect = this->GetRectFromEvent(midi_event, 0, 0);
 			if (rect.Contains(x, y)) return midi_event;
 		}
 	}
@@ -80,11 +70,53 @@ MidiFileEvent_t NoteLane::GetEventFromXY(int x, int y)
 	return NULL;
 }
 
-wxRect NoteLane::GetRectFromEvent(MidiFileEvent_t midi_event)
+MidiFileEvent_t NoteLane::AddEventAtXY(int x, int y)
+{
+	int start_tick = this->window->GetTickFromX(x);
+	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
+	int note = this->GetNoteFromY(y);
+	MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
+}
+
+void NoteLane::MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset)
+{
+	MidiFileEvent_t note_end_midi_event = MidiFileNoteStartEvent_getNoteEndEvent(midi_event);
+	MidiFileEvent_setTick(midi_event, this->window->GetTickFromX(this->window->GetXFromTick(MidiFileEvent_getTick(midi_event)) + x_offset));
+	MidiFileEvent_setTick(note_end_midi_event, this->window->GetTickFromX(this->window->GetXFromTick(MidiFileEvent_getTick(note_end_midi_event)) + x_offset));
+	MidiFileNoteStartEvent_setNote(midi_event, this->GetNoteFromY(this->GetYFromNote(MidiFileNoteStartEvent_getNote(midi_event)) + y_offset));
+}
+
+void NoteLane::SelectEventsInRect(int x, int y, int width, int height)
+{
+	int bounds = wxRect(x, y, width, height);
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isNoteStartEvent(midi_event))
+		{
+			wxRect rect = this->GetRectFromEvent(midi_event, 0, 0);
+
+			if (rect.Intersects(bounds))
+			{
+				MidiFileEvent_setSelected(midi_event, 1);
+			}
+		}
+	}
+}
+
+wxRect NoteLane::GetRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
 {
 	int start_x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event));
 	int end_x = this->window->GetXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
 	int y = this->GetYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
+
+	if (MidiFileEvent_isSelected(midi_event))
+	{
+		start_x += selected_events_x_offset;
+		end_x += selected_events_x_offset;
+		y += selected_events_y_offset;
+	}
+
 	return wxRect(start_x, y, end_x - start_x, this->pixels_per_note);
 }
 

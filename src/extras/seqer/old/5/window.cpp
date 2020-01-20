@@ -83,11 +83,6 @@ void Window::CreateEditMenu(wxMenuBar* menu_bar)
 	edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
 	edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
 	edit_menu->Append(SEQER_ID_SELECT_TIME_RANGE, "Select Ti&me Range");
-	edit_menu->AppendSeparator();
-	edit_menu->Append(SEQER_ID_CURSOR_NAVIGATION_MODE, "Cursor Navigation Mode");
-	edit_menu->Append(SEQER_ID_SCROLL_MODE, "Scroll Mode");
-	edit_menu->Append(SEQER_ID_ZOOM_MODE, "Zoom Mode");
-	edit_menu->Append(SEQER_ID_PANEL_NAVIGATION_MODE, "Panel Navigation Mode");
 	menu_bar->Append(edit_menu, "&Edit");
 }
 
@@ -286,6 +281,10 @@ void Window::Quit()
 	{
 		if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK)) wxExit();
 	}
+}
+
+void Window::FocusPropertyEditor()
+{
 }
 
 void Window::RefreshData()

@@ -37,6 +37,7 @@ public:
 	virtual bool Save();
 	virtual bool SaveAs();
 	virtual void Quit();
+	virtual void FocusPropertyEditor();
 	virtual void RefreshData();
 	virtual void RefreshDisplay();
 	virtual int GetXFromTick(long tick);
