@@ -5,8 +5,8 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj timeline.obj velocity-lane.obj window.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj timeline.obj velocity-lane.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe application.obj control-change-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
@@ -46,8 +46,8 @@ sequence.obj: sequence.cpp sequence.h ..\..\..\..\midifile\midifile.h
 tempo-lane.obj: tempo-lane.cpp tempo-lane.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c tempo-lane.cpp
 
-timeline.obj: timeline.cpp timeline.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c timeline.cpp
+time-ruler.obj: time-ruler.cpp time-ruler.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c time-ruler.cpp
 
 velocity-lane.obj: velocity-lane.cpp velocity-lane.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c velocity-lane.cpp
@@ -71,7 +71,7 @@ clean:
 	@if exist numeric-value-lane.obj del numeric-value-lane.obj
 	@if exist sequence.obj del sequence.obj
 	@if exist tempo-lane.obj del tempo-lane.obj
-	@if exist timeline.obj del timeline.obj
+	@if exist time-ruler.obj del time-ruler.obj
 	@if exist velocity-lane.obj del velocity-lane.obj
 	@if exist window.obj del window.obj
 	@if exist seqer.res del seqer.res

@@ -182,11 +182,12 @@ on space key:
 
 TODO:
 lanes in the window
-lane scrollers
+lane rulers
+note start/middle/end drag
 side panels
 undo stack
-preferences
 keyboard navigation and tweaking
+preferences
 playback
 recording
 

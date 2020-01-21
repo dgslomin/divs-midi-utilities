@@ -1,29 +1,29 @@
 
 #include <wx/wx.h>
-#include "timeline.h"
+#include "time-ruler.h"
 #include "window.h"
 
-Timeline::Timeline(Window* window): wxWindow(window, wxID_ANY)
+TimeRuler::TimeRuler(Window* window): wxWindow(window, wxID_ANY)
 {
 	this->window = window;
 	this->Bind(wxEVT_PAINT, [=](wxPaintEvent& event) { this->OnPaint(event); });
 }
 
-Timeline::~Timeline()
+TimeRuler::~TimeRuler()
 {
 }
 
-void Timeline::OnPaint(wxPaintEvent& event)
+void TimeRuler::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
 	long min_tick = this->window->GetTickFromX(0);
 	long max_tick = this->window->GetTickFromX(this->GetSize().GetWidth());
 
-	this->PaintMeasureBeatTimeline(dc, min_tick, max_tick, 0);
-	this->PaintHourMinuteSecondTimeline(dc, min_tick, max_tick, dc.GetCharHeight());
+	this->PaintMeasureBeatRuler(dc, min_tick, max_tick, 0);
+	this->PaintHourMinuteSecondRuler(dc, min_tick, max_tick, dc.GetCharHeight());
 }
 
-void Timeline::PaintMeasureBeatTimeline(wxDC& dc, long min_tick, long max_tick, int y)
+void TimeRuler::PaintMeasureBeatRuler(wxDC& dc, long min_tick, long max_tick, int y)
 {
 	int min_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick));
 	int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick));
@@ -43,7 +43,7 @@ void Timeline::PaintMeasureBeatTimeline(wxDC& dc, long min_tick, long max_tick, 
 	}
 }
 
-void Timeline::PaintHourMinuteSecondTimeline(wxDC& dc, long min_tick, long max_tick, int y)
+void TimeRuler::PaintHourMinuteSecondRuler(wxDC& dc, long min_tick, long max_tick, int y)
 {
 	int min_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick));
 	int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick));
