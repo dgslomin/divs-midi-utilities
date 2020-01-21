@@ -13,19 +13,21 @@ NumericValueLane::~NumericValueLane()
 {
 }
 
-void NumericValueLane::OnPaint(wxPaintEvent& event)
+void NumericValueLane::PaintBackground(wxDC& dc, int width, int height)
 {
-	wxPaintDC dc(this);
-	wxRect bounds = wxRect(this->GetSize());
-
 	dc.SetBackground(this->window->application->background_brush);
 	dc.Clear();
+}
+
+void NumericValueLane::PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset)
+{
+	wxRect bounds(0, 0, width, height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
 		if (this->ShouldIncludeEvent(midi_event))
 		{
-			wxRect rect = this->GetRectFromEvent(midi_event);
+			wxRect rect = this->GetRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
 
 			if (rect.Intersects(bounds))
 			{
@@ -52,7 +54,7 @@ MidiFileEvent_t NumericValueLane::GetEventFromXY(int x, int y)
 	{
 		if (this->ShouldIncludeEvent(midi_event))
 		{
-			wxRect rect = this->GetRectFromEvent(midi_event);
+			wxRect rect = this->GetRectFromEvent(midi_event, 0, 0);
 			if (rect.Contains(x, y)) return midi_event;
 		}
 	}
@@ -60,20 +62,49 @@ MidiFileEvent_t NumericValueLane::GetEventFromXY(int x, int y)
 	return NULL;
 }
 
-wxRect NumericValueLane::GetRectFromEvent(MidiFileEvent_t midi_event)
+MidiFileEvent_t NumericValueLane::AddEventAtXY(int x, int y)
 {
-	int x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event));
-	int y = this->GetYFromValue(this->GetValueFromEvent(midi_event));
+	return this->AddEvent(this->window->GetTickFromX(x), this->GetValueFromY(y));
+}
+
+void NumericValueLane::MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset)
+{
+	MidiFileEvent_setTick(midi_event, this->window->GetTickFromX(this->window->GetXFromTick(MidiFileEvent_getTick(midi_event)) + x_offset));
+	this->SetEventValue(midi_event, this->GetValueFromY(this->GetYFromValue(this->GetEventValue(midi_event)) + y_offset));
+}
+
+void NumericValueLane::SelectEventsInRect(int x, int y, int width, int height)
+{
+	wxRect bounds(x, y, width, height);
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (this->ShouldIncludeEvent(midi_event))
+		{
+			wxRect rect = this->GetRectFromEvent(midi_event, 0, 0);
+
+			if (rect.Intersects(bounds))
+			{
+				MidiFileEvent_setSelected(midi_event, 1);
+			}
+		}
+	}
+}
+
+wxRect NumericValueLane::GetRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
+{
+	int x = this->window->GetXFromTick(MidiFileEvent_getTick(midi_event)) + selected_events_x_offset;
+	int y = this->GetYFromValue(this->GetEventValue(midi_event)) + selected_events_y_offset;
 	return wxRect(x - 2, y - 2, 5, 5);
 }
 
-int NumericValueLane::GetYFromValue(int value)
+int NumericValueLane::GetYFromValue(float value)
 {
-	return (value * this->pixels_per_value) - this->scroll_y;
+	return (int)(value * this->pixels_per_value) - this->scroll_y;
 }
 
-int NumericValueLane::GetValueFromY(int y)
+float NumericValueLane::GetValueFromY(int y)
 {
-	return (y + this->scroll_y) / this->pixels_per_value;
+	return (float)(y + this->scroll_y) / this->pixels_per_value;
 }
 

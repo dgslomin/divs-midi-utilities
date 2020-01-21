@@ -11,12 +11,16 @@ class ControlChangeLane;
 class ControlChangeLane: public NumericValueLane
 {
 public:
+	MidiFileTrack_t track;
+	int channel;
 	int controller_number;
 
 	ControlChangeLane(Window* window);
 	~ControlChangeLane();
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event);
-	virtual int GetValueFromEvent(MidiFileEvent_t midi_event);
+	virtual MidiFileEvent_t AddEvent(long tick, float value);
+	virtual float GetEventValue(MidiFileEvent_t midi_event);
+	virtual void SetEventValue(MidiFileEvent_t midi_event, float value);
 };
 
 #endif

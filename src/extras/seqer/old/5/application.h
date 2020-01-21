@@ -20,6 +20,7 @@ public:
 	wxPen cursor_pen;
 	wxPen selection_rect_pen;
 	wxBrush selection_rect_brush;
+	int mouse_drag_threshold;
 
 	virtual bool OnInit();
 };

@@ -37,6 +37,8 @@ public:
 	virtual bool Save();
 	virtual bool SaveAs();
 	virtual void Quit();
+	virtual void SelectAll();
+	virtual void SelectNone();
 	virtual void FocusPropertyEditor();
 	virtual void RefreshData();
 	virtual void RefreshDisplay();

@@ -80,8 +80,13 @@ void Window::CreateEditMenu(wxMenuBar* menu_bar)
 	edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V");
 	edit_menu->Append(wxID_DELETE, "&Delete\tDel");
 	edit_menu->AppendSeparator();
+
 	edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A");
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->SelectAll(); }, wxID_SELECTALL);
+
 	edit_menu->Append(SEQER_ID_SELECT_NONE, "Select &None\tCtrl+Shift+A");
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->SelectNone(); }, SEQER_ID_SELECT_NONE);
+
 	edit_menu->Append(SEQER_ID_SELECT_TIME_RANGE, "Select Ti&me Range");
 	menu_bar->Append(edit_menu, "&Edit");
 }
@@ -280,6 +285,22 @@ void Window::Quit()
 	else
 	{
 		if (!is_modified || (wxMessageBox("Really quit without saving changes?", "Quit", wxOK | wxCANCEL) == wxOK)) wxExit();
+	}
+}
+
+void Window::SelectAll()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 1);
+	}
+}
+
+void Window::SelectNone()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 0);
 	}
 }
 

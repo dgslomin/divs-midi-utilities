@@ -43,13 +43,13 @@ void Lane::OnPaint(wxPaintEvent& event)
 	this->PaintEvents(dc, width, height, selected_events_x_offset, selected_events_y_offset);
 
 	dc.SetPen(this->window->application->cursor_pen);
-	dc.DrawLine(dc, this->cursor_x, 0, this->cursor_x, height);
+	dc.DrawLine(this->cursor_x, 0, this->cursor_x, height);
 
 	if (should_paint_selection_rect)
 	{
 		dc.SetPen(this->window->application->selection_rect_pen);
 		dc.SetBrush(this->window->application->selection_rect_brush);
-		dc.DrawRectangle(dc, this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
+		dc.DrawRectangle(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
 	}
 
 	event.Skip();
@@ -97,15 +97,15 @@ void Lane::OnLeftUp(wxMouseEvent& event)
 		}
 		else
 		{
-			this->SelectEventsInRect(min(this->mouse_down_x, mouse_x), min(this->mouse_down_y, mouse_y), abs(mouse_x - this->mouse_down_x), abs(mouse_y - this->mouse_down_y));
+			this->SelectEventsInRect(std::min(this->mouse_down_x, mouse_x), std::min(this->mouse_down_y, mouse_y), std::abs(mouse_x - this->mouse_down_x), std::abs(mouse_y - this->mouse_down_y));
 		}
 	}
 	else
 	{
 		if ((this->mouse_drag_x_allowed && (mouse_x != this->mouse_down_x)) || (this->mouse_drag_y_allowed && (mouse_y != this->mouse_down_y)))
 		{
-			int x_offset = this->mouse_drag_x_allowed ? (this->mouse_drag_x - this->mouse_down_x) : 0
-			int y_offset = this->mouse_drag_y_allowed ? (this->mouse_drag_y - this->mouse_down_y) : 0
+			int x_offset = this->mouse_drag_x_allowed ? (this->mouse_drag_x - this->mouse_down_x) : 0;
+			int y_offset = this->mouse_drag_y_allowed ? (this->mouse_drag_y - this->mouse_down_y) : 0;
 
 			for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 			{
@@ -117,7 +117,7 @@ void Lane::OnLeftUp(wxMouseEvent& event)
 		}
 		else
 		{
-			if (!event->ShiftDown() && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
+			if (!event.ShiftDown() && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
 			{
 				this->window->FocusPropertyEditor();
 			}

@@ -29,7 +29,7 @@ void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 
 void NoteLane::PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset)
 {
-	wxRect bounds = wxRect(0, 0, width, height);
+	wxRect bounds(0, 0, width, height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
@@ -75,7 +75,7 @@ MidiFileEvent_t NoteLane::AddEventAtXY(int x, int y)
 	int start_tick = this->window->GetTickFromX(x);
 	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
 	int note = this->GetNoteFromY(y);
-	MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
+	return MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
 }
 
 void NoteLane::MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset)
@@ -88,7 +88,7 @@ void NoteLane::MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_off
 
 void NoteLane::SelectEventsInRect(int x, int y, int width, int height)
 {
-	int bounds = wxRect(x, y, width, height);
+	wxRect bounds(x, y, width, height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{

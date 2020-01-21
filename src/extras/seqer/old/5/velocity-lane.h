@@ -17,7 +17,9 @@ public:
 	VelocityLane(Window* window);
 	~VelocityLane();
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event);
-	virtual int GetValueFromEvent(MidiFileEvent_t midi_event);
+	virtual MidiFileEvent_t AddEvent(long tick, float value);
+	virtual float GetEventValue(MidiFileEvent_t midi_event);
+	virtual void SetEventValue(MidiFileEvent_t midi_event, float value);
 };
 
 #endif

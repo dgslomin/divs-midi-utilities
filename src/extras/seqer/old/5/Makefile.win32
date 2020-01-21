@@ -1,5 +1,5 @@
 
-WXDIR=c:\wxWidgets-3.1.0
+WXDIR=c:\wxWidgets-3.1.3
 WXLIBDIR=$(WXDIR)\lib\vc_lib
 WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib

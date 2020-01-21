@@ -16,13 +16,19 @@ public:
 
 	NumericValueLane(Window* window);
 	~NumericValueLane();
-	virtual void OnPaint(wxPaintEvent& event);
+	virtual void PaintBackground(wxDC& dc, int width, int height);
+	virtual void PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset);
 	virtual MidiFileEvent_t GetEventFromXY(int x, int y);
-	virtual wxRect GetRectFromEvent(MidiFileEvent_t midi_event);
-	virtual int GetYFromValue(int value);
-	virtual int GetValueFromY(int y);
+	virtual MidiFileEvent_t AddEventAtXY(int x, int y);
+	virtual void MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset);
+	virtual void SelectEventsInRect(int x, int y, int width, int height);
+	virtual wxRect GetRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
+	virtual int GetYFromValue(float value);
+	virtual float GetValueFromY(int y);
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event) = 0;
-	virtual int GetValueFromEvent(MidiFileEvent_t midi_event) = 0;
+	virtual MidiFileEvent_t AddEvent(long tick, float value) = 0;
+	virtual float GetEventValue(MidiFileEvent_t midi_event) = 0;
+	virtual void SetEventValue(MidiFileEvent_t midi_event, float value) = 0;
 };
 
 #endif

@@ -11,6 +11,9 @@ class ControlChaneLane;
 class NoteLane: public Lane
 {
 public:
+	MidiFileTrack_t track;
+	int channel;
+	int velocity;
 	int pixels_per_note;
 	int scroll_y;
 
