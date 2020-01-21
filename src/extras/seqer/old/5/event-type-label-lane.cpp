@@ -103,3 +103,9 @@ void EventTypeLabelLane::PopulateLabels()
 	}
 }
 
+MidiFileEvent_t EventTypeLabelLane::AddEvent(long WXUNUSED(tick))
+{
+	// You can only modify existing events in this type of lane.
+	return NULL;
+}
+

@@ -12,6 +12,7 @@ public:
 	MarkerLane(Window* window);
 	~MarkerLane();
 	virtual void PopulateLabels();
+	virtual MidiFileEvent_t AddEvent(long tick);
 };
 
 #endif

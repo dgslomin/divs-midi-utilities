@@ -12,6 +12,7 @@ public:
 	EventTypeLabelLane(Window* window);
 	~EventTypeLabelLane();
 	virtual void PopulateLabels();
+	virtual MidiFileEvent_t AddEvent(long tick);
 };
 
 #endif

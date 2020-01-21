@@ -16,10 +16,16 @@ public:
 
 	LabelLane(Window* window);
 	~LabelLane();
-	virtual void OnPaint(wxPaintEvent& event);
-	virtual void PopulateLabels() = 0;
-	virtual void LayoutLabels();
+	virtual void PaintBackground(wxDC& dc, int width, int height);
+	virtual void PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset);
 	virtual MidiFileEvent_t GetEventFromXY(int x, int y);
+	virtual MidiFileEvent_t AddEventAtXY(int x, int y);
+	virtual void MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset);
+	virtual void SelectEventsInRect(int x, int y, int width, int height);
+	virtual void LayoutLabels(int selected_events_x_offset);
+
+	virtual void PopulateLabels() = 0;
+	virtual MidiFileEvent_t AddEvent(long tick) = 0;
 };
 
 #endif

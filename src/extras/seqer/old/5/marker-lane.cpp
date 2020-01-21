@@ -23,3 +23,8 @@ void MarkerLane::PopulateLabels()
 	}
 }
 
+MidiFileEvent_t MarkerLane::AddEvent(long tick)
+{
+	return MidiFileTrack_createMarkerEvent(MidiFile_getTrackByNumber(this->window->sequence->midi_file, 0, 1), tick, "");
+}
+
