@@ -177,3 +177,16 @@ on space key:
 
 			cursor_event.is_selected = true
 
+
+
+
+TODO:
+lanes in the window
+lane scrollers
+side panels
+undo stack
+preferences
+keyboard navigation and tweaking
+playback
+recording
+
