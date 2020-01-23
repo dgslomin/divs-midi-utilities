@@ -22,6 +22,7 @@ public:
 	virtual void CreateMenuBar();
 	virtual void CreateFileMenu(wxMenuBar* menu_bar);
 	virtual void CreateEditMenu(wxMenuBar* menu_bar);
+	virtual void CreateViewMenu(wxMenuBar* menu_bar);
 	virtual void CreateTransportMenu(wxMenuBar* menu_bar);
 	virtual void CreateToolsMenu(wxMenuBar* menu_bar);
 	virtual void CreateHelpMenu(wxMenuBar* menu_bar);
@@ -39,6 +40,9 @@ public:
 	virtual void Quit();
 	virtual void SelectAll();
 	virtual void SelectNone();
+	virtual void AddLane();
+	virtual void RemoveLane();
+	virtual void LaneProperties();
 	virtual void FocusPropertyEditor();
 	virtual void RefreshData();
 	virtual void RefreshDisplay();

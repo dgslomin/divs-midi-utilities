@@ -4,6 +4,7 @@
 #include <midifile.h>
 #include "application.h"
 #include "ids.h"
+#include "lane-properties-dialog.h"
 #include "sequence.h"
 #include "window.h"
 
@@ -31,6 +32,7 @@ void Window::CreateMenuBar()
 	wxMenuBar* menu_bar = new wxMenuBar();
 	CreateFileMenu(menu_bar);
 	CreateEditMenu(menu_bar);
+	CreateViewMenu(menu_bar);
 	CreateTransportMenu(menu_bar);
 	CreateToolsMenu(menu_bar);
 	CreateHelpMenu(menu_bar);
@@ -89,6 +91,28 @@ void Window::CreateEditMenu(wxMenuBar* menu_bar)
 
 	edit_menu->Append(SEQER_ID_SELECT_TIME_RANGE, "Select Ti&me Range");
 	menu_bar->Append(edit_menu, "&Edit");
+}
+
+void Window::CreateViewMenu(wxMenuBar* menu_bar)
+{
+	wxMenu* view_menu = new wxMenu();
+	view_menu->Append(wxID_ZOOM_IN, "Zoom &In\tCtrl++");
+	view_menu->Append(wxID_ZOOM_OUT, "Zoom &Out\tCtrl+-");
+	view_menu->AppendSeparator();
+
+	view_menu->Append(SEQER_ID_ADD_LANE, "&Add Lane...");
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->AddLane(); }, SEQER_ID_ADD_LANE);
+
+	view_menu->Append(SEQER_ID_REMOVE_LANE, "&Remove Lane");
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->RemoveLane(); }, SEQER_ID_REMOVE_LANE);
+
+	view_menu->Append(SEQER_ID_LANE_PROPERTIES, "Lane &Properties...");
+	this->Bind(wxEVT_COMMAND_MENU_SELECTED, [=](wxCommandEvent& WXUNUSED(event)) { this->LaneProperties(); }, SEQER_ID_LANE_PROPERTIES);
+
+#ifdef __WXOSX__
+	view_menu->AppendSeparator();
+#endif
+	menu_bar->Append(view_menu, "&View");
 }
 
 void Window::CreateTransportMenu(wxMenuBar* menu_bar)
@@ -302,6 +326,20 @@ void Window::SelectNone()
 	{
 		MidiFileEvent_setSelected(midi_event, 0);
 	}
+}
+
+void Window::AddLane()
+{
+	LanePropertiesDialog(this, true).ShowModal();
+}
+
+void Window::RemoveLane()
+{
+}
+
+void Window::LaneProperties()
+{
+	LanePropertiesDialog(this, false).ShowModal();
 }
 
 void Window::FocusPropertyEditor()
