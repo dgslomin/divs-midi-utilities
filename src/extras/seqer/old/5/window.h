@@ -5,6 +5,7 @@ class Window;
 
 #include <wx/wx.h>
 #include "application.h"
+#include "inspector-panel.h"
 #include "sequence.h"
 
 class Window: public wxFrame
@@ -42,7 +43,6 @@ public:
 	virtual void SelectNone();
 	virtual void AddLane();
 	virtual void RemoveLane();
-	virtual void LaneProperties();
 	virtual void FocusPropertyEditor();
 	virtual void RefreshData();
 	virtual void RefreshDisplay();

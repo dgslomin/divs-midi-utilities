@@ -5,8 +5,8 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: application.obj controller-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj lane-properties-dialog.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe application.obj controller-lane.obj event-type-label-lane.obj label.obj label-lane.obj lane.obj lane-properties-dialog.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: application.obj controller-lane.obj event-type-label-lane.obj inspector-panel.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe application.obj controller-lane.obj event-type-label-lane.obj inspector-panel.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
@@ -19,6 +19,9 @@ controller-lane.obj: controller-lane.cpp controller-lane.h ..\..\..\..\midifile\
 event-type-label-lane.obj: event-type-label-lane.cpp event-type-label-lane.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c event-type-label-lane.cpp
 
+inspector-panel.obj: inspector-panel.cpp inspector-panel.h ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c inspector-panel.cpp
+
 label.obj: label.cpp label.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c label.cpp
 
@@ -27,9 +30,6 @@ label-lane.obj: label-lane.cpp label-lane.h ..\..\..\..\midifile\midifile.h
 
 lane.obj: lane.cpp lane.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lane.cpp
-
-lane-properties-dialog.obj: lane-properties-dialog.cpp lane-properties-dialog.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lane-properties-dialog.cpp
 
 marker-lane.obj: marker-lane.cpp marker-lane.h ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c marker-lane.cpp
@@ -65,10 +65,10 @@ clean:
 	@if exist application.obj del application.obj
 	@if exist controller-lane.obj del controller-lane.obj
 	@if exist event-type-label-lane.obj del event-type-label-lane.obj
+	@if exist inspector-panel.obj del inspector-panel.obj
 	@if exist label.obj del label.obj
 	@if exist label-lane.obj del label-lane.obj
 	@if exist lane.obj del lane.obj
-	@if exist lane-properties-dialog.obj del lane-properties-dialog.obj
 	@if exist marker-lane.obj del marker-lane.obj
 	@if exist midifile.obj del midifile.obj
 	@if exist note-lane.obj del note-lane.obj
