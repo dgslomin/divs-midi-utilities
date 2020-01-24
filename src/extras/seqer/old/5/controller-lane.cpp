@@ -5,7 +5,7 @@
 #include "numeric-value-lane.h"
 #include "window.h"
 
-ControllerLane::ControllerLane(Window* window): NumericValueLane(window)
+ControllerLane::ControllerLane(wxWindow* parent, Window* window): NumericValueLane(parent, window)
 {
 }
 

@@ -24,7 +24,7 @@ public:
 	bool mouse_drag_x_allowed;
 	bool mouse_drag_y_allowed;
 
-	Lane(Window* window);
+	Lane(wxWindow* parent, Window* window);
 	~Lane();
 	virtual void OnPaint(wxPaintEvent& event);
 	virtual void OnLeftDown(wxMouseEvent& event);

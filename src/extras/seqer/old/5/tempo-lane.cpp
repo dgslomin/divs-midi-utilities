@@ -5,7 +5,7 @@
 #include "tempo-lane.h"
 #include "window.h"
 
-TempoLane::TempoLane(Window* window): NumericValueLane(window)
+TempoLane::TempoLane(wxWindow* parent, Window* window): NumericValueLane(parent, window)
 {
 }
 

@@ -14,7 +14,7 @@ class LabelLane: public Lane
 public:
 	std::vector<Label> labels;
 
-	LabelLane(Window* window);
+	LabelLane(wxWindow* parent, Window* window);
 	~LabelLane();
 	virtual void PaintBackground(wxDC& dc, int width, int height);
 	virtual void PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset);

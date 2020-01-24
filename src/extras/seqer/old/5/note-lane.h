@@ -17,7 +17,7 @@ public:
 	int pixels_per_note;
 	int scroll_y;
 
-	NoteLane(Window* window);
+	NoteLane(wxWindow* parent, Window* window);
 	~NoteLane();
 	virtual void PaintBackground(wxDC& dc, int width, int height);
 	virtual void PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset);

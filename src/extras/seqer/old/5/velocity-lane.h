@@ -14,7 +14,7 @@ public:
 	int pixels_per_value;
 	int scroll_y;
 
-	VelocityLane(Window* window);
+	VelocityLane(wxWindow* parent, Window* window);
 	~VelocityLane();
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event);
 	virtual MidiFileEvent_t AddEvent(long tick, float value);

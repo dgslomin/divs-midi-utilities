@@ -9,7 +9,7 @@ class MarkerLane;
 class MarkerLane: public LabelLane
 {
 public:
-	MarkerLane(Window* window);
+	MarkerLane(wxWindow* parent, Window* window);
 	~MarkerLane();
 	virtual void PopulateLabels();
 	virtual MidiFileEvent_t AddEvent(long tick);

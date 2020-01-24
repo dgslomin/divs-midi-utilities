@@ -16,7 +16,7 @@ public:
 	wxChoice* lane_controller_choice;
 	wxCheckBox* start_lane_group_check_box;
 
-	InspectorPanel(Window* window, wxWindow* parent);
+	InspectorPanel(wxWindow* parent, Window* window);
 	~InspectorPanel();
 	virtual void OnLaneTypeChoice(wxCommandEvent& event);
 	virtual void RefreshDisplay();

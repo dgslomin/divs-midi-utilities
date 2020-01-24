@@ -4,7 +4,7 @@
 #include "lane.h"
 #include "window.h"
 
-LabelLane::LabelLane(Window* window): Lane(window)
+LabelLane::LabelLane(wxWindow* parent, Window* window): Lane(parent, window)
 {
 }
 

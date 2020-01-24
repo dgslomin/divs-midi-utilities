@@ -15,7 +15,7 @@ public:
 	int channel;
 	int controller_number;
 
-	ControllerLane(Window* window);
+	ControllerLane(wxWindow* parent, Window* window);
 	~ControllerLane();
 	virtual bool ShouldIncludeEvent(MidiFileEvent_t midi_event);
 	virtual MidiFileEvent_t AddEvent(long tick, float value);

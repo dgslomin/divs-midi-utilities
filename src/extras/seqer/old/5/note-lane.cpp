@@ -5,7 +5,7 @@
 #include "note-lane.h"
 #include "window.h"
 
-NoteLane::NoteLane(Window* window): Lane(window)
+NoteLane::NoteLane(wxWindow* parent, Window* window): Lane(parent, window)
 {
 }
 

@@ -5,7 +5,7 @@
 #include "event-type-label-lane.h"
 #include "midifile.h"
 
-EventTypeLabelLane::EventTypeLabelLane(Window* window): LabelLane(window)
+EventTypeLabelLane::EventTypeLabelLane(wxWindow* parent, Window* window): LabelLane(parent, window)
 {
 }
 

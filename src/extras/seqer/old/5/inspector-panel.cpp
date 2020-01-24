@@ -4,7 +4,7 @@
 #include "window.h"
 #include "inspector-panel.h"
 
-InspectorPanel::InspectorPanel(Window* window, wxWindow* parent): wxVScrolledWindow(parent)
+InspectorPanel::InspectorPanel(wxWindow* parent, Window* window): wxVScrolledWindow(parent)
 {
 	this->window = window;
 

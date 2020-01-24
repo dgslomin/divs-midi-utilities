@@ -3,7 +3,7 @@
 #include "lane.h"
 #include "window.h"
 
-Lane::Lane(Window* window): wxWindow(window, wxID_ANY)
+Lane::Lane(wxWindow* parent, Window* window): wxWindow(parent, wxID_ANY)
 {
 	this->window = window;
 	this->Bind(wxEVT_PAINT, [=](wxPaintEvent& event) { this->OnPaint(event); });

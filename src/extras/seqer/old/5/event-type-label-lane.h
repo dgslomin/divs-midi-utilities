@@ -9,7 +9,7 @@ class EventTypeLabelLane;
 class EventTypeLabelLane: public LabelLane
 {
 public:
-	EventTypeLabelLane(Window* window);
+	EventTypeLabelLane(wxWindow* parent, Window* window);
 	~EventTypeLabelLane();
 	virtual void PopulateLabels();
 	virtual MidiFileEvent_t AddEvent(long tick);

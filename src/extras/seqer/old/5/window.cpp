@@ -1,10 +1,13 @@
 
 #include <set>
 #include <wx/wx.h>
+#include <wx/splitter.h>
 #include <midifile.h>
 #include "application.h"
 #include "ids.h"
+#include "event-type-label-lane.h"
 #include "inspector-panel.h"
+#include "note-lane.h"
 #include "sequence.h"
 #include "window.h"
 
@@ -21,7 +24,19 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	this->CreateStatusBar();
 	this->CreateMenuBar();
 
-	new InspectorPanel(this, this);
+	wxSplitterWindow* sidebar_splitter_window = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_THIN_SASH | wxSP_BORDER | wxSP_LIVE_UPDATE);
+	sidebar_splitter_window->SetSashGravity(0.5);
+
+	wxSplitterWindow* lane_splitter_window = new wxSplitterWindow(sidebar_splitter_window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_DEFAULT | wxSP_LIVE_UPDATE);
+	lane_splitter_window->SetSashGravity(0.5);
+
+	NoteLane* note_lane = new NoteLane(lane_splitter_window, this);
+	EventTypeLabelLane* event_type_label_lane = new EventTypeLabelLane(lane_splitter_window, this);
+	lane_splitter_window->SplitHorizontally(note_lane, event_type_label_lane);
+
+	InspectorPanel* inspector_panel = new InspectorPanel(sidebar_splitter_window, this);
+
+	sidebar_splitter_window->SplitVertically(lane_splitter_window, inspector_panel);
 }
 
 Window::~Window()

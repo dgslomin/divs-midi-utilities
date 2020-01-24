@@ -5,7 +5,7 @@
 #include "velocity-lane.h"
 #include "window.h"
 
-VelocityLane::VelocityLane(Window* window): NumericValueLane(window)
+VelocityLane::VelocityLane(wxWindow* parent, Window* window): NumericValueLane(parent, window)
 {
 }
 

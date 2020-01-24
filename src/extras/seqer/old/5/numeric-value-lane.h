@@ -14,7 +14,7 @@ public:
 	int pixels_per_value;
 	int scroll_y;
 
-	NumericValueLane(Window* window);
+	NumericValueLane(wxWindow* parent, Window* window);
 	~NumericValueLane();
 	virtual void PaintBackground(wxDC& dc, int width, int height);
 	virtual void PaintEvents(wxDC& dc, int width, int height, int selected_events_x_offset, int selected_events_y_offset);

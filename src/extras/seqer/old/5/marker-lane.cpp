@@ -5,7 +5,7 @@
 #include "marker-lane.h"
 #include "midifile.h"
 
-MarkerLane::MarkerLane(Window* window): LabelLane(window)
+MarkerLane::MarkerLane(wxWindow* parent, Window* window): LabelLane(parent, window)
 {
 }
 
