@@ -125,7 +125,7 @@ void Lane::OnLeftUp(wxMouseEvent& event)
 	}
 
 	this->mouse_down = false;
-	this->ReleaseMouse();
+	if (this->HasCapture()) this->ReleaseMouse();
 	event.Skip();
 }
 

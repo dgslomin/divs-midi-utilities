@@ -50,7 +50,7 @@ void LabelLane::PaintEvents(wxDC& dc, int width, int height, int selected_events
 
 MidiFileEvent_t LabelLane::GetEventFromXY(int x, int y)
 {
-	wxPaintDC dc(this);
+	wxClientDC dc(this);
 	int row_height = dc.GetCharHeight() + 4;
 
 	for (int label_number = this->labels.size() - 1; label_number >= 0; label_number--)
@@ -75,7 +75,7 @@ void LabelLane::MoveEventByXY(MidiFileEvent_t midi_event, int x_offset, int WXUN
 
 void LabelLane::SelectEventsInRect(int x, int y, int width, int height)
 {
-	wxPaintDC dc(this);
+	wxClientDC dc(this);
 	int row_height = dc.GetCharHeight() + 4;
 	wxRect bounds(x, y, width, height);
 

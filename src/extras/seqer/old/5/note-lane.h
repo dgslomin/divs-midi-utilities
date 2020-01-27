@@ -14,7 +14,7 @@ public:
 	MidiFileTrack_t track;
 	int channel;
 	int velocity;
-	int pixels_per_note = 4;
+	int pixels_per_note = 6;
 	int scroll_y;
 
 	NoteLane(wxWindow* parent, Window* window);

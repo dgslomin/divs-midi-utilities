@@ -17,6 +17,7 @@ void NoteLane::PaintBackground(wxDC& dc, int width, int height)
 {
 	dc.SetBackground(this->window->application->background_brush);
 	dc.Clear();
+	dc.SetPen(*wxTRANSPARENT_PEN);
 
 	bool black_note[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 

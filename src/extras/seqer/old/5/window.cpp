@@ -28,14 +28,14 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 
 	wxAuiManager* aui_manager = new wxAuiManager(this);
 
-	NoteLane* note_lane = new NoteLane(this, this);
-	aui_manager->AddPane(note_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
+	EventTypeLabelLane* event_type_label_lane = new EventTypeLabelLane(this, this);
+	aui_manager->AddPane(event_type_label_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
 	ControllerLane* controller_lane = new ControllerLane(this, this);
 	aui_manager->AddPane(controller_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
-	EventTypeLabelLane* event_type_label_lane = new EventTypeLabelLane(this, this);
-	aui_manager->AddPane(event_type_label_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
+	NoteLane* note_lane = new NoteLane(this, this);
+	aui_manager->AddPane(note_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
 	wxAuiNotebook* sidebars_notebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_TAB_EXTERNAL_MOVE | wxAUI_NB_TOP);
 	aui_manager->AddPane(sidebars_notebook, wxAuiPaneInfo().Right().CaptionVisible(false).Floatable(true).Movable(true).Resizable(true));
