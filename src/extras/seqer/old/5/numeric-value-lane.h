@@ -11,7 +11,7 @@ class NumericValueLane;
 class NumericValueLane: public Lane
 {
 public:
-	int pixels_per_value;
+	int pixels_per_value = 1;
 	int scroll_y;
 
 	NumericValueLane(wxWindow* parent, Window* window);

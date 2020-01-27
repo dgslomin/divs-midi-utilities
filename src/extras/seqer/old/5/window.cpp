@@ -1,9 +1,11 @@
 
 #include <set>
 #include <wx/wx.h>
-#include <wx/splitter.h>
+#include <wx/aui/auibook.h>
+#include <wx/aui/framemanager.h>
 #include <midifile.h>
 #include "application.h"
+#include "controller-lane.h"
 #include "ids.h"
 #include "event-type-label-lane.h"
 #include "inspector-panel.h"
@@ -24,19 +26,30 @@ Window::Window(Application* application, Window* existing_window): wxFrame((wxFr
 	this->CreateStatusBar();
 	this->CreateMenuBar();
 
-	wxSplitterWindow* sidebar_splitter_window = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_THIN_SASH | wxSP_BORDER | wxSP_LIVE_UPDATE);
-	sidebar_splitter_window->SetSashGravity(0.5);
+	wxAuiManager* aui_manager = new wxAuiManager(this);
 
-	wxSplitterWindow* lane_splitter_window = new wxSplitterWindow(sidebar_splitter_window, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_DEFAULT | wxSP_LIVE_UPDATE);
-	lane_splitter_window->SetSashGravity(0.5);
+	NoteLane* note_lane = new NoteLane(this, this);
+	aui_manager->AddPane(note_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
-	NoteLane* note_lane = new NoteLane(lane_splitter_window, this);
-	EventTypeLabelLane* event_type_label_lane = new EventTypeLabelLane(lane_splitter_window, this);
-	lane_splitter_window->SplitHorizontally(note_lane, event_type_label_lane);
+	ControllerLane* controller_lane = new ControllerLane(this, this);
+	aui_manager->AddPane(controller_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
-	InspectorPanel* inspector_panel = new InspectorPanel(sidebar_splitter_window, this);
+	EventTypeLabelLane* event_type_label_lane = new EventTypeLabelLane(this, this);
+	aui_manager->AddPane(event_type_label_lane, wxAuiPaneInfo().Center().CaptionVisible(false).Floatable(false).Movable(true).Resizable(true));
 
-	sidebar_splitter_window->SplitVertically(lane_splitter_window, inspector_panel);
+	wxAuiNotebook* sidebars_notebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_TAB_EXTERNAL_MOVE | wxAUI_NB_TOP);
+	aui_manager->AddPane(sidebars_notebook, wxAuiPaneInfo().Right().CaptionVisible(false).Floatable(true).Movable(true).Resizable(true));
+
+	InspectorPanel* inspector_panel = new InspectorPanel(sidebars_notebook, this);
+	sidebars_notebook->AddPage(inspector_panel, "Inspector");
+
+	InspectorPanel* tracks_panel = new InspectorPanel(sidebars_notebook, this);
+	sidebars_notebook->AddPage(tracks_panel, "Tracks");
+
+	InspectorPanel* channels_panel = new InspectorPanel(sidebars_notebook, this);
+	sidebars_notebook->AddPage(channels_panel, "Channels");
+
+	aui_manager->Update();
 }
 
 Window::~Window()

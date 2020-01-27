@@ -18,6 +18,7 @@ public:
 
 	InspectorPanel(wxWindow* parent, Window* window);
 	~InspectorPanel();
+	virtual wxCoord OnGetRowHeight(size_t row) const;
 	virtual void OnLaneTypeChoice(wxCommandEvent& event);
 	virtual void RefreshDisplay();
 };

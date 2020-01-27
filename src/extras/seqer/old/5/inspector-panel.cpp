@@ -74,6 +74,11 @@ InspectorPanel::~InspectorPanel()
 {
 }
 
+wxCoord InspectorPanel::OnGetRowHeight(size_t row) const
+{
+	return 1;
+}
+
 void InspectorPanel::OnLaneTypeChoice(wxCommandEvent& event)
 {
 	this->RefreshDisplay();

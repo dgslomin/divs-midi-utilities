@@ -14,8 +14,8 @@ public:
 	Application* application;
 	Sequence* sequence;
 	bool use_linear_time;
-	int pixels_per_beat;
-	int pixels_per_second;
+	int pixels_per_beat = 40;
+	int pixels_per_second = 40;
 	int scroll_x;
 
 	Window(Application* application, Window* existing_window = NULL);
