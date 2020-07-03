@@ -1,0 +1,77 @@
+
+# Maccann duet concertina 47 key layout approximated in straight rows.
+
+42	unassigned	# lshift	unassigned
+44	48	# z	c
+45	52	# x	e
+46	unassigned	# c	unassigned
+47	53	# v	f
+48	54	# b	f#
+49	68	# n	g#'
+50	67	# m	g'
+51	69	# comma	a'
+52	75	# period	eb''
+53	71	# slash	b'
+54	70	# rshift	bb'
+
+58	56	# caps lock	g#
+30	55	# a	g
+31	57	# s	a
+32	63	# d	eb'
+33	59	# f	b
+34	58	# g	bb
+35	73	# h	c#''
+36	72	# j	c''
+37	76	# k	e''
+38	74	# l	d''
+39	77	# semicolon	f''
+40	78	# apostrophe	f#''
+28	unassigned	# enter	unassigned
+
+15	61	# tab	c#'
+16	60	# q	c'
+17	64	# w	e'
+18	62	# e	d'
+19	65	# r	f'
+20	66	# t	f#'
+21	80	# y	g#''
+22	79	# u	g''
+23	83	# i	b''
+24	81	# o	a''
+25	84	# p	c'''
+26	85	# lbracket	c#'''
+27	unassigned	# rbracket	unassigned
+43	unassigned	# backslash	unassigned
+
+41	68	# backtick	g#'
+2	67	# 1	g'
+3	71	# 2	b'
+4	69	# 3	a'
+5	72	# 4	c''
+6	unassigned	# 5	unassigned
+7	unassigned	# 6	unassigned
+8	86	# 7	d'''
+9	88	# 8	e'''
+10	82	# 9	bb''
+11	89	# 0	f'''
+12	90	# minus	f#'''
+13	unassigned	# equals	unassigned
+14	unassigned	# backspace	unassigned
+
+# repeat the high g since the function key row may not be aligned properly on laptops
+63	91	# f5	g'''
+64	91	# f6	g'''
+65	91	# f7	g'''
+66	91	# f8	g'''
+67	91	# f9	g'''
+68	91	# f10	g'''
+87	91	# f11	g'''
+88	91	# f12	g'''
+
+59	stay-down-octave	# f1
+60	stay-up-octave	# f2
+61	stay-down-note	# f3
+62	stay-up-note	# f4
+57	panic	# space
+1	exit	# esc
+
