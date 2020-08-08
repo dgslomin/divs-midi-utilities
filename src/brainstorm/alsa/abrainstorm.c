@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <limits.h>
 #include <sys/time.h>
 #include <alsa/asoundlib.h>
 #include <midifile.h>
@@ -177,8 +178,41 @@ int main(int argc, char **argv)
 				snd_seq_client_info_free(client_info);
 			}
 
-			if (connect_client_id < 0) connect_client_id = atoi(connect_client);
-			snd_seq_connect_from(seq, port, connect_client_id, connect_port);
+			if (connect_client_id < 0)
+			{
+				long val;
+				char *endptr;
+				errno = 0;
+				val = strtol(connect_client, &endptr, 10);
+
+				if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
+					|| (errno != 0 && connect_client == 0))
+				{
+					perror("strtol");
+					exit(1);
+				}
+
+				if ((endptr == connect_client) || (*endptr != '\0'))
+				{
+					fprintf(stderr, "Invalid client ID: '%s'\n", connect_client);
+					exit(1);
+				}
+
+				if (val < 0 || val > INT_MAX)
+				{
+					fprintf(stderr, "Invalid client ID: %l\n", val);
+					exit(1);
+				}
+
+				connect_client_id = val;
+			}
+
+			if (0 > snd_seq_connect_from(seq, port, connect_client_id, connect_port))
+			{
+				fprintf(stderr, "Unable to open MIDI client %d: '%s', port %d.\n",
+						connect_client_id, connect_client, connect_port);
+				exit(1);
+			}
 		}
 
 		signal(SIGALRM, alarm_handler);
