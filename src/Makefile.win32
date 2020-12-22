@@ -38,6 +38,7 @@ all:
 	cd scale-velocity && nmake -f Makefile.win32 /nologo
 	cd sendmidi && nmake -f Makefile.win32 /nologo
 	cd smftoxml && nmake -f Makefile.win32 /nologo
+	cd smf-length && nmake -f Makefile.win32 /nologo
 	cd tempo-map && nmake -f Makefile.win32 /nologo
 	cd velocityfader && nmake -f Makefile.win32 /nologo
 	cd xmltosmf && nmake -f Makefile.win32 /nologo
@@ -79,6 +80,7 @@ clean:
 	cd scale-velocity && nmake -f Makefile.win32 /nologo clean
 	cd sendmidi && nmake -f Makefile.win32 /nologo clean
 	cd smftoxml && nmake -f Makefile.win32 /nologo clean
+	cd smf-length && nmake -f Makefile.win32 /nologo clean
 	cd tempo-map && nmake -f Makefile.win32 /nologo clean
 	cd velocityfader && nmake -f Makefile.win32 /nologo clean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo clean
@@ -120,6 +122,7 @@ reallyclean:
 	cd scale-velocity && nmake -f Makefile.win32 /nologo reallyclean
 	cd sendmidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd smftoxml && nmake -f Makefile.win32 /nologo reallyclean
+	cd smf-length && nmake -f Makefile.win32 /nologo reallyclean
 	cd tempo-map && nmake -f Makefile.win32 /nologo reallyclean
 	cd velocityfader && nmake -f Makefile.win32 /nologo reallyclean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo reallyclean

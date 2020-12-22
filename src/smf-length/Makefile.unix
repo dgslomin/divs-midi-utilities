@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/smf-length: smf-length.o midifile.o
+	$(CC) -o../../bin/smf-length smf-length.o midifile.o
+
+smf-length.o: smf-length.c ../midifile/midifile.h
+	$(CC) -I../midifile -c smf-length.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f smf-length.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/smf-length
+

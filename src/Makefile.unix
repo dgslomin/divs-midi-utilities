@@ -31,6 +31,7 @@ all:
 	cd scale-tempo && make -f Makefile.unix
 	cd scale-velocity && make -f Makefile.unix
 	cd smftoxml && make -f Makefile.unix
+	cd smf-length && make -f Makefile.unix
 	cd tempo-map && make -f Makefile.unix
 	cd transpose && make -f Makefile.unix
 	cd verbosify && make -f Makefile.unix
@@ -62,6 +63,7 @@ clean:
 	cd scale-tempo && make -f Makefile.unix clean
 	cd scale-velocity && make -f Makefile.unix clean
 	cd smftoxml && make -f Makefile.unix clean
+	cd smf-length && make -f Makefile.unix clean
 	cd tempo-map && make -f Makefile.unix clean
 	cd transpose && make -f Makefile.unix clean
 	cd verbosify && make -f Makefile.unix clean
@@ -93,6 +95,7 @@ reallyclean:
 	cd scale-tempo && make -f Makefile.unix reallyclean
 	cd scale-velocity && make -f Makefile.unix reallyclean
 	cd smftoxml && make -f Makefile.unix reallyclean
+	cd smf-length && make -f Makefile.unix reallyclean
 	cd tempo-map && make -f Makefile.unix reallyclean
 	cd transpose && make -f Makefile.unix reallyclean
 	cd verbosify && make -f Makefile.unix reallyclean

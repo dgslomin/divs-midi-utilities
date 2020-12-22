@@ -1,0 +1,17 @@
+
+..\..\bin\smf-length.exe: smf-length.obj midifile.obj
+	cl /nologo /Fe..\..\bin\smf-length.exe smf-length.obj midifile.obj
+
+smf-length.obj: smf-length.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c smf-length.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist smf-length.obj del smf-length.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\smf-length.exe del ..\..\bin\smf-length.exe
+
