@@ -138,19 +138,27 @@ snd_seq_addr_t *get_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *cl
 	return NULL;
 }
 
-snd_seq_addr_t *wait_for_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability)
+snd_seq_addr_t *wait_for_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability, int timeout_seconds)
 {
 	snd_seq_addr_t *port_address;
+	int times_waited = 0;
 
 	while ((port_address = get_port_address(sequencer, client_info, port_info, client_name, port_name, capability)) == NULL)
 	{
+		if ((timeout_seconds >= 0) && (times_waited / 4 == timeout_seconds))
+		{
+			fprintf(stderr, "Timeout\n");
+			exit(1);
+		}
+
 		usleep(250000);
+		times_waited++;
 	}
 
 	return port_address;
 }
 
-void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_name, char *to_client_name, char *to_port_name)
+void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_name, char *to_client_name, char *to_port_name, int timeout_seconds)
 {
 	snd_seq_t *sequencer;
 	snd_seq_client_info_t *client_info;
@@ -163,8 +171,8 @@ void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_
 	snd_seq_port_info_malloc(&port_info);
 	snd_seq_port_subscribe_malloc(&subscription);
 
-	snd_seq_port_subscribe_set_sender(subscription, wait_for_port_address(sequencer, client_info, port_info, from_client_name, from_port_name, SND_SEQ_PORT_CAP_SUBS_READ));
-	snd_seq_port_subscribe_set_dest(subscription, wait_for_port_address(sequencer, client_info, port_info, to_client_name, to_port_name, SND_SEQ_PORT_CAP_SUBS_WRITE));
+	snd_seq_port_subscribe_set_sender(subscription, wait_for_port_address(sequencer, client_info, port_info, from_client_name, from_port_name, SND_SEQ_PORT_CAP_SUBS_READ, timeout_seconds));
+	snd_seq_port_subscribe_set_dest(subscription, wait_for_port_address(sequencer, client_info, port_info, to_client_name, to_port_name, SND_SEQ_PORT_CAP_SUBS_WRITE, timeout_seconds));
 
 	switch (mode)
 	{
@@ -194,7 +202,7 @@ void usage(char *program_name)
 {
 	fprintf(stderr, "Usage: %s --list-ports\n", program_name);
 	fprintf(stderr, "Usage: %s --list-connections\n", program_name);
-	fprintf(stderr, "Usage: %s --connect --from <client> <port> --to <client> <port>\n", program_name);
+	fprintf(stderr, "Usage: %s --connect --from <client> <port> --to <client> <port> [ --timeout <seconds> ]\n", program_name);
 	fprintf(stderr, "Usage: %s --disconnect --from <client> <port> --to <client> <port>\n", program_name);
 	exit(1);
 }
@@ -206,6 +214,7 @@ int main(int argc, char **argv)
 	char *from_port_name = NULL;
 	char *to_client_name = NULL;
 	char *to_port_name = NULL;
+	int timeout_seconds = -1;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -239,6 +248,11 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			to_port_name = argv[i];
 		}
+		else if (strcmp(argv[i], "--timeout") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			timeout_seconds = atoi(argv[i]);
+		}
 		else
 		{
 			usage(argv[0]);
@@ -264,7 +278,7 @@ int main(int argc, char **argv)
 			if (from_port_name == NULL) usage(argv[0]);
 			if (to_client_name == NULL) usage(argv[0]);
 			if (to_port_name == NULL) usage(argv[0]);
-			connect_or_disconnect(mode, from_client_name, from_port_name, to_client_name, to_port_name);
+			connect_or_disconnect(mode, from_client_name, from_port_name, to_client_name, to_port_name, timeout_seconds);
 			break;
 		}
 		default:
