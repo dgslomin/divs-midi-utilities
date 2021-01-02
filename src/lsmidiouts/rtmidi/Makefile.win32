@@ -1,0 +1,21 @@
+
+..\..\..\bin\lsmidiouts.exe: lsmidiouts.obj rtmidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\..\bin\lsmidiouts.exe lsmidiouts.obj rtmidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+
+lsmidiouts.obj: lsmidiouts.c
+	cl /nologo /I..\..\3rdparty\rtmidi /c lsmidiouts.c
+
+rtmidi.obj: ..\..\3rdparty\rtmidi\rtmidi.cpp
+	cl /nologo /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\..\3rdparty\rtmidi /c ..\..\3rdparty\rtmidi\rtmidi.cpp
+
+rtmidi_c.obj: ..\..\3rdparty\rtmidi\rtmidi_c.cpp
+	cl /nologo /I..\..\3rdparty\rtmidi /c ..\..\3rdparty\rtmidi\rtmidi_c.cpp
+
+clean:
+	@if exist lsmidiouts.obj del lsmidiouts.obj
+	@if exist rtmidi.obj del rtmidi.obj
+	@if exist rtmidi_c.obj del rtmidi_c.obj
+
+reallyclean: clean
+	@if exist ..\..\..\bin\lsmidiouts.exe del ..\..\..\bin\lsmidiouts.exe
+
