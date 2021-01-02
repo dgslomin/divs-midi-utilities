@@ -1849,10 +1849,12 @@ std::string MidiInAlsa :: getPortName( unsigned int portNumber )
     os << snd_seq_client_info_get_name( cinfo );
     os << ":";
     os << snd_seq_port_info_get_name( pinfo );
+#ifndef RTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
     os << " ";                                    // These lines added to make sure devices are listed
     os << snd_seq_port_info_get_client( pinfo );  // with full portnames added to ensure individual device names
     os << ":";
     os << snd_seq_port_info_get_port( pinfo );
+#endif
     stringName = os.str();
     return stringName;
   }
@@ -2168,10 +2170,12 @@ std::string MidiOutAlsa :: getPortName( unsigned int portNumber )
     os << snd_seq_client_info_get_name( cinfo );
     os << ":";
     os << snd_seq_port_info_get_name( pinfo );
+#ifndef RTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
     os << " ";                                    // These lines added to make sure devices are listed
     os << snd_seq_port_info_get_client( pinfo );  // with full portnames added to ensure individual device names
     os << ":";
     os << snd_seq_port_info_get_port( pinfo );
+#endif
     stringName = os.str();
     return stringName;
   }

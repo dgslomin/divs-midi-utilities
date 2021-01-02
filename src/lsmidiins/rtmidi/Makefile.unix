@@ -1,19 +1,19 @@
 
-../../../bin/lsmidiins: lsmidiins.o
-	gcc -o ../../../bin/lsmidiins lsmidiins.o -lasound
+../../../bin/lsmidiins: lsmidiins.o RtMidi.o rtmidi_c.o
+	gcc -o ../../../bin/lsmidiins lsmidiins.o RtMidi.o rtmidi_c.o -lasound -lpthread -lstdc++
 
 lsmidiins.o: lsmidiins.c
-	gcc -c lsmidiins.c
+	gcc -I../../3rdparty/rtmidi -c lsmidiins.c
 
-rtmidi.o: ../../3rdparty/rtmidi/rtmidi.cpp
-	gcc -d__WINDOWS_MM__ -I../..\/rdparty/rtmidi -c ../../3rdparty/rtmidi/rtmidi.cpp
+RtMidi.o: ../../3rdparty/rtmidi/RtMidi.cpp
+	gcc -D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES -I../../3rdparty/rtmidi -c ../../3rdparty/rtmidi/RtMidi.cpp
 
-rtmidi_c.obj: ../../3rdparty/rtmidi/rtmidi_c.cpp
+rtmidi_c.o: ../../3rdparty/rtmidi/rtmidi_c.cpp
 	gcc -I../../3rdparty/rtmidi -c ../../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
 	rm -f lsmidiins.o
-	rm -f rtmidi.o
+	rm -f RtMidi.o
 	rm -f rtmidi_c.o
 
 reallyclean: clean
