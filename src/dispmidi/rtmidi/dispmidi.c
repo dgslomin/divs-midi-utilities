@@ -7,7 +7,7 @@
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s ( --in <port> | --virtual-in <port> )\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port>\n", program_name);
 	exit(1);
 }
 
@@ -72,18 +72,11 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if (midi_in != NULL) usage(argv[0]);
 			if ((midi_in = rtmidi_open_in_port("dispmidi", argv[i], "in", handle_midi_message, NULL)) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);
 			}
-		}
-		else if (strcmp(argv[i], "--virtual-in") == 0)
-		{
-			if (++i == argc) usage(argv[0]);
-			if (midi_in != NULL) usage(argv[0]);
-			midi_in = rtmidi_open_in_port("dispmidi", NULL, argv[i], handle_midi_message, NULL);
 		}
 		else
 		{
