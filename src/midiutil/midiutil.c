@@ -29,13 +29,13 @@ struct MidiUtilLock
 #endif
 };
 
-void MidiUtil_startThread(void (*callback)(void *arg), void *arg)
+void MidiUtil_startThread(void (*callback)(void *user_data), void *user_data)
 {
 #ifdef _WIN32
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(callback), arg, 0, NULL);
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(callback), user_data, 0, NULL);
 #else
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void *(*)(void *arg))(callback), arg);
+	pthread_create(&thread, NULL, (void *(*)(void *user_data))(callback), user_data);
 	pthread_detach(thread);
 #endif
 }
@@ -142,27 +142,27 @@ long MidiUtil_getCurrentTimeMsecs(void)
 #endif
 }
 
-static void (*interrupt_handler_callback)(void *arg) = NULL;
-static void *interrupt_handler_arg = NULL;
+static void (*interrupt_handler_callback)(void *user_data) = NULL;
+static void *interrupt_handler_user_data = NULL;
 
 #ifdef _WIN32
 static BOOL WINAPI interrupt_handler_helper(DWORD control_type)
 {
-	interrupt_handler_callback(interrupt_handler_arg);
+	interrupt_handler_callback(interrupt_handler_user_data);
 	return TRUE;
 }
 #else
 static void interrupt_handler_helper(int signal_number)
 {
-	interrupt_handler_callback(interrupt_handler_arg);
+	interrupt_handler_callback(interrupt_handler_user_data);
 	signal(SIGINT, interrupt_handler_helper);
 }
 #endif
 
-void MidiUtil_setInterruptHandler(void (*callback)(void *arg), void *arg)
+void MidiUtil_setInterruptHandler(void (*callback)(void *user_data), void *user_data)
 {
 	interrupt_handler_callback = callback;
-	interrupt_handler_arg = arg;
+	interrupt_handler_user_data = user_data;
 
 #ifdef _WIN32
 	SetConsoleCtrlHandler(interrupt_handler_helper, (callback == NULL) ? FALSE : TRUE);
@@ -174,7 +174,7 @@ void MidiUtil_setInterruptHandler(void (*callback)(void *arg), void *arg)
 static MidiUtilLock_t wait_for_interrupt_lock;
 static int was_interrupted;
 
-static void wait_for_interrupt_helper(void *arg)
+static void wait_for_interrupt_helper(void *user_data)
 {
 	MidiUtilLock_lock(wait_for_interrupt_lock);
 	was_interrupted = 1;
@@ -223,9 +223,10 @@ static int rtmidi_open_port_helper(RtMidiPtr device, char *port_name, char *virt
 	return 0;
 }
 
-RtMidiInPtr rtmidi_open_in_port(char *client_name, char *port_name, char *virtual_port_name)
+RtMidiInPtr rtmidi_open_in_port(char *client_name, char *port_name, char *virtual_port_name, void (*callback)(double timestamp, const unsigned char *message, size_t message_size, void *user_data), void *user_data)
 {
 	RtMidiInPtr midi_in = rtmidi_in_create(RTMIDI_API_UNSPECIFIED, (const char *)(client_name), 100);
+	rtmidi_in_set_callback(midi_in, callback, user_data);
 
 	if (rtmidi_open_port_helper(midi_in, port_name, virtual_port_name) < 0)
 	{
