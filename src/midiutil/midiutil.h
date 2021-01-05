@@ -9,6 +9,7 @@ extern "C"
 #endif
 
 typedef struct MidiUtilLock *MidiUtilLock_t;
+typedef struct MidiUtilAlarm *MidiUtilAlarm_t;
 
 void MidiUtil_startThread(void (*callback)(void *user_data), void *user_data);
 
@@ -22,6 +23,12 @@ void MidiUtilLock_notifyAll(MidiUtilLock_t lock);
 
 void MidiUtil_sleep(long msecs);
 long MidiUtil_getCurrentTimeMsecs(void);
+void MidiUtil_getCurrentTimeString(char *current_time_string); /* YYYYMMDDhhmmss */
+
+MidiUtilAlarm_t MidiUtilAlarm_new(void);
+void MidiUtilAlarm_set(MidiUtilAlarm_t alarm, long msecs, void (*callback)(void *user_data), void *user_data);
+void MidiUtilAlarm_cancel(MidiUtilAlarm_t alarm);
+void MidiUtilAlarm_free(MidiUtilAlarm_t alarm);
 
 void MidiUtil_setInterruptHandler(void (*callback)(void *user_data), void *user_data);
 void MidiUtil_waitForInterrupt(void);

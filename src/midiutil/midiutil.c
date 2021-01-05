@@ -29,6 +29,23 @@ struct MidiUtilLock
 #endif
 };
 
+typedef enum
+{
+	MIDI_UTIL_ALARM_STATE_IDLE,
+	MIDI_UTIL_ALARM_STATE_ACTIVE,
+	MIDI_UTIL_ALARM_STATE_START_SHUTDOWN,
+	MIDI_UTIL_ALARM_STATE_FINISH_SHUTDOWN
+} MidiUtilAlarmState_t;
+
+struct MidiUtilAlarm
+{
+	MidiUtilLock_t lock;
+	long end_time_msecs;
+	void (*callback)(void *user_data);
+	void *user_data;
+	MidiUtilAlarmState_t state;
+};
+
 void MidiUtil_startThread(void (*callback)(void *user_data), void *user_data)
 {
 #ifdef _WIN32
@@ -140,6 +157,116 @@ long MidiUtil_getCurrentTimeMsecs(void)
 	gettimeofday(&current_time, NULL);
 	return ((long)(current_time.tv_sec) * 1000) + (long)(current_time.tv_usec / 1000);
 #endif
+}
+
+void MidiUtil_getCurrentTimeString(char *current_time_string)
+{
+#ifdef _WIN32
+	SYSTEMTIME current_time;
+	GetLocalTime(&current_time);
+	sprintf(current_time_string, "%d%02d%02d%02d%02d%02d", current_time.wYear, current_time.wMonth, current_time.wDay, current_time.wHour, current_time.wMinute, current_time.wSecond);
+#else
+	time_t current_time;
+	struct tm *current_time_struct;
+	current_time = time(NULL);
+	current_time_struct = localtime(&current_time);
+	strftime(current_time_string, 15, "%Y%m%d%H%M%S", current_time_struct);
+#endif
+}
+
+static void alarm_helper(void *user_data)
+{
+	MidiUtilAlarm_t alarm = (MidiUtilAlarm_t)(user_data);
+	int should_shutdown = 0;
+
+	while (!should_shutdown)
+	{
+		MidiUtilLock_lock(alarm->lock);
+
+		switch (alarm->state)
+		{
+			case MIDI_UTIL_ALARM_STATE_IDLE:
+			{
+				MidiUtilLock_wait(alarm->lock, -1);
+				break;
+			}
+			case MIDI_UTIL_ALARM_STATE_ACTIVE:
+			{
+				long msecs = alarm->end_time_msecs - MidiUtil_getCurrentTimeMsecs();
+
+				if (msecs > 0)
+				{
+					MidiUtilLock_wait(alarm->lock, msecs);
+				}
+				else
+				{
+					(alarm->callback)(alarm->user_data);
+					alarm->state = MIDI_UTIL_ALARM_STATE_IDLE;
+				}
+
+				break;
+			}
+			case MIDI_UTIL_ALARM_STATE_START_SHUTDOWN:
+			{
+				should_shutdown = 1;
+				alarm->state = MIDI_UTIL_ALARM_STATE_FINISH_SHUTDOWN;
+				MidiUtilLock_notify(alarm->lock);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+
+		MidiUtilLock_unlock(alarm->lock);
+	}
+}
+
+MidiUtilAlarm_t MidiUtilAlarm_new(void)
+{
+	MidiUtilAlarm_t alarm = (MidiUtilAlarm_t)(malloc(sizeof(struct MidiUtilAlarm)));
+	alarm->lock = MidiUtilLock_new();
+	alarm->end_time_msecs = 0;
+	alarm->callback = NULL;
+	alarm->user_data = NULL;
+	alarm->state = MIDI_UTIL_ALARM_STATE_IDLE;
+	MidiUtil_startThread(alarm_helper, alarm);
+	return alarm;
+}
+
+void MidiUtilAlarm_set(MidiUtilAlarm_t alarm, long msecs, void (*callback)(void *user_data), void *user_data)
+{
+	MidiUtilLock_lock(alarm->lock);
+	alarm->end_time_msecs = MidiUtil_getCurrentTimeMsecs() + msecs;
+	alarm->callback = callback;
+	alarm->user_data = user_data;
+	alarm->state = MIDI_UTIL_ALARM_STATE_ACTIVE;
+	MidiUtilLock_notify(alarm->lock);
+	MidiUtilLock_unlock(alarm->lock);
+}
+
+void MidiUtilAlarm_cancel(MidiUtilAlarm_t alarm)
+{
+	MidiUtilLock_lock(alarm->lock);
+	alarm->state = MIDI_UTIL_ALARM_STATE_IDLE;
+	MidiUtilLock_notify(alarm->lock);
+	MidiUtilLock_unlock(alarm->lock);
+}
+
+void MidiUtilAlarm_free(MidiUtilAlarm_t alarm)
+{
+	MidiUtilLock_lock(alarm->lock);
+	alarm->state = MIDI_UTIL_ALARM_STATE_START_SHUTDOWN;
+	MidiUtilLock_notify(alarm->lock);
+	MidiUtilLock_unlock(alarm->lock);
+
+	MidiUtilLock_lock(alarm->lock);
+	while (alarm->state != MIDI_UTIL_ALARM_STATE_FINISH_SHUTDOWN) MidiUtilLock_wait(alarm->lock, -1);
+	MidiUtilLock_unlock(alarm->lock);
+
+	MidiUtilLock_free(alarm->lock);
+	free(alarm);
 }
 
 static void (*interrupt_handler_callback)(void *user_data) = NULL;
