@@ -33,7 +33,7 @@ static void handle_alarm(void *user_data)
 	char current_time_string[16];
 	char filename[1024];
 
-	MidiUtil_getCurrentTimeString(&current_time_string);
+	MidiUtil_getCurrentTimeString(current_time_string);
 	sprintf(filename, "%s%s.mid", prefix, current_time_string);
 	MidiFile_save(midi_file, filename);
 	MidiFile_free(midi_file);
