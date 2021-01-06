@@ -20,22 +20,22 @@ static RtMidiOutPtr midi_out = NULL;
 
 static void send_note_on(int channel, int note, int velocity)
 {
-	unsigned char message[3];
+	unsigned char message[RTMIDI_MESSAGE_SIZE_NOTE_ON];
 	rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_ON);
 	rtmidi_note_on_message_set_channel(message, channel);
 	rtmidi_note_on_message_set_note(message, note);
 	rtmidi_note_on_message_set_velocity(message, velocity);
-	rtmidi_out_send_message(midi_out, message, 3);
+	rtmidi_out_send_message(midi_out, message, RTMIDI_MESSAGE_SIZE_NOTE_ON);
 }
 
 static void send_note_off(int channel, int note)
 {
-	unsigned char message[3];
+	unsigned char message[RTMIDI_MESSAGE_SIZE_NOTE_OFF];
 	rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_OFF);
 	rtmidi_note_off_message_set_channel(message, channel);
 	rtmidi_note_off_message_set_note(message, note);
 	rtmidi_note_off_message_set_velocity(message, 0);
-	rtmidi_out_send_message(midi_out, message, 3);
+	rtmidi_out_send_message(midi_out, message, RTMIDI_MESSAGE_SIZE_NOTE_OFF);
 }
 
 static void handle_note_on(int channel, int note, int velocity)
@@ -125,9 +125,9 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 		}
 		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
-			if (rtmidi_control_change_message_get_number(message) == 0x40)
+			if (rtmidi_control_change_message_get_number(message) == 64)
 			{
-				if (rtmidi_control_change_message_get_value(message) >= 0x40)
+				if (rtmidi_control_change_message_get_value(message) >= 64)
 				{
 					handle_sustain_on(rtmidi_control_change_message_get_channel(message));
 				}

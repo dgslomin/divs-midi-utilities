@@ -23,59 +23,41 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 {
 	long tick = MidiFile_getTickFromTime(midi_file, (float)(MidiUtil_getCurrentTimeMsecs() - start_time_msecs) / 1000.0);
 
-	switch (message[0] & 0xF0)
+	switch (rtmidi_message_get_type(message))
 	{
-		case 0x80:
+		case RTMIDI_MESSAGE_TYPE_NOTE_OFF:
 		{
-			int channel = message[0] & 0x0F;
-			int note = message[1];
-			int velocity = message[2];
-			MidiFileTrack_createNoteOffEvent(track, tick, channel, note, velocity);
+			MidiFileTrack_createNoteOffEvent(track, tick, rtmidi_note_off_message_get_channel(message), rtmidi_note_off_message_get_note(message), rtmidi_note_off_message_get_velocity(message));
 			break;
 		}
-		case 0x90:
+		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
 		{
-			int channel = message[0] & 0x0F;
-			int note = message[1];
-			int velocity = message[2];
-			MidiFileTrack_createNoteOnEvent(track, tick, channel, note, velocity);
+			MidiFileTrack_createNoteOnEvent(track, tick, rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message), rtmidi_note_on_message_get_velocity(message));
 			break;
 		}
-		case 0xA0:
+		case RTMIDI_MESSAGE_TYPE_KEY_PRESSURE:
 		{
-			int channel = message[0] & 0x0F;
-			int note = message[1];
-			int amount = message[2];
-			MidiFileTrack_createKeyPressureEvent(track, tick, channel, note, amount);
+			MidiFileTrack_createKeyPressureEvent(track, tick, rtmidi_key_pressure_message_get_channel(message), rtmidi_key_pressure_message_get_note(message), rtmidi_key_pressure_message_get_amount(message));
 			break;
 		}
-		case 0xB0:
+		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
-			int channel = message[0] & 0x0F;
-			int number = message[1];
-			int value = message[2];
-			MidiFileTrack_createControlChangeEvent(track, tick, channel, number, value);
+			MidiFileTrack_createControlChangeEvent(track, tick, rtmidi_control_change_message_get_channel(message), rtmidi_control_change_message_get_number(message), rtmidi_control_change_message_get_value(message));
 			break;
 		}
-		case 0xC0:
+		case RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
-			int channel = message[0] & 0x0F;
-			int number = message[1];
-			MidiFileTrack_createProgramChangeEvent(track, tick, channel, number);
+			MidiFileTrack_createProgramChangeEvent(track, tick, rtmidi_program_change_message_get_channel(message), rtmidi_program_change_message_get_number(message));
 			break;
 		}
-		case 0xD0:
+		case RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
-			int channel = message[0] & 0x0F;
-			int amount = message[1];
-			MidiFileTrack_createChannelPressureEvent(track, tick, channel, amount);
+			MidiFileTrack_createChannelPressureEvent(track, tick, rtmidi_channel_pressure_message_get_channel(message), rtmidi_channel_pressure_message_get_amount(message));
 			break;
 		}
-		case 0xE0:
+		case RTMIDI_MESSAGE_TYPE_PITCH_WHEEL:
 		{
-			int channel = message[0] & 0x0F;
-			int value = (message[1] << 7) | message[2];
-			MidiFileTrack_createPitchWheelEvent(track, tick, channel, value);
+			MidiFileTrack_createPitchWheelEvent(track, tick, rtmidi_pitch_wheel_message_get_channel(message), rtmidi_pitch_wheel_message_get_value(message));
 			break;
 		}
 		default:
@@ -111,22 +93,9 @@ int main(int argc, char **argv)
 
 	midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
 	track = MidiFile_createTrack(midi_file); /* conductor track */
-
-	{
-		unsigned char time_signature[] = { 4, 2, 24, 8 }; /* 4/4 */
-		MidiFileTrack_createMetaEvent(track, 0, 0x58, 4, time_signature);
-	}
-
-	{
-		unsigned char key_signature[] = { 0, 0 }; /* C major */
-		MidiFileTrack_createMetaEvent(track, 0, 0x59, 2, key_signature);
-	}
-
-	{
-		unsigned char tempo[] = { 0x09, 0x27, 0xC0 }; /* 100 BPM */
-		MidiFileTrack_createMetaEvent(track, 0, 0x51, 3, tempo);
-	}
-
+	MidiFileTrack_createTimeSignatureEvent(track, 0, 4, 4);
+	MidiFileTrack_createKeySignatureEvent(track, 0, 0, 0);
+	MidiFileTrack_createTempoEvent(track, 0, 100.0);
 	track = MidiFile_createTrack(midi_file); /* main track */
 	start_time_msecs = MidiUtil_getCurrentTimeMsecs();
 

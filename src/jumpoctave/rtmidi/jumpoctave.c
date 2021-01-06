@@ -20,12 +20,12 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 			if (new_note >= 0 && new_note < 128)
 			{
-				unsigned char new_message[3];
+				unsigned char new_message[RTMIDI_MESSAGE_SIZE_NOTE_OFF];
 				rtmidi_message_set_type(new_message, RTMIDI_MESSAGE_TYPE_NOTE_OFF);
 				rtmidi_note_off_message_set_channel(new_message, rtmidi_note_off_message_get_channel(message));
 				rtmidi_note_off_message_set_note(new_message, new_note);
 				rtmidi_note_off_message_set_velocity(new_message, rtmidi_note_off_message_get_velocity(message));
-				rtmidi_out_send_message(midi_out, new_message, 3);
+				rtmidi_out_send_message(midi_out, new_message, RTMIDI_MESSAGE_SIZE_NOTE_OFF);
 			}
 		}
 		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
@@ -34,12 +34,12 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 			if (new_note >= 0 && new_note < 128)
 			{
-				unsigned char new_message[3];
+				unsigned char new_message[RTMIDI_MESSAGE_SIZE_NOTE_ON];
 				rtmidi_message_set_type(new_message, RTMIDI_MESSAGE_TYPE_NOTE_ON);
 				rtmidi_note_on_message_set_channel(new_message, rtmidi_note_on_message_get_channel(message));
 				rtmidi_note_on_message_set_note(new_message, new_note);
 				rtmidi_note_on_message_set_velocity(new_message, rtmidi_note_on_message_get_velocity(message));
-				rtmidi_out_send_message(midi_out, new_message, 3);
+				rtmidi_out_send_message(midi_out, new_message, RTMIDI_MESSAGE_SIZE_NOTE_ON);
 			}
 		}
 		case RTMIDI_MESSAGE_TYPE_PITCH_WHEEL:

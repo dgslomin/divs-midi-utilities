@@ -30,14 +30,14 @@ int main(int argc, char **argv)
 	char *from_string = NULL;
 	char *to_string = NULL;
 	int number_of_solo_tracks = 0;
-	int *solo_tracks = NULL;
+	int solo_tracks[1024];
 	int number_of_mute_tracks = 0;
-	int *mute_tracks = NULL;
+	int mute_tracks[1024];
 	float extra_time = 0.0;
 	char *filename = NULL;
 	MidiFile_t midi_file;
 	RtMidiOutPtr midi_out = NULL;
-	RtMidiOutPtr *track_midi_outs = NULL;
+	RtMidiOutPtr track_midi_outs[1024];
 	unsigned long start_time = 0;
 	MidiFileEvent_t midi_file_event;
 	long from_tick = -1;
@@ -67,15 +67,13 @@ int main(int argc, char **argv)
 		else if (strcmp(argv[i], "--solo-track") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			solo_tracks = (int *)(realloc(solo_tracks, (number_of_solo_tracks + 1) * sizeof (int)));
-			solo_tracks[number_of_solo_tracks] = atoi(argv[i]);
+			solo_tracks[number_of_solo_tracks++] = atoi(argv[i]);
 			number_of_solo_tracks++;
 		}
 		else if (strcmp(argv[i], "--mute-track") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			mute_tracks = (int *)(realloc(mute_tracks, (number_of_mute_tracks + 1) * sizeof (int)));
-			mute_tracks[number_of_mute_tracks] = atoi(argv[i]);
+			mute_tracks[number_of_mute_tracks++] = atoi(argv[i]);
 			number_of_mute_tracks++;
 		}
 		else if (strcmp(argv[i], "--extra-time") == 0)
@@ -182,8 +180,6 @@ int main(int argc, char **argv)
 		int number_of_tracks = MidiFile_getNumberOfTracks(midi_file);
 		int track_number;
 
-		track_midi_outs = malloc(number_of_tracks * sizeof(RtMidiOutPtr));
-
 		if (number_of_solo_tracks > 0)
 		{
 			int solo_track_number;
@@ -271,9 +267,6 @@ int main(int argc, char **argv)
 	MidiUtilLock_free(lock);
 	rtmidi_close_port(midi_out);
 	MidiFile_free(midi_file);
-	if (mute_tracks != NULL) free(mute_tracks);
-	if (solo_tracks != NULL) free(solo_tracks);
-	if (track_midi_outs != NULL) free(track_midi_outs);
 	return 0;
 }
 

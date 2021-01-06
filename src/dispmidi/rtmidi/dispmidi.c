@@ -13,41 +13,41 @@ static void usage(char *program_name)
 
 static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	switch (message[0] & 0xF0)
+	switch (rtmidi_message_get_type(message))
 	{
-		case 0x80:
+		case RTMIDI_MESSAGE_TYPE_NOTE_OFF:
 		{
-			printf("%d\tNote Off\t\t%d\t%d\n", message[0] & 0x0F, message[1], message[2]);
+			printf("%-2d Note Off         %-3d %d\n", rtmidi_note_off_message_get_channel(message), rtmidi_note_off_message_get_note(message), rtmidi_note_off_message_get_velocity(message));
 			break;
 		}
-		case 0x90:
+		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
 		{
-			printf("%d\tNote On\t\t\t%d\t%d\n", message[0] & 0x0F, message[1], message[2]);
+			printf("%-2d Note On          %-3d %d\n", rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message), rtmidi_note_on_message_get_velocity(message));
 			break;
 		}
-		case 0xA0:
+		case RTMIDI_MESSAGE_TYPE_KEY_PRESSURE:
 		{
-			printf("%d\tAftertouch (key)\t\t%d\t%d\n", message[0] & 0x0F, message[1], message[2]);
+			printf("%-2d Key Pressure     %-3d %d\n", rtmidi_key_pressure_message_get_channel(message), rtmidi_key_pressure_message_get_note(message), rtmidi_key_pressure_message_get_amount(message));
 			break;
 		}
-		case 0xB0:
+		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
-			printf("%d\tController\t\t%d\t%d\n", message[0] & 0x0F, message[1], message[2]);
+			printf("%-2d Control Change   %-3d %d\n", rtmidi_control_change_message_get_channel(message), rtmidi_control_change_message_get_number(message), rtmidi_control_change_message_get_value(message));
 			break;
 		}
-		case 0xC0:
+		case RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
-			printf("%d\tProgram\t\t%d\n", message[0] & 0x0F, message[1]);
+			printf("%-2d Program Change   %d\n", rtmidi_program_change_message_get_channel(message), rtmidi_program_change_message_get_number(message));
 			break;
 		}
-		case 0xD0:
+		case RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
-			printf("%d\tAftertouch (channel)\t%d\n", message[0] & 0x0F, message[1]);
+			printf("%-2d Channel Pressure %d\n", rtmidi_channel_pressure_message_get_channel(message), rtmidi_channel_pressure_message_get_amount(message));
 			break;
 		}
-		case 0xE0:
+		case RTMIDI_MESSAGE_TYPE_PITCH_WHEEL:
 		{
-			printf("%d\tPitch Bend\t\t%x\n", message[0] & 0x0F, (int)(message[2]) << 7 | (int)(message[1]));
+			printf("%-2d Pitch Wheel      %d\n", rtmidi_pitch_wheel_message_get_channel(message), rtmidi_pitch_wheel_message_get_value(message));
 			break;
 		}
 		default:

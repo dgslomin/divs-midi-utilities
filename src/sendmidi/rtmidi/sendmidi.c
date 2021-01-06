@@ -7,7 +7,7 @@
 
 void usage(char *progname)
 {
-	printf("Usage: %s --out <port> ( --note-off <channel> <pitch> <velocity> | --note-on <channel> <pitch> <velocity> | --key-pressure <channel> <pitch> <amount> | --control-change <channel> <number> <value> | --program-change <channel> <number> | --channel-pressure <channel> <amount> | --pitch-wheel <channel> <amount> )\n", progname);
+	printf("Usage: %s --out <port> ( --note-off <channel> <note> <velocity> | --note-on <channel> <note> <velocity> | --key-pressure <channel> <note> <amount> | --control-change <channel> <number> <value> | --program-change <channel> <number> | --channel-pressure <channel> <amount> | --pitch-wheel <channel> <value> )\n", progname);
 	exit(1);
 }
 
@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 {
 	RtMidiOutPtr midi_out = NULL;
 	int message_size = 0;
-	unsigned char message[3];
+	unsigned char message[4];
 	int i;
 
 	for (i = 1; i < argc; i++)
@@ -32,96 +32,74 @@ int main(int argc, char **argv)
 		}
 		else if (strcmp(argv[i], "--note-off") == 0)
 		{
-			int channel, pitch, velocity;
+			message_size = RTMIDI_MESSAGE_SIZE_NOTE_OFF;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_OFF);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_note_off_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &pitch) != 1) usage(argv[0]);
+			rtmidi_note_off_message_set_note(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &velocity) != 1) usage(argv[0]);
-			message_size = 3;
-			message[0] = 0x80 | channel;
-			message[1] = pitch;
-			message[2] = velocity;
+			rtmidi_note_off_message_set_velocity(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--note-on") == 0)
 		{
-			int channel, pitch, velocity;
+			message_size = RTMIDI_MESSAGE_SIZE_NOTE_ON;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_ON);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_note_on_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &pitch) != 1) usage(argv[0]);
+			rtmidi_note_on_message_set_note(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &velocity) != 1) usage(argv[0]);
-			message_size = 3;
-			message[0] = 0x90 | channel;
-			message[1] = pitch;
-			message[2] = velocity;
+			rtmidi_note_on_message_set_velocity(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--key-pressure") == 0)
 		{
-			int channel, pitch, amount;
-
+			message_size = RTMIDI_MESSAGE_SIZE_KEY_PRESSURE;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_KEY_PRESSURE);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_key_pressure_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &pitch) != 1) usage(argv[0]);
+			rtmidi_key_pressure_message_set_note(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &amount) != 1) usage(argv[0]);
-			message_size = 3;
-			message[0] = 0xA0 | channel;
-			message[1] = pitch;
-			message[2] = amount;
+			rtmidi_key_pressure_message_set_amount(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--control-change") == 0)
 		{
-			int channel, number, value;
+			message_size = RTMIDI_MESSAGE_SIZE_CONTROL_CHANGE;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_control_change_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &number) != 1) usage(argv[0]);
+			rtmidi_control_change_message_set_number(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &value) != 1) usage(argv[0]);
-			message_size = 3;
-			message[0] = 0xB0 | channel;
-			message[1] = number;
-			message[2] = value;
+			rtmidi_control_change_message_set_value(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--program-change") == 0)
 		{
-			int channel, number;
+			message_size = RTMIDI_MESSAGE_SIZE_PROGRAM_CHANGE;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_program_change_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &number) != 1) usage(argv[0]);
-			message_size = 2;
-			message[0] = 0xC0 | channel;
-			message[1] = number;
+			rtmidi_program_change_message_set_number(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--channel-pressure") == 0)
 		{
-			int channel, amount;
-
+			message_size = RTMIDI_MESSAGE_SIZE_CHANNEL_PRESSURE;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_channel_pressure_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &amount) != 1) usage(argv[0]);
-			message_size = 2;
-			message[0] = 0xD0 | channel;
-			message[1] = amount;
+			rtmidi_channel_pressure_message_set_amount(message, atoi(argv[i]));
 		}
 		else if (strcmp(argv[i], "--pitch-wheel") == 0)
 		{
-			int channel, amount;
-
+			message_size = RTMIDI_MESSAGE_SIZE_PITCH_WHEEL;
+			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_PITCH_WHEEL);
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &channel) != 1) usage(argv[0]);
+			rtmidi_pitch_wheel_message_set_channel(message, atoi(argv[i]));
 			if (++i >= argc) usage(argv[0]);
-			if (sscanf(argv[i], "%d", &amount) != 1) usage(argv[0]);
-			message_size = 3;
-			message[0] = 0xE0 | channel;
-			message[1] = amount & 0x7F;
-			message[2] = amount >> 7;
+			rtmidi_pitch_wheel_message_set_value(message, atoi(argv[i]));
 		}
 		else
 		{
