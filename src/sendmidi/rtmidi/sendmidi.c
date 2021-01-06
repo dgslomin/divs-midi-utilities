@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 		{
 			if (++i >= argc) usage(argv[0]);
 
-			if ((midi_out = rtmidi_open_out_port("sendmidi", argv[i], "out")) == NULL)
+			if ((midi_out = rtmidi_open_out_port("sendmidi", argv[i], "sendmidi")) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);

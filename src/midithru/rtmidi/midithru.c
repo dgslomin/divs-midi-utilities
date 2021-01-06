@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if ((midi_ins[number_of_midi_ins++] = rtmidi_open_in_port("midithru", argv[i], "in", handle_midi_message, NULL)) == NULL)
+			if ((midi_ins[number_of_midi_ins++] = rtmidi_open_in_port("midithru", argv[i], "midithru", handle_midi_message, NULL)) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if ((midi_outs[number_of_midi_outs++] = rtmidi_open_out_port("midithru", argv[i], "out")) == NULL)
+			if ((midi_outs[number_of_midi_outs++] = rtmidi_open_out_port("midithru", argv[i], "midithru")) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);

@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if ((midi_in = rtmidi_open_in_port("dispmidi", argv[i], "in", handle_midi_message, NULL)) == NULL)
+			if ((midi_in = rtmidi_open_in_port("dispmidi", argv[i], "dispmidi", handle_midi_message, NULL)) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);

@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	track = MidiFile_createTrack(midi_file); /* main track */
 	start_time_msecs = MidiUtil_getCurrentTimeMsecs();
 
-	if ((midi_in = rtmidi_open_in_port("recordsmf", midi_in_port, "in", handle_midi_message, NULL)) == NULL)
+	if ((midi_in = rtmidi_open_in_port("recordsmf", midi_in_port, "recordsmf", handle_midi_message, NULL)) == NULL)
 	{
 		fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", midi_in_port);
 		exit(1);

@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((midi_out = rtmidi_open_out_port("playsmf", midi_out_port, "out")) == NULL)
+	if ((midi_out = rtmidi_open_out_port("playsmf", midi_out_port, "playsmf")) == NULL)
 	{
 		printf("Error:  Cannot open MIDI output port \"%s\".\n", midi_out_port);
 		return 1;
