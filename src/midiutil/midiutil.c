@@ -321,6 +321,11 @@ void MidiUtil_waitForInterrupt(void)
 	MidiUtilLock_free(wait_for_interrupt_lock);
 }
 
+int MidiUtil_clamp(int i, int low, int high)
+{
+	return i < low ? low : i > high ? high : i;
+}
+
 static int rtmidi_open_port_helper(RtMidiPtr device, char *port_name, char *virtual_port_name)
 {
 	if (port_name == NULL)
@@ -375,5 +380,196 @@ RtMidiOutPtr rtmidi_open_out_port(char *client_name, char *port_name, char *virt
 	}
 
 	return midi_out;
+}
+
+RtMidiMessageType rtmidi_message_get_type(const unsigned char *message)
+{
+	return (message[0] & 0xF0);
+}
+
+void rtmidi_message_set_type(unsigned char *message, RtMidiMessageType type)
+{
+	message[0] = (message[0] & ~0xF0) | type;
+}
+
+int rtmidi_note_off_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_note_off_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_note_off_message_get_note(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_note_off_message_set_note(unsigned char *message, int note)
+{
+	message[1] = note;
+}
+
+int rtmidi_note_off_message_get_velocity(const unsigned char *message)
+{
+	return message[2];
+}
+
+void rtmidi_note_off_message_set_velocity(unsigned char *message, int velocity)
+{
+	message[2] = velocity;
+}
+
+int rtmidi_note_on_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_note_on_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_note_on_message_get_note(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_note_on_message_set_note(unsigned char *message, int note)
+{
+	message[1] = note;
+}
+
+int rtmidi_note_on_message_get_velocity(const unsigned char *message)
+{
+	return message[2];
+}
+
+void rtmidi_note_on_message_set_velocity(unsigned char *message, int velocity)
+{
+	message[2] = velocity;
+}
+
+int rtmidi_key_pressure_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_key_pressure_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_key_pressure_message_get_note(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_key_pressure_message_set_note(unsigned char *message, int note)
+{
+	message[1] = note;
+}
+
+int rtmidi_key_pressure_message_get_amount(const unsigned char *message)
+{
+	return message[2];
+}
+
+void rtmidi_key_pressure_message_set_amount(unsigned char *message, int amount)
+{
+	message[2] = amount;
+}
+
+int rtmidi_control_change_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_control_change_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_control_change_message_get_number(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_control_change_message_set_number(unsigned char *message, int number)
+{
+	message[1] = number;
+}
+
+int rtmidi_control_change_message_get_value(const unsigned char *message)
+{
+	return message[2];
+}
+
+void rtmidi_control_change_message_set_value(unsigned char *message, int value)
+{
+	message[2] = value;
+}
+
+int rtmidi_program_change_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_program_change_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_program_change_message_get_number(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_program_change_message_set_number(unsigned char *message, int number)
+{
+	message[1] = number;
+}
+
+int rtmidi_channel_pressure_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_channel_pressure_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_channel_pressure_message_get_amount(const unsigned char *message)
+{
+	return message[1];
+}
+
+void rtmidi_channel_pressure_message_set_amount(unsigned char *message, int amount)
+{
+	message[1] = amount;
+}
+
+int rtmidi_pitch_wheel_message_get_channel(const unsigned char *message)
+{
+	return (message[0] & 0x0F);
+}
+
+void rtmidi_pitch_wheel_message_set_channel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
+}
+
+int rtmidi_pitch_wheel_message_get_value(const unsigned char *message)
+{
+	return (int)(message[2]) << 7 | (int)(message[1]);
+}
+
+void rtmidi_pitch_wheel_message_set_value(unsigned char *message, int value)
+{
+	message[1] = value & 0x7F;
+	message[2] = (value >> 7) & 0x7F;
 }
 
