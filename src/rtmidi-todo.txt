@@ -4,3 +4,5 @@ alsamidi2net / net2alsamidi
 
 deprecate:  alsamidi2pipe / beatbox / imp / intervals / joypedal / metercaster / midimon / midimsg / net2pipe / padpedal / pipe2net / rw / simple-collections / simplealarm / transpose / verbosify / xmidiqwerty
 add:  midithru channel routing / fakesustain bass mode / fakesustenuto
+fix:  average-tempo and average-velocity should use wall clock time in the denominator
+refactor:  get_tick_from_time_string should be in midifile
