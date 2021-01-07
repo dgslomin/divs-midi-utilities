@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if ((midi_in = rtmidi_open_in_port("intervals", argv[i], "intervals", handle_midi_message, NULL)) == NULL)
+			if ((midi_in = rtmidi_open_in_port("notemap", argv[i], "notemap", handle_midi_message, NULL)) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 
-			if ((midi_out = rtmidi_open_out_port("intervals", argv[i], "intervals")) == NULL)
+			if ((midi_out = rtmidi_open_out_port("notemap", argv[i], "notemap")) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);

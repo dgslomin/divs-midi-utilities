@@ -1,3 +1,6 @@
 qwertymidi / delta / joycc
-padpedal / pedalnote / pulsar / transpose / velocityfader / onmessage / onpedal
+pedalnote / pulsar / velocityfader / onmessage / onpedal
 alsamidi2net / net2alsamidi
+
+deprecate:  alsamidi2pipe / beatbox / imp / intervals / joypedal / metercaster / midimon / midimsg / net2pipe / padpedal / pipe2net / rw / simple-collections / simplealarm / transpose / verbosify / xmidiqwerty
+add:  midithru channel routing / fakesustain bass mode / fakesustenuto
