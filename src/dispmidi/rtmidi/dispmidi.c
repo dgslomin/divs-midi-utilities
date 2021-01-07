@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rtmidi_c.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 static void usage(char *program_name)
 {
@@ -13,41 +15,41 @@ static void usage(char *program_name)
 
 static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	switch (rtmidi_message_get_type(message))
+	switch (MidiUtilMessage_getType(message))
 	{
-		case RTMIDI_MESSAGE_TYPE_NOTE_OFF:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
-			printf("%-2d Note Off         %-3d %d\n", rtmidi_note_off_message_get_channel(message), rtmidi_note_off_message_get_note(message), rtmidi_note_off_message_get_velocity(message));
+			printf("%-2d Note Off         %-3d %d\n", MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message), MidiUtilNoteOffMessage_getVelocity(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
-			printf("%-2d Note On          %-3d %d\n", rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message), rtmidi_note_on_message_get_velocity(message));
+			printf("%-2d Note On          %-3d %d\n", MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), MidiUtilNoteOnMessage_getVelocity(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_KEY_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
 		{
-			printf("%-2d Key Pressure     %-3d %d\n", rtmidi_key_pressure_message_get_channel(message), rtmidi_key_pressure_message_get_note(message), rtmidi_key_pressure_message_get_amount(message));
+			printf("%-2d Key Pressure     %-3d %d\n", MidiUtilKeyPressureMessage_getChannel(message), MidiUtilKeyPressureMessage_getNote(message), MidiUtilKeyPressureMessage_getAmount(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
-			printf("%-2d Control Change   %-3d %d\n", rtmidi_control_change_message_get_channel(message), rtmidi_control_change_message_get_number(message), rtmidi_control_change_message_get_value(message));
+			printf("%-2d Control Change   %-3d %d\n", MidiUtilControlChangeMessage_getChannel(message), MidiUtilControlChangeMessage_getNumber(message), MidiUtilControlChangeMessage_getValue(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
-			printf("%-2d Program Change   %d\n", rtmidi_program_change_message_get_channel(message), rtmidi_program_change_message_get_number(message));
+			printf("%-2d Program Change   %d\n", MidiUtilProgramChangeMessage_getChannel(message), MidiUtilProgramChangeMessage_getNumber(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
-			printf("%-2d Channel Pressure %d\n", rtmidi_channel_pressure_message_get_channel(message), rtmidi_channel_pressure_message_get_amount(message));
+			printf("%-2d Channel Pressure %d\n", MidiUtilChannelPressureMessage_getChannel(message), MidiUtilChannelPressureMessage_getAmount(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_PITCH_WHEEL:
+		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
 		{
-			printf("%-2d Pitch Wheel      %d\n", rtmidi_pitch_wheel_message_get_channel(message), rtmidi_pitch_wheel_message_get_value(message));
+			printf("%-2d Pitch Wheel      %d\n", MidiUtilPitchWheelMessage_getChannel(message), MidiUtilPitchWheelMessage_getValue(message));
 			break;
 		}
 		default:

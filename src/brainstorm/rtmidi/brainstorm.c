@@ -4,7 +4,9 @@
 #include <string.h>
 #include <rtmidi_c.h>
 #include <midifile.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 static char *midi_in_port = NULL;
 static char *prefix = "brainstorm-";
@@ -28,10 +30,12 @@ static void create_midi_file_for_first_event(void)
 	start_time_msecs = MidiUtil_getCurrentTimeMsecs();
 }
 
-static void handle_alarm(void *user_data)
+static void handle_alarm(int cancelled, void *user_data)
 {
 	char current_time_string[16];
 	char filename[1024];
+
+	if (cancelled) return;
 
 	MidiUtil_getCurrentTimeString(current_time_string);
 	sprintf(filename, "%s%s.mid", prefix, current_time_string);
@@ -77,54 +81,54 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 {
 	long tick = MidiFile_getTickFromTime(midi_file, (float)(MidiUtil_getCurrentTimeMsecs() - start_time_msecs) / 1000.0);
 
-	switch (rtmidi_message_get_type(message))
+	switch (MidiUtilMessage_getType(message))
 	{
-		case RTMIDI_MESSAGE_TYPE_NOTE_OFF:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createNoteOffEvent(track, tick, rtmidi_note_off_message_get_channel(message), rtmidi_note_off_message_get_note(message), rtmidi_note_off_message_get_velocity(message));
+			MidiFileTrack_createNoteOffEvent(track, tick, MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message), MidiUtilNoteOffMessage_getVelocity(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createNoteOnEvent(track, tick, rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message), rtmidi_note_on_message_get_velocity(message));
+			MidiFileTrack_createNoteOnEvent(track, tick, MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), MidiUtilNoteOnMessage_getVelocity(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_KEY_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createKeyPressureEvent(track, tick, rtmidi_key_pressure_message_get_channel(message), rtmidi_key_pressure_message_get_note(message), rtmidi_key_pressure_message_get_amount(message));
+			MidiFileTrack_createKeyPressureEvent(track, tick, MidiUtilKeyPressureMessage_getChannel(message), MidiUtilKeyPressureMessage_getNote(message), MidiUtilKeyPressureMessage_getAmount(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createControlChangeEvent(track, tick, rtmidi_control_change_message_get_channel(message), rtmidi_control_change_message_get_number(message), rtmidi_control_change_message_get_value(message));
+			MidiFileTrack_createControlChangeEvent(track, tick, MidiUtilControlChangeMessage_getChannel(message), MidiUtilControlChangeMessage_getNumber(message), MidiUtilControlChangeMessage_getValue(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createProgramChangeEvent(track, tick, rtmidi_program_change_message_get_channel(message), rtmidi_program_change_message_get_number(message));
+			MidiFileTrack_createProgramChangeEvent(track, tick, MidiUtilProgramChangeMessage_getChannel(message), MidiUtilProgramChangeMessage_getNumber(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createChannelPressureEvent(track, tick, rtmidi_channel_pressure_message_get_channel(message), rtmidi_channel_pressure_message_get_amount(message));
+			MidiFileTrack_createChannelPressureEvent(track, tick, MidiUtilChannelPressureMessage_getChannel(message), MidiUtilChannelPressureMessage_getAmount(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_PITCH_WHEEL:
+		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createPitchWheelEvent(track, tick, rtmidi_pitch_wheel_message_get_channel(message), rtmidi_pitch_wheel_message_get_value(message));
+			MidiFileTrack_createPitchWheelEvent(track, tick, MidiUtilPitchWheelMessage_getChannel(message), MidiUtilPitchWheelMessage_getValue(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}

@@ -13,11 +13,11 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../../bin/dispmidi: dispmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../../bin/dispmidi dispmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../../bin/multiecho: multiecho.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../../bin/multiecho multiecho.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
 
-dispmidi.o: dispmidi.c
-	$(CC) $(CFLAGS) -I../../midiutil -I../../3rdparty/rtmidi -c dispmidi.c
+multiecho.o: multiecho.c
+	$(CC) $(CFLAGS) -I../../midiutil -I../../3rdparty/rtmidi -c multiecho.c
 
 midiutil-common.o: ../../midiutil/midiutil-common.c
 	$(CC) $(CFLAGS) -I../../midiutil -c ../../midiutil/midiutil-common.c
@@ -35,7 +35,7 @@ rtmidi_c.o: ../../3rdparty/rtmidi/rtmidi_c.cpp
 	$(CXX) $(CFLAGS) -I../../3rdparty/rtmidi -c ../../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
-	rm -f dispmidi.o
+	rm -f multiecho.o
 	rm -f midiutil-common.o
 	rm -f midiutil-system.o
 	rm -f midiutil-rtmidi.o
@@ -43,5 +43,5 @@ clean:
 	rm -f rtmidi_c.o
 
 reallyclean: clean
-	rm -f ../../../bin/dispmidi
+	rm -f ../../../bin/multiecho
 

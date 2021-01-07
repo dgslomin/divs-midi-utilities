@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rtmidi_c.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 typedef enum
 {
@@ -20,22 +22,16 @@ static RtMidiOutPtr midi_out = NULL;
 
 static void send_note_on(int channel, int note, int velocity)
 {
-	unsigned char message[RTMIDI_MESSAGE_SIZE_NOTE_ON];
-	rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_ON);
-	rtmidi_note_on_message_set_channel(message, channel);
-	rtmidi_note_on_message_set_note(message, note);
-	rtmidi_note_on_message_set_velocity(message, velocity);
-	rtmidi_out_send_message(midi_out, message, RTMIDI_MESSAGE_SIZE_NOTE_ON);
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
+	MidiUtilMessage_setNoteOn(message, channel, note, velocity);
+	rtmidi_out_send_message(midi_out, message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
 }
 
 static void send_note_off(int channel, int note)
 {
-	unsigned char message[RTMIDI_MESSAGE_SIZE_NOTE_OFF];
-	rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_OFF);
-	rtmidi_note_off_message_set_channel(message, channel);
-	rtmidi_note_off_message_set_note(message, note);
-	rtmidi_note_off_message_set_velocity(message, 0);
-	rtmidi_out_send_message(midi_out, message, RTMIDI_MESSAGE_SIZE_NOTE_OFF);
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
+	MidiUtilMessage_setNoteOff(message, channel, note, 0);
+	rtmidi_out_send_message(midi_out, message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
 }
 
 static void handle_note_on(int channel, int note, int velocity)
@@ -103,37 +99,41 @@ static void handle_sustain_off(int channel)
 
 static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	switch (rtmidi_message_get_type(message))
+	switch (MidiUtilMessage_getType(message))
 	{
-		case RTMIDI_MESSAGE_TYPE_NOTE_OFF:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
-			handle_note_off(rtmidi_note_off_message_get_channel(message), rtmidi_note_off_message_get_note(message));
+			handle_note_off(MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message));
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_NOTE_ON:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
-			if (rtmidi_note_on_message_get_velocity(message) == 0)
+			int velocity = MidiUtilNoteOnMessage_getVelocity(message);
+
+			if (velocity == 0)
 			{
-				handle_note_off(rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message));
+				handle_note_off(MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message));
 			}
 			else
 			{
-				handle_note_on(rtmidi_note_on_message_get_channel(message), rtmidi_note_on_message_get_note(message), rtmidi_note_on_message_get_velocity(message));
+				handle_note_on(MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), velocity);
 			}
 
 			break;
 		}
-		case RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
-			if (rtmidi_control_change_message_get_number(message) == 64)
+			if (MidiUtilControlChangeMessage_getNumber(message) == 64)
 			{
-				if (rtmidi_control_change_message_get_value(message) >= 64)
+				int channel = MidiUtilControlChangeMessage_getChannel(message);
+
+				if (MidiUtilControlChangeMessage_getValue(message) >= 64)
 				{
-					handle_sustain_on(rtmidi_control_change_message_get_channel(message));
+					handle_sustain_on(channel);
 				}
 				else
 				{
-					handle_sustain_off(rtmidi_control_change_message_get_channel(message));
+					handle_sustain_off(channel);
 				}
 			}
 			else

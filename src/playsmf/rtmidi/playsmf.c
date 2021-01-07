@@ -4,7 +4,9 @@
 #include <string.h>
 #include <rtmidi_c.h>
 #include <midifile.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 int should_shutdown = 0;
 MidiUtilLock_t lock = NULL;

@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rtmidi_c.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 void usage(char *progname)
 {
@@ -14,9 +16,10 @@ void usage(char *progname)
 int main(int argc, char **argv)
 {
 	RtMidiOutPtr midi_out = NULL;
-	int message_size = 0;
-	unsigned char message[4];
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_SHORT_MESSAGE];
 	int i;
+
+	message[0] = 0;
 
 	for (i = 1; i < argc; i++)
 	{
@@ -32,74 +35,74 @@ int main(int argc, char **argv)
 		}
 		else if (strcmp(argv[i], "--note-off") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_NOTE_OFF;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_OFF);
+			int channel, note, velocity;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_off_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_off_message_set_note(message, atoi(argv[i]));
+			note = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_off_message_set_velocity(message, atoi(argv[i]));
+			velocity = atoi(argv[i]);
+			MidiUtilMessage_setNoteOff(message, channel, note, velocity);
 		}
 		else if (strcmp(argv[i], "--note-on") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_NOTE_ON;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_NOTE_ON);
+			int channel, note, velocity;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_on_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_on_message_set_note(message, atoi(argv[i]));
+			note = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_note_on_message_set_velocity(message, atoi(argv[i]));
+			velocity = atoi(argv[i]);
+			MidiUtilMessage_setNoteOn(message, channel, note, velocity);
 		}
 		else if (strcmp(argv[i], "--key-pressure") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_KEY_PRESSURE;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_KEY_PRESSURE);
+			int channel, note, amount;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_key_pressure_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_key_pressure_message_set_note(message, atoi(argv[i]));
+			note = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_key_pressure_message_set_amount(message, atoi(argv[i]));
+			amount = atoi(argv[i]);
+			MidiUtilMessage_setKeyPressure(message, channel, note, amount);
 		}
 		else if (strcmp(argv[i], "--control-change") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_CONTROL_CHANGE;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_CONTROL_CHANGE);
+			int channel, number, value;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_control_change_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_control_change_message_set_number(message, atoi(argv[i]));
+			number = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_control_change_message_set_value(message, atoi(argv[i]));
+			value = atoi(argv[i]);
+			MidiUtilMessage_setControlChange(message, channel, number, value);
 		}
 		else if (strcmp(argv[i], "--program-change") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_PROGRAM_CHANGE;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_PROGRAM_CHANGE);
+			int channel, number;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_program_change_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_program_change_message_set_number(message, atoi(argv[i]));
+			number = atoi(argv[i]);
+			MidiUtilMessage_setProgramChange(message, channel, number);
 		}
 		else if (strcmp(argv[i], "--channel-pressure") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_CHANNEL_PRESSURE;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_CHANNEL_PRESSURE);
+			int channel, amount;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_channel_pressure_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_channel_pressure_message_set_amount(message, atoi(argv[i]));
+			amount = atoi(argv[i]);
+			MidiUtilMessage_setChannelPressure(message, channel, amount);
 		}
 		else if (strcmp(argv[i], "--pitch-wheel") == 0)
 		{
-			message_size = RTMIDI_MESSAGE_SIZE_PITCH_WHEEL;
-			rtmidi_message_set_type(message, RTMIDI_MESSAGE_TYPE_PITCH_WHEEL);
+			int channel, value;
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_pitch_wheel_message_set_channel(message, atoi(argv[i]));
+			channel = atoi(argv[i]);
 			if (++i >= argc) usage(argv[0]);
-			rtmidi_pitch_wheel_message_set_value(message, atoi(argv[i]));
+			value = atoi(argv[i]);
+			MidiUtilMessage_setPitchWheel(message, channel, value);
 		}
 		else
 		{
@@ -107,8 +110,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((midi_out == NULL) || (message_size == 0)) usage(argv[0]);
-	rtmidi_out_send_message(midi_out, message, message_size);
+	if ((midi_out == NULL) || (message[0] == 0)) usage(argv[0]);
+	rtmidi_out_send_message(midi_out, message, MidiUtilMessage_getSize(message));
 	MidiUtil_sleep(500); /* make sure the message has time to go out before closing the port */
 	rtmidi_close_port(midi_out);
 	return 0;

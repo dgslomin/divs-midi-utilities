@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rtmidi_c.h>
-#include <midiutil.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
 int number_of_midi_ins = 0;
 RtMidiInPtr midi_ins[128];
