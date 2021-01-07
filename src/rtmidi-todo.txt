@@ -1,3 +1,3 @@
 qwertymidi / delta / joycc
-notemap / padpedal / pedalnote / pulsar / transpose / velocityfader / onmessage / onpedal
+padpedal / pedalnote / pulsar / transpose / velocityfader / onmessage / onpedal
 alsamidi2net / net2alsamidi
