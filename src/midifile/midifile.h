@@ -57,12 +57,8 @@
  *     be reattached to the same or a different file by setting its track
  *     property, or explicitly deleted.
  *
- * 13. Events can be marked as "selected", but while this is convenient to do
- *     in memory, there is no standard for how it should be expressed in a file
- *     on disk.  A mechanism for transforming selection flags into text events
- *     is provided as an extension.  This will produce files that interoperate
- *     perfectly with other MIDI software, but the other software is unlikely
- *     to recognize the text events as signifying anything special.
+ * 13. Events can be marked as "selected" but this is only meaningful in
+ *     memory; it is not persisted to disk.
  */
 
 #ifdef __cplusplus
