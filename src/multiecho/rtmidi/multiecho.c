@@ -11,14 +11,9 @@ static MidiUtilAlarm_t alarm = NULL;
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
 static int number_of_echoes = 0;
-
-static struct
-{
-	int delay_msecs;
-	int note_interval;
-	float velocity_scaling;
-}
-echoes[128];
+static int echo_delay_msecs_array[128];
+static int echo_note_interval_array[128];
+static float echo_velocity_scaling_array[128];
 
 static void handle_alarm(int cancelled, void *user_data)
 {
@@ -37,14 +32,14 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 			for (echo_number = 0; echo_number < number_of_echoes; echo_number++)
 			{
-				int new_note = MidiUtilNoteOffMessage_getNote(message) + echoes[echo_number].note_interval;
-				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOffMessage_getVelocity(message) * echoes[echo_number].velocity_scaling), 0, 127);
+				int new_note = MidiUtilNoteOffMessage_getNote(message) + echo_note_interval_array[echo_number];
+				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOffMessage_getVelocity(message) * echo_velocity_scaling_array[echo_number]), 0, 127);
 
 				if (new_note >= 0 && new_note < 128)
 				{
 					unsigned char *new_message = (unsigned char *)(malloc(MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF));
 					MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, new_velocity);
-					MidiUtilAlarm_add(alarm, echoes[echo_number].delay_msecs, handle_alarm, new_message);
+					MidiUtilAlarm_add(alarm, echo_delay_msecs_array[echo_number], handle_alarm, new_message);
 				}
 			}
 
@@ -56,14 +51,14 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 			for (echo_number = 0; echo_number < number_of_echoes; echo_number++)
 			{
-				int new_note = MidiUtilNoteOnMessage_getNote(message) + echoes[echo_number].note_interval;
-				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOnMessage_getVelocity(message) * echoes[echo_number].velocity_scaling), 0, 127);
+				int new_note = MidiUtilNoteOnMessage_getNote(message) + echo_note_interval_array[echo_number];
+				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOnMessage_getVelocity(message) * echo_velocity_scaling_array[echo_number]), 0, 127);
 
 				if (new_note >= 0 && new_note < 128)
 				{
 					unsigned char *new_message = (unsigned char *)(malloc(MIDI_UTIL_MESSAGE_SIZE_NOTE_ON));
 					MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, new_velocity);
-					MidiUtilAlarm_add(alarm, echoes[echo_number].delay_msecs, handle_alarm, new_message);
+					MidiUtilAlarm_add(alarm, echo_delay_msecs_array[echo_number], handle_alarm, new_message);
 				}
 			}
 
@@ -114,11 +109,11 @@ int main(int argc, char **argv)
 		else if (strcmp(argv[i], "--echo") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			echoes[number_of_echoes].delay_msecs = atoi(argv[i]);
+			echo_delay_msecs_array[number_of_echoes] = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			echoes[number_of_echoes].note_interval = atoi(argv[i]);
+			echo_note_interval_array[number_of_echoes] = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			echoes[number_of_echoes].velocity_scaling = atof(argv[i]);
+			echo_velocity_scaling_array[number_of_echoes] = atof(argv[i]);
 			number_of_echoes++;
 		}
 		else
