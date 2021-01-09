@@ -66,11 +66,7 @@ int main(int argc, char **argv)
 
 	for (i = 1; i < argc; i++)
 	{
-		if (strcmp(argv[i], "--help") == 0)
-		{
-			usage(argv[0]);
-		}
-		else if (strcmp(argv[i], "--in") == 0)
+		if (strcmp(argv[i], "--in") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 

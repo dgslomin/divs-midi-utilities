@@ -1,0 +1,17 @@
+
+..\..\bin\velocity-map.exe: velocity-map.obj midifile.obj
+	cl /nologo /Fe..\..\bin\velocity-map.exe velocity-map.obj midifile.obj
+
+velocity-map.obj: velocity-map.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c velocity-map.c
+
+midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+clean:
+	@if exist velocity-map.obj del velocity-map.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\velocity-map.exe del ..\..\bin\velocity-map.exe
+

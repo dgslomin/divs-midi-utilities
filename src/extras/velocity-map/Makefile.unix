@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/velocity-map: velocity-map.o midifile.o
+	$(CC) -o../../bin/velocity-map velocity-map.o midifile.o
+
+velocity-map.o: velocity-map.c ../midifile/midifile.h
+	$(CC) -I../midifile -c velocity-map.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f velocity-map.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/velocity-map
+
