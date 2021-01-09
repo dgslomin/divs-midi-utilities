@@ -1,5 +1,4 @@
 
-pulsar
 qwertymidi / delta / joycc
 
 deprecate:  alsamidi2net / alsamidi2pipe / beatbox / imp / intervals / joypedal / metercaster / midimon / midimsg / net2alsamidi / net2pipe / padpedal / pedalnote / pipe2alsamidi / pipe2net / rw / simple-collections / simplealarm / transpose / verbosify / xmidiqwerty
