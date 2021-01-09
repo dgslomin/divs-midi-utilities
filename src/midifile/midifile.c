@@ -2002,6 +2002,20 @@ long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker)
 	return -1;
 }
 
+long MidiFile_getTickFromTimeString(MidiFile_t midi_file, char *time_string)
+{
+	if ((midi_file == NULL) || (time_string == NULL)) return -1;
+	if (strncmp(time_string, "tick:", 5) == 0) return atol(time_string + 5);
+	if (strncmp(time_string, "beat:", 5) == 0) return MidiFile_getTickFromBeat(midi_file, atof(time_string + 5));
+	if (strncmp(time_string, "mb:", 3) == 0) return MidiFile_getTickFromMeasureBeatString(midi_file, time_string + 3);
+	if (strncmp(time_string, "mbt:", 4) == 0) return MidiFile_getTickFromMeasureBeatTickString(midi_file, time_string + 4);
+	if (strncmp(time_string, "time:", 5) == 0) return MidiFile_getTickFromTime(midi_file, atof(time_string + 5));
+	if (strncmp(time_string, "hms:", 4) == 0) MidiFile_getTickFromHourMinuteSecondString(midi_file, time_string + 4);
+	if (strncmp(time_string, "hmsf:", 5) == 0) MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, time_string + 5);
+	if (strncmp(time_string, "marker:", 7) == 0) MidiFile_getTickFromMarker(midi_file, time_string + 7);
+	return -1;
+}
+
 MidiFileEvent_t MidiFile_getFirstEventForTick(MidiFile_t midi_file, long tick)
 {
 	MidiFileEvent_t first_event_for_tick = NULL;

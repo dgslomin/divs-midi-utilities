@@ -155,6 +155,7 @@ int MidiFile_getTickFromHourMinuteSecondString(MidiFile_t midi_file, char *hour_
 char *MidiFile_getHourMinuteSecondFrameStringFromTick(MidiFile_t midi_file, long tick);
 int MidiFile_getTickFromHourMinuteSecondFrameString(MidiFile_t midi_file, char *hour_minute_second_frame_string);
 long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker);
+long MidiFile_getTickFromTimeString(MidiFile_t midi_file, char *time_string);
 
 MidiFileEvent_t MidiFile_getFirstEventForTick(MidiFile_t midi_file, long tick);
 MidiFileEvent_t MidiFile_getLastEventForTick(MidiFile_t midi_file, long tick);

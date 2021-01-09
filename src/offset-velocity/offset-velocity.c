@@ -6,13 +6,12 @@
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from <time> ] [ --to <time> ] [ --track <n> ] --amount <n> [ --out <filename.mid> ] <filename.mid>\n", program_name);
+	fprintf(stderr, "Usage:  %s [ --from <time> ] [ --to <time> ] [ --track <n> ] --amount <n> [ --out <filename.mid> ] <filename.mid>\n", program_name);
 	exit(1);
 }
 
 int main(int argc, char **argv)
 {
-	char *unit = "--mb";
 	char *from_string = NULL;
 	char *to_string = NULL;
 	int track_number = -1;
@@ -22,18 +21,14 @@ int main(int argc, char **argv)
 	int i;
 	MidiFile_t midi_file;
 	MidiFileEvent_t event;
-	long from_tick = -1;
-	long to_tick = -1;
+	long from_tick;
+	long to_tick;
 
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--help") == 0)
 		{
 			usage(argv[0]);
-		}
-		else if ((strcmp(argv[i], "--tick") == 0) || (strcmp(argv[i], "--beat") == 0) || (strcmp(argv[i], "--mb") == 0) || (strcmp(argv[i], "--mbt") == 0) || (strcmp(argv[i], "--time") == 0) || (strcmp(argv[i], "--hms") == 0) || (strcmp(argv[i], "--hmsf") == 0))
-		{
-			unit = argv[i];
 		}
 		else if (strcmp(argv[i], "--from") == 0)
 		{
@@ -60,13 +55,9 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			output_filename = argv[i];
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 
@@ -79,41 +70,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (strcmp(unit, "--tick") == 0)
-	{
-		if (from_string != NULL) from_tick = atol(from_string);
-		if (to_string != NULL) to_tick = atol(to_string);
-	}
-	else if (strcmp(unit, "--beat") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromBeat(midi_file, atof(from_string));
-		if (to_string != NULL) to_tick = MidiFile_getTickFromBeat(midi_file, atof(to_string));
-	}
-	else if (strcmp(unit, "--mb") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromMeasureBeatString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromMeasureBeatString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--mbt") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--time") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromTime(midi_file, atof(from_string));
-		if (to_string != NULL) to_tick = MidiFile_getTickFromTime(midi_file, atof(to_string));
-	}
-	else if (strcmp(unit, "--hms") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--hmsf") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, to_string);
-	}
+	from_tick = MidiFile_getTickFromTimeString(midi_file, from_string);
+	if (from_tick < 0) from_tick = 0;
+	to_tick = MidiFile_getTickFromTimeString(midi_file, to_string);
+	if (to_tick < 0) to_tick = MidiFileEvent_getTick(MidiFile_getLastEvent(midi_file));
 
 	for (event = ((track_number < 0) ? MidiFile_getFirstEvent(midi_file) : MidiFileTrack_getFirstEvent(MidiFile_getTrackByNumber(midi_file, track_number, 0))); event != NULL; event = ((track_number < 0) ? MidiFileEvent_getNextEventInFile(event) : MidiFileEvent_getNextEventInTrack(event)))
 	{
@@ -121,7 +81,7 @@ int main(int argc, char **argv)
 		{
 			long tick = MidiFileEvent_getTick(event);
 
-			if (((from_tick < 0) || (tick >= from_tick)) && ((to_tick < 0) || (tick <= to_tick)))
+			if ((tick >= from_tick) && (tick <= to_tick))
 			{
 				int velocity = (int)((float)(MidiFileNoteStartEvent_getVelocity(event)) + amount);
 				if (velocity > 127) velocity = 127;
@@ -137,6 +97,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 

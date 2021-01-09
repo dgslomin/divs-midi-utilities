@@ -48,6 +48,7 @@ int main(int argc, char **argv)
 	printf("hms:%s\n", MidiFile_getHourMinuteSecondStringFromTick(midi_file, tick));
 	printf("hmsf:%s\n", MidiFile_getHourMinuteSecondFrameStringFromTick(midi_file, tick));
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 

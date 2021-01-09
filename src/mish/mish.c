@@ -1101,7 +1101,7 @@ int main(int argc, char **argv)
 	midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 120);
 	process_mish(input_filename, midi_file);
 	MidiFile_save(midi_file, output_filename);
-
+	MidiFile_free(midi_file);
 	return 0;
 }
 

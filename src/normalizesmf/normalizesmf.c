@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	}
 
 	MidiFile_save(midi_file, filename);
-
+	MidiFile_free(midi_file);
 	return 0;
 }
 

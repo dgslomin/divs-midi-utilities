@@ -152,6 +152,7 @@ int main(int argc, char **argv)
 
 	printf("</MidiFile>\n");
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 

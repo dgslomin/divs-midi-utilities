@@ -90,6 +90,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 

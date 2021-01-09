@@ -6,33 +6,32 @@
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s [ --tick | --beat | --mb | --mbt | --time | --hms | --hmsf ] [ --from <time> ] [ --to <time> ] <filename.mid>\n", program_name);
+	fprintf(stderr, "Usage:  %s [ --from <time> ] [ --to <time> ] <filename.mid>\n", program_name);
 	exit(1);
 }
 
 int main(int argc, char **argv)
 {
-	char *unit = "--mb";
 	char *from_string = NULL;
 	char *to_string = NULL;
 	char *input_filename = NULL;
 	int i;
 	MidiFile_t midi_file;
 	MidiFileEvent_t event;
-	long from_tick = -1;
-	long to_tick = -1;
+	float from_time;
+	float to_time;
+	float previous_time = 0.0;
+	float previous_tempo = 120.0;
+	float last_time = 0.0;
+	float last_tempo = 0.0;
 	float average_tempo_numerator = 0.0;
-	long average_tempo_denominator = 0;
+	float average_tempo_denominator = 0.0;
 
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--help") == 0)
 		{
 			usage(argv[0]);
-		}
-		else if ((strcmp(argv[i], "--tick") == 0) || (strcmp(argv[i], "--beat") == 0) || (strcmp(argv[i], "--mb") == 0) || (strcmp(argv[i], "--mbt") == 0) || (strcmp(argv[i], "--time") == 0) || (strcmp(argv[i], "--hms") == 0) || (strcmp(argv[i], "--hmsf") == 0))
-		{
-			unit = argv[i];
 		}
 		else if (strcmp(argv[i], "--from") == 0)
 		{
@@ -44,13 +43,9 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			to_string = argv[i];
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 
@@ -62,57 +57,38 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (strcmp(unit, "--tick") == 0)
-	{
-		if (from_string != NULL) from_tick = atol(from_string);
-		if (to_string != NULL) to_tick = atol(to_string);
-	}
-	else if (strcmp(unit, "--beat") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromBeat(midi_file, atof(from_string));
-		if (to_string != NULL) to_tick = MidiFile_getTickFromBeat(midi_file, atof(to_string));
-	}
-	else if (strcmp(unit, "--mb") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromMeasureBeatString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromMeasureBeatString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--mbt") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--time") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromTime(midi_file, atof(from_string));
-		if (to_string != NULL) to_tick = MidiFile_getTickFromTime(midi_file, atof(to_string));
-	}
-	else if (strcmp(unit, "--hms") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, to_string);
-	}
-	else if (strcmp(unit, "--hmsf") == 0)
-	{
-		if (from_string != NULL) from_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, from_string);
-		if (to_string != NULL) to_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, to_string);
-	}
+	from_time = MidiFile_getTimeFromTick(midi_file, MidiFile_getTickFromTimeString(midi_file, from_string));
+	to_time = MidiFile_getTimeFromTick(midi_file, MidiFile_getTickFromTimeString(midi_file, to_string));
+	if (to_time <= from_time) to_time = MidiFile_getTimeFromTick(midi_file, MidiFileEvent_getTick(MidiFile_getLastEvent(midi_file)));
 
 	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
 	{
 		if (MidiFileEvent_isTempoEvent(event))
 		{
-			long tick = MidiFileEvent_getTick(event);
+			float time = MidiFile_getTimeFromTick(midi_file, MidiFileEvent_getTick(event));
+			float tempo = MidiFileTempoEvent_getTempo(event);
 
-			if (((from_tick < 0) || (tick >= from_tick)) && ((to_tick < 0) || (tick <= to_tick)))
+			if ((time >= from_time) && (time <= to_time))
 			{
-				average_tempo_numerator += MidiFileTempoEvent_getTempo(event);
-				average_tempo_denominator++;
+				float previous_duration = time - ((from_time > previous_time) ? from_time : previous_time);
+				average_tempo_numerator += (previous_tempo * previous_duration);
+				average_tempo_denominator += previous_duration;
+				last_time = time;
+				last_tempo = tempo;
 			}
+
+			previous_time = time;
+			previous_tempo = tempo;
 		}
 	}
 
-	if (average_tempo_denominator == 0)
+	{
+		float last_duration = to_time - last_time;
+		average_tempo_numerator += (last_tempo * last_duration);
+		average_tempo_denominator += last_duration;
+	}
+
+	if (average_tempo_denominator == 0.0)
 	{
 		printf("120.0\n");
 	}
@@ -121,6 +97,7 @@ int main(int argc, char **argv)
 		printf("%f\n", average_tempo_numerator / average_tempo_denominator);
 	}
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 

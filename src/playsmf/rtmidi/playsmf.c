@@ -21,7 +21,7 @@ static void interrupt_handler(void *arg)
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --out <port> [ --from ( tick:<tick> | beat:<beat> | mb:<m>:<b> | mbt:<m>:<b>:<t> | time:<time> | hms:<h>:<m>:<s> | hmsf:<h>:<m>:<s>:<f> | marker:<marker> ) ] [ --to ( tick:<tick> | beat:<beat> | mb:<m>:<b> | mbt:<m>:<b>:<t> | time:<time> | hms:<h>:<m>:<s> | hmsf:<h>:<m>:<s>:<f> | marker:<marker> ) ] [ ( --solo-track <n> ) ... | ( --mute-track <n> ) ... ] [ --extra-time <seconds> ] <filename.mid>\n", program_name);
+	fprintf(stderr, "Usage:  %s --out <port> [ --from <time> ] [ --to <time> ] [ ( --solo-track <n> ) ... | ( --mute-track <n> ) ... ] [ --extra-time <seconds> ] <filename.mid>\n", program_name);
 	exit(1);
 }
 
@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 	RtMidiOutPtr track_midi_outs[1024];
 	unsigned long start_time = 0;
 	MidiFileEvent_t midi_file_event;
-	long from_tick = -1;
-	long to_tick = -1;
+	long from_tick;
+	long to_tick;
 
 	for (i = 1; i < argc; i++)
 	{
@@ -100,77 +100,10 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (from_string != NULL)
-	{
-		if (strncmp(from_string, "tick:", 5) == 0)
-		{
-			from_tick = atol(from_string + 5);
-		}
-		else if (strncmp(from_string, "beat:", 5) == 0)
-		{
-			from_tick = MidiFile_getTickFromBeat(midi_file, atof(from_string + 5));
-		}
-		else if (strncmp(from_string, "mb:", 3) == 0)
-		{
-			from_tick = MidiFile_getTickFromMeasureBeatString(midi_file, from_string + 3);
-		}
-		else if (strncmp(from_string, "mbt:", 4) == 0)
-		{
-			from_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, from_string + 4);
-		}
-		else if (strncmp(from_string, "time:", 5) == 0)
-		{
-			from_tick = MidiFile_getTickFromTime(midi_file, atof(from_string + 5));
-		}
-		else if (strncmp(from_string, "hms:", 4) == 0)
-		{
-			from_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, from_string + 4);
-		}
-		else if (strncmp(from_string, "hmsf:", 5) == 0)
-		{
-			from_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, from_string + 5);
-		}
-		else if (strncmp(from_string, "marker:", 7) == 0)
-		{
-			from_tick = MidiFile_getTickFromMarker(midi_file, from_string + 7);
-		}
-	}
-
-	if (to_string != NULL)
-	{
-		if (strncmp(to_string, "tick:", 5) == 0)
-		{
-			to_tick = atol(to_string + 5);
-		}
-		else if (strncmp(to_string, "beat:", 5) == 0)
-		{
-			to_tick = MidiFile_getTickFromBeat(midi_file, atof(to_string + 5));
-		}
-		else if (strncmp(to_string, "mb:", 3) == 0)
-		{
-			to_tick = MidiFile_getTickFromMeasureBeatString(midi_file, to_string + 3);
-		}
-		else if (strncmp(to_string, "mbt:", 4) == 0)
-		{
-			to_tick = MidiFile_getTickFromMeasureBeatTickString(midi_file, to_string + 4);
-		}
-		else if (strncmp(to_string, "time:", 5) == 0)
-		{
-			to_tick = MidiFile_getTickFromTime(midi_file, atof(to_string + 5));
-		}
-		else if (strncmp(to_string, "hms:", 4) == 0)
-		{
-			to_tick = MidiFile_getTickFromHourMinuteSecondString(midi_file, to_string + 4);
-		}
-		else if (strncmp(to_string, "hmsf:", 5) == 0)
-		{
-			to_tick = MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, to_string + 5);
-		}
-		else if (strncmp(to_string, "marker:", 7) == 0)
-		{
-			to_tick = MidiFile_getTickFromMarker(midi_file, to_string + 7);
-		}
-	}
+	from_tick = MidiFile_getTickFromTimeString(midi_file, from_string);
+	if (from_tick < 0) from_tick = 0;
+	to_tick = MidiFile_getTickFromTimeString(midi_file, to_string);
+	if (to_tick < 0) to_tick = MidiFileEvent_getTick(MidiFile_getLastEvent(midi_file));
 
 	if ((midi_out = rtmidi_open_out_port("playsmf", midi_out_port, "playsmf")) == NULL)
 	{
@@ -214,7 +147,7 @@ int main(int argc, char **argv)
 		if (MidiFileEvent_getType(midi_file_event) != MIDI_FILE_EVENT_TYPE_META)
 		{
 			long tick = MidiFileEvent_getTick(midi_file_event);
-			int in_range = (((from_tick < 0) || (tick >= from_tick)) && ((to_tick < 0) || (tick <= to_tick)));
+			int in_range = ((tick >= from_tick) && (tick <= to_tick));
 			RtMidiOutPtr midi_out = track_midi_outs[MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_file_event))];
 
 			if ((!should_shutdown) && in_range)

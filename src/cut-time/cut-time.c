@@ -7,22 +7,7 @@
 static void usage(char *program_name)
 {
 	fprintf(stderr, "Usage:  %s [ --from <time> ] [ --to <time> ] [ --out <filename.mid> ] <filename.mid>\n", program_name);
-	fprintf(stderr, "where <time> is ( tick:<tick> | measure:<measure> | beat:<beat> | mb:<measure>:<beat> | mbt:<measure>:<beat>:<tick> | time:<second> | hms:<hour>:<minute>:<second> | hmsf:<hour>:<minute>:<second>:<frame> | marker:<marker-name> )\n");
 	exit(1);
-}
-
-static long get_tick_from_time_string(MidiFile_t midi_file, char *time_string)
-{
-	if (strncmp(time_string, "tick:", 5) == 0) return atol(time_string + 5);
-	if (strncmp(time_string, "beat:", 5) == 0) return MidiFile_getTickFromBeat(midi_file, atof(time_string + 5));
-	if (strncmp(time_string, "measure:", 8) == 0) return MidiFile_getTickFromMeasure(midi_file, atof(time_string + 8));
-	if (strncmp(time_string, "mb:", 3) == 0) return MidiFile_getTickFromMeasureBeatString(midi_file, time_string + 3);
-	if (strncmp(time_string, "mbt:", 4) == 0) return MidiFile_getTickFromMeasureBeatTickString(midi_file, time_string + 4);
-	if (strncmp(time_string, "time:", 5) == 0) return MidiFile_getTickFromTime(midi_file, atof(time_string + 5));
-	if (strncmp(time_string, "hms:", 4) == 0) return MidiFile_getTickFromHourMinuteSecondString(midi_file, time_string + 4);
-	if (strncmp(time_string, "hmsf:", 5) == 0) return MidiFile_getTickFromHourMinuteSecondFrameString(midi_file, time_string + 5);
-	if (strncmp(time_string, "marker:", 7) == 0) return MidiFile_getTickFromMarker(midi_file, time_string + 7);
-	return -1;
 }
 
 int main(int argc, char **argv)
@@ -60,13 +45,9 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			output_filename = argv[i];
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 
@@ -79,25 +60,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (from_string == NULL)
-	{
-		from_tick = 0;
-	}
-	else
-	{
-		from_tick = get_tick_from_time_string(midi_file, from_string);
-		if (from_tick < 0) usage(argv[0]);
-	}
-
-	if (to_string == NULL)
-	{
-		to_tick = MidiFileEvent_getTick(MidiFile_getLastEvent(midi_file));
-	}
-	else
-	{
-		to_tick = get_tick_from_time_string(midi_file, to_string);
-		if (to_tick < 0) usage(argv[0]);
-	}
+	from_tick = MidiFile_getTickFromTimeString(midi_file, from_string);
+	if (from_tick < 0) from_tick = 0;
+	to_tick = MidiFile_getTickFromTimeString(midi_file, to_string);
+	if (to_tick < 0) to_tick = MidiFileEvent_getTick(MidiFile_getLastEvent(midi_file));
 
 	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = next_event)
 	{
@@ -140,6 +106,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	MidiFile_free(midi_file);
 	return 0;
 }
 
