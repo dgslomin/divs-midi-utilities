@@ -2,15 +2,15 @@
 ifeq ("$(shell uname -s)", "Darwin")
 CC=gcc
 CXX=g++
-CFLAGS=-D__MACOSX_CORE__
+CFLAGS=$(shell wx-config --cflags) -D__MACOSX_CORE__
 LDFLAGS=
-LIBS=-framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
+LIBS=$(shell wx-config --libs) -framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
 else
 CC=gcc
 CXX=g++
-CFLAGS=-D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
+CFLAGS=$(shell wx-config --cflags) --D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
 LDFLAGS=
-LIBS=-lasound -lpthread -lstdc++
+LIBS=$(shell wx-config --libs) -lasound -lpthread -lstdc++
 endif
 
 ../../../bin/qwertymidi: qwertymidi.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
