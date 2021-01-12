@@ -15,7 +15,7 @@ signed char notemap[128];
 
 void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
-	if (strcmp(name, "mapping") == 0)
+	if (strcmp(name, "map") == 0)
 	{
 		int i, from = -1, to = -1;
 
