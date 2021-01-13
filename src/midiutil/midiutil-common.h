@@ -354,6 +354,9 @@ void MidiUtilPitchWheelMessage_setChannel(unsigned char *message, int channel);
 int MidiUtilPitchWheelMessage_getValue(const unsigned char *message);
 void MidiUtilPitchWheelMessage_setValue(unsigned char *message, int value);
 
+int MidiUtil_getNoteNumberFromName(char *note_name);
+int MidiUtil_setNoteNameFromNumber(int note_number, char *note_name);
+
 #ifdef __cplusplus
 }
 #endif

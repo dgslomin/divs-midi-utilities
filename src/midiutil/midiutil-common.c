@@ -2791,3 +2791,44 @@ void MidiUtilPitchWheelMessage_setValue(unsigned char *message, int value)
 	message[2] = (value >> 7) & 0x7F;
 }
 
+int MidiUtil_getNoteNumberFromName(char *note_name)
+{
+	const char *note_names[] = {"C#", "C", "Db", "D#", "D", "Eb", "E", "F#", "F", "Gb", "G#", "G", "Ab", "A#", "A", "Bb", "B"};
+	const int chromatics[] = {1, 0, 1, 3, 2, 3, 4, 6, 5, 6, 8, 7, 8, 10, 9, 10, 11};
+	int chromatic = -1;
+	int octave = -1;
+	int length;
+	int note_number;
+	int i;
+
+	for (i = 0; i < (sizeof (note_names) / sizeof (char *)); i++)
+	{
+		length = strlen(note_names[i]);
+
+		if (strncmp(note_names[i], note_name, length) == 0)
+		{
+			chromatic = chromatics[i];
+			break;
+		}
+	}
+
+	if (chromatic < 0) return -1;
+	if (sscanf(note_name + length, "%d", &octave) != 1) return -1;
+	note_number = ((octave + 1) * 12) + chromatic;
+	if ((note_number >= 0) && (note_number < 128)) return note_number;
+	return -1;
+}
+
+int MidiUtil_setNoteNameFromNumber(int note_number, char *note_name)
+{
+	const char* note_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+
+	if ((note_number >= 0) && (note_number < 128))
+	{
+		sprintf(note_name, "%s%d", note_names[note_number % 12], (note_number / 12) - 1);
+		return 0;
+	}
+
+	return -1;
+}
+

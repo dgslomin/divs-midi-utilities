@@ -13,8 +13,8 @@ LDFLAGS=
 LIBS=$(shell wx-config --libs) -lasound -lpthread -lstdc++
 endif
 
-../../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
 
 qwertymidi.o: qwertymidi.cpp
 	$(CXX) $(CFLAGS) -I../../midiutil -I../../3rdparty/rtmidi -c qwertymidi.cpp
@@ -24,6 +24,9 @@ midiutil-common.o: ../../midiutil/midiutil-common.c
 
 midiutil-rtmidi.o: ../../midiutil/midiutil-rtmidi.c
 	$(CC) $(CFLAGS) -I../../3rdparty/rtmidi -I../../midiutil -c ../../midiutil/midiutil-rtmidi.c
+
+midiutil-wx.o: ../../midiutil/midiutil-wx.cpp
+	$(CXX) $(CFLAGS) -I../../midiutil -c ../../midiutil/midiutil-wx.cpp
 
 RtMidi.o: ../../3rdparty/rtmidi/RtMidi.cpp
 	$(CXX) $(CFLAGS) -I../../3rdparty/rtmidi -c ../../3rdparty/rtmidi/RtMidi.cpp
@@ -35,6 +38,7 @@ clean:
 	rm -f qwertymidi.o
 	rm -f midiutil-common.o
 	rm -f midiutil-rtmidi.o
+	rm -f midiutil-wx.o
 	rm -f RtMidi.o
 	rm -f rtmidi_c.o
 

@@ -7,6 +7,7 @@
 #include <rtmidi_c.h>
 #include <midiutil-common.h>
 #include <midiutil-rtmidi.h>
+#include <midiutil-wx.h>
 
 #define ACTION_NOOP 10000
 #define ACTION_EXIT 10001
@@ -63,17 +64,18 @@ static void send_program_change(int channel, int number)
 static void handle_key_down(wxKeyEvent& event)
 {
 	int key_code = event.GetKeyCode();
-	int action = map[key_code];
 
 	if (!down[key_code])
 	{
+		wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
+		int action = map[key_code];
 		down[key_code] = 1;
 
 		switch (action)
 		{
 			case ACTION_NOOP:
 			{
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"noop\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"noop\" />", key_name));
 				break;
 			}
 			case ACTION_EXIT:
@@ -85,89 +87,69 @@ static void handle_key_down(wxKeyEvent& event)
 			{
 				int i;
 				for (i = 0; i < 127; i++) send_note_off(channel_number, i);
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"panic\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"panic\" />", key_name));
 				break;
 			}
 			case ACTION_SHIFT_UP_OCTAVE:
 			{
 				transposition += 12;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"shift-up-octave\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-octave\" />", key_name));
 				break;
 			}
 			case ACTION_STAY_UP_OCTAVE:
 			{
 				transposition += 12;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"stay-up-octave\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-octave\" />", key_name));
 				break;
 			}
 			case ACTION_SHIFT_DOWN_OCTAVE:
 			{
 				transposition -= 12;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"shift-down-octave\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-octave\" />", key_name));
 				break;
 			}
 			case ACTION_STAY_DOWN_OCTAVE:
 			{
 				transposition -= 12;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"stay-down-octave\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-octave\" />", key_name));
 				break;
 			}
 			case ACTION_SHIFT_UP_NOTE:
 			{
 				transposition++;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"shift-up-note\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-note\" />", key_name));
 				break;
 			}
 			case ACTION_STAY_UP_NOTE:
 			{
 				transposition++;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"stay-up-note\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-note\" />", key_name));
 				break;
 			}
 			case ACTION_SHIFT_DOWN_NOTE:
 			{
 				transposition--;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"shift-down-note\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-note\" />", key_name));
 				break;
 			}
 			case ACTION_STAY_DOWN_NOTE:
 			{
 				transposition--;
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"stay-down-note\" />", key_code));
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-note\" />", key_name));
 				break;
 			}
 			default:
 			{
-				int note = action + transposition;
-				if ((note >= 0) && (note < 128)) send_note_on(channel_number, note, velocity);
-				text_box->SetValue(wxString::Format("<map key=\"%d\" action=\"%d\" />", key_code, action));
+				int note = action;
+				int transposed_note = note + transposition;
+				char note_name[128];
+				if ((transposed_note >= 0) && (transposed_note < 128)) send_note_on(channel_number, transposed_note, velocity);
+				MidiUtil_setNoteNameFromNumber(note, note_name);
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%s\" />", key_name, note_name));
 				break;
 			}
 		}
 	}
-
-#if 0
-	/* Allow caps, number, and scroll lock to be used as a trigger keys without affecting the lock state. */
-
-	if (input_record.Event.KeyEvent.wVirtualScanCode == 58)
-	{
-		keybd_event(VK_CAPITAL, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_CAPITAL, 0, 0, 0);
-		keybd_event(VK_CAPITAL, 0, KEYEVENTF_KEYUP, 0);
-	}
-	else if (input_record.Event.KeyEvent.wVirtualScanCode == 69)
-	{
-		keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_NUMLOCK, 0, 0, 0);
-		keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
-	}
-	else if (input_record.Event.KeyEvent.wVirtualScanCode == 70)
-	{
-		keybd_event(VK_SCROLL, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_SCROLL, 0, 0, 0);
-		keybd_event(VK_SCROLL, 0, KEYEVENTF_KEYUP, 0);
-	}
-#endif
 }
 
 static void handle_key_up(wxKeyEvent& event)
@@ -279,7 +261,7 @@ bool Application::OnInit()
 				{
 					if (node->GetName() == "map")
 					{
-						int key = wxAtoi(node->GetAttribute("key"));
+						int key = MidiUtil_getWxKeyCodeFromName(node->GetAttribute("key"));
 						wxString action = node->GetAttribute("action");
 
 						if (action == "noop")
@@ -328,7 +310,8 @@ bool Application::OnInit()
 						}
 						else
 						{
-							map[key] = wxAtoi(action);
+							int note = MidiUtil_getNoteNumberFromName(action.char_str());
+							if (note >= 0) map[key] = note;
 						}
 					}
 				}
