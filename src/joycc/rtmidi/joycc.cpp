@@ -11,7 +11,6 @@
 #include <midiutil-wx.h>
 
 static wxTextCtrl* text_box;
-static wxTimer* timer;
 static int startup_error = 0;
 static RtMidiOutPtr midi_out = NULL;
 static int channel_number = 0;
@@ -58,7 +57,7 @@ static int get_joystick_axis_max(wxJoystick* joystick, int axis_number)
 	}
 }
 
-static void handle_timer(wxTimerEvent& event)
+static void handle_idle(wxIdleEvent& event)
 {
 	wxString status_message = wxEmptyString;
 	int joystick_number;
@@ -135,8 +134,6 @@ bool Application::OnInit()
 	int i;
 	wxFrame *window = new wxFrame(NULL, wxID_ANY, "Joycc", wxDefaultPosition, wxSize(640, 480));
 	text_box = new wxTextCtrl(window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxBORDER_NONE);
-	timer = new wxTimer(text_box);
-	text_box->Bind(wxEVT_TIMER, handle_timer);
 
 	for (i = 1; i < this->argc; i++)
 	{
@@ -186,7 +183,7 @@ bool Application::OnInit()
 	if (!startup_error)
 	{
 		int joystick_number, axis_number, button_number;
-		number_of_joysticks = wxJoystick::GetNumberJoysticks();
+		number_of_joysticks = 0; // wxJoystick::GetNumberJoysticks();
 
 		for (joystick_number = 0; joystick_number < number_of_joysticks; joystick_number++)
 		{
@@ -196,7 +193,7 @@ bool Application::OnInit()
 			for (button_number = 0; button_number < 64; button_number++) button_last_value_array[joystick_number][button_number] = 0;
 		}
 
-		timer->Start(100);
+		text_box->Bind(wxEVT_IDLE, handle_idle);
 	}
 
 	this->SetTopWindow(window);
@@ -206,15 +203,9 @@ bool Application::OnInit()
 
 int Application::OnExit()
 {
+	text_box->Unbind(wxEVT_IDLE, handle_idle);
 	if (midi_out != NULL) rtmidi_close_port(midi_out);
-	delete timer;
-
-	while (number_of_joysticks > 0)
-	{
-		wxJoystick* joystick = joystick_array[--number_of_joysticks];
-		delete joystick;
-	}
-
+	while (number_of_joysticks > 0) delete joystick_array[--number_of_joysticks];
 	return 0;
 }
 
