@@ -4,17 +4,17 @@ CC=gcc
 CXX=g++
 CFLAGS=$(shell wx-config --cflags) -D__MACOSX_CORE__
 LDFLAGS=
-LIBS=$(shell wx-config --libs) -framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
+LIBS=$(shell wx-config --libs) -framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lexpat -lstdc++
 else
 CC=gcc
 CXX=g++
 CFLAGS=$(shell wx-config --cflags) --D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
 LDFLAGS=
-LIBS=$(shell wx-config --libs) -lasound -lpthread -lstdc++
+LIBS=$(shell wx-config --libs) -lasound -lpthread -lexpat -lstdc++
 endif
 
-../../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
+../../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
 
 qwertymidi.o: qwertymidi.cpp
 	$(CXX) $(CFLAGS) -I../../midiutil -I../../3rdparty/rtmidi -c qwertymidi.cpp
@@ -24,6 +24,9 @@ midiutil-common.o: ../../midiutil/midiutil-common.c
 
 midiutil-rtmidi.o: ../../midiutil/midiutil-rtmidi.c
 	$(CC) $(CFLAGS) -I../../3rdparty/rtmidi -I../../midiutil -c ../../midiutil/midiutil-rtmidi.c
+
+midiutil-expat.o: ../../midiutil/midiutil-expat.c
+	$(CC) $(CFLAGS) -I../../midiutil -c ../../midiutil/midiutil-expat.c
 
 midiutil-wx.o: ../../midiutil/midiutil-wx.cpp
 	$(CXX) $(CFLAGS) -I../../midiutil -c ../../midiutil/midiutil-wx.cpp
@@ -38,6 +41,7 @@ clean:
 	rm -f qwertymidi.o
 	rm -f midiutil-common.o
 	rm -f midiutil-rtmidi.o
+	rm -f midiutil-expat.o
 	rm -f midiutil-wx.o
 	rm -f RtMidi.o
 	rm -f rtmidi_c.o

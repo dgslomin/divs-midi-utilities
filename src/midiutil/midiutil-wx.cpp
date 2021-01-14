@@ -19,7 +19,7 @@ const wxString key_names[] = {
 	wxEmptyString,
 	wxEmptyString,
 	wxEmptyString,
-	"return",
+	"enter",
 	wxEmptyString,
 	wxEmptyString,
 	wxEmptyString,

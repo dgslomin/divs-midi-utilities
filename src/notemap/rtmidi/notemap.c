@@ -13,7 +13,7 @@ static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
 signed char notemap[128];
 
-void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
+static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
 	if (strcmp(name, "map") == 0)
 	{
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
 			if (XML_ParseFile(xml_parser, argv[i]) < 0)
 			{
-				printf("Error:  Cannot load map file \"%s\".\n", argv[i]);
+				printf("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), XML_GetCurrentLineNumber(xml_parser), argv[i]);
 				exit(1);
 			}
 

@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wx/wx.h>
-#include <wx/xml/xml.h>
 #include <rtmidi_c.h>
+#include <expat.h>
 #include <midiutil-common.h>
 #include <midiutil-rtmidi.h>
+#include <midiutil-expat.h>
 #include <midiutil-wx.h>
 
 #define ACTION_NOOP 10000
@@ -30,6 +31,80 @@ static int velocity = 64;
 static int map[512];
 static int down[128];
 static int transposition = 0;
+
+static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
+{
+	if (strcmp(name, "map") == 0)
+	{
+		int key = -1;
+		wxString action = wxEmptyString;
+
+		for (int i = 0; attributes[i] != NULL; i += 2)
+		{
+			if (strcmp(attributes[i], "key") == 0)
+			{
+				key = MidiUtil_getWxKeyCodeFromName(attributes[i + 1]);
+			}
+			else if (strcmp(attributes[i], "action") == 0)
+			{
+				action = attributes[i + 1];
+			}
+		}
+
+		if ((key >= 0) && (action != wxEmptyString))
+		{
+			if (action == "noop")
+			{
+				map[key] = ACTION_NOOP;
+			}
+			else if (action == "exit")
+			{
+				map[key] = ACTION_EXIT;
+			}
+			else if (action == "panic")
+			{
+				map[key] = ACTION_PANIC;
+			}
+			else if (action == "shift-up-octave")
+			{
+				map[key] = ACTION_SHIFT_UP_OCTAVE;
+			}
+			else if (action == "shift-down-octave")
+			{
+				map[key] = ACTION_SHIFT_DOWN_OCTAVE;
+			}
+			else if (action == "stay-up-octave")
+			{
+				map[key] = ACTION_STAY_UP_OCTAVE;
+			}
+			else if (action == "stay-down-octave")
+			{
+				map[key] = ACTION_STAY_DOWN_OCTAVE;
+			}
+			else if (action == "shift-up-note")
+			{
+				map[key] = ACTION_SHIFT_UP_NOTE;
+			}
+			else if (action == "shift-down-note")
+			{
+				map[key] = ACTION_SHIFT_DOWN_NOTE;
+			}
+			else if (action == "stay-up-note")
+			{
+				map[key] = ACTION_STAY_UP_NOTE;
+			}
+			else if (action == "stay-down-note")
+			{
+				map[key] = ACTION_STAY_DOWN_NOTE;
+			}
+			else
+			{
+				int note = MidiUtil_getNoteNumberFromName(action.char_str());
+				if (note >= 0) map[key] = note;
+			}
+		}
+	}
+}
 
 static void send_note_on(int channel, int note, int velocity)
 {
@@ -250,77 +325,17 @@ bool Application::OnInit()
 		}
 		else if (this->argv[i] == "--map")
 		{
-			wxXmlDocument doc;
-			wxXmlNode* node;
-
+			XML_Parser xml_parser = XML_ParserCreate(NULL);
 			if (++i == this->argc) usage(this->argv[0]);
+			XML_SetStartElementHandler(xml_parser, handle_xml_start_element);
 
-			if (doc.Load(this->argv[0]))
+			if (XML_ParseFile(xml_parser, argv[i].char_str()) < 0)
 			{
-				for (node = doc.GetRoot()->GetChildren(); node != NULL; node = node->GetNext())
-				{
-					if (node->GetName() == "map")
-					{
-						int key = MidiUtil_getWxKeyCodeFromName(node->GetAttribute("key"));
-						wxString action = node->GetAttribute("action");
-
-						if (action == "noop")
-						{
-							map[key] = ACTION_NOOP;
-						}
-						else if (action == "exit")
-						{
-							map[key] = ACTION_EXIT;
-						}
-						else if (action == "panic")
-						{
-							map[key] = ACTION_PANIC;
-						}
-						else if (action == "shift-up-octave")
-						{
-							map[key] = ACTION_SHIFT_UP_OCTAVE;
-						}
-						else if (action == "shift-down-octave")
-						{
-							map[key] = ACTION_SHIFT_DOWN_OCTAVE;
-						}
-						else if (action == "stay-up-octave")
-						{
-							map[key] = ACTION_STAY_UP_OCTAVE;
-						}
-						else if (action == "stay-down-octave")
-						{
-							map[key] = ACTION_STAY_DOWN_OCTAVE;
-						}
-						else if (action == "shift-up-note")
-						{
-							map[key] = ACTION_SHIFT_UP_NOTE;
-						}
-						else if (action == "shift-down-note")
-						{
-							map[key] = ACTION_SHIFT_DOWN_NOTE;
-						}
-						else if (action == "stay-up-note")
-						{
-							map[key] = ACTION_STAY_UP_NOTE;
-						}
-						else if (action == "stay-down-note")
-						{
-							map[key] = ACTION_STAY_DOWN_NOTE;
-						}
-						else
-						{
-							int note = MidiUtil_getNoteNumberFromName(action.char_str());
-							if (note >= 0) map[key] = note;
-						}
-					}
-				}
-			}
-			else
-			{
-				text_box->SetValue(wxString::Format("Error:  Cannot load map file \"%s\".\n", this->argv[i]));
+				text_box->SetValue(wxString::Format("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), XML_GetCurrentLineNumber(xml_parser), argv[i]));
 				startup_error = 1;
 			}
+
+			XML_ParserFree(xml_parser);
 		}
 		else
 		{

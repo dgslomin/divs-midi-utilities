@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+
+<!--
+Brian Hayden derived a layout for the concertina from the Janko piano
+keyboard layout.  Decades earlier, Kaspar Wicki independently created the
+same layout for the bandoneon, another accordion-like instrument.  Like the
+Janko, the Hayden consists of multiple whole-tone rows, but adjacent rows are
+offset by a fifth instead of a half step (isomorphic 2/5).  This is intended
+to make common chords easier to play, although I find it makes accidentals
+feel somewhat awkward.  Also, additional rows beyond the first two are used
+for octaves instead of alternate fingerings.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+
+<map key="backtick" action="G4" />
+<map key="1" action="A4" />
+<map key="2" action="B4" />
+<map key="3" action="Db5" />
+<map key="4" action="Eb5" />
+<map key="5" action="F5" />
+<map key="6" action="G5" />
+<map key="7" action="A5" />
+<map key="8" action="B5" />
+<map key="9" action="C#6" />
+<map key="0" action="D#6" />
+<map key="minus" action="F6" />
+<map key="equals" action="G6" />
+<map key="backspace" action="A6" />
+
+<map key="tab" action="D4" />
+<map key="Q" action="E4" />
+<map key="W" action="Gb4" />
+<map key="E" action="Ab4" />
+<map key="R" action="Bb4" />
+<map key="T" action="C5" />
+<map key="Y" action="D5" />
+<map key="U" action="E5" />
+<map key="I" action="F#5" />
+<map key="O" action="G#5" />
+<map key="P" action="A#5" />
+<map key="open-bracket" action="C6" />
+<map key="close-bracket" action="D6" />
+<map key="backslash" action="E6" />
+
+<map key="A" action="B3" />
+<map key="S" action="Db4" />
+<map key="D" action="Eb4" />
+<map key="F" action="F4" />
+<map key="G" action="G4" />
+<map key="H" action="A4" />
+<map key="J" action="B4" />
+<map key="K" action="C#5" />
+<map key="L" action="D#5" />
+<map key="semicolon" action="F5" />
+<map key="single-quote" action="G5" />
+<map key="enter" action="A5" />
+
+<map key="Z" action="Gb3" />
+<map key="X" action="Ab3" />
+<map key="C" action="Bb3" />
+<map key="V" action="C4" />
+<map key="B" action="D4" />
+<map key="N" action="E4" />
+<map key="M" action="F#4" />
+<map key="comma" action="G#4" />
+<map key="period" action="A#4" />
+<map key="slash" action="C5" />
+
+<map key="space" action="panic" />
+
+</qwertymidi>
+

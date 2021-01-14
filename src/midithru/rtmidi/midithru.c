@@ -43,14 +43,11 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);
 			}
-
-			number_of_midi_ins++;
 		}
 		else if (strcmp(argv[i], "--virtual-in") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			midi_ins[number_of_midi_ins++] = rtmidi_open_in_port("midithru", NULL, argv[i], handle_midi_message, NULL);
-			number_of_midi_ins++;
 		}
 		else if (strcmp(argv[i], "--out") == 0)
 		{
@@ -61,14 +58,11 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);
 			}
-
-			number_of_midi_outs++;
 		}
 		else if (strcmp(argv[i], "--virtual-out") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			midi_outs[number_of_midi_outs++] = rtmidi_open_out_port("midithru", NULL, argv[i]);
-			number_of_midi_outs++;
 		}
 		else
 		{
