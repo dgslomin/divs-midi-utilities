@@ -1,4 +1,0 @@
-
-libsndfile version 1.0.5 is used here in unmodified form.  Its source code 
-can be downloaded from <http://www.zip.com.au/~erikd/libsndfile/>.
-
