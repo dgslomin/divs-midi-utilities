@@ -1,0 +1,15 @@
+
+CC=gcc
+
+adispmidi: adispmidi.o
+	$(CC) -o adispmidi adispmidi.o -lasound
+
+adispmidi.o: adispmidi.c
+	$(CC) -c adispmidi.c
+
+clean:
+	rm -f adispmidi.o
+
+reallyclean: clean
+	rm -f adispmidi
+

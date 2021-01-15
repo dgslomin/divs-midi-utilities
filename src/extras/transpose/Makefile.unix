@@ -1,0 +1,19 @@
+
+CC=gcc
+
+transpose: transpose.o midimsg.o
+	$(CC) -o transpose transpose.o midimsg.o
+
+transpose.o: transpose.c
+	$(CC) -I../midimsg -c transpose.c
+
+midimsg.o: ../midimsg/midimsg.c
+	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+
+clean:
+	rm -f transpose.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f transpose
+

@@ -1,0 +1,10 @@
+
+pedalnote.exe: pedalnote.c
+	cl /nologo /Fepedalnote.exe pedalnote.c winmm.lib
+
+clean:
+	@if exist pedalnote.obj del pedalnote.obj
+
+reallyclean: clean
+	@if exist pedalnote.exe del pedalnote.exe
+

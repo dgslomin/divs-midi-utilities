@@ -2,116 +2,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
-#include <mmsystem.h>
-#include <simplealarm.h>
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
-int midi_in_number = -1;
+RtMidiInPtr midi_in = NULL;
 char *command = NULL;
-int hold_length = 500;
+int hold_length_msecs = 500;
 char *hold_command = NULL;
-SimpleAlarm_t alarm = NULL;
-HMIDIIN midi_in = 0;
+MidiUtilAlarm_t alarm = NULL;
 int is_pressed = 0;
 int alarm_rang = 0;
 
-void usage(char *app_name)
+static void usage(char *program_name)
 {
-	printf("Usage: %s --in <n> --command <str> [--hold-length <n>] [--hold-command <str>]\n", app_name);
+	fprintf(stderr, "Usage:  %s --in <port> --command <str> [ --hold-length <msecs> ] [ --hold-command <str> ]\n", program_name);
 	exit(1);
 }
 
-void alarm_handler(void *user_data)
+void handle_alarm(int cancelled, void *user_data)
 {
+	if (cancelled) return;
 	alarm_rang = 1;
 	system(hold_command);
 }
 
-void CALLBACK midi_in_handler(HMIDIIN midi_in, UINT msg_type, DWORD user_data, DWORD midi_msg, DWORD timestamp)
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	if (msg_type == MIM_DATA)
+	if ((MidiUtilMessage_getType(message) == MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE) && (MidiUtilControlChangeMessage_getNumber(message) == 64))
 	{
-		union
+		if (MidiUtilControlChangeMessage_getValue(message) >= 64)
 		{
-			DWORD dwData;
-			BYTE bData[4];
-		}
-		u;
-
-		u.dwData = midi_msg;
-
-		if (((u.bData[0] & 0xF0) == 0xB0) && (u.bData[1] == 64))
-		{
-			if (u.bData[2] >= 64)
+			if (!is_pressed)
 			{
-				if (!is_pressed)
-				{
-					is_pressed = 1;
+				is_pressed = 1;
 
-					if (hold_command != NULL)
-					{
-						alarm_rang = 0;
-						SimpleAlarm_set(alarm, hold_length, alarm_handler, NULL);
-					}
-					else
-					{
-						system(command);
-					}
+				if (hold_command != NULL)
+				{
+					alarm_rang = 0;
+					MidiUtilAlarm_set(alarm, hold_length_msecs, handle_alarm, NULL);
+				}
+				else
+				{
+					system(command);
 				}
 			}
-			else
+		}
+		else
+		{
+			if (is_pressed)
 			{
-				if (is_pressed)
-				{
-					is_pressed = 0;
+				is_pressed = 0;
 
-					if ((hold_command != NULL) && !alarm_rang)
-					{
-						SimpleAlarm_cancel(alarm);
-						system(command);
-					}
+				if ((hold_command != NULL) && !alarm_rang)
+				{
+					MidiUtilAlarm_cancel(alarm);
+					system(command);
 				}
 			}
 		}
 	}
 }
 
-BOOL WINAPI control_handler(DWORD control_type)
-{
-	midiInStop(midi_in);
-	midiInClose(midi_in);
-	SimpleAlarm_free(alarm);
-	return FALSE;
-}
-
 int main(int argc, char **argv)
 {
 	int i;
+	alarm = MidiUtilAlarm_new();
 
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--in") == 0)
 		{
-			i++;
-			if (i >= argc) break;
-			sscanf(argv[i], "%d", &midi_in_number);
+			if (++i == argc) usage(argv[0]);
+
+			if ((midi_in = rtmidi_open_in_port("onpedal", argv[i], "onpedal", handle_midi_message, NULL)) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
 		else if (strcmp(argv[i], "--command") == 0)
 		{
-			i++;
-			if (i >= argc) break;
+			if (++i == argc) usage(argv[0]);
 			command = argv[i];
 		}
 		else if (strcmp(argv[i], "--hold-length") == 0)
 		{
-			i++;
-			if (i >= argc) break;
-			sscanf(argv[i], "%d", &hold_length);
+			if (++i == argc) usage(argv[0]);
+			hold_length_msecs = atoi(argv[i]);
 		}
 		else if (strcmp(argv[i], "--hold-command") == 0)
 		{
-			i++;
-			if (i >= argc) break;
+			if (++i == argc) usage(argv[0]);
 			hold_command = argv[i];
 		}
 		else
@@ -120,21 +103,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((midi_in_number < 0) || (command == NULL)) usage(argv[0]);
-
-	alarm = SimpleAlarm_new();
-
-	if (midiInOpen(&midi_in, midi_in_number, (DWORD)(midi_in_handler), (DWORD)(0), CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
-	{
-		printf("Cannot open MIDI input port #%d.\n", midi_in_number);
-		return 1;
-	}
-
-	midiInStart(midi_in);
-
-	SetConsoleCtrlHandler(control_handler, TRUE);
-
-	Sleep(INFINITE);
+	if ((midi_in == NULL) || (command == NULL)) usage(argv[0]);
+	MidiUtil_waitForInterrupt();
+	rtmidi_close_port(midi_in);
+	MidiUtilAlarm_free(alarm);
 	return 0;
 }
 

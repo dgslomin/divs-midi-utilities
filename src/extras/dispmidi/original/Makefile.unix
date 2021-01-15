@@ -1,0 +1,19 @@
+
+CC=gcc
+
+dispmidi: dispmidi.o midimsg.o
+	$(CC) -o dispmidi dispmidi.o midimsg.o
+
+dispmidi.o: dispmidi.c
+	$(CC) -I../../midimsg -c dispmidi.c
+
+midimsg.o: ../../midimsg/midimsg.c
+	$(CC) -I../../midimsg -c ../../midimsg/midimsg.c
+
+clean:
+	rm -f dispmidi.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f dispmidi
+

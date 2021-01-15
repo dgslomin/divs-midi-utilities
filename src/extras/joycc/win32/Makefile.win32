@@ -1,0 +1,10 @@
+
+joycc.exe: joycc.c
+	cl /nologo /Fejoycc.exe joycc.c winmm.lib
+
+clean:
+	@if exist joycc.obj del joycc.obj
+
+reallyclean: clean
+	@if exist joycc.exe del joycc.exe
+

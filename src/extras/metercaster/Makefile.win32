@@ -1,0 +1,17 @@
+
+metercaster.exe: metercaster.obj midifile.obj
+	cl /nologo /Femetercaster.exe metercaster.obj midifile.obj
+
+metercaster.obj: metercaster.c ..\..\midifile\midifile.h
+	cl /nologo /I. /I..\..\midifile /c metercaster.c
+
+midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
+	cl /nologo /I..\..\midifile /c ..\..\midifile\midifile.c
+
+clean:
+	@if exist metercaster.obj del metercaster.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist metercaster.exe del metercaster.exe
+

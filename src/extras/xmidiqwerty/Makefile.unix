@@ -1,0 +1,18 @@
+
+CC=gcc
+
+xmidiqwerty: xmidiqwerty.o midimsg.o
+	$(CC) -o xmidiqwerty xmidiqwerty.o midimsg.o -lX11
+
+xmidiqwerty.o: xmidiqwerty.c ../midimsg/midimsg.h
+	$(CC) -I../midimsg -c xmidiqwerty.c 
+
+midimsg.o: ../midimsg/midimsg.c ../midimsg/midimsg.h
+	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+
+clean:
+	rm -f *.o core
+
+reallyclean: clean
+	rm -f xmidiqwerty
+

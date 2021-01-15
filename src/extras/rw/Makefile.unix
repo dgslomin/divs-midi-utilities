@@ -1,0 +1,11 @@
+
+CC=gcc
+
+rw: rw.c
+	$(CC) -o rw rw.c
+
+clean:
+
+reallyclean: clean
+	rm -f rw
+

@@ -1,0 +1,19 @@
+
+CC=gcc
+
+brainstorm: brainstorm.o midimsg.o
+	$(CC) -o brainstorm brainstorm.o midimsg.o
+
+brainstorm.o: brainstorm.c
+	$(CC) -I../../midimsg -c brainstorm.c
+
+midimsg.o: ../../midimsg/midimsg.c
+	$(CC) -I../../midimsg -c ../../midimsg/midimsg.c
+
+clean:
+	rm -f brainstorm.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f brainstorm
+

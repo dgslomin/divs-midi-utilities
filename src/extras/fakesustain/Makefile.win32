@@ -1,0 +1,10 @@
+
+fakesustain.exe: fakesustain.c
+	cl /nologo /Fefakesustain.exe fakesustain.c winmm.lib
+
+clean:
+	@if exist fakesustain.obj del fakesustain.obj
+
+reallyclean: clean
+	@if exist fakesustain.exe del fakesustain.exe
+

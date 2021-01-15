@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
-#include <mmsystem.h>
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
-int midi_in_number = -1;
+RtMidiInPtr midi_in = NULL;
 char *note_commands[128];
 char *note_down_commands[128];
 char *note_up_commands[128];
@@ -16,90 +18,70 @@ char *controller_increase_commands[128];
 char *controller_decrease_commands[128];
 int previous_controller_value[128];
 char *program_commands[128];
-HMIDIIN midi_in = 0;
-int shutting_down = 0;
 
-void usage(char *app_name)
+static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage: %s --in <n> ( --note-command <number> <command> | --note-down-command <number> <command> | --note-up-command <number> <command> | --controller-command <number> <command> | --controller-down-command <number> <command> | --controller-up-command <number> <command> | --controller-increase-command <number> <command> | --controller-decrease-command <number> <command> | --program-command <number> <command> ) ...\n", app_name);
+	fprintf(stderr, "Usage:  %s --in <port> ( --note-command <number> <command> | --note-down-command <number> <command> | --note-up-command <number> <command> | --controller-command <number> <command> | --controller-down-command <number> <command> | --controller-up-command <number> <command> | --controller-increase-command <number> <command> | --controller-decrease-command <number> <command> | --program-command <number> <command> ) ...\n", program_name);
 	exit(1);
 }
 
-void CALLBACK midi_in_handler(HMIDIIN midi_in, UINT msg_type, DWORD user_data, DWORD midi_msg, DWORD timestamp)
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	if (shutting_down) return;
-
-	if (msg_type == MIM_DATA)
+	switch (MidiUtilMessage_getType(message))
 	{
-		union
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
-			DWORD dwData;
-			BYTE bData[4];
+			int note = MidiUtilNoteOffMessage_getNote(message);
+			if (note_commands[note] != NULL) system(note_commands[note]);
+			if (note_up_commands[note] != NULL) system(note_up_commands[note]);
+			break;
 		}
-		u;
-
-		u.dwData = midi_msg;
-
-		switch (u.bData[0] & 0xF0)
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
-			case 0x80:
+			int note = MidiUtilNoteOnMessage_getNote(message);
+			int velocity = MidiUtilNoteOnMessage_getVelocity(message);
+			if (note_commands[note] != NULL) system(note_commands[note]);
+
+			if (velocity > 0)
 			{
-				int note = u.bData[1];
-				if (note_commands[note] != NULL) system(note_commands[note]);
+				if (note_down_commands[note] != NULL) system(note_down_commands[note]);
+			}
+			else
+			{
 				if (note_up_commands[note] != NULL) system(note_up_commands[note]);
-				break;
 			}
-			case 0x90:
+
+			break;
+		}
+		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
+		{
+			int number = MidiUtilControlChangeMessage_getNumber(message);
+			int value = MidiUtilControlChangeMessage_getValue(message);
+			int previous_value = previous_controller_value[number];
+			if (controller_commands[number] != NULL) system(controller_commands[number]);
+			if ((value >= 64) && (previous_value < 64) && (controller_down_commands[number] != NULL)) system(controller_down_commands[number]);
+			if ((value < 64) && (previous_value >= 64) && (controller_up_commands[number] != NULL)) system(controller_up_commands[number]);
+
+			if (previous_value >= 0)
 			{
-				int note = u.bData[1];
-				int velocity = u.bData[2];
-				if (note_commands[note] != NULL) system(note_commands[note]);
-
-				if (velocity > 0)
-				{
-					if (note_down_commands[note] != NULL) system(note_down_commands[note]);
-				}
-				else
-				{
-					if (note_up_commands[note] != NULL) system(note_up_commands[note]);
-				}
-
-				break;
+				if ((value > previous_value) && (controller_increase_commands[number] != NULL)) system(controller_increase_commands[number]);
+				if ((value < previous_value) && (controller_decrease_commands[number] != NULL)) system(controller_decrease_commands[number]);
 			}
-			case 0xB0:
-			{
-				int controller = u.bData[1];
-				int value = u.bData[2];
-				int previous_value = previous_controller_value[controller];
-				if (controller_commands[controller] != NULL) system(controller_commands[controller]);
-				if ((value >= 64) && (previous_value < 64) && (controller_down_commands[controller] != NULL)) system(controller_down_commands[controller]);
-				if ((value < 64) && (previous_value >= 64) && (controller_up_commands[controller] != NULL)) system(controller_up_commands[controller]);
 
-				if (previous_value >= 0)
-				{
-					if ((value > previous_value) && (controller_increase_commands[controller] != NULL)) system(controller_increase_commands[controller]);
-					if ((value < previous_value) && (controller_decrease_commands[controller] != NULL)) system(controller_decrease_commands[controller]);
-				}
-
-				previous_controller_value[controller] = value;
-				break;
-			}
-			case 0xC0:
-			{
-				int program = u.bData[1];
-				if (program_commands[program] != NULL) system(program_commands[program]);
-				break;
-			}
+			previous_controller_value[number] = value;
+			break;
+		}
+		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
+		{
+			int number = MidiUtilProgramChangeMessage_getNumber(message);
+			if (program_commands[number] != NULL) system(program_commands[number]);
+			break;
+		}
+		default:
+		{
+			break;
 		}
 	}
-}
-
-BOOL WINAPI control_handler(DWORD control_type)
-{
-	shutting_down = 1;
-	midiInStop(midi_in);
-	midiInClose(midi_in);
-	return FALSE;
 }
 
 int main(int argc, char **argv)
@@ -125,7 +107,12 @@ int main(int argc, char **argv)
 		if (strcmp(argv[i], "--in") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			midi_in_number = atoi(argv[i]);
+
+			if ((midi_in = rtmidi_open_in_port("onmessage", argv[i], "onmessage", handle_midi_message, NULL)) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
 		else if (strcmp(argv[i], "--note-command") == 0)
 		{
@@ -153,51 +140,51 @@ int main(int argc, char **argv)
 		}
 		else if (strcmp(argv[i], "--controller-command") == 0)
 		{
-			int controller;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			controller = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			controller_commands[controller] = argv[i];
+			controller_commands[number] = argv[i];
 		}
 		else if (strcmp(argv[i], "--controller-down-command") == 0)
 		{
-			int controller;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			controller = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			controller_down_commands[controller] = argv[i];
+			controller_down_commands[number] = argv[i];
 		}
 		else if (strcmp(argv[i], "--controller-up-command") == 0)
 		{
-			int controller;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			controller = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			controller_up_commands[controller] = argv[i];
+			controller_up_commands[number] = argv[i];
 		}
 		else if (strcmp(argv[i], "--controller-increase-command") == 0)
 		{
-			int controller;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			controller = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			controller_increase_commands[controller] = argv[i];
+			controller_increase_commands[number] = argv[i];
 		}
 		else if (strcmp(argv[i], "--controller-decrease-command") == 0)
 		{
-			int controller;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			controller = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			controller_decrease_commands[controller] = argv[i];
+			controller_decrease_commands[number] = argv[i];
 		}
 		else if (strcmp(argv[i], "--program-command") == 0)
 		{
-			int program;
+			int number;
 			if (++i == argc) usage(argv[0]);
-			program = atoi(argv[i]);
+			number = atoi(argv[i]);
 			if (++i == argc) usage(argv[0]);
-			program_commands[program] = argv[i];
+			program_commands[number] = argv[i];
 		}
 		else
 		{
@@ -205,19 +192,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (midi_in_number < 0) usage(argv[0]);
-
-	if (midiInOpen(&midi_in, midi_in_number, (DWORD)(midi_in_handler), (DWORD)(0), CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
-	{
-		fprintf(stderr, "Error: Cannot open MIDI input port #%d.\n", midi_in_number);
-		return 1;
-	}
-
-	midiInStart(midi_in);
-
-	SetConsoleCtrlHandler(control_handler, TRUE);
-
-	Sleep(INFINITE);
+	if (midi_in == NULL) usage(argv[0]);
+	MidiUtil_waitForInterrupt();
+	rtmidi_close_port(midi_in);
 	return 0;
 }
 

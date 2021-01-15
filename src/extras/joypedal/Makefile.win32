@@ -1,0 +1,10 @@
+
+joypedal.exe: joypedal.c
+	cl /nologo /Fejoypedal.exe joypedal.c winmm.lib
+
+clean:
+	@if exist joypedal.obj del joypedal.obj
+
+reallyclean: clean
+	@if exist joypedal.exe del joypedal.exe
+

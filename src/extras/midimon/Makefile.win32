@@ -1,0 +1,10 @@
+
+midimon.exe: midimon.c
+	cl /nologo /Femidimon.exe midimon.c winmm.lib
+
+clean:
+	@if exist midimon.obj del midimon.obj
+
+reallyclean: clean
+	@if exist midimon.exe del midimon.exe
+

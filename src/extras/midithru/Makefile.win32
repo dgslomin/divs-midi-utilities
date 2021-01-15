@@ -1,0 +1,10 @@
+
+midithru.exe: midithru.c
+	cl /nologo /Femidithru.exe midithru.c winmm.lib
+
+clean:
+	@if exist midithru.obj del midithru.obj
+
+reallyclean: clean
+	@if exist midithru.exe del midithru.exe
+

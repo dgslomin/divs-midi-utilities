@@ -1,0 +1,27 @@
+
+#
+# TODO:
+# cutoff algorithms
+# adaptive gain control in mixing?
+#
+
+SNDFILE_DIR=
+PORTAUDIO_DIR=
+EXPAT_DIR=..\..\3rdparty\expat
+
+beatbox.exe: beatbox-pa.obj beatbox.obj
+	cl /nologo /MT /Febeatbox.exe beatbox-pa.obj beatbox.obj $(SNDFILE_DIR)\libsndfile.lib $(EXPAT_DIR)\libexpat.lib $(PORTAUDIO_DIR)\PAStaticDS.lib dsound.lib winmm.lib user32.lib /link /NODEFAULTLIB:libc.lib 
+
+beatbox-pa.obj: beatbox-pa.c beatbox.h
+	cl /nologo /c /DWIN32 /I$(PORTAUDIO_DIR) beatbox-pa.c
+
+beatbox.obj: beatbox.c beatbox.h
+	cl /nologo /c /DWIN32 /DREENTRANT /I$(SNDFILE_DIR) /I$(EXPAT_DIR) beatbox.c
+
+clean:
+	@if exist beatbox-pa.obj del beatbox-pa.obj
+	@if exist beatbox.obj del beatbox.obj
+
+reallyclean: clean
+	@if exist beatbox.exe del beatbox.exe
+

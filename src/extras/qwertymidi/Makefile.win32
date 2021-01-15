@@ -1,0 +1,10 @@
+
+qwertymidi.exe: qwertymidi.c
+	cl /nologo /Feqwertymidi.exe qwertymidi.c winmm.lib user32.lib
+
+clean:
+	@if exist qwertymidi.obj del qwertymidi.obj
+
+reallyclean: clean
+	@if exist qwertymidi.exe del qwertymidi.exe
+

@@ -1,0 +1,19 @@
+
+CC=gcc
+
+verbosify: verbosify.o midimsg.o
+	$(CC) -o verbosify verbosify.o midimsg.o
+
+verbosify.o: verbosify.c
+	$(CC) -I../midimsg -c verbosify.c
+
+midimsg.o: ../midimsg/midimsg.c
+	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+
+clean:
+	rm -f verbosify.o
+	rm -f midimsg.o
+
+reallyclean: clean
+	rm -f verbosify
+

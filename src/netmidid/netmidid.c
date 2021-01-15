@@ -2,140 +2,130 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
+
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#endif
+
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
+
+static int should_shutdown = 0;
+
+static void handle_interrupt(void *user_data)
+{
+	should_shutdown = 1;
+}
+
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage: %s --port <network port> --out <midi port>\n", program_name);
+	exit(1);
+}
 
 int main(int argc, char **argv)
 {
+	int listen_port = -1;
+	RtMidiOutPtr midi_out = NULL;
 	int i;
-	int midi_out_number = MIDI_MAPPER;
-	int port = 13949;
-
-	HMIDIOUT midi_out;
-	WORD winsock_version = MAKEWORD(1, 1);
-	WSADATA winsock_data;
-	SOCKET server_socket;
-	struct sockaddr_in server_address;
 
 	for (i = 1; i < argc; i++)
 	{
-		if (strcmp(argv[i], "--out") == 0)
+		if (strcmp(argv[i], "--port") == 0)
 		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &midi_out_number);
+			if (++i == argc) usage(argv[0]);
+			listen_port = atoi(argv[i]);
 		}
-		else if (strcmp(argv[i], "--port") == 0)
+		else if (strcmp(argv[i], "--out") == 0)
 		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &port);
+			if (++i == argc) usage(argv[0]);
+
+			if ((midi_out = rtmidi_open_out_port("netmidid", argv[i], "netmidid")) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
 		else
 		{
-			printf("Usage: %s [--out <n>] [--port <n>]\n", argv[0]);
-			return 1;
+			usage(argv[0]);
 		}
 	}
 
-	if (midiOutOpen(&midi_out, midi_out_number, 0, 0, 0) != MMSYSERR_NOERROR)
+	if ((listen_port < 0) || (midi_out == NULL)) usage(argv[0]);
+
+	MidiUtil_setInterruptHandler(handle_interrupt, NULL);
+
 	{
-		printf("Cannot open MIDI output port #%d.\n", midi_out_number);
-		return 1;
-	}
+		int server_socket;
+		struct sockaddr_in server_address;
 
-	if (WSAStartup(winsock_version, &winsock_data) != 0)
-	{
-		printf("Cannot initialize sockets.\n"); 
-		return 1;
-	}
-
-	if ((server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
-	{
-		printf("Cannot create a socket.\n");
-		return 1;
-	}
-
-	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons((short)(port));
-	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (bind(server_socket, (struct sockaddr *)(&server_address), sizeof(server_address)) != 0)
-	{
-		printf("Cannot listen on port %d.\n", port);
-		return 1;
-	}
-
-	if (listen(server_socket, SOMAXCONN) != 0)
-	{
-		printf("Cannot listen on port %d.\n", port);
-		return 1;
-	}
-
-	while (1)
-	{
-		SOCKET socket_to_client;
-		char one = 1;
-
-		if ((socket_to_client = accept(server_socket, NULL, NULL)) == INVALID_SOCKET)
+		if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		{
-			printf("Cannot accept client connection.\n");
-			return 1;
+			fprintf(stderr, "Cannot start a NetMIDI server on port %d.\n", listen_port);
+			exit(1);
 		}
 
-		setsockopt(socket_to_client, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+		server_address.sin_family = AF_INET;
+		server_address.sin_port = htons(listen_port);
+		server_address.sin_addr.s_addr = INADDR_ANY;
 
-		while (1)
+		if (bind(server_socket, (struct sockaddr *)(&server_address), sizeof(server_address)) < 0)
 		{
-			union
-			{
-				BYTE bData[4];
-				DWORD dwData;
-			}
-			u;
+			fprintf(stderr, "Cannot start a NetMIDI server on port %d.\n", listen_port);
+			exit(1);
+		}
 
-			if (recv(socket_to_client, &(u.bData[0]), 1, 0) != 1) break;
+		if (listen(server_socket, 1) < 0)
+		{
+			fprintf(stderr, "Cannot start a NetMIDI server on port %d.\n", listen_port);
+			exit(1);
+		}
 
-			switch (u.bData[0] & 0xF0)
+		while (!should_shutdown)
+		{
+			int socket_to_client;
+
+			if ((socket_to_client = accept(server_socket, NULL, NULL)) >= 0)
 			{
-				case 0x80:
-				case 0x90:
-				case 0xA0:
-				case 0xB0:
-				case 0xE0:
+				int should_disconnect = 0;
+
 				{
-					if (recv(socket_to_client, &(u.bData[1]), 1, 0) != 1) goto label1;
-					if (recv(socket_to_client, &(u.bData[2]), 1, 0) != 1) goto label1;
-					u.bData[3] = 0;
-					midiOutShortMsg(midi_out, u.dwData);
-					break;
+					char one = 1;
+					setsockopt(socket_to_client, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
 				}
-				case 0xC0:
-				case 0xD0:
+
+				while (!should_shutdown)
 				{
-					if (recv(socket_to_client, &(u.bData[1]), 1, 0) != 1) goto label1;
-					u.bData[2] = 0;
-					u.bData[3] = 0;
-					midiOutShortMsg(midi_out, u.dwData);
-					break;
+					unsigned char message[MIDI_UTIL_MESSAGE_SIZE_SHORT_MESSAGE];
+					int message_size;
+
+					if (recv(socket_to_client, &(message[0]), 1, 0) != 1) break;
+
+					if ((message_size = MidiUtilMessage_getSize(message)) > 0)
+					{
+						if (recv(socket_to_client, &(message[1]), message_size - 1, 0) != message_size - 1) break;
+						rtmidi_out_send_message(midi_out, message, message_size);
+					}
 				}
-				default:
-				{
-					/*
-					 * Ignore all of the following:
-					 *
-					 *    system common messages (including sysex)
-					 *    realtime messages
-					 *    messages with running status
-					 *    message fragments
-					 */
-					break;
-				}
+
+				close(socket_to_client);
 			}
 		}
 
-		label1:
-
-		closesocket(socket_to_client);
+		close(server_socket);
 	}
 
+	rtmidi_close_port(midi_out);
 	return 0;
 }
 

@@ -2,75 +2,116 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/fcntl.h>
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
-#include "midimsg.h"
+static RtMidiInPtr midi_in = NULL;
+static RtMidiOutPtr midi_out = NULL;
+static int interval = 0;
+static int does_it_count = 1;
 
-int clamp(int i, int lower, int upper)
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-   if (i < lower) return lower;
-   if (i > upper) return upper;
-   return i;
+	switch (MidiUtilMessage_getType(message))
+	{
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
+		{
+			int new_note = MidiUtilNoteOffMessage_getNote(message) + interval;
+
+			if (new_note >= 0 && new_note < 128)
+			{
+				unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
+				MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, MidiUtilNoteOffMessage_getVelocity(message));
+				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
+			}
+		}
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
+		{
+			int new_note = MidiUtilNoteOnMessage_getNote(message) + interval;
+
+			if (new_note >= 0 && new_note < 128)
+			{
+				unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
+				MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, MidiUtilNoteOnMessage_getVelocity(message));
+				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
+			}
+		}
+		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
+		{
+			int value = MidiUtilPitchWheelMessage_getValue(message);
+
+			if (does_it_count)
+			{
+ 				if (value > 0x3500)
+				{
+					interval += 12;
+					does_it_count = 0;
+				}
+				else if (value < 0x500)
+				{
+					interval -= 12;
+					does_it_count = 0;
+				}
+			}
+			else if (value > 0x1500 && value < 0x2500)
+			{
+				does_it_count = 1;
+			}
+
+			break;
+		}
+		default:
+		{
+			rtmidi_out_send_message(midi_out, message, message_size);
+			break;
+		}
+	}
 }
 
-int main(int argc, char *argv[])
+static void usage(char *program_name)
 {
-   Byte midi_message[3];
-   int input_fd, output_fd, message_type, pitch, pitch_wheel_value;
-   int interval = 0;
-   int does_it_count = 1;
-   
-   if (argc != 3)
-   {
-      fprintf(stderr, "\nUsage: %s <input fifo> <output fifo>\n\nPurpose: use the pitch bend wheel as an octave selector\n\n", argv[0]);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port>\n", program_name);
+	exit(1);
+}
 
-      return EXIT_FAILURE;
-   }
+int main(int argc, char **argv)
+{
+	int i;
 
-   input_fd  = ((strcmp(argv[1], "-") == 0) ? 0 : open(argv[1], O_RDONLY));
-   output_fd = ((strcmp(argv[2], "-") == 0) ? 1 : open(argv[2], O_WRONLY));
+	for (i = 1; i < argc; i++)
+	{
+		if (strcmp(argv[i], "--in") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
 
-   while (True)
-   {
-      midimsgRead(/* fd = */ input_fd, /* message_return = */ midi_message);
+			if ((midi_in = rtmidi_open_in_port("jumpoctave", argv[i], "jumpoctave", handle_midi_message, NULL)) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
+				exit(1);
+			}
+		}
+		else if (strcmp(argv[i], "--out") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
 
-      message_type = midimsgGetMessageType(midi_message);
+			if ((midi_out = rtmidi_open_out_port("jumpoctave", argv[i], "jumpoctave")) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
+				exit(1);
+			}
+		}
+		else
+		{
+			usage(argv[0]);
+		}
+	}
 
-      switch(message_type)
-      {
-         case MIDIMSG_NOTE_ON:
-         case MIDIMSG_NOTE_OFF:
-            pitch = midimsgGetPitch(midi_message);
-            midimsgSetPitch(midi_message, clamp(pitch + interval, 0, 127));
-            midimsgWrite(/* fd = */ output_fd, /* message = */ midi_message);
-            break;
-         case MIDIMSG_PITCH_WHEEL:
-            pitch_wheel_value = midimsgGetPitchWheelValue(midi_message);
-            if (does_it_count && pitch_wheel_value > 0x3500)
-            {
-               does_it_count = 0;
-               interval += 12;
-               break;
-            }
-            if (does_it_count && pitch_wheel_value < 0x500)
-            {
-               does_it_count = 0;
-               interval -= 12;
-               break;
-            }
-            if (!does_it_count && pitch_wheel_value > 0x1500 && 
-               pitch_wheel_value < 0x2500)
-            {
-               does_it_count = 1;
-               break;
-            }
-            break;
-         default:
-            midimsgWrite(/* fd = */ output_fd, /* message = */ midi_message);
-      }
-
-   }
-
-   return EXIT_SUCCESS;
+	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
+	MidiUtil_waitForInterrupt();
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
+	return 0;
 }
 

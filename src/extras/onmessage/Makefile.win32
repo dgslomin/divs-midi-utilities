@@ -1,0 +1,13 @@
+
+onmessage.exe: onmessage.obj
+	cl /nologo /Feonmessage.exe onmessage.obj winmm.lib
+
+onmessage.obj: onmessage.c
+	cl /nologo /I. /c onmessage.c
+
+clean:
+	@if exist onmessage.obj del onmessage.obj
+
+reallyclean: clean
+	@if exist onmessage.exe del onmessage.exe
+

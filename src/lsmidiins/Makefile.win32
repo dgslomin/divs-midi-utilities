@@ -1,9 +1,20 @@
 
-..\..\bin\lsmidiins.exe: lsmidiins.c
-	cl /nologo /Fe..\..\bin\lsmidiins.exe lsmidiins.c winmm.lib
+..\..\bin\lsmidiins.exe: lsmidiins.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\lsmidiins.exe lsmidiins.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+
+lsmidiins.obj: lsmidiins.c
+	cl /nologo /I..\3rdparty\rtmidi /c lsmidiins.c
+
+RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
+
+rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
+	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
 	@if exist lsmidiins.obj del lsmidiins.obj
+	@if exist RtMidi.obj del RtMidi.obj
+	@if exist rtmidi_c.obj del rtmidi_c.obj
 
 reallyclean: clean
 	@if exist ..\..\bin\lsmidiins.exe del ..\..\bin\lsmidiins.exe

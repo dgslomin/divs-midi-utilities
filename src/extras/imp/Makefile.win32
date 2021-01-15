@@ -1,0 +1,38 @@
+
+all: imp testinput
+
+imp: imp.exe
+
+imp.exe: imp.obj keynames.obj
+	cl /nologo /Zi /Feimp.exe imp.obj keynames.obj ..\..\3rdparty\expat\libexpat.lib user32.lib gdi32.lib comdlg32.lib winmm.lib
+
+imp.obj: imp.c keynames.h
+	cl /nologo /D_WIN32_WINNT=0x0501 /I..\..\3rdparty\expat /Zi /c imp.c
+
+testinput: testinput.exe
+
+testinput.exe: testinput.obj keynames.obj
+	cl /nologo /Zi /Fetestinput.exe testinput.obj keynames.obj user32.lib gdi32.lib
+
+testinput.obj: testinput.c keynames.h
+	cl /nologo /D_WIN32_WINNT=0x0501 /Zi /c testinput.c
+
+keynames.obj: keynames.c
+	cl /nologo /Zi /c keynames.c
+
+clean:
+	@if exist imp.obj del imp.obj
+	@if exist imp.ilk del imp.ilk
+	@if exist imp.pdb del imp.pdb
+	@if exist testinput.obj del testinput.obj
+	@if exist testinput.ilk del testinput.ilk
+	@if exist testinput.pdb del testinput.pdb
+	@if exist keynames.obj del keynames.obj
+	@if exist keynames.ilk del keynames.ilk
+	@if exist keynames.pdb del keynames.pdb
+	@if exist vc140.pdb del vc140.pdb
+
+reallyclean: clean
+	@if exist imp.exe del imp.exe
+	@if exist testinput.exe del testinput.exe
+

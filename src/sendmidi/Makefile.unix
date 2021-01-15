@@ -1,0 +1,47 @@
+
+ifeq ("$(shell uname -s)", "Darwin")
+CC=gcc
+CXX=g++
+CFLAGS=-D__MACOSX_CORE__
+LDFLAGS=
+LIBS=-framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
+else
+CC=gcc
+CXX=g++
+CFLAGS=-D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
+LDFLAGS=
+LIBS=-lasound -lpthread -lstdc++
+endif
+
+../../bin/sendmidi: sendmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/sendmidi sendmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+
+sendmidi.o: sendmidi.c
+	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c sendmidi.c
+
+midiutil-common.o: ../midiutil/midiutil-common.c
+	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-common.c
+
+midiutil-system.o: ../midiutil/midiutil-system.c
+	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-system.c
+
+midiutil-rtmidi.o: ../midiutil/midiutil-rtmidi.c
+	$(CC) $(CFLAGS) -I../3rdparty/rtmidi -I../midiutil -c ../midiutil/midiutil-rtmidi.c
+
+RtMidi.o: ../3rdparty/rtmidi/RtMidi.cpp
+	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/RtMidi.cpp
+
+rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
+	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/rtmidi_c.cpp
+
+clean:
+	rm -f sendmidi.o
+	rm -f midiutil-common.o
+	rm -f midiutil-system.o
+	rm -f midiutil-rtmidi.o
+	rm -f RtMidi.o
+	rm -f rtmidi_c.o
+
+reallyclean: clean
+	rm -f ../../bin/sendmidi
+

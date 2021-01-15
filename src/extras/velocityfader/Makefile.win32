@@ -1,0 +1,10 @@
+
+velocityfader.exe: velocityfader.c
+	cl /nologo /Fevelocityfader.exe velocityfader.c winmm.lib
+
+clean:
+	@if exist velocityfader.obj del velocityfader.obj
+
+reallyclean: clean
+	@if exist velocityfader.exe del velocityfader.exe
+

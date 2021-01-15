@@ -1,0 +1,21 @@
+
+brainstorm.exe: brainstorm.obj simplealarm.obj midifile.obj
+	cl /nologo /Febrainstorm.exe brainstorm.obj simplealarm.obj midifile.obj winmm.lib kernel32.lib
+
+brainstorm.obj: brainstorm.c ..\..\simplealarm\simplealarm.h ..\..\..\midifile\midifile.h
+	cl /nologo /I. /I..\..\simplealarm /I..\..\..\midifile /c brainstorm.c
+
+simplealarm.obj: ..\..\simplealarm\simplealarm.c ..\..\simplealarm\simplealarm.h
+	cl /nologo /I..\..\simplealarm /c ..\..\simplealarm\simplealarm.c
+
+midifile.obj: ..\..\..\midifile\midifile.c ..\..\..\midifile\midifile.h
+	cl /nologo /I..\..\..\midifile /c ..\..\..\midifile\midifile.c
+
+clean:
+	@if exist brainstorm.obj del brainstorm.obj
+	@if exist simplealarm.obj del simplealarm.obj
+	@if exist midifile.obj del midifile.obj
+
+reallyclean: clean
+	@if exist brainstorm.exe del brainstorm.exe
+

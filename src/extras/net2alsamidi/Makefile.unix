@@ -1,0 +1,15 @@
+
+CC=gcc
+
+net2alsamidi: net2alsamidi.o
+	$(CC) -o net2alsamidi net2alsamidi.o -lasound
+
+net2alsamidi.o: net2alsamidi.c
+	$(CC) -c net2alsamidi.c
+
+clean:
+	rm -f net2alsamidi.o
+
+reallyclean: clean
+	rm -f net2alsamidi
+

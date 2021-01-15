@@ -1,4 +1,0 @@
-
-deprecate:  alsamidi2net / alsamidi2pipe / beatbox / imp / intervals / joycc / joypedal / metercaster / midimon / midimsg / net2alsamidi / net2pipe / padpedal / pedalnote / pipe2alsamidi / pipe2net / rw / simple-collections / simplealarm / transpose / verbosify / xmidiqwerty
-add:  midithru channel routing / fake-bass-sustain / fake-sustenuto
-

@@ -1,19 +1,20 @@
 
-#include <windows.h>
-#include <mmsystem.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <rtmidi_c.h>
 
 int main(int argc, char **argv)
 {
-	int i, max;
+	RtMidiOutPtr midi_out = rtmidi_out_create(RTMIDI_API_UNSPECIFIED, "lsmidiouts");
+	int number_of_ports = rtmidi_get_port_count(midi_out);
+	int port_number;
 
-	for (i = 0, max = midiOutGetNumDevs(); i < max; i++)
+	for (port_number = 0; port_number < number_of_ports; port_number++)
 	{
-		MIDIOUTCAPS midi_out_caps;
-		midiOutGetDevCaps(i, &midi_out_caps, sizeof(midi_out_caps));
-		printf("%3d %s\n", i, midi_out_caps.szPname);
+		printf("%3d %s\n", port_number, rtmidi_get_port_name(midi_out, port_number));
 	}
 
-	return 0;
+	rtmidi_close_port(midi_out);
 }
 

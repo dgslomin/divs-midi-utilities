@@ -1,0 +1,15 @@
+
+CC=gcc
+
+alsamidi2net: alsamidi2net.o
+	$(CC) -o alsamidi2net alsamidi2net.o -lasound
+
+alsamidi2net.o: alsamidi2net.c
+	$(CC) -c alsamidi2net.c
+
+clean:
+	rm -f alsamidi2net.o
+
+reallyclean: clean
+	rm -f alsamidi2net
+

@@ -1,0 +1,10 @@
+
+netmidid.exe: netmidid.c
+	cl /nologo /Fenetmidid.exe netmidid.c winmm.lib wsock32.lib
+
+clean:
+	@if exist netmidid.obj del netmidid.obj
+
+reallyclean: clean
+	@if exist netmidid.exe del netmidid.exe
+

@@ -1,0 +1,10 @@
+
+..\..\bin\delta.exe: delta.c
+	cl /nologo /Fe..\..\bin\delta.exe delta.c winmm.lib
+
+clean:
+	@if exist delta.obj del delta.obj
+
+reallyclean: clean
+	@if exist ..\..\bin\delta.exe del ..\..\bin\delta.exe
+

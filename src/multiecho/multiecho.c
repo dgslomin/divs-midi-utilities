@@ -2,168 +2,131 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
 
-struct Echo
+static MidiUtilAlarm_t alarm = NULL;
+static RtMidiInPtr midi_in = NULL;
+static RtMidiOutPtr midi_out = NULL;
+static int number_of_echoes = 0;
+static int echo_delay_msecs_array[128];
+static int echo_note_interval_array[128];
+static float echo_velocity_scaling_array[128];
+
+static void handle_alarm(int cancelled, void *user_data)
 {
-	int delay;
-	int note_interval;
-	int velocity_percent;
-	struct Echo *next_echo;
-};
-
-typedef struct Echo *Echo_t;
-
-HMIDIIN midi_in;
-HMIDIOUT midi_out;
-HANDLE timer_queue;
-Echo_t first_echo;
-
-int clamp(int n, int low, int high)
-{
-	if (n < low) return low;
-	if (n > high) return high;
-	return n;
+	unsigned char *message = (unsigned char *)(user_data);
+	if (!cancelled) rtmidi_out_send_message(midi_out, message, MidiUtilMessage_getSize(message));
+	free(message);
 }
 
-VOID CALLBACK timer_handler(PVOID *user_data, BOOLEAN param2)
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	DWORD *midi_msg_p = (DWORD *)(user_data);
-	midiOutShortMsg(midi_out, *midi_msg_p);
-	free(midi_msg_p);
-}
-
-void CALLBACK midi_in_handler(HMIDIIN midi_in, UINT msg_type, DWORD user_data, DWORD midi_msg, DWORD param2)
-{
-	if (msg_type == MIM_DATA)
+	switch (MidiUtilMessage_getType(message))
 	{
-		union
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
-			DWORD dwData;
-			BYTE bData[4];
-		}
-		u;
+			int echo_number;
 
-		u.dwData = midi_msg;
-
-		switch (u.bData[0] & 0xF0)
-		{
-			case 0x80:
-			case 0x90:
+			for (echo_number = 0; echo_number < number_of_echoes; echo_number++)
 			{
-				Echo_t echo;
+				int new_note = MidiUtilNoteOffMessage_getNote(message) + echo_note_interval_array[echo_number];
+				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOffMessage_getVelocity(message) * echo_velocity_scaling_array[echo_number]), 0, 127);
 
-				for (echo = first_echo; echo != NULL; echo = echo->next_echo)
+				if (new_note >= 0 && new_note < 128)
 				{
-					u.dwData = midi_msg;
-					u.bData[1] = clamp((int)(u.bData[1]) + (echo->note_interval), 0, 127);
-					u.bData[2] = clamp((int)(u.bData[2]) * (echo->velocity_percent) / 100, 0, 127);
-
-					if (echo->delay == 0)
-					{
-						midiOutShortMsg(midi_out, u.dwData);
-					}
-					else
-					{
-						DWORD *midi_msg_copy_p;
-						HANDLE timer;
-
-						midi_msg_copy_p = malloc(sizeof(DWORD));
-						*midi_msg_copy_p = u.dwData;
-						CreateTimerQueueTimer(&timer, timer_queue, timer_handler, midi_msg_copy_p, echo->delay, 0, 0);
-					}
+					unsigned char *new_message = (unsigned char *)(malloc(MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF));
+					MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, new_velocity);
+					MidiUtilAlarm_add(alarm, echo_delay_msecs_array[echo_number], handle_alarm, new_message);
 				}
+			}
 
-				break;
-			}
-			case 0xA0:
-			case 0xB0:
-			case 0xC0:
-			case 0xD0:
-			case 0xE0:
+			break;
+		}
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
+		{
+			int echo_number;
+
+			for (echo_number = 0; echo_number < number_of_echoes; echo_number++)
 			{
-				midiOutShortMsg(midi_out, u.dwData);
-				break;
+				int new_note = MidiUtilNoteOnMessage_getNote(message) + echo_note_interval_array[echo_number];
+				int new_velocity = MidiUtil_clamp((int)(MidiUtilNoteOnMessage_getVelocity(message) * echo_velocity_scaling_array[echo_number]), 0, 127);
+
+				if (new_note >= 0 && new_note < 128)
+				{
+					unsigned char *new_message = (unsigned char *)(malloc(MIDI_UTIL_MESSAGE_SIZE_NOTE_ON));
+					MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, new_velocity);
+					MidiUtilAlarm_add(alarm, echo_delay_msecs_array[echo_number], handle_alarm, new_message);
+				}
 			}
+
+			break;
+		}
+		default:
+		{
+			rtmidi_out_send_message(midi_out, message, message_size);
+			break;
 		}
 	}
 }
 
-BOOL WINAPI control_handler(DWORD control_type)
+static void usage(char *program_name)
 {
-	midiInStop(midi_in);
-	midiInClose(midi_in);
-	midiOutClose(midi_out);
-	return FALSE;
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --echo <delay msecs> <note interval> <velocity scaling> ] ...\n", program_name);
+	exit(1);
 }
 
 int main(int argc, char **argv)
 {
 	int i;
-	int midi_in_number = 0;
-	int midi_out_number = MIDI_MAPPER;
 
-	first_echo = NULL;
+	alarm = MidiUtilAlarm_new();
 
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--in") == 0)
 		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &midi_in_number);
+			if (++i == argc) usage(argv[0]);
+
+			if ((midi_in = rtmidi_open_in_port("multiecho", argv[i], "multiecho", handle_midi_message, NULL)) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
 		else if (strcmp(argv[i], "--out") == 0)
 		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &midi_out_number);
+			if (++i == argc) usage(argv[0]);
+
+			if ((midi_out = rtmidi_open_out_port("multiecho", argv[i], "multiecho")) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
 		else if (strcmp(argv[i], "--echo") == 0)
 		{
-			int delay = 0;
-			int note_interval = 0;
-			int velocity_percent = 100;
-			Echo_t echo;
-
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &delay);
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &note_interval);
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &velocity_percent);
-
-			echo = malloc(sizeof(struct Echo));
-			echo->delay = delay;
-			echo->note_interval = note_interval;
-			echo->velocity_percent = velocity_percent;
-			echo->next_echo = first_echo;
-			first_echo = echo;
+			if (++i == argc) usage(argv[0]);
+			echo_delay_msecs_array[number_of_echoes] = atoi(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			echo_note_interval_array[number_of_echoes] = atoi(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			echo_velocity_scaling_array[number_of_echoes] = atof(argv[i]);
+			number_of_echoes++;
 		}
 		else
 		{
-			printf("Usage: %s [--in <n>] [--out <n>] [ --echo <delay in ms> <note interval> <velocity percent> ... ]\n", argv[0]);
-			return 1;
+			usage(argv[0]);
 		}
 	}
 
-	if (midiInOpen(&midi_in, midi_in_number, (DWORD)(midi_in_handler), (DWORD)(NULL), CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
-	{
-		printf("Cannot open MIDI input port #%d.\n", midi_in_number);
-		return 1;
-	}
-
-	if (midiOutOpen(&midi_out, midi_out_number, 0, 0, 0) != MMSYSERR_NOERROR)
-	{
-		printf("Cannot open MIDI output port #%d.\n", midi_out_number);
-		return 1;
-	}
-
-	SetConsoleCtrlHandler(control_handler, TRUE);
-
-	timer_queue = CreateTimerQueue();
-
-	midiInStart(midi_in);
-
-	Sleep(INFINITE);
+	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
+	MidiUtil_waitForInterrupt();
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
+	MidiUtilAlarm_free(alarm);
 	return 0;
 }
 

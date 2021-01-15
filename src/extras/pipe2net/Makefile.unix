@@ -1,0 +1,11 @@
+
+CC=gcc
+
+pipe2net: pipe2net.c
+	$(CC) -o pipe2net pipe2net.c
+
+clean:
+
+reallyclean: clean
+	rm -f pipe2net
+

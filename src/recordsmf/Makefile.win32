@@ -18,10 +18,10 @@ midiutil-rtmidi.obj: ..\midiutil\midiutil-rtmidi.c
 	cl /nologo /I..\3rdparty\rtmidi /I..\midiutil /c ..\midiutil\midiutil-rtmidi.c
 
 RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
-	cl /nologo /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
 
 rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
-	cl /nologo /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
+	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
 	@if exist recordsmf.obj del recordsmf.obj

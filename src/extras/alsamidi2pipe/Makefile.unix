@@ -1,0 +1,15 @@
+
+CC=gcc
+
+alsamidi2pipe: alsamidi2pipe.o
+	$(CC) -o alsamidi2pipe alsamidi2pipe.o -lasound
+
+alsamidi2pipe.o: alsamidi2pipe.c
+	$(CC) -c alsamidi2pipe.c
+
+clean:
+	rm -f alsamidi2pipe.o
+
+reallyclean: clean
+	rm -f alsamidi2pipe
+

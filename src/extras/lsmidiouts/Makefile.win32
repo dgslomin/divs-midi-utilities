@@ -1,0 +1,10 @@
+
+lsmidiouts.exe: lsmidiouts.c
+	cl /nologo /Felsmidiouts.exe lsmidiouts.c winmm.lib
+
+clean:
+	@if exist lsmidiouts.obj del lsmidiouts.obj
+
+reallyclean: clean
+	@if exist lsmidiouts.exe del lsmidiouts.exe
+

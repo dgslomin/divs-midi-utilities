@@ -1,0 +1,35 @@
+
+ifeq ("$(shell uname -s)", "Darwin")
+CC=gcc
+CXX=g++
+CFLAGS=-D__MACOSX_CORE__
+LDFLAGS=
+LIBS=-framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
+else
+CC=gcc
+CXX=g++
+CFLAGS=-D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
+LDFLAGS=
+LIBS=-lasound -lpthread -lstdc++
+endif
+
+../../bin/lsmidiouts: lsmidiouts.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/lsmidiouts lsmidiouts.o RtMidi.o rtmidi_c.o $(LIBS)
+
+lsmidiouts.o: lsmidiouts.c
+	$(CC) $(CFLAGS) -I../3rdparty/rtmidi -c lsmidiouts.c
+
+RtMidi.o: ../3rdparty/rtmidi/RtMidi.cpp
+	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/RtMidi.cpp
+
+rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
+	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/rtmidi_c.cpp
+
+clean:
+	rm -f lsmidiouts.o
+	rm -f RtMidi.o
+	rm -f rtmidi_c.o
+
+reallyclean: clean
+	rm -f ../../bin/lsmidiouts
+

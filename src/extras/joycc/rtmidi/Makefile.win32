@@ -1,0 +1,43 @@
+
+WXDIR=c:\wxWidgets-3.1.3
+WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
+WXLIBS=$(WXDIR)\lib\vc_lib\wxbase31ud.lib $(WXDIR)\lib\vc_lib\wxmsw31ud_core.lib $(WXDIR)\lib\vc_lib\wxmsw31ud_adv.lib $(WXDIR)\lib\vc_lib\wxbase31ud_xml.lib $(WXDIR)\lib\vc_lib\wxpngd.lib $(WXDIR)\lib\vc_lib\wxzlibd.lib
+FLAGS=/Zi /EHsc /MDd
+
+joycc.exe: joycc.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo $(FLAGS) /Fejoycc.exe joycc.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj $(WXLIBS) winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib
+	mt /nologo /manifest joycc.exe.manifest /outputresource:joycc.exe;1
+
+joycc.obj: joycc.cpp
+	cl /nologo $(FLAGS) /I..\..\..\midiutil /I..\..\..\3rdparty\rtmidi $(WXINCLUDES) /c joycc.cpp
+
+midiutil-common.obj: ..\..\..\midiutil\midiutil-common.c
+	cl /nologo $(FLAGS) /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-common.c
+
+midiutil-rtmidi.obj: ..\..\..\midiutil\midiutil-rtmidi.c
+	cl /nologo $(FLAGS) /I..\..\..\3rdparty\rtmidi /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-rtmidi.c
+
+midiutil-wx.obj: ..\..\..\midiutil\midiutil-wx.cpp
+	cl /nologo $(FLAGS) /I..\..\..\midiutil $(WXINCLUDES) /c ..\..\..\midiutil\midiutil-wx.cpp
+
+RtMidi.obj: ..\..\..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo $(FLAGS) /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\..\..\3rdparty\rtmidi /c ..\..\..\3rdparty\rtmidi\RtMidi.cpp
+
+rtmidi_c.obj: ..\..\..\3rdparty\rtmidi\rtmidi_c.cpp
+	cl /nologo $(FLAGS) /I..\..\..\3rdparty\rtmidi /c ..\..\..\3rdparty\rtmidi\rtmidi_c.cpp
+
+clean:
+	@if exist joycc.obj del joycc.obj
+	@if exist midiutil-common.obj del midiutil-common.obj
+	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
+	@if exist midiutil-wx.obj del midiutil-wx.obj
+	@if exist RtMidi.obj del RtMidi.obj
+	@if exist rtmidi_c.obj del rtmidi_c.obj
+	@if exist joycc.exe.manifest del joycc.exe.manifest
+	@if exist joycc.ilk del joycc.ilk
+	@if exist joycc.pdb del joycc.pdb
+	@if exist vc140.pdb del vc140.pdb
+
+reallyclean: clean
+	@if exist joycc.exe del joycc.exe
+

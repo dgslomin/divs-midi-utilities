@@ -1,0 +1,47 @@
+
+ifeq ("$(shell uname -s)", "Darwin")
+CC=gcc
+CXX=g++
+CFLAGS=$(shell wx-config --cflags) -D__MACOSX_CORE__
+LDFLAGS=
+LIBS=$(shell wx-config --libs) -framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lstdc++
+else
+CC=gcc
+CXX=g++
+CFLAGS=$(shell wx-config --cflags) --D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
+LDFLAGS=
+LIBS=$(shell wx-config --libs) -lasound -lpthread -lstdc++
+endif
+
+joycc: joycc.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o joycc joycc.o midiutil-common.o midiutil-rtmidi.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
+
+joycc.o: joycc.cpp
+	$(CXX) $(CFLAGS) -I../../../midiutil -I../../../3rdparty/rtmidi -c joycc.cpp
+
+midiutil-common.o: ../../../midiutil/midiutil-common.c
+	$(CC) $(CFLAGS) -I../../../midiutil -c ../../../midiutil/midiutil-common.c
+
+midiutil-rtmidi.o: ../../../midiutil/midiutil-rtmidi.c
+	$(CC) $(CFLAGS) -I../../../3rdparty/rtmidi -I../../../midiutil -c ../../../midiutil/midiutil-rtmidi.c
+
+midiutil-wx.o: ../../../midiutil/midiutil-wx.cpp
+	$(CXX) $(CFLAGS) -I../../../midiutil -c ../../../midiutil/midiutil-wx.cpp
+
+RtMidi.o: ../../../3rdparty/rtmidi/RtMidi.cpp
+	$(CXX) $(CFLAGS) -I../../../3rdparty/rtmidi -c ../../../3rdparty/rtmidi/RtMidi.cpp
+
+rtmidi_c.o: ../../../3rdparty/rtmidi/rtmidi_c.cpp
+	$(CXX) $(CFLAGS) -I../../../3rdparty/rtmidi -c ../../../3rdparty/rtmidi/rtmidi_c.cpp
+
+clean:
+	rm -f joycc.o
+	rm -f midiutil-common.o
+	rm -f midiutil-rtmidi.o
+	rm -f midiutil-wx.o
+	rm -f RtMidi.o
+	rm -f rtmidi_c.o
+
+reallyclean: clean
+	rm -f joycc
+

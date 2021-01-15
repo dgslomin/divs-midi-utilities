@@ -2,136 +2,105 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
 
-SOCKET socket_to_server;
-HMIDIIN midi_in;
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#endif
 
-void CALLBACK midi_in_handler(HMIDIIN midi_in, UINT msg_type, DWORD user_data, DWORD midi_msg, DWORD param2)
+#include <rtmidi_c.h>
+#include <midiutil-common.h>
+#include <midiutil-system.h>
+#include <midiutil-rtmidi.h>
+
+static int socket_to_server;
+
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	if (msg_type == MIM_DATA)
-	{
-		union
-		{
-			DWORD dwData;
-			BYTE bData[4];
-		}
-		u;
-
-		u.dwData = midi_msg;
-
-		switch (u.bData[0] & 0xF0)
-		{
-			case 0x80:
-			case 0x90:
-			case 0xA0:
-			case 0xB0:
-			case 0xE0:
-			{
-				send(socket_to_server, u.bData, 3, 0);
-				break;
-			}
-			case 0xC0:
-			case 0xD0:
-			{
-				send(socket_to_server, u.bData, 2, 0);
-				break;
-			}
-			default:
-			{
-				/* Ignore everything else*/
-				break;
-			}
-		}
-	}
+	send(socket_to_server, message, message_size, 0);
 }
 
-BOOL WINAPI control_handler(DWORD control_type)
+static void usage(char *program_name)
 {
-	midiInStop(midi_in);
-	midiInClose(midi_in);
-	closesocket(socket_to_server);
-	return FALSE;
+	fprintf(stderr, "Usage: %s --in <midi port> --server <hostname> <network port>\n", program_name);
+	exit(1);
 }
 
 int main(int argc, char **argv)
 {
+	RtMidiInPtr midi_in = NULL;
+	char *server_hostname = NULL;
+	int server_port = -1;
 	int i;
-	int midi_in_number = 0;
-	char *hostname = "localhost";
-	int port = 13949;
-
-	WORD winsock_version = MAKEWORD(1, 1);
-	WSADATA winsock_data;
-	struct sockaddr_in server_address;
-	struct hostent *host;
-	char one = 1;
 
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--in") == 0)
 		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &midi_in_number);
+			if (++i == argc) usage(argv[0]);
+
+			if ((midi_in = rtmidi_open_in_port("netmidic", argv[i], "netmidic", handle_midi_message, NULL)) == NULL)
+			{
+				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
+				exit(1);
+			}
 		}
-		else if (strcmp(argv[i], "--hostname") == 0)
+		else if (strcmp(argv[i], "--server") == 0)
 		{
-			if (++i >= argc) break;
-			hostname = argv[i];
-		}
-		else if (strcmp(argv[i], "--port") == 0)
-		{
-			if (++i >= argc) break;
-			sscanf(argv[i], "%d", &port);
+			if (++i == argc) usage(argv[0]);
+			server_hostname = argv[i];
+			if (++i == argc) usage(argv[0]);
+			server_port = atoi(argv[i]);
 		}
 		else
 		{
-			printf("Usage: %s [--in <n>] [--hostname <name>] [--port <n>]\n", argv[0]);
-			return 1;
+			usage(argv[0]);
 		}
 	}
 
-	if (WSAStartup(winsock_version, &winsock_data) != 0)
+	if ((midi_in == NULL) || (server_hostname == NULL)) usage(argv[0]);
+
 	{
-		printf("Cannot initialize sockets.\n"); 
-		return 1;
+		struct hostent *server_host;
+		struct sockaddr_in server_address;
+
+		if ((socket_to_server = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		{
+			fprintf(stderr, "Cannot connect to NetMIDI server on %s port %d.\n", server_hostname, server_port);
+			exit(1);
+		}
+
+		if ((server_host = gethostbyname(server_hostname)) == NULL)
+		{
+			fprintf(stderr, "Cannot connect to NetMIDI server on %s port %d.\n", server_hostname, server_port);
+			exit(1);
+		}
+
+		server_address.sin_family = AF_INET;
+		server_address.sin_port = htons(server_port);
+		memcpy(&(server_address.sin_addr.s_addr), server_host->h_addr_list[0], server_host->h_length);
+
+		if (connect(socket_to_server, (struct sockaddr *)(&server_address), sizeof(server_address)) < 0)
+		{
+			fprintf(stderr, "Cannot connect to NetMIDI server on %s port %d.\n", server_hostname, server_port);
+			exit(1);
+		}
+
+		{
+			char one = 1;
+			setsockopt(socket_to_server, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+		}
 	}
 
-	if ((socket_to_server = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
-	{
-		printf("Cannot create a socket.\n");
-		return 1;
-	}
-
-	if ((host = gethostbyname(hostname)) == NULL)
-	{
-		printf("Cannot resolve hostname %s.\n", hostname);
-		return 1;
-	}
-
-	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons((short)(port));
-	memcpy((char *)(&(server_address.sin_addr)), host->h_addr, host->h_length);
-
-	if (connect(socket_to_server, (struct sockaddr *)(&server_address), sizeof(server_address)) != 0)
-	{
-		printf("Cannot connect to port %d on %s.\n", port, hostname);
-		return 1;
-	}
-
-	setsockopt(socket_to_server, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
-
-	if (midiInOpen(&midi_in, midi_in_number, (DWORD)(midi_in_handler), (DWORD)(NULL), CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
-	{
-		printf("Cannot open MIDI input port #%d.\n", midi_in_number);
-		return 1;
-	}
-
-	SetConsoleCtrlHandler(control_handler, TRUE);
-
-	midiInStart(midi_in);
-
-	Sleep(INFINITE);
+	MidiUtil_waitForInterrupt();
+	rtmidi_close_port(midi_in);
+	close(socket_to_server);
 	return 0;
 }
 
