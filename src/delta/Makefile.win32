@@ -25,7 +25,7 @@ midiutil-wx.obj: ..\midiutil\midiutil-wx.cpp
 	cl /nologo $(FLAGS) /I..\midiutil $(WXINCLUDES) /c ..\midiutil\midiutil-wx.cpp
 
 RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
-	cl /nologo $(FLAGS) /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo $(FLAGS) /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /DRTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
 
 rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo $(FLAGS) /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp

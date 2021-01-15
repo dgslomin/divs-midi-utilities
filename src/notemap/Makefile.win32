@@ -18,7 +18,7 @@ midiutil-expat.obj: ..\midiutil\midiutil-expat.c
 	cl /nologo /I..\3rdparty\expat /I..\midiutil /c ..\midiutil\midiutil-expat.c
 
 RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
-	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /DRTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp
 
 rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp

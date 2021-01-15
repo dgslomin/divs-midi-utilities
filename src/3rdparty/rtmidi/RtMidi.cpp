@@ -2524,6 +2524,7 @@ MidiInWinMM :: ~MidiInWinMM()
 
 void MidiInWinMM :: initialize( const std::string& /*clientName*/ )
 {
+#ifndef RTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND
   // We'll issue a warning here if no devices are available but not
   // throw an error since the user can plugin something later.
   unsigned int nDevices = midiInGetNumDevs();
@@ -2531,6 +2532,7 @@ void MidiInWinMM :: initialize( const std::string& /*clientName*/ )
     errorString_ = "MidiInWinMM::initialize: no MIDI input devices currently available.";
     error( RtMidiError::WARNING, errorString_ );
   }
+#endif
 
   // Save our api-specific connection information.
   WinMidiData *data = (WinMidiData *) new WinMidiData;
@@ -2726,6 +2728,7 @@ MidiOutWinMM :: ~MidiOutWinMM()
 
 void MidiOutWinMM :: initialize( const std::string& /*clientName*/ )
 {
+#ifndef RTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND
   // We'll issue a warning here if no devices are available but not
   // throw an error since the user can plug something in later.
   unsigned int nDevices = midiOutGetNumDevs();
@@ -2733,6 +2736,7 @@ void MidiOutWinMM :: initialize( const std::string& /*clientName*/ )
     errorString_ = "MidiOutWinMM::initialize: no MIDI output devices currently available.";
     error( RtMidiError::WARNING, errorString_ );
   }
+#endif
 
   // Save our api-specific connection information.
   WinMidiData *data = (WinMidiData *) new WinMidiData;
