@@ -6,3 +6,4 @@ bin/*
 *.res
 *.ilk
 *.pdb
+*.exe.manifest

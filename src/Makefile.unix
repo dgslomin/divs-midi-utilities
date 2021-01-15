@@ -1,104 +1,130 @@
 
-# sudo apt-get install gcc libc6-dev libx11-dev libasound-dev libexpat-dev
-# make -f Makefile.unix HAVE_X11=true HAVE_ALSA=true HAVE_EXPAT=true
-
-HAVE_X11=false
-HAVE_ALSA=false
-HAVE_EXPAT=false
-
 all:
 	cd align-clicks && make -f Makefile.unix
-	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix; fi
-	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix; fi
+	ifeq ("$(shell uname -s)", "Linux")
+	cd alsamidicable && make
+	endif
 	cd average-tempo && make -f Makefile.unix
 	cd average-velocity && make -f Makefile.unix
-	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix; fi
-	cd brainstorm/original && make -f Makefile.unix
-	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix; fi
-	cd dispmidi/original && make -f Makefile.unix
-	cd intervals && make -f Makefile.unix
+	cd brainstorm && make -f Makefile.unix
+	cd click-track && make -f Makefile.unix
+	cd convert-time && make -f Makefile.unix
+	cd cut-time && make -f Makefile.unix
+	cd delta && make -f Makefile.unix
+	cd dispmidi && make -f Makefile.unix
+	cd fakesustain && make -f Makefile.unix
 	cd jumpoctave && make -f Makefile.unix
-	cd metercaster && make -f Makefile.unix
+	cd lsmidiins && make -f Makefile.unix
+	cd lsmidiouts && make -f Makefile.unix
+	cd midithru && make -f Makefile.unix
 	cd mish && make -f Makefile.unix
-	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix; fi
-	cd net2pipe && make -f Makefile.unix
+	cd multiecho && make -f Makefile.unix
+	cd netmidic && make -f Makefile.unix
+	cd netmidid && make -f Makefile.unix
 	cd normalizesmf && make -f Makefile.unix
+	cd notemap && make -f Makefile.unix
 	cd offset-tempo && make -f Makefile.unix
 	cd offset-velocity && make -f Makefile.unix
-	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix; fi
-	cd pipe2net && make -f Makefile.unix
-	cd rw && make -f Makefile.unix
+	cd onmessage && make -f Makefile.unix
+	cd onpedal && make -f Makefile.unix
+	cd playsmf && make -f Makefile.unix
+	cd pulsar && make -f Makefile.unix
+	cd quantize && make -f Makefile.unix
+	cd qwertymidi && make -f Makefile.unix
+	cd recordsmf && make -f Makefile.unix
 	cd scale-tempo && make -f Makefile.unix
 	cd scale-velocity && make -f Makefile.unix
-	cd smftoxml && make -f Makefile.unix
+	cd sendmidi && make -f Makefile.unix
 	cd smf-length && make -f Makefile.unix
+	cd smftoxml && make -f Makefile.unix
+	cd smooth-tempo && make -f Makefile.unix
 	cd tempo-map && make -f Makefile.unix
-	cd transpose && make -f Makefile.unix
-	cd verbosify && make -f Makefile.unix
-	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix; fi
-	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix; fi
+	cd velocityfader && make -f Makefile.unix
+	cd xmltosmf && make -f Makefile.unix
 
 clean:
 	cd align-clicks && make -f Makefile.unix clean
-	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix clean; fi
-	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix clean; fi
+	ifeq ("$(shell uname -s)", "Linux")
+	cd alsamidicable && make clean
+	endif
 	cd average-tempo && make -f Makefile.unix clean
 	cd average-velocity && make -f Makefile.unix clean
-	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix clean; fi
-	cd brainstorm/original && make -f Makefile.unix clean
-	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix clean; fi
-	cd dispmidi/original && make -f Makefile.unix clean
-	cd intervals && make -f Makefile.unix clean
+	cd brainstorm && make -f Makefile.unix clean
+	cd click-track && make -f Makefile.unix clean
+	cd convert-time && make -f Makefile.unix clean
+	cd cut-time && make -f Makefile.unix clean
+	cd delta && make -f Makefile.unix clean
+	cd dispmidi && make -f Makefile.unix clean
+	cd fakesustain && make -f Makefile.unix clean
 	cd jumpoctave && make -f Makefile.unix clean
-	cd metercaster && make -f Makefile.unix clean
+	cd lsmidiins && make -f Makefile.unix clean
+	cd lsmidiouts && make -f Makefile.unix clean
+	cd midithru && make -f Makefile.unix clean
 	cd mish && make -f Makefile.unix clean
-	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix clean; fi
-	cd net2pipe && make -f Makefile.unix clean
+	cd multiecho && make -f Makefile.unix clean
+	cd netmidic && make -f Makefile.unix clean
+	cd netmidid && make -f Makefile.unix clean
 	cd normalizesmf && make -f Makefile.unix clean
+	cd notemap && make -f Makefile.unix clean
 	cd offset-tempo && make -f Makefile.unix clean
 	cd offset-velocity && make -f Makefile.unix clean
-	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix clean; fi
-	cd pipe2net && make -f Makefile.unix clean
-	cd rw && make -f Makefile.unix clean
+	cd onmessage && make -f Makefile.unix clean
+	cd onpedal && make -f Makefile.unix clean
+	cd playsmf && make -f Makefile.unix clean
+	cd pulsar && make -f Makefile.unix clean
+	cd quantize && make -f Makefile.unix clean
+	cd qwertymidi && make -f Makefile.unix clean
+	cd recordsmf && make -f Makefile.unix clean
 	cd scale-tempo && make -f Makefile.unix clean
 	cd scale-velocity && make -f Makefile.unix clean
-	cd smftoxml && make -f Makefile.unix clean
+	cd sendmidi && make -f Makefile.unix clean
 	cd smf-length && make -f Makefile.unix clean
+	cd smftoxml && make -f Makefile.unix clean
+	cd smooth-tempo && make -f Makefile.unix clean
 	cd tempo-map && make -f Makefile.unix clean
-	cd transpose && make -f Makefile.unix clean
-	cd verbosify && make -f Makefile.unix clean
-	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix clean; fi
-	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix clean; fi
+	cd velocityfader && make -f Makefile.unix clean
+	cd xmltosmf && make -f Makefile.unix clean
 
 reallyclean:
 	cd align-clicks && make -f Makefile.unix reallyclean
-	if $(HAVE_ALSA); then cd alsamidi2net && make -f Makefile.unix reallyclean; fi
-	if $(HAVE_ALSA); then cd alsamidi2pipe && make -f Makefile.unix reallyclean; fi
+	ifeq ("$(shell uname -s)", "Linux")
+	cd alsamidicable && make reallyclean
+	endif
 	cd average-tempo && make -f Makefile.unix reallyclean
 	cd average-velocity && make -f Makefile.unix reallyclean
-	if $(HAVE_ALSA); then cd brainstorm/alsa && make -f Makefile.unix reallyclean; fi
-	cd brainstorm/original && make -f Makefile.unix reallyclean
-	if $(HAVE_ALSA); then cd dispmidi/alsa && make -f Makefile.unix reallyclean; fi
-	cd dispmidi/original && make -f Makefile.unix reallyclean
-	cd intervals && make -f Makefile.unix reallyclean
+	cd brainstorm && make -f Makefile.unix reallyclean
+	cd click-track && make -f Makefile.unix reallyclean
+	cd convert-time && make -f Makefile.unix reallyclean
+	cd cut-time && make -f Makefile.unix reallyclean
+	cd delta && make -f Makefile.unix reallyclean
+	cd dispmidi && make -f Makefile.unix reallyclean
+	cd fakesustain && make -f Makefile.unix reallyclean
 	cd jumpoctave && make -f Makefile.unix reallyclean
-	cd metercaster && make -f Makefile.unix reallyclean
+	cd lsmidiins && make -f Makefile.unix reallyclean
+	cd lsmidiouts && make -f Makefile.unix reallyclean
+	cd midithru && make -f Makefile.unix reallyclean
 	cd mish && make -f Makefile.unix reallyclean
-	if $(HAVE_ALSA); then cd net2alsamidi && make -f Makefile.unix reallyclean; fi
-	cd net2pipe && make -f Makefile.unix reallyclean
+	cd multiecho && make -f Makefile.unix reallyclean
+	cd netmidic && make -f Makefile.unix reallyclean
+	cd netmidid && make -f Makefile.unix reallyclean
 	cd normalizesmf && make -f Makefile.unix reallyclean
+	cd notemap && make -f Makefile.unix reallyclean
 	cd offset-tempo && make -f Makefile.unix reallyclean
 	cd offset-velocity && make -f Makefile.unix reallyclean
-	if $(HAVE_ALSA); then cd pipe2alsamidi && make -f Makefile.unix reallyclean; fi
-	cd pipe2net && make -f Makefile.unix reallyclean
-	cd rw && make -f Makefile.unix reallyclean
+	cd onmessage && make -f Makefile.unix reallyclean
+	cd onpedal && make -f Makefile.unix reallyclean
+	cd playsmf && make -f Makefile.unix reallyclean
+	cd pulsar && make -f Makefile.unix reallyclean
+	cd quantize && make -f Makefile.unix reallyclean
+	cd qwertymidi && make -f Makefile.unix reallyclean
+	cd recordsmf && make -f Makefile.unix reallyclean
 	cd scale-tempo && make -f Makefile.unix reallyclean
 	cd scale-velocity && make -f Makefile.unix reallyclean
-	cd smftoxml && make -f Makefile.unix reallyclean
+	cd sendmidi && make -f Makefile.unix reallyclean
 	cd smf-length && make -f Makefile.unix reallyclean
+	cd smftoxml && make -f Makefile.unix reallyclean
+	cd smooth-tempo && make -f Makefile.unix reallyclean
 	cd tempo-map && make -f Makefile.unix reallyclean
-	cd transpose && make -f Makefile.unix reallyclean
-	cd verbosify && make -f Makefile.unix reallyclean
-	if $(HAVE_X11); then cd xmidiqwerty && make -f Makefile.unix reallyclean; fi
-	if $(HAVE_EXPAT); then cd xmltosmf && make -f Makefile.unix reallyclean; fi
+	cd velocityfader && make -f Makefile.unix reallyclean
+	cd xmltosmf && make -f Makefile.unix reallyclean
 
