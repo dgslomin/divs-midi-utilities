@@ -1,9 +1,9 @@
 
 all:
 	cd align-clicks && make -f Makefile.unix
-	ifeq ("$(shell uname -s)", "Linux")
+ifeq ("$(shell uname -s)", "Linux")
 	cd alsamidicable && make
-	endif
+endif
 	cd average-tempo && make -f Makefile.unix
 	cd average-velocity && make -f Makefile.unix
 	cd brainstorm && make -f Makefile.unix
@@ -44,9 +44,9 @@ all:
 
 clean:
 	cd align-clicks && make -f Makefile.unix clean
-	ifeq ("$(shell uname -s)", "Linux")
+ifeq ("$(shell uname -s)", "Linux")
 	cd alsamidicable && make clean
-	endif
+endif
 	cd average-tempo && make -f Makefile.unix clean
 	cd average-velocity && make -f Makefile.unix clean
 	cd brainstorm && make -f Makefile.unix clean
@@ -87,9 +87,9 @@ clean:
 
 reallyclean:
 	cd align-clicks && make -f Makefile.unix reallyclean
-	ifeq ("$(shell uname -s)", "Linux")
+ifeq ("$(shell uname -s)", "Linux")
 	cd alsamidicable && make reallyclean
-	endif
+endif
 	cd average-tempo && make -f Makefile.unix reallyclean
 	cd average-velocity && make -f Makefile.unix reallyclean
 	cd brainstorm && make -f Makefile.unix reallyclean

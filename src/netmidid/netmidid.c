@@ -118,11 +118,11 @@ int main(int argc, char **argv)
 					}
 				}
 
-				close(socket_to_client);
+				shutdown(socket_to_client, 2);
 			}
 		}
 
-		close(server_socket);
+		shutdown(server_socket, 2);
 	}
 
 	rtmidi_close_port(midi_out);

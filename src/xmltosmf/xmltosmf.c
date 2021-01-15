@@ -292,12 +292,12 @@ static void xml_start_element_handler(void *user_data, const XML_Char *name, con
 			}
 			else if (strcmp(attributes[i], "Data") == 0)
 			{
-				data_length = url_unescape_length(attributes[i + 1]);
+				data_length = url_unescape_length((char *)(attributes[i + 1]));
 
 				if (data_length > 0)
 				{
 					data_buffer = (unsigned char *)(malloc(data_length));
-					url_unescape(attributes[i + 1], data_buffer);
+					url_unescape((char *)(attributes[i + 1]), data_buffer);
 				}
 			}
 		}
@@ -321,12 +321,12 @@ static void xml_start_element_handler(void *user_data, const XML_Char *name, con
 			}
 			else if (strcmp(attributes[i], "Data") == 0)
 			{
-				data_length = url_unescape_length(attributes[i + 1]);
+				data_length = url_unescape_length((char *)(attributes[i + 1]));
 
 				if (data_length > 0)
 				{
 					data_buffer = (unsigned char *)(malloc(data_length));
-					url_unescape(attributes[i + 1], data_buffer);
+					url_unescape((char *)(attributes[i + 1]), data_buffer);
 				}
 			}
 		}

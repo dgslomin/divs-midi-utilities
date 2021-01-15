@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
 			if (XML_ParseFile(xml_parser, argv[i]) < 0)
 			{
-				printf("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), XML_GetCurrentLineNumber(xml_parser), argv[i]);
+				printf("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), (int)(XML_GetCurrentLineNumber(xml_parser)), argv[i]);
 				exit(1);
 			}
 

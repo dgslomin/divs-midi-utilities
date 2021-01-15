@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
 	MidiUtil_waitForInterrupt();
 	rtmidi_close_port(midi_in);
-	close(socket_to_server);
+	shutdown(socket_to_server, 2);
 	return 0;
 }
 

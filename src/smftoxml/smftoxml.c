@@ -91,6 +91,10 @@ static void display_events(MidiFileEvent_t event, void *user_data)
 			printf("\"/>\n");
 			break;
 		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -137,6 +141,10 @@ int main(int argc, char **argv)
 		case MIDI_FILE_DIVISION_TYPE_SMPTE30:
 		{
 			printf("SMPTE30");
+			break;
+		}
+		default:
+		{
 			break;
 		}
 	}
