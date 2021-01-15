@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 
 <!--
-Brian Hayden derived a layout for the concertina from the Janko piano
-keyboard layout.  Decades earlier, Kaspar Wicki independently created the
-same layout for the bandoneon, another accordion-like instrument.  Like the
-Janko, the Hayden consists of multiple whole-tone rows, but adjacent rows are
-offset by a fifth instead of a half step (isomorphic 2/5).  This is intended
-to make common chords easier to play, although I find it makes accidentals
-feel somewhat awkward.  Also, additional rows beyond the first two are used
-for octaves instead of alternate fingerings.
+Brian Hayden's isomorphic 2/5 layout for the concertina (identical to Kaspar
+Wicki's historical layout for the bandoneon).
+
+This version assigns the entire keyboard to one hand, providing less range but
+more isomorphic intervals.
 -->
 
 <qwertymidi>
@@ -18,6 +15,9 @@ for octaves instead of alternate fingerings.
 <map key="f2" action="stay-up-octave" />
 <map key="f3" action="stay-down-note" />
 <map key="f4" action="stay-up-note" />
+<map key="shift" action="shift-up-octave" />
+<map key="control" action="shift-down-octave" />
+<map key="space" action="panic" />
 
 <map key="backtick" action="G4" />
 <map key="1" action="A4" />
@@ -73,7 +73,4 @@ for octaves instead of alternate fingerings.
 <map key="period" action="A#4" />
 <map key="slash" action="C5" />
 
-<map key="space" action="panic" />
-
 </qwertymidi>
-

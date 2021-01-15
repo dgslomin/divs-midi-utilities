@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<delta>
+
+<map key="escape" action="exit" />
+
+<!-- Right Hand -->
+
+<map key="J" action="0" />
+<map key="M" action="1" />
+<map key="K" action="2" />
+<map key="comma" action="3" />
+<map key="L" action="4" />
+<map key="semicolon" action="5" />
+<map key="7" action="6" />
+<map key="U" action="7" />
+<map key="8" action="8" />
+<map key="I" action="9" />
+<map key="9" action="10" />
+<map key="O" action="11" />
+<map key="P" action="12" />
+
+<!-- Left Hand -->
+
+<map key="F" action="0" />
+<map key="V" action="-1" />
+<map key="D" action="-2" />
+<map key="C" action="-3" />
+<map key="S" action="-4" />
+<map key="A" action="-5" />
+<map key="4" action="-6" />
+<map key="R" action="-7" />
+<map key="3" action="-8" />
+<map key="E" action="-9" />
+<map key="2" action="-10" />
+<map key="W" action="-11" />
+<map key="Q" action="-12" />
+
+</delta>
