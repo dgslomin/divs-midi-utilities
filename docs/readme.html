@@ -275,13 +275,13 @@ a { color: #FF6600 }
 
 <p>Usage: xmltosmf &lt;filename.xml&gt; &lt;filename.mid&gt;</p>
 
-<h2>Extras</h2>
-
-<p>Also provided is the source code (no binaries) to several additional programs in the "src/extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>knobs</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of several of the main utilities, and several attempts to build a full linear or step-based sequencer using different GUI toolkits, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
-
 <h2 id="routing">Routing</h2>
 
 <p>Most of the realtime utilities are designed to connect to existing MIDI ports.  This is fine if you want them to talk to hardware ports, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>midithru</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
+
+<h2>Extras</h2>
+
+<p>Also provided is the source code (no binaries) to several obsolete or incomplete programs in the "src/extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of several of the main utilities, and several attempts to build a full linear or step-based sequencer using different GUI toolkits, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
 last modified 2021-01-14</p>
