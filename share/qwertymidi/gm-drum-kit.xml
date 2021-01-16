@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<!--
+Use with the General MIDI drum kit.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="shift" action="shift-up-octave" />
+<map key="control" action="shift-down-octave" />
+<map key="space" action="panic" />
+
+<map key="Q" action="49" /><!-- crash -->
+<map key="W" action="51" /><!-- ride -->
+<map key="E" action="46" /><!-- open hat -->
+<map key="R" action="42" /><!-- closed hat -->
+<map key="T" action="69" /><!-- shaker -->
+<map key="Y" action="69" /><!-- shaker -->
+<map key="U" action="42" /><!-- closed hat -->
+<map key="I" action="46" /><!-- open hat -->
+<map key="O" action="51" /><!-- ride -->
+<map key="P" action="57" /><!-- crash -->
+
+<map key="A" action="41" /><!-- tom -->
+<map key="S" action="36" /><!-- kick -->
+<map key="D" action="38" /><!-- snare -->
+<map key="F" action="38" /><!-- snare -->
+<map key="G" action="39" /><!-- clap -->
+<map key="H" action="39" /><!-- clap -->
+<map key="J" action="38" /><!-- snare -->
+<map key="K" action="38" /><!-- snare -->
+<map key="L" action="36" /><!-- kick -->
+<map key="semicolon" action="41" /><!-- tom -->
+
+<map key="Z" action="43" /><!-- tom -->
+<map key="X" action="45" /><!-- tom -->
+<map key="C" action="47" /><!-- tom -->
+<map key="V" action="48" /><!-- tom -->
+<map key="B" action="50" /><!-- tom -->
+<map key="N" action="48" /><!-- tom -->
+<map key="M" action="47" /><!-- tom -->
+<map key="comma" action="45" /><!-- tom -->
+<map key="period" action="43" /><!-- tom -->
+
+</qwertymidi>

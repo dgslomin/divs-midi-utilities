@@ -2812,10 +2812,20 @@ int MidiUtil_getNoteNumberFromName(char *note_name)
 		}
 	}
 
-	if (chromatic < 0) return -1;
-	if (sscanf(note_name + length, "%d", &octave) != 1) return -1;
-	note_number = ((octave + 1) * 12) + chromatic;
-	if ((note_number >= 0) && (note_number < 128)) return note_number;
+	if (chromatic >= 0)
+	{
+		if (sscanf(note_name + length, "%d", &octave) == 1)
+		{
+			note_number = ((octave + 1) * 12) + chromatic;
+			if ((note_number >= 0) && (note_number < 128)) return note_number;
+		}
+	}
+
+	if (sscanf(note_name, "%d", &note_number) == 1)
+	{
+		if ((note_number >= 0) && (note_number < 128)) return note_number;
+	}
+
 	return -1;
 }
 
