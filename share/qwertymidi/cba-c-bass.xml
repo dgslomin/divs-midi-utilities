@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<!--
+C system chromatic button accordion free bass (isomorphic -3/-2).
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="shift" action="shift-up-octave" />
+<map key="control" action="shift-down-octave" />
+<map key="space" action="panic" />
+
+<map key="1" action="F#4" />
+<map key="2" action="D#4" />
+<map key="3" action="C4" />
+<map key="4" action="A3" />
+<map key="5" action="F#3" />
+<map key="6" action="D#3" />
+<map key="7" action="C3" />
+<map key="8" action="A2" />
+<map key="9" action="F#2" />
+<map key="0" action="D#2" />
+<map key="minus" action="C2" />
+
+<map key="Q" action="F4" />
+<map key="W" action="D4" />
+<map key="E" action="B3" />
+<map key="R" action="G#3" />
+<map key="T" action="F3" />
+<map key="Y" action="D3" />
+<map key="U" action="B2" />
+<map key="I" action="G#2" />
+<map key="O" action="F2" />
+<map key="P" action="D2" />
+<map key="open-bracket" action="B1" />
+
+<map key="A" action="E4" />
+<map key="S" action="C#4" />
+<map key="D" action="A#3" />
+<map key="F" action="G3" />
+<map key="G" action="E3" />
+<map key="H" action="C#3" />
+<map key="J" action="A#2" />
+<map key="K" action="G2" />
+<map key="L" action="E2" />
+<map key="semicolon" action="C#2" />
+<map key="single-quote" action="A#1" />
+
+<map key="Z" action="D#4" />
+<map key="X" action="C4" />
+<map key="C" action="A3" />
+<map key="V" action="F#3" />
+<map key="B" action="D#3" />
+<map key="N" action="C3" />
+<map key="M" action="A2" />
+<map key="comma" action="F#2" />
+<map key="period" action="D#2" />
+<map key="slash" action="C2" />
+
+</qwertymidi>
