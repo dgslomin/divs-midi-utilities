@@ -3,7 +3,7 @@
 
 <map key="escape" action="exit" />
 
-<!-- Right Hand -->
+<!-- Right hand -->
 
 <map key="U" action="1" />
 <map key="I" action="4" />
@@ -14,7 +14,7 @@
 <map key="L" action="7" />
 <map key="semicolon" action="12" />
 
-<!-- Left Hand -->
+<!-- Left hand -->
 
 <map key="R" action="-1" />
 <map key="E" action="-4" />

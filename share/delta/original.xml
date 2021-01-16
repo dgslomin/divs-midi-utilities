@@ -3,7 +3,7 @@
 
 <map key="escape" action="exit" />
 
-<!-- Right Hand -->
+<!-- Right hand -->
 
 <map key="J" action="0" />
 <map key="M" action="1" />
@@ -19,7 +19,7 @@
 <map key="O" action="11" />
 <map key="P" action="12" />
 
-<!-- Left Hand -->
+<!-- Left hand -->
 
 <map key="F" action="0" />
 <map key="V" action="-1" />

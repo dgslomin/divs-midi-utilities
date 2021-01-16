@@ -20,7 +20,7 @@ entry-level Hayden duet concertina like the Concertina Connection Elise.
 <map key="control" action="shift-down-octave" />
 <map key="space" action="panic" />
 
-<!-- Left Hand -->
+<!-- Left hand -->
 
 <map key="backtick" action="Db4" />
 <map key="1" action="Eb4" />
@@ -48,7 +48,7 @@ entry-level Hayden duet concertina like the Concertina Connection Elise.
 <map key="V" action="F#3" />
 <map key="B" action="G#3" />
 
-<!-- Right Hand -->
+<!-- Right hand -->
 
 <map key="6" action="Eb5" />
 <map key="7" action="F5" />

@@ -18,6 +18,8 @@ the lower rows, providing more range but fewer isomorphic intervals.
 <map key="control" action="shift-down-octave" />
 <map key="space" action="panic" />
 
+<!-- Upper octave -->
+
 <map key="backtick" action="G4" />
 <map key="1" action="A4" />
 <map key="2" action="B4" />
@@ -47,6 +49,8 @@ the lower rows, providing more range but fewer isomorphic intervals.
 <map key="open-bracket" action="F#6" />
 <map key="close-bracket" action="G#6" />
 <map key="backslash" action="A#6" />
+
+<!-- Lower octave -->
 
 <map key="A" action="B3" />
 <map key="S" action="C#4" />
