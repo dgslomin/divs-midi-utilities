@@ -40,6 +40,7 @@ C system chromatic button accordion (isomorphic 3/1).
 <map key="P" action="B5" />
 <map key="open-bracket" action="D6" />
 <map key="close-bracket" action="F6" />
+<map key="backslash" action="G#6" />
 
 <map key="A" action="A#3" />
 <map key="S" action="C#4" />

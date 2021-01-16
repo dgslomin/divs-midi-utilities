@@ -26,6 +26,8 @@ C system chromatic button accordion free bass (isomorphic -3/-2).
 <map key="9" action="F#2" />
 <map key="0" action="D#2" />
 <map key="minus" action="C2" />
+<map key="equals" action="A1" />
+<map key="backspace" action="F#1" />
 
 <map key="Q" action="F4" />
 <map key="W" action="D4" />
@@ -38,6 +40,8 @@ C system chromatic button accordion free bass (isomorphic -3/-2).
 <map key="O" action="F2" />
 <map key="P" action="D2" />
 <map key="open-bracket" action="B1" />
+<map key="close-bracket" action="G#1" />
+<map key="backslash" action="F1" />
 
 <map key="A" action="E4" />
 <map key="S" action="C#4" />
@@ -50,6 +54,7 @@ C system chromatic button accordion free bass (isomorphic -3/-2).
 <map key="L" action="E2" />
 <map key="semicolon" action="C#2" />
 <map key="single-quote" action="A#1" />
+<map key="enter" action="G1" />
 
 <map key="Z" action="D#4" />
 <map key="X" action="C4" />

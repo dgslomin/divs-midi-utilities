@@ -26,6 +26,8 @@ B system chromatic button accordion or bayan (isomorphic 3/2).
 <map key="9" action="B5" />
 <map key="0" action="D6" />
 <map key="minus" action="F6" />
+<map key="equals" action="G#6" />
+<map key="backspace" action="B6" />
 
 <map key="Q" action="C4" />
 <map key="W" action="D#4" />
@@ -38,6 +40,8 @@ B system chromatic button accordion or bayan (isomorphic 3/2).
 <map key="O" action="C6" />
 <map key="P" action="D#6" />
 <map key="open-bracket" action="F#6" />
+<map key="close-bracket" action="A6" />
+<map key="backslash" action="C7" />
 
 <map key="A" action="C#4" />
 <map key="S" action="E4" />
@@ -50,6 +54,7 @@ B system chromatic button accordion or bayan (isomorphic 3/2).
 <map key="L" action="C#6" />
 <map key="semicolon" action="E6" />
 <map key="single-quote" action="G6" />
+<map key="enter" action="A#6" />
 
 <map key="Z" action="D4" />
 <map key="X" action="F4" />
