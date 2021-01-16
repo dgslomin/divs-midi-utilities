@@ -8,7 +8,7 @@ LIBS=$(shell wx-config --libs) -framework CoreMIDI -framework CoreAudio -framewo
 else
 CC=gcc
 CXX=g++
-CFLAGS=$(shell wx-config --cflags) --D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
+CFLAGS=$(shell wx-config --cflags) -D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
 LDFLAGS=
 LIBS=$(shell wx-config --libs) -lasound -lpthread -lexpat -lstdc++
 endif
