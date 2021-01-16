@@ -126,12 +126,13 @@ int main(int argc, char **argv)
 		else if (strcmp(argv[i], "--map") == 0)
 		{
 			XML_Parser xml_parser = XML_ParserCreate(NULL);
+			char error_message[1024];
 			if (++i == argc) usage(argv[0]);
 			XML_SetStartElementHandler(xml_parser, handle_xml_start_element);
 
-			if (XML_ParseFile(xml_parser, argv[i]) < 0)
+			if (XML_ParseFile(xml_parser, argv[i], error_message, 1024) < 0)
 			{
-				printf("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), (int)(XML_GetCurrentLineNumber(xml_parser)), argv[i]);
+				printf("Error:  %s\n", error_message);
 				exit(1);
 			}
 

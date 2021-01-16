@@ -5,14 +5,29 @@
 #include <expat.h>
 #include <midiutil-expat.h>
 
-int XML_ParseFile(XML_Parser parser, char *filename)
+int XML_ParseFile(XML_Parser parser, char *filename, char *error_message, size_t error_message_size)
 {
 	FILE *f;
 	void *buffer;
 	int bytes_read;
 
-	if ((parser == NULL) || (filename == NULL)) return -1;
-	if ((f = fopen(filename, "rb")) == NULL) return -1;
+	if (parser == NULL)
+	{
+		if (error_message != NULL) snprintf(error_message, error_message_size, "Null parser");
+		return -1;
+	}
+
+	if (filename == NULL)
+	{
+		if (error_message != NULL) snprintf(error_message, error_message_size, "Null filename");
+		return -1;
+	}
+
+	if ((f = fopen(filename, "rb")) == NULL)
+	{
+		if (error_message != NULL) snprintf(error_message, error_message_size, "Cannot open \"%s\"", filename);
+		return -1;
+	}
 
 	do
 	{
@@ -23,6 +38,9 @@ int XML_ParseFile(XML_Parser parser, char *filename)
 	while (bytes_read > 0);
 
 	fclose(f);
-	return 0;
+
+	if (XML_GetErrorCode(parser) == XML_ERROR_NONE) return 0;
+	if (error_message != NULL) snprintf(error_message, error_message_size, "\"%s\" at line %d of \"%s\"", XML_ErrorString(XML_GetErrorCode(parser)), (int)(XML_GetCurrentLineNumber(parser)), filename);
+	return -1;
 }
 

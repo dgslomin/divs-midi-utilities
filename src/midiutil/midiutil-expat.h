@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-int XML_ParseFile(XML_Parser parser, char *filename);
+int XML_ParseFile(XML_Parser parser, char *filename, char *error_message, size_t error_message_size);
 
 #ifdef __cplusplus
 }

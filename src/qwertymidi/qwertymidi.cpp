@@ -326,12 +326,13 @@ bool Application::OnInit()
 		else if (this->argv[i] == "--map")
 		{
 			XML_Parser xml_parser = XML_ParserCreate(NULL);
+			char error_message[1024];
 			if (++i == this->argc) usage(this->argv[0]);
 			XML_SetStartElementHandler(xml_parser, handle_xml_start_element);
 
-			if (XML_ParseFile(xml_parser, argv[i].char_str()) < 0)
+			if (XML_ParseFile(xml_parser, argv[i].char_str(), error_message, 1024) < 0)
 			{
-				text_box->SetValue(wxString::Format("Error:  \"%s\" at line %d of map file \"%s\"\n", XML_ErrorString(XML_GetErrorCode(xml_parser)), XML_GetCurrentLineNumber(xml_parser), argv[i]));
+				text_box->SetValue(wxString::Format("Error:  %s\n", error_message));
 				startup_error = 1;
 			}
 
