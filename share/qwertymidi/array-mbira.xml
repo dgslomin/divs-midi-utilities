@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 
 <!--
-Array mbira (isomorphic 7E/12NW).
+Array mbira.  Two interwoven isomorphic 2E/12NW layouts in which you skip a key
+as you move to the east.  The layout which includes G is offset from the layout
+which includes C by 7E, which means that the combined layout isn't completely
+isomorphic; playing in a root position of G requires slightly different
+fingering than a root position of C.  That said, it's surprisingly intuitive.
 -->
 
 <qwertymidi>
