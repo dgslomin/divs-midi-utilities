@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+
+<!--
+Fifths layout (isomorphic 1E-7NW) for violin, viola, cello, mandolin, Irish
+bouzouki, etc.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="shift" action="shift-up-octave" />
+<map key="control" action="shift-down-octave" />
+<map key="space" action="panic" />
+
+<map key="backtick" action="D#5" /><!-- above the nut -->
+<map key="1" action="E5" />
+<map key="2" action="F5" />
+<map key="3" action="F#5" />
+<map key="4" action="G5" />
+<map key="5" action="G#5" />
+<map key="6" action="A5" />
+<map key="7" action="A#5" />
+<map key="8" action="B5" />
+<map key="9" action="C6" />
+<map key="0" action="C#6" />
+<map key="minus" action="D6" />
+<map key="equals" action="D#6" />
+<map key="backspace" action="E6" />
+
+<map key="tab" action="G#4" /><!-- above the nut -->
+<map key="Q" action="A4" />
+<map key="W" action="A#4" />
+<map key="E" action="B4" />
+<map key="R" action="C5" />
+<map key="T" action="C#5" />
+<map key="Y" action="D5" />
+<map key="U" action="D#5" />
+<map key="I" action="E5" />
+<map key="O" action="F5" />
+<map key="P" action="F#5" />
+<map key="open-bracket" action="G5" />
+<map key="close-bracket" action="G#5" />
+<map key="backslash" action="A5" />
+
+<map key="A" action="D4" />
+<map key="S" action="D#4" />
+<map key="D" action="E4" />
+<map key="F" action="F4" />
+<map key="G" action="F#4" />
+<map key="H" action="G4" />
+<map key="J" action="G#4" />
+<map key="K" action="A4" />
+<map key="L" action="A#4" />
+<map key="semicolon" action="B4" />
+<map key="single-quote" action="C5" />
+<map key="enter" action="C#5" />
+
+<map key="Z" action="G3" />
+<map key="X" action="G#3" />
+<map key="C" action="A3" />
+<map key="V" action="A#3" />
+<map key="B" action="B3" />
+<map key="N" action="C4" />
+<map key="M" action="C#4" />
+<map key="comma" action="D4" />
+<map key="period" action="D#4" />
+<map key="slash" action="E4" />
+
+</qwertymidi>

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<!--
+Isomorphic 4E-1NE layout.  A four row variation on the C system chromatic
+button accordion that doesn't correspond to any real instrument I know of,
+but fits the four row qwerty keyboard perfectly.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="shift" action="shift-up-octave" />
+<map key="control" action="shift-down-octave" />
+<map key="space" action="panic" />
+
+<map key="3" action="B1" />
+<map key="4" action="D#2" />
+<map key="5" action="G2" />
+<map key="6" action="B2" />
+<map key="7" action="D#3" />
+<map key="8" action="G3" />
+<map key="9" action="B3" />
+<map key="0" action="D#4" />
+<map key="minus" action="G4" />
+<map key="equals" action="B4" />
+<map key="backspace" action="D#5" />
+
+<map key="W" action="A#1" />
+<map key="E" action="D2" />
+<map key="R" action="F#2" />
+<map key="T" action="A#2" />
+<map key="Y" action="D3" />
+<map key="U" action="F#3" />
+<map key="I" action="A#3" />
+<map key="O" action="D4" />
+<map key="P" action="F#4" />
+<map key="open-bracket" action="A#4" />
+<map key="close-bracket" action="D5" />
+
+<map key="A" action="A1" />
+<map key="S" action="C#2" />
+<map key="D" action="F2" />
+<map key="F" action="A2" />
+<map key="G" action="C#3" />
+<map key="H" action="F3" />
+<map key="J" action="A3" />
+<map key="K" action="C#4" />
+<map key="L" action="F4" />
+<map key="semicolon" action="A4" />
+<map key="single-quote" action="C#5" />
+
+<map key="Z" action="C2" />
+<map key="X" action="E2" />
+<map key="C" action="G#2" />
+<map key="V" action="C3" />
+<map key="B" action="E3" />
+<map key="N" action="G#3" />
+<map key="M" action="C4" />
+<map key="comma" action="E4" />
+<map key="period" action="G#4" />
+<map key="slash" action="C5" />
+
+</qwertymidi>
