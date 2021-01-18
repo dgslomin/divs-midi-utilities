@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<!--
+Ukulele.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="space" action="panic" />
+
+<map key="1" action="A4" />
+<map key="2" action="A#4" />
+<map key="3" action="B4" />
+<map key="4" action="C5" />
+<map key="5" action="C#5" />
+<map key="6" action="D5" />
+<map key="7" action="D#5" />
+<map key="8" action="E5" />
+<map key="9" action="F5" />
+<map key="0" action="F#5" />
+<map key="minus" action="G5" />
+<map key="equals" action="G#5" />
+<map key="backspace" action="A5" />
+
+<map key="Q" action="E4" />
+<map key="W" action="F4" />
+<map key="E" action="F#4" />
+<map key="R" action="G4" />
+<map key="T" action="G#4" />
+<map key="Y" action="A4" />
+<map key="U" action="A#4" />
+<map key="I" action="B4" />
+<map key="O" action="C5" />
+<map key="P" action="C#5" />
+<map key="open-bracket" action="D5" />
+<map key="close-bracket" action="D#5" />
+<map key="backslash" action="E5" />
+
+<map key="A" action="C4" />
+<map key="S" action="C#4" />
+<map key="D" action="D4" />
+<map key="F" action="D#4" />
+<map key="G" action="E4" />
+<map key="H" action="F4" />
+<map key="J" action="F#4" />
+<map key="K" action="G4" />
+<map key="L" action="G#4" />
+<map key="semicolon" action="A4" />
+<map key="single-quote" action="A#4" />
+<map key="enter" action="B4" />
+
+<map key="Z" action="G4" />
+<map key="X" action="G#4" />
+<map key="C" action="A4" />
+<map key="V" action="A#4" />
+<map key="B" action="B4" />
+<map key="N" action="C5" />
+<map key="M" action="C#5" />
+<map key="comma" action="D5" />
+<map key="period" action="D#5" />
+<map key="slash" action="E5" />
+
+</qwertymidi>
