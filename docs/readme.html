@@ -101,7 +101,7 @@ a { color: #FF6600 }
 
 <h3>midithru</h3>
 
-<p>This command line utility reads from any number of MIDI input ports, merges the streams together, and copies the result to any number of MIDI output ports.  You can think of it as a combination of a hardware thru box and merge box.  See <a href="#routing">below</a> for a discussion of virtual ports.</p>
+<p>This command line utility reads from any number of MIDI input ports, merges the streams together, and copies the result to any number of MIDI output ports.  You can think of it as a combination of a hardware thru box and merge box.  See <a href="#hints">helpful hints</a>, below, for a discussion of virtual ports.</p>
 
 <p>Usage: midithru [ --in &lt;port&gt; ] ... [ --virtual-in &lt;port&gt; ] ... [ --out &lt;port&gt; ] ... [ --virtual-out &lt;port&gt; ] ...</p>
 
@@ -273,7 +273,9 @@ a { color: #FF6600 }
 
 <p>Also provided is the source code to several obsolete or incomplete programs in the "src/extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
 
-<h2 id="routing">Routing</h2>
+<h2 id="hints">Helpful hints</h2>
+
+<p>These programs are designed to be run from the command line or from scripts.  If you just double-click on their icons you won't have a chance to provide the required command line arguments, and may not even have a chance to read the help message before the command prompt window disappears.</p>
 
 <p>Most of the realtime utilities are designed to connect to existing MIDI ports.  That's fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>midithru</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
 
