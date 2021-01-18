@@ -276,7 +276,7 @@ static void handle_key_up(wxKeyEvent& event)
 
 static void usage(wxString program_name)
 {
-	text_box->SetValue(wxString::Format("Usage:  %s [ --out <port> ] [ --channel <n> ] [ --program <n> ] [ --velocity <n> ] [ --map <filename.xml> ]\n", program_name));
+	text_box->SetValue(wxString::Format("Usage:  %s [ --out <port> ] [ --channel <n> ] [ --program <n> ] [ --velocity <n> ] [ --transpose <n> ] [ --map <filename.xml> ]\n", program_name));
 	startup_error = 1;
 }
 
@@ -322,6 +322,11 @@ bool Application::OnInit()
 		{
 			if (++i == this->argc) usage(this->argv[0]);
 			velocity = wxAtoi(this->argv[i]);
+		}
+		else if (this->argv[i] == "--transpose")
+		{
+			if (++i == this->argc) usage(this->argv[0]);
+			transposition = wxAtoi(this->argv[i]);
 		}
 		else if (this->argv[i] == "--map")
 		{
