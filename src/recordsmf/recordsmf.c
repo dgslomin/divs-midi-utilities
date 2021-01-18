@@ -70,6 +70,19 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
+static void handle_exit(void *user_data)
+{
+	rtmidi_close_port(midi_in);
+
+	if (MidiFile_save(midi_file, filename) != 0)
+	{
+		fprintf(stderr, "Error:  Cannot save \"%s\".\n", filename);
+		exit(1);
+	}
+
+	MidiFile_free(midi_file);
+}
+
 int main(int argc, char **argv)
 {
 	int i;
@@ -107,16 +120,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-
-	if (MidiFile_save(midi_file, filename) != 0)
-	{
-		fprintf(stderr, "Error:  Cannot save \"%s\".\n", filename);
-		exit(1);
-	}
-
-	MidiFile_free(midi_file);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

@@ -18,6 +18,12 @@ static MidiFile_t midi_file = NULL;
 static MidiFileTrack_t track = NULL;
 static long start_time_msecs;
 
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage: %s --in <port> [ --prefix <filename prefix> ] [ --timeout <seconds> ] [ --confirmation <command line> ]\n", program_name);
+	exit(1);
+}
+
 static void create_midi_file_for_first_event(void)
 {
 	if (midi_file != NULL) return;
@@ -140,10 +146,10 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
-static void usage(char *program_name)
+static void handle_exit(void *user_data)
 {
-	fprintf(stderr, "Usage: %s --in <port> [ --prefix <filename prefix> ] [ --timeout <seconds> ] [ --confirmation <command line> ]\n", program_name);
-	exit(1);
+	rtmidi_close_port(midi_in);
+	MidiUtilAlarm_free(alarm);
 }
 
 int main(int argc, char **argv)
@@ -186,9 +192,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	MidiUtilAlarm_free(alarm);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

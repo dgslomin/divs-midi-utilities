@@ -196,28 +196,65 @@ void MidiUtil_setInterruptHandler(void (*callback)(void *user_data), void *user_
 #endif
 }
 
-static MidiUtilLock_t wait_for_interrupt_lock;
-static int was_interrupted;
+/*
+ * The ugly asymmetry here comes from the fact that Windows requires cleanup to
+ * be done in the console control handler callback since it won't return to the
+ * main thread in some cases, whereas Unix won't allow cleanup to be done in
+ * the signal handler callback.
+ */
 
-static void wait_for_interrupt_helper(void *user_data)
+static MidiUtilLock_t wait_for_exit_lock;
+static int wait_for_exit_done = 0;
+
+#ifdef _WIN32
+
+static void (*wait_for_exit_callback)(void *user_data) = NULL;
+static void *wait_for_exit_user_data = NULL;
+
+static BOOL WINAPI wait_for_exit_helper(DWORD control_type)
 {
-	MidiUtilLock_lock(wait_for_interrupt_lock);
-	was_interrupted = 1;
-	MidiUtilLock_notify(wait_for_interrupt_lock);
-	MidiUtilLock_unlock(wait_for_interrupt_lock);
+	if (wait_for_exit_callback != NULL) wait_for_exit_callback(wait_for_exit_user_data);
+	MidiUtilLock_lock(wait_for_exit_lock);
+	wait_for_exit_done = 1;
+	MidiUtilLock_notify(wait_for_exit_lock);
+	MidiUtilLock_unlock(wait_for_exit_lock);
+	return TRUE;
 }
 
-void MidiUtil_waitForInterrupt(void)
+void MidiUtil_waitForExit(void (*callback)(void *user_data), void *user_data)
 {
-	wait_for_interrupt_lock = MidiUtilLock_new();
-	MidiUtilLock_lock(wait_for_interrupt_lock);
-	was_interrupted = 0;
-	MidiUtil_setInterruptHandler(wait_for_interrupt_helper, NULL);
-	while (!was_interrupted) MidiUtilLock_wait(wait_for_interrupt_lock, -1);
-	MidiUtilLock_unlock(wait_for_interrupt_lock);
-	MidiUtil_setInterruptHandler(NULL, NULL);
-	MidiUtilLock_free(wait_for_interrupt_lock);
+	wait_for_exit_lock = MidiUtilLock_new();
+	wait_for_exit_callback = callback;
+	wait_for_exit_user_data = user_data;
+	SetConsoleCtrlHandler(wait_for_exit_helper, TRUE);
+	MidiUtilLock_lock(wait_for_exit_lock);
+	while (!wait_for_exit_done) MidiUtilLock_wait(wait_for_exit_lock, -1);
+	MidiUtilLock_unlock(wait_for_exit_lock);
+	MidiUtilLock_free(wait_for_exit_lock);
 }
+
+#else
+
+static void wait_for_exit_helper(int signal_number)
+{
+	MidiUtilLock_lock(wait_for_exit_lock);
+	wait_for_exit_done = 1;
+	MidiUtilLock_notify(wait_for_exit_lock);
+	MidiUtilLock_unlock(wait_for_exit_lock);
+}
+
+void MidiUtil_waitForExit(void (*callback)(void *user_data), void *user_data)
+{
+	wait_for_exit_lock = MidiUtilLock_new();
+	signal(SIGINT, wait_for_exit_helper);
+	MidiUtilLock_lock(wait_for_exit_lock);
+	while (!wait_for_exit_done) MidiUtilLock_wait(wait_for_exit_lock, -1);
+	MidiUtilLock_unlock(wait_for_exit_lock);
+	if (callback != NULL) callback(user_data);
+	MidiUtilLock_free(wait_for_exit_lock);
+}
+
+#endif
 
 static void alarm_helper(void *user_data)
 {

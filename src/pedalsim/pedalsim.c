@@ -37,6 +37,12 @@ static int note_included_in_sustenuto[16][128];
 static int note_held_by_sustenuto[16][128];
 static int note_held_by_bass_sustain[16][128];
 
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sustenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ] [ --invert-sustain ] [ --invert-sustenuto ] [ --invert-bass-sustain ] [ --invert-soft ] [ --invert-volume ]\n", program_name);
+	exit(1);
+}
+
 static void send_note_on(int channel, int note, int velocity)
 {
 	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
@@ -251,10 +257,10 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
-static void usage(char *program_name)
+static void handle_exit(void *user_data)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sustenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ] [ --invert-sustain ] [ --invert-sustenuto ] [ --invert-bass-sustain ] [ --invert-soft ] [ --invert-volume ]\n", program_name);
-	exit(1);
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
 }
 
 int main(int argc, char **argv)
@@ -386,9 +392,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	rtmidi_close_port(midi_out);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

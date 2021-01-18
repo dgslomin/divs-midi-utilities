@@ -21,7 +21,16 @@ typedef enum
 }
 Mode_t;
 
-void list_ports(void)
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage: %s --list-ports\n", program_name);
+	fprintf(stderr, "Usage: %s --list-connections\n", program_name);
+	fprintf(stderr, "Usage: %s --connect --from <client> <port> --to <client> <port> [ --timeout <seconds> ]\n", program_name);
+	fprintf(stderr, "Usage: %s --disconnect --from <client> <port> --to <client> <port>\n", program_name);
+	exit(1);
+}
+
+static void list_ports(void)
 {
 	snd_seq_t *sequencer;
 	snd_seq_client_info_t *client_info;
@@ -63,7 +72,7 @@ void list_ports(void)
 	snd_seq_close(sequencer);
 }
 
-void list_connections(void)
+static void list_connections(void)
 {
 	snd_seq_t *sequencer;
 	snd_seq_client_info_t *client_info;
@@ -115,7 +124,7 @@ void list_connections(void)
 	snd_seq_close(sequencer);
 }
 
-snd_seq_addr_t *get_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability)
+static snd_seq_addr_t *get_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability)
 {
 	snd_seq_client_info_set_client(client_info, -1);
 
@@ -138,7 +147,7 @@ snd_seq_addr_t *get_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *cl
 	return NULL;
 }
 
-snd_seq_addr_t *wait_for_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability, int timeout_seconds)
+static snd_seq_addr_t *wait_for_port_address(snd_seq_t *sequencer, snd_seq_client_info_t *client_info, snd_seq_port_info_t *port_info, char *client_name, char *port_name, unsigned int capability, int timeout_seconds)
 {
 	snd_seq_addr_t *port_address;
 	int times_waited = 0;
@@ -158,7 +167,7 @@ snd_seq_addr_t *wait_for_port_address(snd_seq_t *sequencer, snd_seq_client_info_
 	return port_address;
 }
 
-void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_name, char *to_client_name, char *to_port_name, int timeout_seconds)
+static void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_name, char *to_client_name, char *to_port_name, int timeout_seconds)
 {
 	snd_seq_t *sequencer;
 	snd_seq_client_info_t *client_info;
@@ -196,15 +205,6 @@ void connect_or_disconnect(Mode_t mode, char *from_client_name, char *from_port_
 	snd_seq_port_info_free(port_info);
 	snd_seq_client_info_free(client_info);
 	snd_seq_close(sequencer);
-}
-
-void usage(char *program_name)
-{
-	fprintf(stderr, "Usage: %s --list-ports\n", program_name);
-	fprintf(stderr, "Usage: %s --list-connections\n", program_name);
-	fprintf(stderr, "Usage: %s --connect --from <client> <port> --to <client> <port> [ --timeout <seconds> ]\n", program_name);
-	fprintf(stderr, "Usage: %s --disconnect --from <client> <port> --to <client> <port>\n", program_name);
-	exit(1);
 }
 
 int main(int argc, char **argv)

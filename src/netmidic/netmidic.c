@@ -19,12 +19,8 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
+static RtMidiInPtr midi_in = NULL;
 static int socket_to_server;
-
-static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
-{
-	send(socket_to_server, message, message_size, 0);
-}
 
 static void usage(char *program_name)
 {
@@ -32,9 +28,19 @@ static void usage(char *program_name)
 	exit(1);
 }
 
+static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
+{
+	send(socket_to_server, message, message_size, 0);
+}
+
+static void handle_exit(void *user_data)
+{
+	rtmidi_close_port(midi_in);
+	shutdown(socket_to_server, 2);
+}
+
 int main(int argc, char **argv)
 {
-	RtMidiInPtr midi_in = NULL;
 	char *server_hostname = NULL;
 	int server_port = -1;
 	int i;
@@ -98,9 +104,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	shutdown(socket_to_server, 2);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

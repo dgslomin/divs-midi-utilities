@@ -7,17 +7,17 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
-RtMidiInPtr midi_in = NULL;
-char *note_commands[128];
-char *note_down_commands[128];
-char *note_up_commands[128];
-char *controller_commands[128];
-char *controller_down_commands[128];
-char *controller_up_commands[128];
-char *controller_increase_commands[128];
-char *controller_decrease_commands[128];
-int previous_controller_value[128];
-char *program_commands[128];
+static RtMidiInPtr midi_in = NULL;
+static char *note_commands[128];
+static char *note_down_commands[128];
+static char *note_up_commands[128];
+static char *controller_commands[128];
+static char *controller_down_commands[128];
+static char *controller_up_commands[128];
+static char *controller_increase_commands[128];
+static char *controller_decrease_commands[128];
+static int previous_controller_value[128];
+static char *program_commands[128];
 
 static void usage(char *program_name)
 {
@@ -82,6 +82,11 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 			break;
 		}
 	}
+}
+
+static void handle_exit(void *user_data)
+{
+	rtmidi_close_port(midi_in);
 }
 
 int main(int argc, char **argv)
@@ -193,8 +198,7 @@ int main(int argc, char **argv)
 	}
 
 	if (midi_in == NULL) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

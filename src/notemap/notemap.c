@@ -11,7 +11,13 @@
 
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
-signed char notemap[128];
+static signed char notemap[128];
+
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --map <filename> ]\n", program_name);
+	exit(1);
+}
 
 static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
@@ -89,10 +95,10 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
-static void usage(char *program_name)
+static void handle_exit(void *user_data)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --map <filename> ]\n", program_name);
-	exit(1);
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
 }
 
 int main(int argc, char **argv)
@@ -145,9 +151,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	rtmidi_close_port(midi_out);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

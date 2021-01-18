@@ -7,6 +7,8 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
+static RtMidiInPtr midi_in = NULL;
+
 static void usage(char *program_name)
 {
 	fprintf(stderr, "Usage:  %s --in <port>\n", program_name);
@@ -59,9 +61,13 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
+static void handle_exit(void *user_data)
+{
+	rtmidi_close_port(midi_in);
+}
+
 int main(int argc, char **argv)
 {
-	RtMidiInPtr midi_in = NULL;
 	int i;
 
 	for (i = 1; i < argc; i++)
@@ -83,8 +89,7 @@ int main(int argc, char **argv)
 	}
 
 	if (midi_in == NULL) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

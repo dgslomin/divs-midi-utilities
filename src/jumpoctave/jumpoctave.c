@@ -12,6 +12,12 @@ static RtMidiOutPtr midi_out = NULL;
 static int interval = 0;
 static int does_it_count = 1;
 
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage:  %s --in <port> --out <port>\n", program_name);
+	exit(1);
+}
+
 static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
 	switch (MidiUtilMessage_getType(message))
@@ -70,10 +76,10 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
-static void usage(char *program_name)
+static void handle_exit(void *user_data)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port>\n", program_name);
-	exit(1);
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
 }
 
 int main(int argc, char **argv)
@@ -109,9 +115,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	rtmidi_close_port(midi_out);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

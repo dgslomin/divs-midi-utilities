@@ -8,8 +8,8 @@
 #include <midiutil-rtmidi.h>
 
 /* 
- * Note:  This uses an embedded copy of the fakesustain utility's logic so that
- * the pulsar logic doesn't need to handle sustain directly.
+ * Note:  This uses an embedded copy of the old fakesustain utility's logic
+ * so that the pulsar logic doesn't need to handle sustain directly.
  */
 
 typedef enum
@@ -30,6 +30,12 @@ static int sustain[16];
 static NoteState_t note_state[16][128];
 static int pulse_is_on = 0;
 static int sustained_note_velocity[16][128];
+
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --pulse <on msecs> <off msecs> ] ...\n", program_name);
+	exit(1);
+}
 
 static void send_note_on(int channel, int note, int velocity)
 {
@@ -212,12 +218,6 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 			break;
 		}
 	}
-}
-
-static void usage(char *program_name)
-{
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --pulse <on msecs> <off msecs> ] ...\n", program_name);
-	exit(1);
 }
 
 int main(int argc, char **argv)

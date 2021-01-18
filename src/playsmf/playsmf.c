@@ -8,21 +8,21 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
-int should_shutdown = 0;
-MidiUtilLock_t lock = NULL;
-
-static void interrupt_handler(void *arg)
-{
-	MidiUtilLock_lock(lock);
-	should_shutdown = 1;
-	MidiUtilLock_notify(lock);
-	MidiUtilLock_unlock(lock);
-}
+static int should_shutdown = 0;
+static MidiUtilLock_t lock = NULL;
 
 static void usage(char *program_name)
 {
 	fprintf(stderr, "Usage:  %s --out <port> [ --from <time> ] [ --to <time> ] [ ( --solo-track <n> ) ... | ( --mute-track <n> ) ... ] [ --extra-time <seconds> ] <filename.mid>\n", program_name);
 	exit(1);
+}
+
+static void handle_interrupt(void *arg)
+{
+	MidiUtilLock_lock(lock);
+	should_shutdown = 1;
+	MidiUtilLock_notify(lock);
+	MidiUtilLock_unlock(lock);
 }
 
 int main(int argc, char **argv)
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 	}
 
 	lock = MidiUtilLock_new();
-	MidiUtil_setInterruptHandler(interrupt_handler, NULL);
+	MidiUtil_setInterruptHandler(handle_interrupt, NULL);
 
 	for (midi_file_event = MidiFile_getFirstEvent(midi_file); midi_file_event != NULL; midi_file_event = MidiFileEvent_getNextEventInFile(midi_file_event))
 	{

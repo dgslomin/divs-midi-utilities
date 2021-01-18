@@ -7,10 +7,10 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
-int number_of_midi_ins = 0;
-RtMidiInPtr midi_ins[128];
-int number_of_midi_outs = 0;
-RtMidiOutPtr midi_outs[128];
+static int number_of_midi_ins = 0;
+static RtMidiInPtr midi_ins[128];
+static int number_of_midi_outs = 0;
+static RtMidiOutPtr midi_outs[128];
 
 static void usage(char *program_name)
 {
@@ -22,6 +22,12 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 {
 	int midi_out_number;
 	for (midi_out_number = 0; midi_out_number < number_of_midi_outs; midi_out_number++) rtmidi_out_send_message(midi_outs[midi_out_number], message, message_size);
+}
+
+static void handle_exit(void *user_data)
+{
+	while (number_of_midi_ins > 0) rtmidi_close_port(midi_ins[--number_of_midi_ins]);
+	while (number_of_midi_outs > 0) rtmidi_close_port(midi_outs[--number_of_midi_outs]);
 }
 
 int main(int argc, char **argv)
@@ -70,9 +76,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	MidiUtil_waitForInterrupt();
-	while (number_of_midi_ins > 0) rtmidi_close_port(midi_ins[--number_of_midi_ins]);
-	while (number_of_midi_outs > 0) rtmidi_close_port(midi_outs[--number_of_midi_outs]);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

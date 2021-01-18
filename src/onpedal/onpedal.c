@@ -7,13 +7,13 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
-RtMidiInPtr midi_in = NULL;
-char *command = NULL;
-int hold_length_msecs = 500;
-char *hold_command = NULL;
-MidiUtilAlarm_t alarm = NULL;
-int is_pressed = 0;
-int alarm_rang = 0;
+static RtMidiInPtr midi_in = NULL;
+static char *command = NULL;
+static int hold_length_msecs = 500;
+static char *hold_command = NULL;
+static MidiUtilAlarm_t alarm = NULL;
+static int is_pressed = 0;
+static int alarm_rang = 0;
 
 static void usage(char *program_name)
 {
@@ -21,7 +21,7 @@ static void usage(char *program_name)
 	exit(1);
 }
 
-void handle_alarm(int cancelled, void *user_data)
+static void handle_alarm(int cancelled, void *user_data)
 {
 	if (cancelled) return;
 	alarm_rang = 1;
@@ -65,6 +65,12 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
+static void handle_exit(void *user_data)
+{
+	rtmidi_close_port(midi_in);
+	MidiUtilAlarm_free(alarm);
+}
+
 int main(int argc, char **argv)
 {
 	int i;
@@ -104,9 +110,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((midi_in == NULL) || (command == NULL)) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	MidiUtilAlarm_free(alarm);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

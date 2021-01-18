@@ -15,6 +15,12 @@ static int echo_delay_msecs_array[128];
 static int echo_note_interval_array[128];
 static float echo_velocity_scaling_array[128];
 
+static void usage(char *program_name)
+{
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --echo <delay msecs> <note interval> <velocity scaling> ] ...\n", program_name);
+	exit(1);
+}
+
 static void handle_alarm(int cancelled, void *user_data)
 {
 	unsigned char *message = (unsigned char *)(user_data);
@@ -72,10 +78,11 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
-static void usage(char *program_name)
+static void handle_exit(void *user_data)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --echo <delay msecs> <note interval> <velocity scaling> ] ...\n", program_name);
-	exit(1);
+	rtmidi_close_port(midi_in);
+	rtmidi_close_port(midi_out);
+	MidiUtilAlarm_free(alarm);
 }
 
 int main(int argc, char **argv)
@@ -123,10 +130,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
-	MidiUtil_waitForInterrupt();
-	rtmidi_close_port(midi_in);
-	rtmidi_close_port(midi_out);
-	MidiUtilAlarm_free(alarm);
+	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }
 

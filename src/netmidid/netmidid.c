@@ -21,15 +21,15 @@
 
 static int should_shutdown = 0;
 
-static void handle_interrupt(void *user_data)
-{
-	should_shutdown = 1;
-}
-
 static void usage(char *program_name)
 {
 	fprintf(stderr, "Usage: %s --port <network port> --out <midi port>\n", program_name);
 	exit(1);
+}
+
+static void handle_interrupt(void *user_data)
+{
+	should_shutdown = 1;
 }
 
 int main(int argc, char **argv)

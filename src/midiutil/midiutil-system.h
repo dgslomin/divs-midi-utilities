@@ -26,7 +26,7 @@ long MidiUtil_getCurrentTimeMsecs(void);
 void MidiUtil_getCurrentTimeString(char *current_time_string); /* YYYYMMDDhhmmss */
 
 void MidiUtil_setInterruptHandler(void (*callback)(void *user_data), void *user_data);
-void MidiUtil_waitForInterrupt(void);
+void MidiUtil_waitForExit(void (*callback)(void *user_data), void *user_data);
 
 MidiUtilAlarm_t MidiUtilAlarm_new(void);
 void MidiUtilAlarm_free(MidiUtilAlarm_t alarm);
