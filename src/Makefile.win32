@@ -9,7 +9,6 @@ all:
 	cd cut-time && nmake -f Makefile.win32 /nologo
 	cd delta && nmake -f Makefile.win32 /nologo
 	cd dispmidi && nmake -f Makefile.win32 /nologo
-	cd fakesustain && nmake -f Makefile.win32 /nologo
 	cd jumpoctave && nmake -f Makefile.win32 /nologo
 	cd lsmidiins && nmake -f Makefile.win32 /nologo
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo
@@ -24,6 +23,7 @@ all:
 	cd offset-velocity && nmake -f Makefile.win32 /nologo
 	cd onmessage && nmake -f Makefile.win32 /nologo
 	cd onpedal && nmake -f Makefile.win32 /nologo
+	cd pedalsim && nmake -f Makefile.win32 /nologo
 	cd playsmf && nmake -f Makefile.win32 /nologo
 	cd pulsar && nmake -f Makefile.win32 /nologo
 	cd quantize && nmake -f Makefile.win32 /nologo
@@ -36,7 +36,6 @@ all:
 	cd smftoxml && nmake -f Makefile.win32 /nologo
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo
 	cd tempo-map && nmake -f Makefile.win32 /nologo
-	cd velocityfader && nmake -f Makefile.win32 /nologo
 	cd xmltosmf && nmake -f Makefile.win32 /nologo
 
 clean:
@@ -49,7 +48,6 @@ clean:
 	cd cut-time && nmake -f Makefile.win32 /nologo clean
 	cd delta && nmake -f Makefile.win32 /nologo clean
 	cd dispmidi && nmake -f Makefile.win32 /nologo clean
-	cd fakesustain && nmake -f Makefile.win32 /nologo clean
 	cd jumpoctave && nmake -f Makefile.win32 /nologo clean
 	cd lsmidiins && nmake -f Makefile.win32 /nologo clean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo clean
@@ -64,6 +62,7 @@ clean:
 	cd offset-velocity && nmake -f Makefile.win32 /nologo clean
 	cd onmessage && nmake -f Makefile.win32 /nologo clean
 	cd onpedal && nmake -f Makefile.win32 /nologo clean
+	cd pedalsim && nmake -f Makefile.win32 /nologo clean
 	cd playsmf && nmake -f Makefile.win32 /nologo clean
 	cd pulsar && nmake -f Makefile.win32 /nologo clean
 	cd quantize && nmake -f Makefile.win32 /nologo clean
@@ -76,7 +75,6 @@ clean:
 	cd smftoxml && nmake -f Makefile.win32 /nologo clean
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo clean
 	cd tempo-map && nmake -f Makefile.win32 /nologo clean
-	cd velocityfader && nmake -f Makefile.win32 /nologo clean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo clean
 
 reallyclean:
@@ -89,7 +87,6 @@ reallyclean:
 	cd cut-time && nmake -f Makefile.win32 /nologo reallyclean
 	cd delta && nmake -f Makefile.win32 /nologo reallyclean
 	cd dispmidi && nmake -f Makefile.win32 /nologo reallyclean
-	cd fakesustain && nmake -f Makefile.win32 /nologo reallyclean
 	cd jumpoctave && nmake -f Makefile.win32 /nologo reallyclean
 	cd lsmidiins && nmake -f Makefile.win32 /nologo reallyclean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo reallyclean
@@ -104,6 +101,7 @@ reallyclean:
 	cd offset-velocity && nmake -f Makefile.win32 /nologo reallyclean
 	cd onmessage && nmake -f Makefile.win32 /nologo reallyclean
 	cd onpedal && nmake -f Makefile.win32 /nologo reallyclean
+	cd pedalsim && nmake -f Makefile.win32 /nologo reallyclean
 	cd playsmf && nmake -f Makefile.win32 /nologo reallyclean
 	cd pulsar && nmake -f Makefile.win32 /nologo reallyclean
 	cd quantize && nmake -f Makefile.win32 /nologo reallyclean
@@ -116,6 +114,5 @@ reallyclean:
 	cd smftoxml && nmake -f Makefile.win32 /nologo reallyclean
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd tempo-map && nmake -f Makefile.win32 /nologo reallyclean
-	cd velocityfader && nmake -f Makefile.win32 /nologo reallyclean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo reallyclean
 

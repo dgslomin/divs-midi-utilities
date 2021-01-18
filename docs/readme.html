@@ -37,7 +37,7 @@ a { color: #FF6600 }
 
 <h2>News</h2>
 
-<p>2021-01-14 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added <em>recordsmf</em>, <em>convert-time</em>, and <em>cut-time</em>, plus various fixes and cleanups.</p>
+<p>2021-01-18 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added <em>recordsmf</em>, <em>pedalsim</em>, <em>convert-time</em>, and <em>cut-time</em>, plus various fixes and cleanups.</p>
 
 <p>2019-08-07 - Added <em>align-clicks</em>.</p>
 
@@ -69,7 +69,7 @@ a { color: #FF6600 }
 
 <p>2003-01-20 - Fixed a critical bug in <em>brainstorm</em>.  Also made significant improvements to the build system and packaging.</p>
 
-<h2>Realtime utilities</h2>
+<h2>Realtime MIDI utilities</h2>
 
 <h3>lsmidiins and lsmidiouts</h3>
 
@@ -163,23 +163,17 @@ a { color: #FF6600 }
 
 <p>Usage: pulsar --in &lt;port&gt; --out &lt;port&gt; [ --pulse &lt;on msecs&gt; &lt;off msecs&gt; ] ...</p>
 
+<h3>pedalsim</h3>
+
+<p>This filter-style utility simulates the pedals of a piano when you want to use a controller's physical pedals to drive a synthesis engine that doesn't understand what those pedals mean.  This is very common for sustenuto, bass sustain, and the soft pedal, but even regular sustain isn't natively supported by more simplistic soft synths.  It also tries to simulate an organ-style volume pedal, but this feature is more limited in its usefulness; because it works by adjusting incoming note velocities, it only affects new notes coming in, leaving the sustained ones alone.</p>
+
+<p>Usage: pedalsim --in &lt;port&gt; --out &lt;port&gt; [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note &lt;default B3&gt; ] [ --max-soft-velocity &lt;default 95&gt; ] [ --sustain-controller &lt;default 64&gt; ] [ --sustenuto-controller &lt;default 66&gt; ] [ --bass-sustain-controller &lt;default 69&gt; ] [ --soft-controller &lt;default 67&gt; ] [ --volume-controller &lt;default 12&gt; ] [ --invert-sustain ] [ --invert-sustenuto ] [ --invert-bass-sustain ] [ --invert-soft ] [ --invert-volume ]</p>
+
 <h3>jumpoctave</h3>
 
-<p>This filter-style utility lets you use the pitch bend wheel as an octave jump control.</p>
+<p>This filter-style utility lets you use the pitch bend wheel as an octave jump control.  Useful for small synths that lack proper transpose buttons.</p>
 
 <p>Usage: jumpoctave --in &lt;port&gt; --out &lt;port&gt;</p>
-
-<h3>velocityfader</h3>
-
-<p>This filter-style utility scales incoming note velocities according to the current value of a specified continuous controller.  This gives you a different sort of volume control than normal, in that it only affects new notes coming in, leaving the sustained ones alone.  It can also be used to add pedal-operated volume control to a synth that doesn't support standard expression messages.</p>
-
-<p>Usage: velocityfader --in &lt;port&gt; --out &lt;port&gt; [ --controller &lt;n&gt; ] [ --inverted ]</p>
-
-<h3>fakesustain</h3>
-
-<p>This filter-style utility pre-applies sustain to note events.  It is useful for software-based synthesizers which have incomplete MIDI implementations that don't respond to real sustain messages.</p> 
-
-<p>Usage: fakesustain --in &lt;port&gt; --out &lt;port&gt;</p>
 
 <h3>notemap</h3>
 
@@ -187,11 +181,11 @@ a { color: #FF6600 }
 
 <p>Usage: notemap --in &lt;port&gt; --out &lt;port&gt; [ --map &lt;filename&gt;.xml ]</p>
 
-<h2>Offline utilities</h2>
+<h2>MIDI file utilities</h2>
 
 <h3>midifile and normalizesmf</h3>
 
-<p><em>midifile</em> is a powerful and practical library that allows you to read and write Standard MIDI Files (SMF), and provides a data structure for MIDI sequences.  Essentially, it is the core of a MIDI sequencer without the user interface and the realtime recording and playback functionality.  It has no dependencies, so it should be easy to include in your own projects.</p>
+<p><em>midifile</em> is a powerful and practical C language library that allows you to read and write Standard MIDI Files (SMF), and provides a data structure for MIDI sequences.  Essentially, it is the core of a MIDI sequencer without the user interface and the realtime recording and playback functionality.  It has no dependencies, so it should be easy to include in your own projects.</p>
 
 <p><em>normalizesmf</em> is a command line utility which provides a minimal demonstration of the <em>midifile</em> library.  It reads in a MIDI file, then writes it out again.  If your sequencer complains that a file is invalid, this normalizer might make it more palatable.</p>
 
@@ -277,16 +271,16 @@ a { color: #FF6600 }
 
 <h2>Extras</h2>
 
-<p>Also provided is the source code to several obsolete or incomplete programs in the "src/extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of several of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
+<p>Also provided is the source code to several obsolete or incomplete programs in the "src/extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
 
 <h2 id="routing">Routing</h2>
 
-<p>Most of the realtime utilities are designed to connect to existing MIDI ports.  This is fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>midithru</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
+<p>Most of the realtime utilities are designed to connect to existing MIDI ports.  That's fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>midithru</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
 
 <p>If you don't have a hardware synthesizer or fancy virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2021-01-14</p>
+last modified 2021-01-18</p>
 
 </body>
 </html>

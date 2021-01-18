@@ -12,7 +12,6 @@ endif
 	cd cut-time && make -f Makefile.unix
 	cd delta && make -f Makefile.unix
 	cd dispmidi && make -f Makefile.unix
-	cd fakesustain && make -f Makefile.unix
 	cd jumpoctave && make -f Makefile.unix
 	cd lsmidiins && make -f Makefile.unix
 	cd lsmidiouts && make -f Makefile.unix
@@ -27,6 +26,7 @@ endif
 	cd offset-velocity && make -f Makefile.unix
 	cd onmessage && make -f Makefile.unix
 	cd onpedal && make -f Makefile.unix
+	cd pedalsim && make -f Makefile.unix
 	cd playsmf && make -f Makefile.unix
 	cd pulsar && make -f Makefile.unix
 	cd quantize && make -f Makefile.unix
@@ -39,7 +39,6 @@ endif
 	cd smftoxml && make -f Makefile.unix
 	cd smooth-tempo && make -f Makefile.unix
 	cd tempo-map && make -f Makefile.unix
-	cd velocityfader && make -f Makefile.unix
 	cd xmltosmf && make -f Makefile.unix
 
 clean:
@@ -55,7 +54,6 @@ endif
 	cd cut-time && make -f Makefile.unix clean
 	cd delta && make -f Makefile.unix clean
 	cd dispmidi && make -f Makefile.unix clean
-	cd fakesustain && make -f Makefile.unix clean
 	cd jumpoctave && make -f Makefile.unix clean
 	cd lsmidiins && make -f Makefile.unix clean
 	cd lsmidiouts && make -f Makefile.unix clean
@@ -70,6 +68,7 @@ endif
 	cd offset-velocity && make -f Makefile.unix clean
 	cd onmessage && make -f Makefile.unix clean
 	cd onpedal && make -f Makefile.unix clean
+	cd pedalsim && make -f Makefile.unix clean
 	cd playsmf && make -f Makefile.unix clean
 	cd pulsar && make -f Makefile.unix clean
 	cd quantize && make -f Makefile.unix clean
@@ -82,7 +81,6 @@ endif
 	cd smftoxml && make -f Makefile.unix clean
 	cd smooth-tempo && make -f Makefile.unix clean
 	cd tempo-map && make -f Makefile.unix clean
-	cd velocityfader && make -f Makefile.unix clean
 	cd xmltosmf && make -f Makefile.unix clean
 
 reallyclean:
@@ -98,7 +96,6 @@ endif
 	cd cut-time && make -f Makefile.unix reallyclean
 	cd delta && make -f Makefile.unix reallyclean
 	cd dispmidi && make -f Makefile.unix reallyclean
-	cd fakesustain && make -f Makefile.unix reallyclean
 	cd jumpoctave && make -f Makefile.unix reallyclean
 	cd lsmidiins && make -f Makefile.unix reallyclean
 	cd lsmidiouts && make -f Makefile.unix reallyclean
@@ -113,6 +110,7 @@ endif
 	cd offset-velocity && make -f Makefile.unix reallyclean
 	cd onmessage && make -f Makefile.unix reallyclean
 	cd onpedal && make -f Makefile.unix reallyclean
+	cd pedalsim && make -f Makefile.unix reallyclean
 	cd playsmf && make -f Makefile.unix reallyclean
 	cd pulsar && make -f Makefile.unix reallyclean
 	cd quantize && make -f Makefile.unix reallyclean
@@ -125,6 +123,5 @@ endif
 	cd smftoxml && make -f Makefile.unix reallyclean
 	cd smooth-tempo && make -f Makefile.unix reallyclean
 	cd tempo-map && make -f Makefile.unix reallyclean
-	cd velocityfader && make -f Makefile.unix reallyclean
 	cd xmltosmf && make -f Makefile.unix reallyclean
 
