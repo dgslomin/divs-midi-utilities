@@ -24,7 +24,7 @@ static struct Bus busses[16];
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s [ --bus | --in <port> | --out <port> | --virtual-in <port> | --virtual-out <port> ] ... [ --channel <input bus number> <input channel number> <output bus number> <output channel number> ] ...\n", program_name);
+	fprintf(stderr, "Usage:  %s [ --bus | --in <port> | --out <port> | --virtual-in <port> | --virtual-out <port> | --channel <input bus number> <input channel number> <output bus number> <output channel number> ] ...\n", program_name);
 	exit(1);
 }
 
