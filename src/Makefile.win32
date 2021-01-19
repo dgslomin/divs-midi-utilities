@@ -12,7 +12,6 @@ all:
 	cd jumpoctave && nmake -f Makefile.win32 /nologo
 	cd lsmidiins && nmake -f Makefile.win32 /nologo
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo
-	cd midithru && nmake -f Makefile.win32 /nologo
 	cd mish && nmake -f Makefile.win32 /nologo
 	cd multiecho && nmake -f Makefile.win32 /nologo
 	cd netmidic && nmake -f Makefile.win32 /nologo
@@ -29,6 +28,7 @@ all:
 	cd quantize && nmake -f Makefile.win32 /nologo
 	cd qwertymidi && nmake -f Makefile.win32 /nologo
 	cd recordsmf && nmake -f Makefile.win32 /nologo
+	cd routemidi && nmake -f Makefile.win32 /nologo
 	cd scale-tempo && nmake -f Makefile.win32 /nologo
 	cd scale-velocity && nmake -f Makefile.win32 /nologo
 	cd sendmidi && nmake -f Makefile.win32 /nologo
@@ -51,7 +51,6 @@ clean:
 	cd jumpoctave && nmake -f Makefile.win32 /nologo clean
 	cd lsmidiins && nmake -f Makefile.win32 /nologo clean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo clean
-	cd midithru && nmake -f Makefile.win32 /nologo clean
 	cd mish && nmake -f Makefile.win32 /nologo clean
 	cd multiecho && nmake -f Makefile.win32 /nologo clean
 	cd netmidic && nmake -f Makefile.win32 /nologo clean
@@ -68,6 +67,7 @@ clean:
 	cd quantize && nmake -f Makefile.win32 /nologo clean
 	cd qwertymidi && nmake -f Makefile.win32 /nologo clean
 	cd recordsmf && nmake -f Makefile.win32 /nologo clean
+	cd routemidi && nmake -f Makefile.win32 /nologo clean
 	cd scale-tempo && nmake -f Makefile.win32 /nologo clean
 	cd scale-velocity && nmake -f Makefile.win32 /nologo clean
 	cd sendmidi && nmake -f Makefile.win32 /nologo clean
@@ -90,7 +90,6 @@ reallyclean:
 	cd jumpoctave && nmake -f Makefile.win32 /nologo reallyclean
 	cd lsmidiins && nmake -f Makefile.win32 /nologo reallyclean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo reallyclean
-	cd midithru && nmake -f Makefile.win32 /nologo reallyclean
 	cd mish && nmake -f Makefile.win32 /nologo reallyclean
 	cd multiecho && nmake -f Makefile.win32 /nologo reallyclean
 	cd netmidic && nmake -f Makefile.win32 /nologo reallyclean
@@ -107,6 +106,7 @@ reallyclean:
 	cd quantize && nmake -f Makefile.win32 /nologo reallyclean
 	cd qwertymidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd recordsmf && nmake -f Makefile.win32 /nologo reallyclean
+	cd routemidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd scale-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd scale-velocity && nmake -f Makefile.win32 /nologo reallyclean
 	cd sendmidi && nmake -f Makefile.win32 /nologo reallyclean

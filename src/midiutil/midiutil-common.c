@@ -2593,7 +2593,7 @@ MidiUtilMessageType_t MidiUtilMessage_getType(const unsigned char *message)
 	return (message[0] & 0xF0);
 }
 
-int MidiUtilMessage_getSize(unsigned char *message)
+int MidiUtilMessage_getSize(const unsigned char *message)
 {
 	switch (MidiUtilMessage_getType(message))
 	{
@@ -2604,10 +2604,34 @@ int MidiUtilMessage_getSize(unsigned char *message)
 		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE: return MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE;
 		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE: return MIDI_UTIL_MESSAGE_SIZE_CHANNEL_PRESSURE;
 		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL: return MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL;
-		default: break;
+		default: return -1;
 	}
+}
 
-	return -1;
+int MidiUtilMessage_getChannel(const unsigned char *message)
+{
+	switch (MidiUtilMessage_getType(message))
+	{
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
+		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
+		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
+		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE:
+		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
+		{
+			return (message[0] & 0x0F);
+		}
+		default:
+		{
+			return -1;
+		}
+	}
+}
+
+void MidiUtilMessage_setChannel(unsigned char *message, int channel)
+{
+	message[0] = (message[0] & ~0x0F) | channel;
 }
 
 int MidiUtilNoteOffMessage_getChannel(const unsigned char *message)

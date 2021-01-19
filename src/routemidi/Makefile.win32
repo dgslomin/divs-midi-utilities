@@ -1,9 +1,9 @@
 
-..\..\bin\midithru.exe: midithru.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo /Fe..\..\bin\midithru.exe midithru.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+..\..\bin\routemidi.exe: routemidi.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\routemidi.exe routemidi.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
 
-midithru.obj: midithru.c
-	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c midithru.c
+routemidi.obj: routemidi.c
+	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c routemidi.c
 
 midiutil-common.obj: ..\midiutil\midiutil-common.c
 	cl /nologo /I..\midiutil /c ..\midiutil\midiutil-common.c
@@ -21,7 +21,7 @@ rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
-	@if exist midithru.obj del midithru.obj
+	@if exist routemidi.obj del routemidi.obj
 	@if exist midiutil-common.obj del midiutil-common.obj
 	@if exist midiutil-system.obj del midiutil-system.obj
 	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
@@ -29,5 +29,5 @@ clean:
 	@if exist rtmidi_c.obj del rtmidi_c.obj
 
 reallyclean: clean
-	@if exist ..\..\bin\midithru.exe del ..\..\bin\midithru.exe
+	@if exist ..\..\bin\routemidi.exe del ..\..\bin\routemidi.exe
 

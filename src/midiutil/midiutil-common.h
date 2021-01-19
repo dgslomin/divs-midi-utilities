@@ -309,7 +309,9 @@ void MidiUtilMessage_setChannelPressure(unsigned char *message, int channel, int
 void MidiUtilMessage_setPitchWheel(unsigned char *message, int channel, int value);
 
 MidiUtilMessageType_t MidiUtilMessage_getType(const unsigned char *message);
-int MidiUtilMessage_getSize(unsigned char *message);
+int MidiUtilMessage_getSize(const unsigned char *message);
+int MidiUtilMessage_getChannel(const unsigned char *message);
+void MidiUtilMessage_setChannel(unsigned char *message, int channel);
 
 int MidiUtilNoteOffMessage_getChannel(const unsigned char *message);
 void MidiUtilNoteOffMessage_setChannel(unsigned char *message, int channel);

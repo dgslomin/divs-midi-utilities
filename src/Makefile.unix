@@ -15,7 +15,6 @@ endif
 	cd jumpoctave && make -f Makefile.unix
 	cd lsmidiins && make -f Makefile.unix
 	cd lsmidiouts && make -f Makefile.unix
-	cd midithru && make -f Makefile.unix
 	cd mish && make -f Makefile.unix
 	cd multiecho && make -f Makefile.unix
 	cd netmidic && make -f Makefile.unix
@@ -32,6 +31,7 @@ endif
 	cd quantize && make -f Makefile.unix
 	cd qwertymidi && make -f Makefile.unix
 	cd recordsmf && make -f Makefile.unix
+	cd routemidi && make -f Makefile.unix
 	cd scale-tempo && make -f Makefile.unix
 	cd scale-velocity && make -f Makefile.unix
 	cd sendmidi && make -f Makefile.unix
@@ -57,7 +57,6 @@ endif
 	cd jumpoctave && make -f Makefile.unix clean
 	cd lsmidiins && make -f Makefile.unix clean
 	cd lsmidiouts && make -f Makefile.unix clean
-	cd midithru && make -f Makefile.unix clean
 	cd mish && make -f Makefile.unix clean
 	cd multiecho && make -f Makefile.unix clean
 	cd netmidic && make -f Makefile.unix clean
@@ -74,6 +73,7 @@ endif
 	cd quantize && make -f Makefile.unix clean
 	cd qwertymidi && make -f Makefile.unix clean
 	cd recordsmf && make -f Makefile.unix clean
+	cd routemidi && make -f Makefile.unix clean
 	cd scale-tempo && make -f Makefile.unix clean
 	cd scale-velocity && make -f Makefile.unix clean
 	cd sendmidi && make -f Makefile.unix clean
@@ -99,7 +99,6 @@ endif
 	cd jumpoctave && make -f Makefile.unix reallyclean
 	cd lsmidiins && make -f Makefile.unix reallyclean
 	cd lsmidiouts && make -f Makefile.unix reallyclean
-	cd midithru && make -f Makefile.unix reallyclean
 	cd mish && make -f Makefile.unix reallyclean
 	cd multiecho && make -f Makefile.unix reallyclean
 	cd netmidic && make -f Makefile.unix reallyclean
@@ -116,6 +115,7 @@ endif
 	cd quantize && make -f Makefile.unix reallyclean
 	cd qwertymidi && make -f Makefile.unix reallyclean
 	cd recordsmf && make -f Makefile.unix reallyclean
+	cd routemidi && make -f Makefile.unix reallyclean
 	cd scale-tempo && make -f Makefile.unix reallyclean
 	cd scale-velocity && make -f Makefile.unix reallyclean
 	cd sendmidi && make -f Makefile.unix reallyclean
