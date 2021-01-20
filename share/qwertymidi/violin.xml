@@ -12,9 +12,7 @@ bouzouki, tenor banjo, etc.
 <map key="f2" action="stay-up-octave" />
 <map key="f3" action="stay-down-note" />
 <map key="f4" action="stay-up-note" />
-<map key="shift" action="shift-up-octave" />
-<map key="control" action="shift-down-octave" />
-<map key="space" action="panic" />
+<map key="space" action="shift-up-octave" />
 
 <map key="backtick" action="D#5" /><!-- above the nut -->
 <map key="1" action="E5" />

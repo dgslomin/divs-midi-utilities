@@ -11,7 +11,6 @@ Five string banjo.
 <map key="f2" action="stay-up-octave" />
 <map key="f3" action="stay-down-note" />
 <map key="f4" action="stay-up-note" />
-<map key="shift" action="panic" /><!-- moved here so we can use space for the drone -->
 
 <map key="1" action="D4" />
 <map key="2" action="D#4" />

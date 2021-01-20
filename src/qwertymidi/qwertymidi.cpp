@@ -29,7 +29,8 @@ static int channel_number = 0;
 static int program_number = -1;
 static int velocity = 64;
 static int map[512];
-static int down[128];
+static int down[512];
+static int down_transposition[512];
 static int transposition = 0;
 
 static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
@@ -136,6 +137,12 @@ static void send_program_change(int channel, int number)
 	}
 }
 
+static void panic(int channel)
+{
+	int i;
+	for (i = 0; i < 127; i++) send_note_off(channel, i);
+}
+
 static void handle_key_down(wxKeyEvent& event)
 {
 	int key_code = event.GetKeyCode();
@@ -160,8 +167,7 @@ static void handle_key_down(wxKeyEvent& event)
 			}
 			case ACTION_PANIC:
 			{
-				int i;
-				for (i = 0; i < 127; i++) send_note_off(channel_number, i);
+				panic(channel_number);
 				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"panic\" />", key_name));
 				break;
 			}
@@ -219,6 +225,7 @@ static void handle_key_down(wxKeyEvent& event)
 				int transposed_note = note + transposition;
 				char note_name[128];
 				if ((transposed_note >= 0) && (transposed_note < 128)) send_note_on(channel_number, transposed_note, velocity);
+				down_transposition[key_code] = transposition;
 				MidiUtil_setNoteNameFromNumber(note, note_name);
 				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%s\" />", key_name, note_name));
 				break;
@@ -267,11 +274,16 @@ static void handle_key_up(wxKeyEvent& event)
 		}
 		default:
 		{
-			int note = action + transposition;
-			if ((note >= 0) && (note < 128)) send_note_off(channel_number, note);
+			int transposed_note = action + down_transposition[key_code];
+			if ((transposed_note >= 0) && (transposed_note < 128)) send_note_off(channel_number, transposed_note);
 			break;
 		}
 	}
+}
+
+static void handle_kill_focus(wxFocusEvent& event)
+{
+	panic(channel_number);
 }
 
 static void usage(wxString program_name)
@@ -293,8 +305,12 @@ bool Application::OnInit()
 	wxFrame *window = new wxFrame(NULL, wxID_ANY, "Qwertymidi", wxDefaultPosition, wxSize(640, 480));
 	text_box = new wxTextCtrl(window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxBORDER_NONE);
 
-	for (i = 0; i < 512; i++) map[i] = ACTION_NOOP;
-	for (i = 0; i < 128; i++) down[i] = 0;
+	for (i = 0; i < 512; i++)
+	{
+		map[i] = ACTION_NOOP;
+		down[i] = 0;
+		down_transposition[i] = 0;
+	}
 
 	for (i = 1; i < this->argc; i++)
 	{
@@ -354,6 +370,7 @@ bool Application::OnInit()
 		if (program_number >= 0) send_program_change(channel_number, program_number);
 		text_box->Bind(wxEVT_KEY_DOWN, handle_key_down);
 		text_box->Bind(wxEVT_KEY_UP, handle_key_up);
+		text_box->Bind(wxEVT_KILL_FOCUS, handle_kill_focus);
 	}
 
 	this->SetTopWindow(window);
@@ -363,7 +380,12 @@ bool Application::OnInit()
 
 int Application::OnExit()
 {
-	if (midi_out != NULL) rtmidi_close_port(midi_out);
+	if (midi_out != NULL)
+	{
+		panic(channel_number);
+		rtmidi_close_port(midi_out);
+	}
+
 	return 0;
 }
 
