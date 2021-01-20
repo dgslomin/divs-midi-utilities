@@ -10,7 +10,7 @@
 #include <midiutil-expat.h>
 #include <midiutil-wx.h>
 
-#define ACTION_REST 10000
+#define ACTION_NOOP 10000
 #define ACTION_EXIT 10001
 
 static wxTextCtrl* text_box;
@@ -20,7 +20,9 @@ static int channel_number = 0;
 static int program_number = -1;
 static int velocity = 64;
 static int map[512];
+static int down[512];
 static int current_note = 63;
+static int current_key_code = -1;
 
 static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
@@ -43,9 +45,9 @@ static void handle_xml_start_element(void *user_data, const XML_Char *name, cons
 
 		if ((key >= 0) && (action != wxEmptyString))
 		{
-			if (action == "rest")
+			if (action == "noop")
 			{
-				map[key] = ACTION_REST;
+				map[key] = ACTION_NOOP;
 			}
 			else if (action == "exit")
 			{
@@ -92,34 +94,66 @@ static void send_program_change(int channel, int number)
 static void handle_key_down(wxKeyEvent& event)
 {
 	int key_code = event.GetKeyCode();
-	wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
+
+	if (!down[key_code])
+	{
+		wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
+		int action = map[key_code];
+		down[key_code] = 1;
+
+		switch (action)
+		{
+			case ACTION_NOOP:
+			{
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"noop\" />", key_name));
+				break;
+			}
+			case ACTION_EXIT:
+			{
+				wxExit();
+				break;
+			}
+			default:
+			{
+				char note_name[128];
+
+				send_note_off(channel_number, current_note);
+				current_note = MidiUtil_clamp(current_note + action, 0, 127);
+				send_note_on(channel_number, current_note, velocity);
+				current_key_code = key_code;
+
+				MidiUtil_setNoteNameFromNumber(action, note_name);
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%d\" />", key_name, action));
+				break;
+			}
+		}
+	}
+}
+
+static void handle_key_up(wxKeyEvent& event)
+{
+	int key_code = event.GetKeyCode();
 	int action = map[key_code];
+	down[key_code] = 0;
 
 	switch (action)
 	{
-		case ACTION_REST:
-		{
-			send_note_off(channel_number, current_note);
-			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"rest\" />", key_name));
-			break;
-		}
+		case ACTION_NOOP:
 		case ACTION_EXIT:
 		{
-			send_note_off(channel_number, current_note);
-			wxExit();
 			break;
 		}
 		default:
 		{
-			char note_name[128];
-			send_note_off(channel_number, current_note);
-			current_note = MidiUtil_clamp(current_note + action, 0, 127);
-			send_note_on(channel_number, current_note, velocity);
-			MidiUtil_setNoteNameFromNumber(action, note_name);
-			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%d\" />", key_name, action));
+			if (key_code == current_key_code) send_note_off(channel_number, current_note);
 			break;
 		}
 	}
+}
+
+static void handle_kill_focus(wxFocusEvent& event)
+{
+	send_note_off(channel_number, current_note);
 }
 
 static void usage(wxString program_name)
@@ -141,7 +175,11 @@ bool Application::OnInit()
 	wxFrame *window = new wxFrame(NULL, wxID_ANY, "Delta", wxDefaultPosition, wxSize(640, 480));
 	text_box = new wxTextCtrl(window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxBORDER_NONE);
 
-	for (i = 0; i < 512; i++) map[i] = ACTION_REST;
+	for (i = 0; i < 512; i++)
+	{
+		map[i] = ACTION_NOOP;
+		down[i] = 0;
+	}
 
 	for (i = 1; i < this->argc; i++)
 	{
@@ -195,6 +233,8 @@ bool Application::OnInit()
 	{
 		if (program_number >= 0) send_program_change(channel_number, program_number);
 		text_box->Bind(wxEVT_KEY_DOWN, handle_key_down);
+		text_box->Bind(wxEVT_KEY_UP, handle_key_up);
+		text_box->Bind(wxEVT_KILL_FOCUS, handle_kill_focus);
 	}
 
 	this->SetTopWindow(window);
@@ -204,7 +244,12 @@ bool Application::OnInit()
 
 int Application::OnExit()
 {
-	if (midi_out != NULL) rtmidi_close_port(midi_out);
+	if (midi_out != NULL)
+	{
+		send_note_off(channel_number, current_note);
+		rtmidi_close_port(midi_out);
+	}
+
 	return 0;
 }
 
