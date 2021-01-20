@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<!-- Turns C major into C harmonic minor. -->
+
+<notemap>
+
+<map from="A2" to="Ab2" />
+<map from="B2" to="B2" />
+<map from="C1" to="C1" />
+<map from="D1" to="D1" />
+<map from="E1" to="Eb1" />
+<map from="F1" to="F1" />
+<map from="G1" to="G1" />
+<map from="A1" to="Ab1" />
+<map from="B1" to="B1" />
+<map from="C2" to="C2" />
+<map from="D2" to="D2" />
+<map from="E2" to="Eb2" />
+<map from="F2" to="F2" />
+<map from="G2" to="G2" />
+<map from="A2" to="Ab2" />
+<map from="B2" to="B2" />
+<map from="C3" to="C3" />
+<map from="D3" to="D3" />
+<map from="E3" to="Eb3" />
+<map from="F3" to="F3" />
+<map from="G3" to="G3" />
+<map from="A3" to="Ab3" />
+<map from="B3" to="B3" />
+<map from="C4" to="C4" />
+<map from="D4" to="D4" />
+<map from="E4" to="Eb4" />
+<map from="F4" to="F4" />
+<map from="G4" to="G4" />
+<map from="A4" to="Ab4" />
+<map from="B4" to="B4" />
+<map from="C5" to="C5" />
+<map from="D5" to="D5" />
+<map from="E5" to="Eb5" />
+<map from="F5" to="F5" />
+<map from="G5" to="G5" />
+<map from="A5" to="Ab5" />
+<map from="B5" to="B5" />
+<map from="C6" to="C6" />
+<map from="D6" to="D6" />
+<map from="E6" to="Eb6" />
+<map from="F6" to="F6" />
+<map from="G6" to="G6" />
+<map from="A6" to="Ab6" />
+<map from="B6" to="B6" />
+<map from="C7" to="C7" />
+<map from="D7" to="D7" />
+<map from="E7" to="Eb7" />
+<map from="F7" to="F7" />
+<map from="G7" to="G7" />
+<map from="A7" to="Ab7" />
+<map from="B7" to="B7" />
+<map from="C8" to="C8" />
+
+</notemap>

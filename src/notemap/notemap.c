@@ -11,11 +11,12 @@
 
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
+static int transposition = 0;
 static signed char notemap[128];
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --map <filename> ]\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --transpose <n> ] [ --map <filename> ]\n", program_name);
 	exit(1);
 }
 
@@ -29,11 +30,11 @@ static void handle_xml_start_element(void *user_data, const XML_Char *name, cons
 		{
 			if (strcmp(attributes[i], "from") == 0)
 			{
-				from = atoi(attributes[i + 1]);
+				from = MidiUtil_getNoteNumberFromName((char *)(attributes[i + 1]));
 			}
 			else if (strcmp(attributes[i], "to") == 0)
 			{
-				to = atoi(attributes[i + 1]);
+				to = MidiUtil_getNoteNumberFromName((char *)(attributes[i + 1]));
 			}
 		}
 
@@ -50,41 +51,34 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	{
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
+			unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
 			int new_note = notemap[MidiUtilNoteOffMessage_getNote(message)];
-
-			if (new_note >= 0)
-			{
-				unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
-				MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, MidiUtilNoteOffMessage_getVelocity(message));
-				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
-			}
-
+			if (new_note < 0) break;
+			new_note += transposition;
+			if ((new_note < 0) || (new_note >= 128)) break;
+			MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, MidiUtilNoteOffMessage_getVelocity(message));
+			rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
-			int new_note = notemap[MidiUtilNoteOffMessage_getNote(message)];
-
-			if (new_note >= 0)
-			{
-				unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
-				MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, MidiUtilNoteOnMessage_getVelocity(message));
-				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
-			}
-
+			unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
+			int new_note = notemap[MidiUtilNoteOnMessage_getNote(message)];
+			if (new_note < 0) break;
+			new_note += transposition;
+			MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, MidiUtilNoteOnMessage_getVelocity(message));
+			rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
 		{
-			int new_note = notemap[MidiUtilNoteOffMessage_getNote(message)];
-
-			if (new_note >= 0)
-			{
-				unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_KEY_PRESSURE];
-				MidiUtilMessage_setKeyPressure(new_message, MidiUtilKeyPressureMessage_getChannel(message), new_note, MidiUtilKeyPressureMessage_getAmount(message));
-				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_KEY_PRESSURE);
-			}
-
+			unsigned char new_message[MIDI_UTIL_MESSAGE_SIZE_KEY_PRESSURE];
+			int new_note = notemap[MidiUtilKeyPressureMessage_getNote(message)];
+			if (new_note < 0) break;
+			new_note += transposition;
+			if ((new_note < 0) || (new_note >= 128)) break;
+			MidiUtilMessage_setKeyPressure(new_message, MidiUtilKeyPressureMessage_getChannel(message), new_note, MidiUtilKeyPressureMessage_getAmount(message));
+			rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_KEY_PRESSURE);
 			break;
 		}
 		default:
@@ -128,6 +122,11 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);
 			}
+		}
+		else if (strcmp(argv[i], "--transpose") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			transposition = atoi(argv[i]);
 		}
 		else if (strcmp(argv[i], "--map") == 0)
 		{
