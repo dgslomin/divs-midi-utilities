@@ -288,7 +288,7 @@ static void alarm_helper(void *user_data)
 				user_data = MidiUtilPointerArray_get(alarm->user_data_array, 0);
 				MidiUtilLongArray_remove(alarm->end_time_msecs_array, 0);
 				MidiUtilPointerArray_remove(alarm->callback_array, 0);
-				MidiUtilPointerArray_remove(alarm->callback_array, 0);
+				MidiUtilPointerArray_remove(alarm->user_data_array, 0);
 			}
 		}
 
@@ -341,9 +341,9 @@ void MidiUtilAlarm_set(MidiUtilAlarm_t alarm, long msecs, void (*callback)(int c
 		((void (*)(int cancelled, void *user_data))(MidiUtilPointerArray_get(alarm->callback_array, event_number)))(1, MidiUtilPointerArray_get(alarm->user_data_array, event_number));
 	}
 
-	MidiUtilLongArray_setSize(alarm->end_time_msecs_array, 0);
-	MidiUtilPointerArray_setSize(alarm->callback_array, 0);
-	MidiUtilPointerArray_setSize(alarm->user_data_array, 0);
+	MidiUtilLongArray_clear(alarm->end_time_msecs_array);
+	MidiUtilPointerArray_clear(alarm->callback_array);
+	MidiUtilPointerArray_clear(alarm->user_data_array);
 	MidiUtilLongArray_add(alarm->end_time_msecs_array, end_time_msecs);
 	MidiUtilPointerArray_add(alarm->callback_array, callback);
 	MidiUtilPointerArray_add(alarm->user_data_array, user_data);
@@ -383,9 +383,9 @@ void MidiUtilAlarm_cancel(MidiUtilAlarm_t alarm)
 		((void (*)(int cancelled, void *user_data))(MidiUtilPointerArray_get(alarm->callback_array, event_number)))(1, MidiUtilPointerArray_get(alarm->user_data_array, event_number));
 	}
 
-	MidiUtilLongArray_setSize(alarm->end_time_msecs_array, 0);
-	MidiUtilPointerArray_setSize(alarm->callback_array, 0);
-	MidiUtilPointerArray_setSize(alarm->user_data_array, 0);
+	MidiUtilLongArray_clear(alarm->end_time_msecs_array);
+	MidiUtilPointerArray_clear(alarm->callback_array);
+	MidiUtilPointerArray_clear(alarm->user_data_array);
 	MidiUtilLock_notify(alarm->lock);
 	MidiUtilLock_unlock(alarm->lock);
 }

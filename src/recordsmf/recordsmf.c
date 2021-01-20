@@ -10,6 +10,8 @@
 
 static char *midi_in_port = NULL;
 static char *filename = NULL;
+static int save_every_msecs = 0;
+static MidiUtilAlarm_t alarm;
 static RtMidiInPtr midi_in;
 static MidiFile_t midi_file;
 static MidiFileTrack_t track;
@@ -17,7 +19,7 @@ static long start_time_msecs;
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> <filename>\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> [ --save-every <msecs> ] <filename>\n", program_name);
 	exit(1);
 }
 
@@ -70,8 +72,16 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	}
 }
 
+static void handle_alarm(int cancelled, void *user_data)
+{
+	if (cancelled) return;
+	MidiFile_save(midi_file, filename);
+	MidiUtilAlarm_set(alarm, save_every_msecs, handle_alarm, NULL);
+}
+
 static void handle_exit(void *user_data)
 {
+	MidiUtilAlarm_free(alarm);
 	rtmidi_close_port(midi_in);
 
 	if (MidiFile_save(midi_file, filename) != 0)
@@ -87,6 +97,8 @@ int main(int argc, char **argv)
 {
 	int i;
 
+	alarm = MidiUtilAlarm_new();
+
 	for (i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "--help") == 0)
@@ -97,6 +109,11 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 			midi_in_port = argv[i];
+		}
+		else if (strcmp(argv[i], "--save-every") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			save_every_msecs = atoi(argv[i]);
 		}
 		else
 		{
@@ -120,6 +137,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (save_every_msecs > 0) MidiUtilAlarm_set(alarm, save_every_msecs, handle_alarm, NULL);
 	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
 }

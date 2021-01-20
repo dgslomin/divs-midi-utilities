@@ -148,8 +148,8 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 static void handle_exit(void *user_data)
 {
-	rtmidi_close_port(midi_in);
 	MidiUtilAlarm_free(alarm);
+	rtmidi_close_port(midi_in);
 }
 
 int main(int argc, char **argv)
