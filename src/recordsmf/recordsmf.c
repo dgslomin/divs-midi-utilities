@@ -16,6 +16,7 @@ static RtMidiInPtr midi_in;
 static MidiFile_t midi_file;
 static MidiFileTrack_t track;
 static long start_time_msecs;
+static int changed = 1;
 
 static void usage(char *program_name)
 {
@@ -32,36 +33,43 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
 			MidiFileTrack_createNoteOffEvent(track, tick, MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message), MidiUtilNoteOffMessage_getVelocity(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
 			MidiFileTrack_createNoteOnEvent(track, tick, MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), MidiUtilNoteOnMessage_getVelocity(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
 		{
 			MidiFileTrack_createKeyPressureEvent(track, tick, MidiUtilKeyPressureMessage_getChannel(message), MidiUtilKeyPressureMessage_getNote(message), MidiUtilKeyPressureMessage_getAmount(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
 			MidiFileTrack_createControlChangeEvent(track, tick, MidiUtilControlChangeMessage_getChannel(message), MidiUtilControlChangeMessage_getNumber(message), MidiUtilControlChangeMessage_getValue(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
 			MidiFileTrack_createProgramChangeEvent(track, tick, MidiUtilProgramChangeMessage_getChannel(message), MidiUtilProgramChangeMessage_getNumber(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
 			MidiFileTrack_createChannelPressureEvent(track, tick, MidiUtilChannelPressureMessage_getChannel(message), MidiUtilChannelPressureMessage_getAmount(message));
+			changed = 1;
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
 		{
 			MidiFileTrack_createPitchWheelEvent(track, tick, MidiUtilPitchWheelMessage_getChannel(message), MidiUtilPitchWheelMessage_getValue(message));
+			changed = 1;
 			break;
 		}
 		default:
@@ -74,8 +82,9 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 static void handle_alarm(int cancelled, void *user_data)
 {
-	if (cancelled) return;
+	if (cancelled || !changed) return;
 	MidiFile_save(midi_file, filename);
+	changed = 0;
 	MidiUtilAlarm_set(alarm, save_every_msecs, handle_alarm, NULL);
 }
 
