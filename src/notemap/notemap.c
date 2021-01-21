@@ -16,7 +16,7 @@ static signed char notemap[128];
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --transpose <n> ] [ --map <filename> ]\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --transpose <n> ] [ --map <filename.xml> ]\n", program_name);
 	exit(1);
 }
 
