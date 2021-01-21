@@ -1,9 +1,9 @@
 
-..\..\bin\onmessage.exe: onmessage.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo /Fe..\..\bin\onmessage.exe onmessage.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+..\..\bin\onmidi.exe: onmidi.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\onmidi.exe onmidi.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
 
-onmessage.obj: onmessage.c
-	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c onmessage.c
+onmidi.obj: onmidi.c
+	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c onmidi.c
 
 midiutil-common.obj: ..\midiutil\midiutil-common.c
 	cl /nologo /I..\midiutil /c ..\midiutil\midiutil-common.c
@@ -21,7 +21,7 @@ rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
-	@if exist onmessage.obj del onmessage.obj
+	@if exist onmidi.obj del onmidi.obj
 	@if exist midiutil-common.obj del midiutil-common.obj
 	@if exist midiutil-system.obj del midiutil-system.obj
 	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
@@ -29,5 +29,5 @@ clean:
 	@if exist rtmidi_c.obj del rtmidi_c.obj
 
 reallyclean: clean
-	@if exist ..\..\bin\onmessage.exe del ..\..\bin\onmessage.exe
+	@if exist ..\..\bin\onmidi.exe del ..\..\bin\onmidi.exe
 

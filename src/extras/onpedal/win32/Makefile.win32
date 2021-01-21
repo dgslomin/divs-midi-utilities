@@ -1,0 +1,17 @@
+
+onpedal.exe: onpedal.obj simplealarm.obj
+	cl /nologo /Feonpedal.exe onpedal.obj simplealarm.obj winmm.lib
+
+onpedal.obj: onpedal.c ..\..\simplealarm\simplealarm.h
+	cl /nologo /I. /I..\..\simplealarm /c onpedal.c
+
+simplealarm.obj: ..\..\simplealarm\simplealarm.c ..\..\simplealarm\simplealarm.h
+	cl /nologo /I..\..\simplealarm /c ..\..\simplealarm\simplealarm.c
+
+clean:
+	@if exist onpedal.obj del onpedal.obj
+	@if exist simplealarm.obj del simplealarm.obj
+
+reallyclean: clean
+	@if exist onpedal.exe del onpedal.exe
+

@@ -13,11 +13,11 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../bin/onpedal: onpedal.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/onpedal onpedal.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../bin/onmidi: onmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/onmidi onmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
 
-onpedal.o: onpedal.c
-	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c onpedal.c
+onmidi.o: onmidi.c
+	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c onmidi.c
 
 midiutil-common.o: ../midiutil/midiutil-common.c
 	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-common.c
@@ -35,7 +35,7 @@ rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
 	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
-	rm -f onpedal.o
+	rm -f onmidi.o
 	rm -f midiutil-common.o
 	rm -f midiutil-system.o
 	rm -f midiutil-rtmidi.o
@@ -43,5 +43,5 @@ clean:
 	rm -f rtmidi_c.o
 
 reallyclean: clean
-	rm -f ../../bin/onpedal
+	rm -f ../../bin/onmidi
 
