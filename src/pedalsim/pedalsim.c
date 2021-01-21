@@ -22,11 +22,6 @@ static int sustenuto_controller_number = 66;
 static int bass_sustain_controller_number = 69;
 static int soft_controller_number = 67;
 static int volume_controller_number = 12;
-static int invert_sustain = 0;
-static int invert_sustenuto = 0;
-static int invert_bass_sustain = 0;
-static int invert_soft = 0;
-static int invert_volume = 0;
 static int sustain_down[16];
 static int bass_sustain_down[16];
 static int soft_down[16];
@@ -39,7 +34,7 @@ static int note_held_by_bass_sustain[16][128];
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sustenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ] [ --invert-sustain ] [ --invert-sustenuto ] [ --invert-bass-sustain ] [ --invert-soft ] [ --invert-volume ]\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sustenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ]\n", program_name);
 	exit(1);
 }
 
@@ -196,51 +191,51 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 			if (do_sustain && (number == sustain_controller_number))
 			{
-				if (!value_above_middle == !invert_sustain)
+				if (value_above_middle)
 				{
-					handle_sustain_off(channel);
+					handle_sustain_on(channel);
 				}
 				else
 				{
-					handle_sustain_on(channel);
+					handle_sustain_off(channel);
 				}
 			}
 			else if (do_sustenuto && (number == sustenuto_controller_number))
 			{
-				if (!value_above_middle == !invert_sustenuto)
+				if (value_above_middle)
 				{
-					handle_sustenuto_off(channel);
+					handle_sustenuto_on(channel);
 				}
 				else
 				{
-					handle_sustenuto_on(channel);
+					handle_sustenuto_off(channel);
 				}
 			}
 			else if (do_bass_sustain && (number == bass_sustain_controller_number))
 			{
-				if (!value_above_middle == !invert_bass_sustain)
+				if (value_above_middle)
 				{
-					handle_bass_sustain_off(channel);
+					handle_bass_sustain_on(channel); 
 				}
 				else
 				{
-					handle_bass_sustain_on(channel); 
+					handle_bass_sustain_off(channel);
 				}
 			}
 			else if (do_soft && (number == soft_controller_number))
 			{
-				if (!value_above_middle == !invert_soft)
+				if (value_above_middle)
 				{
-					handle_soft_off(channel);
+					handle_soft_on(channel);
 				}
 				else
 				{
-					handle_soft_on(channel);
+					handle_soft_off(channel);
 				}
 			}
 			else if (do_volume && (number == volume_controller_number))
 			{
-				handle_volume(channel, invert_volume ? 127 - value : value);
+				handle_volume(channel, value);
 			}
 			else
 			{
@@ -364,26 +359,6 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 			volume_controller_number = atoi(argv[i]);
-		}
-		else if (strcmp(argv[i], "--invert-sustain") == 0)
-		{
-			invert_sustain = 1;
-		}
-		else if (strcmp(argv[i], "--invert-sustenuto") == 0)
-		{
-			invert_sustenuto = 1;
-		}
-		else if (strcmp(argv[i], "--invert-bass-sustain") == 0)
-		{
-			invert_bass_sustain = 1;
-		}
-		else if (strcmp(argv[i], "--invert-soft") == 0)
-		{
-			invert_soft = 1;
-		}
-		else if (strcmp(argv[i], "--invert-volume") == 0)
-		{
-			invert_volume = 1;
 		}
 		else
 		{
