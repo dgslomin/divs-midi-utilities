@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 			Bus_t bus = &(busses[number_of_busses - 1]);
 			if (++i == argc) usage(argv[0]);
 
-			if ((bus->midi_ins[(bus->number_of_midi_ins)++] = rtmidi_open_in_port("midithru", argv[i], "midithru", handle_midi_message, bus)) == NULL)
+			if ((bus->midi_ins[(bus->number_of_midi_ins)++] = rtmidi_open_in_port("routemidi", argv[i], "routemidi", handle_midi_message, bus)) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI input port \"%s\".\n", argv[i]);
 				exit(1);
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 			Bus_t bus = &(busses[number_of_busses - 1]);
 			if (++i == argc) usage(argv[0]);
 
-			if ((bus->midi_outs[(bus->number_of_midi_outs)++] = rtmidi_open_out_port("midithru", argv[i], "midithru")) == NULL)
+			if ((bus->midi_outs[(bus->number_of_midi_outs)++] = rtmidi_open_out_port("routemidi", argv[i], "routemidi")) == NULL)
 			{
 				fprintf(stderr, "Error:  Cannot open MIDI output port \"%s\".\n", argv[i]);
 				exit(1);
@@ -121,13 +121,13 @@ int main(int argc, char **argv)
 		{
 			Bus_t bus = &(busses[number_of_busses - 1]);
 			if (++i == argc) usage(argv[0]);
-			bus->midi_ins[(bus->number_of_midi_ins)++] = rtmidi_open_in_port("midithru", NULL, argv[i], handle_midi_message, bus);
+			bus->midi_ins[(bus->number_of_midi_ins)++] = rtmidi_open_in_port("routemidi", NULL, argv[i], handle_midi_message, bus);
 		}
 		else if (strcmp(argv[i], "--virtual-out") == 0)
 		{
 			Bus_t bus = &(busses[number_of_busses - 1]);
 			if (++i == argc) usage(argv[0]);
-			bus->midi_outs[(bus->number_of_midi_outs)++] = rtmidi_open_out_port("midithru", NULL, argv[i]);
+			bus->midi_outs[(bus->number_of_midi_outs)++] = rtmidi_open_out_port("routemidi", NULL, argv[i]);
 		}
 		else if (strcmp(argv[i], "--channel") == 0)
 		{
