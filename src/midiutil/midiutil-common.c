@@ -251,7 +251,7 @@ void MidiUtilByteArray_setSize(MidiUtilByteArray_t array, int size)
 	{
 		memset(array->buffer + size, 0, array->size - size);
 	}
-	else if (size > array->capacity)
+	else if (size >= array->capacity)
 	{
 		/* TODO: consider growth algorithm from <http://www.python.org/~jeremy/weblog/040115.html> */
 		MidiUtilByteArray_setCapacity(array, size - (size % 4096) + 4096);
