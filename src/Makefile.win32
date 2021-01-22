@@ -20,8 +20,7 @@ all:
 	cd notemap && nmake -f Makefile.win32 /nologo
 	cd offset-tempo && nmake -f Makefile.win32 /nologo
 	cd offset-velocity && nmake -f Makefile.win32 /nologo
-	cd onmessage && nmake -f Makefile.win32 /nologo
-	cd onpedal && nmake -f Makefile.win32 /nologo
+	cd onmidi && nmake -f Makefile.win32 /nologo
 	cd pedalsim && nmake -f Makefile.win32 /nologo
 	cd playsmf && nmake -f Makefile.win32 /nologo
 	cd pulsar && nmake -f Makefile.win32 /nologo
@@ -59,8 +58,7 @@ clean:
 	cd notemap && nmake -f Makefile.win32 /nologo clean
 	cd offset-tempo && nmake -f Makefile.win32 /nologo clean
 	cd offset-velocity && nmake -f Makefile.win32 /nologo clean
-	cd onmessage && nmake -f Makefile.win32 /nologo clean
-	cd onpedal && nmake -f Makefile.win32 /nologo clean
+	cd onmidi && nmake -f Makefile.win32 /nologo clean
 	cd pedalsim && nmake -f Makefile.win32 /nologo clean
 	cd playsmf && nmake -f Makefile.win32 /nologo clean
 	cd pulsar && nmake -f Makefile.win32 /nologo clean
@@ -98,8 +96,7 @@ reallyclean:
 	cd notemap && nmake -f Makefile.win32 /nologo reallyclean
 	cd offset-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd offset-velocity && nmake -f Makefile.win32 /nologo reallyclean
-	cd onmessage && nmake -f Makefile.win32 /nologo reallyclean
-	cd onpedal && nmake -f Makefile.win32 /nologo reallyclean
+	cd onmidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd pedalsim && nmake -f Makefile.win32 /nologo reallyclean
 	cd playsmf && nmake -f Makefile.win32 /nologo reallyclean
 	cd pulsar && nmake -f Makefile.win32 /nologo reallyclean

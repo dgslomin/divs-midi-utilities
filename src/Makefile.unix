@@ -23,8 +23,7 @@ endif
 	cd notemap && make -f Makefile.unix
 	cd offset-tempo && make -f Makefile.unix
 	cd offset-velocity && make -f Makefile.unix
-	cd onmessage && make -f Makefile.unix
-	cd onpedal && make -f Makefile.unix
+	cd onmidi && make -f Makefile.unix
 	cd pedalsim && make -f Makefile.unix
 	cd playsmf && make -f Makefile.unix
 	cd pulsar && make -f Makefile.unix
@@ -65,8 +64,7 @@ endif
 	cd notemap && make -f Makefile.unix clean
 	cd offset-tempo && make -f Makefile.unix clean
 	cd offset-velocity && make -f Makefile.unix clean
-	cd onmessage && make -f Makefile.unix clean
-	cd onpedal && make -f Makefile.unix clean
+	cd onmidi && make -f Makefile.unix clean
 	cd pedalsim && make -f Makefile.unix clean
 	cd playsmf && make -f Makefile.unix clean
 	cd pulsar && make -f Makefile.unix clean
@@ -107,8 +105,7 @@ endif
 	cd notemap && make -f Makefile.unix reallyclean
 	cd offset-tempo && make -f Makefile.unix reallyclean
 	cd offset-velocity && make -f Makefile.unix reallyclean
-	cd onmessage && make -f Makefile.unix reallyclean
-	cd onpedal && make -f Makefile.unix reallyclean
+	cd onmidi && make -f Makefile.unix reallyclean
 	cd pedalsim && make -f Makefile.unix reallyclean
 	cd playsmf && make -f Makefile.unix reallyclean
 	cd pulsar && make -f Makefile.unix reallyclean
