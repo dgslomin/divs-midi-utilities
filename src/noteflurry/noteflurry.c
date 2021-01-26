@@ -165,6 +165,15 @@ static void player_thread_main(void *user_data)
 						}
 						else if (MidiFileEvent_isMarkerEvent(arp_on_player->event))
 						{
+							Player_t arp_off_player = (Player_t)(malloc(sizeof(struct Player)));
+							arp_off_player->event = MidiFileEvent_getNextEventInFile(arp_on_player->event);
+							arp_off_player->start_time_msecs = arp_on_player->start_time_msecs;
+							arp_off_player->stop_time_msecs = current_time_msecs;
+							arp_off_player->base_channel = arp_on_player->base_channel;
+							arp_off_player->base_note = arp_on_player->base_note;
+							arp_off_player->base_velocity = arp_on_player->base_velocity;
+							MidiUtilPointerArray_add(arp_off_players, arp_off_player);
+
 							arp_on_player->event = MidiFile_getFirstEvent(arp_midi_file);
 							arp_on_player->start_time_msecs = current_time_msecs;
 						}
