@@ -13,17 +13,16 @@ all:
 	cd lsmidiins && nmake -f Makefile.win32 /nologo
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo
 	cd mish && nmake -f Makefile.win32 /nologo
-	cd multiecho && nmake -f Makefile.win32 /nologo
 	cd netmidic && nmake -f Makefile.win32 /nologo
 	cd netmidid && nmake -f Makefile.win32 /nologo
 	cd normalizesmf && nmake -f Makefile.win32 /nologo
+	cd noteflurry && nmake -f Makefile.win32 /nologo
 	cd notemap && nmake -f Makefile.win32 /nologo
 	cd offset-tempo && nmake -f Makefile.win32 /nologo
 	cd offset-velocity && nmake -f Makefile.win32 /nologo
 	cd onmidi && nmake -f Makefile.win32 /nologo
 	cd pedalsim && nmake -f Makefile.win32 /nologo
 	cd playsmf && nmake -f Makefile.win32 /nologo
-	cd pulsar && nmake -f Makefile.win32 /nologo
 	cd quantize && nmake -f Makefile.win32 /nologo
 	cd qwertymidi && nmake -f Makefile.win32 /nologo
 	cd recordsmf && nmake -f Makefile.win32 /nologo
@@ -51,17 +50,16 @@ clean:
 	cd lsmidiins && nmake -f Makefile.win32 /nologo clean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo clean
 	cd mish && nmake -f Makefile.win32 /nologo clean
-	cd multiecho && nmake -f Makefile.win32 /nologo clean
 	cd netmidic && nmake -f Makefile.win32 /nologo clean
 	cd netmidid && nmake -f Makefile.win32 /nologo clean
 	cd normalizesmf && nmake -f Makefile.win32 /nologo clean
+	cd noteflurry && nmake -f Makefile.win32 /nologo clean
 	cd notemap && nmake -f Makefile.win32 /nologo clean
 	cd offset-tempo && nmake -f Makefile.win32 /nologo clean
 	cd offset-velocity && nmake -f Makefile.win32 /nologo clean
 	cd onmidi && nmake -f Makefile.win32 /nologo clean
 	cd pedalsim && nmake -f Makefile.win32 /nologo clean
 	cd playsmf && nmake -f Makefile.win32 /nologo clean
-	cd pulsar && nmake -f Makefile.win32 /nologo clean
 	cd quantize && nmake -f Makefile.win32 /nologo clean
 	cd qwertymidi && nmake -f Makefile.win32 /nologo clean
 	cd recordsmf && nmake -f Makefile.win32 /nologo clean
@@ -89,17 +87,16 @@ reallyclean:
 	cd lsmidiins && nmake -f Makefile.win32 /nologo reallyclean
 	cd lsmidiouts && nmake -f Makefile.win32 /nologo reallyclean
 	cd mish && nmake -f Makefile.win32 /nologo reallyclean
-	cd multiecho && nmake -f Makefile.win32 /nologo reallyclean
 	cd netmidic && nmake -f Makefile.win32 /nologo reallyclean
 	cd netmidid && nmake -f Makefile.win32 /nologo reallyclean
 	cd normalizesmf && nmake -f Makefile.win32 /nologo reallyclean
+	cd noteflurry && nmake -f Makefile.win32 /nologo reallyclean
 	cd notemap && nmake -f Makefile.win32 /nologo reallyclean
 	cd offset-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd offset-velocity && nmake -f Makefile.win32 /nologo reallyclean
 	cd onmidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd pedalsim && nmake -f Makefile.win32 /nologo reallyclean
 	cd playsmf && nmake -f Makefile.win32 /nologo reallyclean
-	cd pulsar && nmake -f Makefile.win32 /nologo reallyclean
 	cd quantize && nmake -f Makefile.win32 /nologo reallyclean
 	cd qwertymidi && nmake -f Makefile.win32 /nologo reallyclean
 	cd recordsmf && nmake -f Makefile.win32 /nologo reallyclean

@@ -21,7 +21,7 @@ a { color: #FF6600 }
 
 <h2 id="news">News</h2>
 
-<p>2021-01-21 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
+<p>2021-01-26 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
 
 <h2 id="realtime-midi-utilities">Realtime MIDI utilities</h2>
 
@@ -103,15 +103,11 @@ a { color: #FF6600 }
 
 <p>Usage: netmidid --port &lt;network port&gt; --out &lt;midi port&gt;</p>
 
-<h3>multiecho and pulsar</h3>
+<h3>noteflurry</h3>
 
-<p><em>multiecho</em> adds multiple echoes to your performance, with configurable delay, pitch offset, and velocity scaling.  By setting the delay to zero, you can use it for transposing or adding intervals.</p>
+<p><em>noteflurry</em> combines the functionality of a multitap delay (echo), arpeggiator (arp), and analogue-style sequencer (seq) to output a flurry of notes for each note that you play.  This is crucial for the signature sounds of songs like Won't Get Fooled Again, Baba O'Riley, On the Run, and I Still Haven't Found What I'm Looking For, but you can also get creative with your own patterns.  In addition, it can simply transpose or add parallel intervals if you tell it to use an echo on beat zero.</p>
 
-<p><em>pulsar</em> pulses any depressed notes according to a configurable rhythm.</p>
-
-<p>Usage: multiecho --in &lt;port&gt; --out &lt;port&gt; [ --echo &lt;delay msecs&gt; &lt;note interval&gt; &lt;velocity scaling&gt; ] ...</p>
-
-<p>Usage: pulsar --in &lt;port&gt; --out &lt;port&gt; [ --pulse &lt;on msecs&gt; &lt;off msecs&gt; ] ...</p>
+<p>Usage: noteflurry --in &lt;port&gt; --out &lt;port&gt; [ --tempo &lt;bpm, default 100&gt; ] [ --echo &lt;beat&gt; &lt;note interval&gt; &lt;velocity&gt; | --arp &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; | --seq &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; ] ... [ --arp-loop &lt;beats&gt; ] [ --seq-loop &lt;beats, default 4&gt; ]</p>
 
 <h3>pedalsim</h3>
 
@@ -221,7 +217,7 @@ a { color: #FF6600 }
 
 <h2 id="extras">Extras</h2>
 
-<p>Also provided is the source code to several obsolete or incomplete programs in the "extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>midithru</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>onmessage</em>, <em>onpedal</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
+<p>Also provided is the source code to several obsolete or incomplete programs in the "extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>midithru</em>, <em>multiecho</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>onmessage</em>, <em>onpedal</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>pulsar</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
 
 <h2 id="helpful-hints">Helpful hints</h2>
 
@@ -229,7 +225,7 @@ a { color: #FF6600 }
 
 <p>Most of the realtime utilities are designed to connect to existing MIDI ports.  That's fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>routemidi</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
 
-<p>If you don't have a hardware synthesizer or fancy virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
+<p>If you don't have a hardware synthesizer or virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
 
 <h2 id="license">License</h2>
 
@@ -248,7 +244,7 @@ a { color: #FF6600 }
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2021-01-21</p>
+last modified 2021-01-26</p>
 
 </body>
 </html>

@@ -1,0 +1,33 @@
+
+pulsar.exe: pulsar.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fepulsar.exe pulsar.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+
+pulsar.obj: pulsar.c
+	cl /nologo /I..\..\..\midiutil /I..\..\..\3rdparty\rtmidi /c pulsar.c
+
+midiutil-common.obj: ..\..\..\midiutil\midiutil-common.c
+	cl /nologo /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-common.c
+
+midiutil-system.obj: ..\..\..\midiutil\midiutil-system.c
+	cl /nologo /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-system.c
+
+midiutil-rtmidi.obj: ..\..\..\midiutil\midiutil-rtmidi.c
+	cl /nologo /I..\..\..\3rdparty\rtmidi /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-rtmidi.c
+
+RtMidi.obj: ..\..\..\3rdparty\rtmidi\RtMidi.cpp
+	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /DRTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND /I..\..\..\3rdparty\rtmidi /c ..\..\..\3rdparty\rtmidi\RtMidi.cpp
+
+rtmidi_c.obj: ..\..\..\3rdparty\rtmidi\rtmidi_c.cpp
+	cl /nologo /EHsc /I..\..\..\3rdparty\rtmidi /c ..\..\..\3rdparty\rtmidi\rtmidi_c.cpp
+
+clean:
+	@if exist pulsar.obj del pulsar.obj
+	@if exist midiutil-common.obj del midiutil-common.obj
+	@if exist midiutil-system.obj del midiutil-system.obj
+	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
+	@if exist RtMidi.obj del RtMidi.obj
+	@if exist rtmidi_c.obj del rtmidi_c.obj
+
+reallyclean: clean
+	@if exist pulsar.exe del pulsar.exe
+
