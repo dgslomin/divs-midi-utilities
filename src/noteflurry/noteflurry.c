@@ -4,7 +4,7 @@
  * which modulate the notes which are played interactively.  Players for these
  * sequences, each with its own notion of the "current event", are continuously
  * created and destroyed in response to the notes being played interactively.
- * Due to the large number of simultaneous players, we use a game loop rather
+ * Due to the large number of simultaneous players, it uses a game loop rather
  * than alarms.
  */
 
@@ -89,7 +89,7 @@ static void player_thread_main(void *user_data)
 
 				while (echo_on_player->event != NULL)
 				{
-					float event_time_msecs = echo_on_player->start_time_msecs + (MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_on_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = echo_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_on_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -121,7 +121,7 @@ static void player_thread_main(void *user_data)
 
 				while (echo_off_player->event != NULL)
 				{
-					float event_time_msecs = echo_off_player->start_time_msecs + (MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_off_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = echo_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_off_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -159,7 +159,7 @@ static void player_thread_main(void *user_data)
 
 				while (arp_on_player->event != NULL)
 				{
-					float event_time_msecs = arp_on_player->start_time_msecs + (MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_on_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = arp_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_on_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -217,7 +217,7 @@ static void player_thread_main(void *user_data)
 
 				while (arp_off_player->event != NULL)
 				{
-					float event_time_msecs = arp_off_player->start_time_msecs + (MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_off_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = arp_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_off_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -227,7 +227,7 @@ static void player_thread_main(void *user_data)
 
 							if (start_event != NULL)
 							{
- 								float start_event_time_msecs = arp_off_player->start_time_msecs + (MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
+								long start_event_time_msecs = arp_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
 
 								if (start_event_time_msecs <= arp_off_player->stop_time_msecs)
 								{
@@ -263,7 +263,7 @@ static void player_thread_main(void *user_data)
 
 				while (seq_on_player->event != NULL)
 				{
-					float event_time_msecs = seq_on_player->start_time_msecs + (MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_on_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = seq_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_on_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -300,7 +300,7 @@ static void player_thread_main(void *user_data)
 
 									if (base_velocity > 0)
 									{
-										int note = base_note + MidiFileNoteStartEvent_getNote(seq_on_player->event) - 60;
+										int note = base_note + MidiFileNoteEndEvent_getNote(seq_on_player->event) - 60;
 										if (note >= 0 && note < 128) send_note_off(channel, note, 0);
 									}
 								}
@@ -345,7 +345,7 @@ static void player_thread_main(void *user_data)
 
 				while (seq_off_player->event != NULL)
 				{
-					float event_time_msecs = seq_off_player->start_time_msecs + (MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_off_player->event)) * 60000 / tempo_bpm);
+					long event_time_msecs = seq_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_off_player->event)) * 60000 / tempo_bpm);
 
 					if (event_time_msecs <= current_time_msecs)
 					{
@@ -355,7 +355,7 @@ static void player_thread_main(void *user_data)
 
 							if (start_event != NULL)
 							{
- 								float start_event_time_msecs = seq_off_player->start_time_msecs + (MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
+								long start_event_time_msecs = seq_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
 
 								if (start_event_time_msecs <= seq_off_player->stop_time_msecs)
 								{
@@ -485,7 +485,7 @@ static void handle_virtual_note_off(int channel, int note, int velocity)
 
 					if (end_event != NULL)
 					{
-						float end_event_time_msecs = seq_on_player->start_time_msecs + (MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(end_event)) * 60000 / tempo_bpm);
+						long end_event_time_msecs = seq_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(end_event)) * 60000 / tempo_bpm);
 
 						if (end_event_time_msecs >= current_time_msecs)
 						{
