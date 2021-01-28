@@ -395,7 +395,7 @@ static void player_thread_main(void *user_data)
 		}
 
 		MidiUtilLock_unlock(lock);
-		MidiUtil_sleep(5); /* tune this for CPU busyness vs responsiveness */
+		MidiUtil_sleep(1); /* tune this for CPU busyness vs responsiveness */
 	}
 }
 
