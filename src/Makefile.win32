@@ -109,6 +109,7 @@ reallyclean:
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo reallyclean
 	cd tempo-map && nmake -f Makefile.win32 /nologo reallyclean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo reallyclean
+	@if exist ..\bin\libexpat.dll del ..\bin\libexpat.dll
 
 create-self-signing-certificate:
 	powershell -Command { New-SelfSignedCertificate -DnsName "sreal.com" -CertStoreLocation "cert:\LocalMachine\My" }

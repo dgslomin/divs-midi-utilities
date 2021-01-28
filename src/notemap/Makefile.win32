@@ -1,4 +1,6 @@
 
+default: ..\..\bin\notemap.exe ..\..\bin\libexpat.dll
+
 ..\..\bin\notemap.exe: notemap.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj midiutil-expat.obj RtMidi.obj rtmidi_c.obj
 	cl /nologo /Fe..\..\bin\notemap.exe notemap.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj midiutil-expat.obj RtMidi.obj rtmidi_c.obj ..\3rdparty\expat\libexpat.lib winmm.lib kernel32.lib
 
@@ -22,6 +24,9 @@ RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
 
 rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
+
+..\..\bin\libexpat.dll: ..\3rdparty\expat\libexpat.dll
+	copy ..\3rdparty\expat\libexpat.dll ..\..\bin
 
 clean:
 	@if exist notemap.obj del notemap.obj
