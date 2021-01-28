@@ -1,11 +1,11 @@
 
 /*
- * This implementation treats the echo, arp, and seq patterns as MIDI sequences
- * which modulate the notes which are played interactively.  Players for these
- * sequences, each with its own notion of the "current event", are continuously
- * created and destroyed in response to the notes being played interactively.
- * Due to the large number of simultaneous players, it uses a game loop rather
- * than alarms.
+ * This implementation treats the echo, trigger, and sync patterns a MIDI
+ * sequence which modulates the notes that are played interactively.  Players
+ * for these sequences, each with its own notion of the "current event", are
+ * continuously created and destroyed in response to the notes being played
+ * interactively.  Due to the large number of simultaneous players, it uses a
+ * game loop rather than alarms.
  */
 
 #include <stdio.h>
@@ -16,6 +16,15 @@
 #include <midiutil-common.h>
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
+
+typedef enum
+{
+	MODE_NONE,
+	MODE_ECHO,
+	MODE_TRIGGER,
+	MODE_GATE
+}
+Mode_t;
 
 struct Player
 {
@@ -31,24 +40,23 @@ typedef struct Player *Player_t;
 
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
+static Mode_t mode = MODE_NONE;
+static MidiFile_t midi_file;
 static float tempo_bpm = 100;
-static MidiFile_t echo_midi_file = NULL;
-static MidiFile_t arp_midi_file = NULL;
-static MidiFile_t seq_midi_file = NULL;
 static MidiUtilLock_t lock;
 static int note_velocity[16][128];
 static int note_sustain[16][128];
 static int channel_sustain[16];
 static MidiUtilPointerArray_t echo_on_players;
 static MidiUtilPointerArray_t echo_off_players;
-static MidiUtilPointerArray_t arp_on_players;
-static MidiUtilPointerArray_t arp_off_players;
-static MidiUtilPointerArray_t seq_on_players;
-static MidiUtilPointerArray_t seq_off_players;
+static MidiUtilPointerArray_t trigger_on_players;
+static MidiUtilPointerArray_t trigger_off_players;
+static MidiUtilPointerArray_t gate_on_players;
+static MidiUtilPointerArray_t gate_off_players;
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --tempo <bpm, default 100> ] [ --echo <beat> <note interval> <velocity> | --arp <beat> <duration beats> <note interval> <velocity> | --seq <beat> <duration beats> <note interval> <velocity> ] ... [ --arp-loop <beats> ] [ --seq-loop <beats, default 4> ]\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> ( --echo | --trigger | --gate ) [ --note <beat> <duration beats> <note interval> <velocity> ] ... [ --loop <beats> ] [ --tempo <bpm, default 100> ]\n", program_name);
 	exit(1);
 }
 
@@ -72,202 +80,306 @@ static void send_note_off(int channel, int note, int velocity)
 	}
 }
 
-static void player_thread_main(void *user_data)
+static void update_echo_on_players(void)
 {
-	while (1)
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(echo_on_players); player_number++)
 	{
-		long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
-		MidiUtilLock_lock(lock);
+		Player_t echo_on_player = (Player_t)(MidiUtilPointerArray_get(echo_on_players, player_number));
 
-		if (echo_midi_file != NULL)
+		while (echo_on_player->event != NULL)
 		{
-			int echo_on_player_number, echo_off_player_number;
+			long event_time_msecs = echo_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(echo_on_player->event)) * 60000 / tempo_bpm);
 
-			for (echo_on_player_number = 0; echo_on_player_number < MidiUtilPointerArray_getSize(echo_on_players); echo_on_player_number++)
+			if (event_time_msecs <= current_time_msecs)
 			{
-				Player_t echo_on_player = (Player_t)(MidiUtilPointerArray_get(echo_on_players, echo_on_player_number));
-
-				while (echo_on_player->event != NULL)
+				if (MidiFileEvent_isNoteStartEvent(echo_on_player->event))
 				{
-					long event_time_msecs = echo_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_on_player->event)) * 60000 / tempo_bpm);
-
-					if (event_time_msecs <= current_time_msecs)
-					{
-						if (MidiFileEvent_isNoteStartEvent(echo_on_player->event))
-						{
-							int note = echo_on_player->base_note + MidiFileNoteStartEvent_getNote(echo_on_player->event) - 60;
-							int velocity = echo_on_player->base_velocity * MidiFileNoteStartEvent_getVelocity(echo_on_player->event) / 127;
-							if (note >= 0 && note < 128) send_note_on(echo_on_player->base_channel, note, velocity);
-						}
-
-						echo_on_player->event = MidiFileEvent_getNextEventInFile(echo_on_player->event);
-					}
-					else
-					{
-						break;
-					}
+					int note = echo_on_player->base_note + MidiFileNoteStartEvent_getNote(echo_on_player->event) - 60;
+					int velocity = echo_on_player->base_velocity * MidiFileNoteStartEvent_getVelocity(echo_on_player->event) / 127;
+					if (note >= 0 && note < 128) send_note_on(echo_on_player->base_channel, note, velocity);
 				}
 
-				if (echo_on_player->event == NULL)
-				{
-					MidiUtilPointerArray_remove(echo_on_players, echo_on_player_number--);
-					free(echo_on_player);
-				}
+				echo_on_player->event = MidiFileEvent_getNextEventInFile(echo_on_player->event);
 			}
-
-			for (echo_off_player_number = 0; echo_off_player_number < MidiUtilPointerArray_getSize(echo_off_players); echo_off_player_number++)
+			else
 			{
-				Player_t echo_off_player = (Player_t)(MidiUtilPointerArray_get(echo_off_players, echo_off_player_number));
-
-				while (echo_off_player->event != NULL)
-				{
-					long event_time_msecs = echo_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(echo_midi_file, MidiFileEvent_getTick(echo_off_player->event)) * 60000 / tempo_bpm);
-
-					if (event_time_msecs <= current_time_msecs)
-					{
-						/* we only care about note-ons in the echo sequence, even when deciding which note-offs to send */
-						if (MidiFileEvent_isNoteStartEvent(echo_off_player->event))
-						{
-							int note = echo_off_player->base_note + MidiFileNoteStartEvent_getNote(echo_off_player->event) - 60;
-							int velocity = echo_off_player->base_velocity * MidiFileNoteStartEvent_getVelocity(echo_off_player->event) / 127;
-							if (note >= 0 && note < 128) send_note_off(echo_off_player->base_channel, note, velocity);
-						}
-
-						echo_off_player->event = MidiFileEvent_getNextEventInFile(echo_off_player->event);
-					}
-					else
-					{
-						break;
-					}
-				}
-
-				if (echo_off_player->event == NULL)
-				{
-					MidiUtilPointerArray_remove(echo_off_players, echo_off_player_number--);
-					free(echo_off_player);
-				}
+				break;
 			}
 		}
 
-		if (arp_midi_file != NULL)
+		if (echo_on_player->event == NULL)
 		{
-			int arp_on_player_number, arp_off_player_number;
+			MidiUtilPointerArray_remove(echo_on_players, player_number--);
+			free(echo_on_player);
+		}
+	}
+}
 
-			for (arp_on_player_number = 0; arp_on_player_number < MidiUtilPointerArray_getSize(arp_on_players); arp_on_player_number++)
+static void update_echo_off_players(void)
+{
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(echo_off_players); player_number++)
+	{
+		Player_t echo_off_player = (Player_t)(MidiUtilPointerArray_get(echo_off_players, player_number));
+
+		while (echo_off_player->event != NULL)
+		{
+			long event_time_msecs = echo_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(echo_off_player->event)) * 60000 / tempo_bpm);
+
+			if (event_time_msecs <= current_time_msecs)
 			{
-				Player_t arp_on_player = (Player_t)(MidiUtilPointerArray_get(arp_on_players, arp_on_player_number));
-
-				while (arp_on_player->event != NULL)
+				/* we only care about note-ons in the echo sequence, even when deciding which note-offs to send */
+				if (MidiFileEvent_isNoteStartEvent(echo_off_player->event))
 				{
-					long event_time_msecs = arp_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_on_player->event)) * 60000 / tempo_bpm);
-
-					if (event_time_msecs <= current_time_msecs)
-					{
-						if (MidiFileEvent_isNoteStartEvent(arp_on_player->event))
-						{
-							int note = arp_on_player->base_note + MidiFileNoteStartEvent_getNote(arp_on_player->event) - 60;
-							int velocity = arp_on_player->base_velocity * MidiFileNoteStartEvent_getVelocity(arp_on_player->event) / 127;
-							if (note >= 0 && note < 128) send_note_on(arp_on_player->base_channel, note, velocity);
-							arp_on_player->event = MidiFileEvent_getNextEventInFile(arp_on_player->event);
-						}
-						else if (MidiFileEvent_isNoteEndEvent(arp_on_player->event))
-						{
-							int note = arp_on_player->base_note + MidiFileNoteEndEvent_getNote(arp_on_player->event) - 60;
-							int velocity = arp_on_player->base_velocity * MidiFileNoteEndEvent_getVelocity(arp_on_player->event) / 127;
-							if (note >= 0 && note < 128) send_note_off(arp_on_player->base_channel, note, velocity);
-							arp_on_player->event = MidiFileEvent_getNextEventInFile(arp_on_player->event);
-						}
-						else if (MidiFileEvent_isMarkerEvent(arp_on_player->event))
-						{
-							/* looping the arp is like a note-off and immediate note-on */
-							Player_t arp_off_player = (Player_t)(malloc(sizeof(struct Player)));
-							arp_off_player->event = MidiFileEvent_getNextEventInFile(arp_on_player->event);
-							arp_off_player->start_time_msecs = arp_on_player->start_time_msecs;
-							arp_off_player->stop_time_msecs = current_time_msecs;
-							arp_off_player->base_channel = arp_on_player->base_channel;
-							arp_off_player->base_note = arp_on_player->base_note;
-							arp_off_player->base_velocity = arp_on_player->base_velocity;
-							MidiUtilPointerArray_add(arp_off_players, arp_off_player);
-
-							arp_on_player->event = MidiFile_getFirstEvent(arp_midi_file);
-							arp_on_player->start_time_msecs = current_time_msecs;
-						}
-						else
-						{
-							arp_on_player->event = MidiFileEvent_getNextEventInFile(arp_on_player->event);
-						}
-					}
-					else
-					{
-						break;
-					}
+					int note = echo_off_player->base_note + MidiFileNoteStartEvent_getNote(echo_off_player->event) - 60;
+					int velocity = echo_off_player->base_velocity * MidiFileNoteStartEvent_getVelocity(echo_off_player->event) / 127;
+					if (note >= 0 && note < 128) send_note_off(echo_off_player->base_channel, note, velocity);
 				}
 
-				if (arp_on_player->event == NULL)
+				echo_off_player->event = MidiFileEvent_getNextEventInFile(echo_off_player->event);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (echo_off_player->event == NULL)
+		{
+			MidiUtilPointerArray_remove(echo_off_players, player_number--);
+			free(echo_off_player);
+		}
+	}
+}
+
+static void update_trigger_on_players(void)
+{
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(trigger_on_players); player_number++)
+	{
+		Player_t trigger_on_player = (Player_t)(MidiUtilPointerArray_get(trigger_on_players, player_number));
+
+		while (trigger_on_player->event != NULL)
+		{
+			long event_time_msecs = trigger_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(trigger_on_player->event)) * 60000 / tempo_bpm);
+
+			if (event_time_msecs <= current_time_msecs)
+			{
+				if (MidiFileEvent_isNoteStartEvent(trigger_on_player->event))
 				{
-					MidiUtilPointerArray_remove(arp_on_players, arp_on_player_number--);
-					free(arp_on_player);
+					int note = trigger_on_player->base_note + MidiFileNoteStartEvent_getNote(trigger_on_player->event) - 60;
+					int velocity = trigger_on_player->base_velocity * MidiFileNoteStartEvent_getVelocity(trigger_on_player->event) / 127;
+					if (note >= 0 && note < 128) send_note_on(trigger_on_player->base_channel, note, velocity);
+					trigger_on_player->event = MidiFileEvent_getNextEventInFile(trigger_on_player->event);
+				}
+				else if (MidiFileEvent_isNoteEndEvent(trigger_on_player->event))
+				{
+					int note = trigger_on_player->base_note + MidiFileNoteEndEvent_getNote(trigger_on_player->event) - 60;
+					int velocity = trigger_on_player->base_velocity * MidiFileNoteEndEvent_getVelocity(trigger_on_player->event) / 127;
+					if (note >= 0 && note < 128) send_note_off(trigger_on_player->base_channel, note, velocity);
+					trigger_on_player->event = MidiFileEvent_getNextEventInFile(trigger_on_player->event);
+				}
+				else if (MidiFileEvent_isMarkerEvent(trigger_on_player->event))
+				{
+					/* looping the arp is like a note-off and immediate note-on */
+					Player_t trigger_off_player = (Player_t)(malloc(sizeof(struct Player)));
+					trigger_off_player->event = MidiFileEvent_getNextEventInFile(trigger_on_player->event);
+					trigger_off_player->start_time_msecs = trigger_on_player->start_time_msecs;
+					trigger_off_player->stop_time_msecs = current_time_msecs;
+					trigger_off_player->base_channel = trigger_on_player->base_channel;
+					trigger_off_player->base_note = trigger_on_player->base_note;
+					trigger_off_player->base_velocity = trigger_on_player->base_velocity;
+					MidiUtilPointerArray_add(trigger_off_players, trigger_off_player);
+
+					trigger_on_player->event = MidiFile_getFirstEvent(midi_file);
+					trigger_on_player->start_time_msecs = current_time_msecs;
+				}
+				else
+				{
+					trigger_on_player->event = MidiFileEvent_getNextEventInFile(trigger_on_player->event);
 				}
 			}
-
-			/* play the corresponding note-off for each note that was on already, but no new note-ons nor extra note-offs */
-			for (arp_off_player_number = 0; arp_off_player_number < MidiUtilPointerArray_getSize(arp_off_players); arp_off_player_number++)
+			else
 			{
-				Player_t arp_off_player = (Player_t)(MidiUtilPointerArray_get(arp_off_players, arp_off_player_number));
+				break;
+			}
+		}
 
-				while (arp_off_player->event != NULL)
+		if (trigger_on_player->event == NULL)
+		{
+			MidiUtilPointerArray_remove(trigger_on_players, player_number--);
+			free(trigger_on_player);
+		}
+	}
+}
+
+static void update_trigger_off_players(void)
+{
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	/* play the corresponding note-off for each note that was on already, but no new note-ons nor extra note-offs */
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(trigger_off_players); player_number++)
+	{
+		Player_t trigger_off_player = (Player_t)(MidiUtilPointerArray_get(trigger_off_players, player_number));
+
+		while (trigger_off_player->event != NULL)
+		{
+			long event_time_msecs = trigger_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(trigger_off_player->event)) * 60000 / tempo_bpm);
+
+			if (event_time_msecs <= current_time_msecs)
+			{
+				if (MidiFileEvent_isNoteEndEvent(trigger_off_player->event))
 				{
-					long event_time_msecs = arp_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(arp_off_player->event)) * 60000 / tempo_bpm);
+					MidiFileEvent_t start_event = MidiFileNoteEndEvent_getNoteStartEvent(trigger_off_player->event);
 
-					if (event_time_msecs <= current_time_msecs)
+					if (start_event != NULL)
 					{
-						if (MidiFileEvent_isNoteEndEvent(arp_off_player->event))
+						long start_event_time_msecs = trigger_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
+
+						if (start_event_time_msecs <= trigger_off_player->stop_time_msecs)
 						{
-							MidiFileEvent_t start_event = MidiFileNoteEndEvent_getNoteStartEvent(arp_off_player->event);
+							int note = trigger_off_player->base_note + MidiFileNoteEndEvent_getNote(trigger_off_player->event) - 60;
+							if (note >= 0 && note < 128) send_note_off(trigger_off_player->base_channel, note, 0);
+						}
+					}
+				}
 
-							if (start_event != NULL)
+				trigger_off_player->event = MidiFileEvent_getNextEventInFile(trigger_off_player->event);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (trigger_off_player->event == NULL)
+		{
+			MidiUtilPointerArray_remove(trigger_off_players, player_number--);
+			free(trigger_off_player);
+		}
+	}
+}
+
+static void update_gate_on_players(void)
+{
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(gate_on_players); player_number++)
+	{
+		Player_t gate_on_player = (Player_t)(MidiUtilPointerArray_get(gate_on_players, player_number));
+
+		while (gate_on_player->event != NULL)
+		{
+			long event_time_msecs = gate_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(gate_on_player->event)) * 60000 / tempo_bpm);
+
+			if (event_time_msecs <= current_time_msecs)
+			{
+				if (MidiFileEvent_isNoteStartEvent(gate_on_player->event))
+				{
+					int channel, base_note;
+
+					for (channel = 0; channel < 16; channel++)
+					{
+						for (base_note = 0; base_note < 128; base_note++)
+						{
+							int base_velocity = note_velocity[channel][base_note];
+
+							if (base_velocity > 0)
 							{
-								long start_event_time_msecs = arp_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(arp_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
-
-								if (start_event_time_msecs <= arp_off_player->stop_time_msecs)
-								{
-									int note = arp_off_player->base_note + MidiFileNoteEndEvent_getNote(arp_off_player->event) - 60;
-									if (note >= 0 && note < 128) send_note_off(arp_off_player->base_channel, note, 0);
-								}
+								int note = base_note + MidiFileNoteStartEvent_getNote(gate_on_player->event) - 60;
+								int velocity = base_velocity * MidiFileNoteStartEvent_getVelocity(gate_on_player->event) / 127;
+								if (note >= 0 && note < 128) send_note_on(channel, note, velocity);
 							}
 						}
+					}
 
-						arp_off_player->event = MidiFileEvent_getNextEventInFile(arp_off_player->event);
-					}
-					else
-					{
-						break;
-					}
+					gate_on_player->event = MidiFileEvent_getNextEventInFile(gate_on_player->event);
 				}
-
-				if (arp_off_player->event == NULL)
+				else if (MidiFileEvent_isNoteEndEvent(gate_on_player->event))
 				{
-					MidiUtilPointerArray_remove(arp_off_players, arp_off_player_number--);
-					free(arp_off_player);
+					int channel, base_note;
+
+					for (channel = 0; channel < 16; channel++)
+					{
+						for (base_note = 0; base_note < 128; base_note++)
+						{
+							int base_velocity = note_velocity[channel][base_note];
+
+							if (base_velocity > 0)
+							{
+								int note = base_note + MidiFileNoteEndEvent_getNote(gate_on_player->event) - 60;
+								if (note >= 0 && note < 128) send_note_off(channel, note, 0);
+							}
+						}
+					}
+
+					gate_on_player->event = MidiFileEvent_getNextEventInFile(gate_on_player->event);
 				}
+				else if (MidiFileEvent_isMarkerEvent(gate_on_player->event))
+				{
+					/* looping the seq is like a note-off and immediate note-on */
+					Player_t gate_off_player = (Player_t)(malloc(sizeof(struct Player)));
+					gate_off_player->event = MidiFileEvent_getNextEventInFile(gate_on_player->event);
+					gate_off_player->start_time_msecs = gate_on_player->start_time_msecs;
+					gate_off_player->stop_time_msecs = current_time_msecs;
+					MidiUtilPointerArray_add(gate_off_players, gate_off_player);
+
+					gate_on_player->event = MidiFile_getFirstEvent(midi_file);
+					gate_on_player->start_time_msecs = current_time_msecs;
+				}
+				else
+				{
+					gate_on_player->event = MidiFileEvent_getNextEventInFile(gate_on_player->event);
+				}
+			}
+			else
+			{
+				break;
 			}
 		}
 
-		if (seq_midi_file != NULL)
+		if (gate_on_player->event == NULL)
 		{
-			int seq_on_player_number, seq_off_player_number;
+			MidiUtilPointerArray_remove(gate_on_players, player_number--);
+			free(gate_on_player);
+		}
+	}
+}
 
-			for (seq_on_player_number = 0; seq_on_player_number < MidiUtilPointerArray_getSize(seq_on_players); seq_on_player_number++)
+static void update_gate_off_players(void)
+{
+	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	int player_number;
+
+	/* play the corresponding note-off for each note that was on already, but no new note-ons nor extra note-offs */
+	for (player_number = 0; player_number < MidiUtilPointerArray_getSize(gate_off_players); player_number++)
+	{
+		Player_t gate_off_player = (Player_t)(MidiUtilPointerArray_get(gate_off_players, player_number));
+
+		while (gate_off_player->event != NULL)
+		{
+			long event_time_msecs = gate_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(gate_off_player->event)) * 60000 / tempo_bpm);
+
+			if (event_time_msecs <= current_time_msecs)
 			{
-				Player_t seq_on_player = (Player_t)(MidiUtilPointerArray_get(seq_on_players, seq_on_player_number));
-
-				while (seq_on_player->event != NULL)
+				if (MidiFileEvent_isNoteEndEvent(gate_off_player->event))
 				{
-					long event_time_msecs = seq_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_on_player->event)) * 60000 / tempo_bpm);
+					MidiFileEvent_t start_event = MidiFileNoteEndEvent_getNoteStartEvent(gate_off_player->event);
 
-					if (event_time_msecs <= current_time_msecs)
+					if (start_event != NULL)
 					{
-						if (MidiFileEvent_isNoteStartEvent(seq_on_player->event))
+						long start_event_time_msecs = gate_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
+
+						if (start_event_time_msecs <= gate_off_player->stop_time_msecs)
 						{
 							int channel, base_note;
 
@@ -279,121 +391,42 @@ static void player_thread_main(void *user_data)
 
 									if (base_velocity > 0)
 									{
-										int note = base_note + MidiFileNoteStartEvent_getNote(seq_on_player->event) - 60;
-										int velocity = base_velocity * MidiFileNoteStartEvent_getVelocity(seq_on_player->event) / 127;
-										if (note >= 0 && note < 128) send_note_on(channel, note, velocity);
-									}
-								}
-							}
-
-							seq_on_player->event = MidiFileEvent_getNextEventInFile(seq_on_player->event);
-						}
-						else if (MidiFileEvent_isNoteEndEvent(seq_on_player->event))
-						{
-							int channel, base_note;
-
-							for (channel = 0; channel < 16; channel++)
-							{
-								for (base_note = 0; base_note < 128; base_note++)
-								{
-									int base_velocity = note_velocity[channel][base_note];
-
-									if (base_velocity > 0)
-									{
-										int note = base_note + MidiFileNoteEndEvent_getNote(seq_on_player->event) - 60;
+										int note = base_note + MidiFileNoteEndEvent_getNote(gate_off_player->event) - 60;
 										if (note >= 0 && note < 128) send_note_off(channel, note, 0);
 									}
 								}
 							}
-
-							seq_on_player->event = MidiFileEvent_getNextEventInFile(seq_on_player->event);
 						}
-						else if (MidiFileEvent_isMarkerEvent(seq_on_player->event))
-						{
-							/* looping the seq is like a note-off and immediate note-on */
-							Player_t seq_off_player = (Player_t)(malloc(sizeof(struct Player)));
-							seq_off_player->event = MidiFileEvent_getNextEventInFile(seq_on_player->event);
-							seq_off_player->start_time_msecs = seq_on_player->start_time_msecs;
-							seq_off_player->stop_time_msecs = current_time_msecs;
-							MidiUtilPointerArray_add(seq_off_players, seq_off_player);
-
-							seq_on_player->event = MidiFile_getFirstEvent(seq_midi_file);
-							seq_on_player->start_time_msecs = current_time_msecs;
-						}
-						else
-						{
-							seq_on_player->event = MidiFileEvent_getNextEventInFile(seq_on_player->event);
-						}
-					}
-					else
-					{
-						break;
 					}
 				}
 
-				if (seq_on_player->event == NULL)
-				{
-					MidiUtilPointerArray_remove(seq_on_players, seq_on_player_number--);
-					free(seq_on_player);
-				}
+				gate_off_player->event = MidiFileEvent_getNextEventInFile(gate_off_player->event);
 			}
-
-			/* play the corresponding note-off for each note that was on already, but no new note-ons nor extra note-offs */
-			for (seq_off_player_number = 0; seq_off_player_number < MidiUtilPointerArray_getSize(seq_off_players); seq_off_player_number++)
+			else
 			{
-				Player_t seq_off_player = (Player_t)(MidiUtilPointerArray_get(seq_off_players, seq_off_player_number));
-
-				while (seq_off_player->event != NULL)
-				{
-					long event_time_msecs = seq_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(seq_off_player->event)) * 60000 / tempo_bpm);
-
-					if (event_time_msecs <= current_time_msecs)
-					{
-						if (MidiFileEvent_isNoteEndEvent(seq_off_player->event))
-						{
-							MidiFileEvent_t start_event = MidiFileNoteEndEvent_getNoteStartEvent(seq_off_player->event);
-
-							if (start_event != NULL)
-							{
-								long start_event_time_msecs = seq_off_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(start_event)) * 60000 / tempo_bpm);
-
-								if (start_event_time_msecs <= seq_off_player->stop_time_msecs)
-								{
-									int channel, base_note;
-
-									for (channel = 0; channel < 16; channel++)
-									{
-										for (base_note = 0; base_note < 128; base_note++)
-										{
-											int base_velocity = note_velocity[channel][base_note];
-
-											if (base_velocity > 0)
-											{
-												int note = base_note + MidiFileNoteEndEvent_getNote(seq_off_player->event) - 60;
-												if (note >= 0 && note < 128) send_note_off(channel, note, 0);
-											}
-										}
-									}
-								}
-							}
-						}
-
-						seq_off_player->event = MidiFileEvent_getNextEventInFile(seq_off_player->event);
-					}
-					else
-					{
-						break;
-					}
-				}
-
-				if (seq_off_player->event == NULL)
-				{
-					MidiUtilPointerArray_remove(seq_off_players, seq_off_player_number--);
-					free(seq_off_player);
-				}
+				break;
 			}
 		}
 
+		if (gate_off_player->event == NULL)
+		{
+			MidiUtilPointerArray_remove(gate_off_players, player_number--);
+			free(gate_off_player);
+		}
+	}
+}
+
+static void player_thread_main(void *user_data)
+{
+	while (1)
+	{
+		MidiUtilLock_lock(lock);
+		update_echo_on_players();
+		update_echo_off_players();
+		update_trigger_on_players();
+		update_trigger_off_players();
+		update_gate_on_players();
+		update_gate_off_players();
 		MidiUtilLock_unlock(lock);
 		MidiUtil_sleep(1); /* tune this for CPU busyness vs responsiveness */
 	}
@@ -403,34 +436,46 @@ static void handle_virtual_note_on(int channel, int note, int velocity)
 {
 	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
 
-	if (echo_midi_file != NULL)
+	switch (mode)
 	{
-		Player_t echo_on_player = (Player_t)(malloc(sizeof(struct Player)));
-		echo_on_player->event = MidiFile_getFirstEvent(echo_midi_file);
-		echo_on_player->start_time_msecs = current_time_msecs;
-		echo_on_player->base_channel = channel;
-		echo_on_player->base_note = note;
-		echo_on_player->base_velocity = velocity;
-		MidiUtilPointerArray_add(echo_on_players, echo_on_player);
-	}
+		case MODE_ECHO:
+		{
+			Player_t echo_on_player = (Player_t)(malloc(sizeof(struct Player)));
+			echo_on_player->event = MidiFile_getFirstEvent(midi_file);
+			echo_on_player->start_time_msecs = current_time_msecs;
+			echo_on_player->base_channel = channel;
+			echo_on_player->base_note = note;
+			echo_on_player->base_velocity = velocity;
+			MidiUtilPointerArray_add(echo_on_players, echo_on_player);
+			break;
+		}
+		case MODE_TRIGGER:
+		{
+			Player_t trigger_on_player = (Player_t)(malloc(sizeof(struct Player)));
+			trigger_on_player->event = MidiFile_getFirstEvent(midi_file);
+			trigger_on_player->start_time_msecs = current_time_msecs;
+			trigger_on_player->base_channel = channel;
+			trigger_on_player->base_note = note;
+			trigger_on_player->base_velocity = velocity;
+			MidiUtilPointerArray_add(trigger_on_players, trigger_on_player);
+			break;
+		}
+		case MODE_GATE:
+		{
+			if (MidiUtilPointerArray_getSize(gate_on_players) == 0)
+			{
+				Player_t gate_on_player = (Player_t)(malloc(sizeof(struct Player)));
+				gate_on_player->event = MidiFile_getFirstEvent(midi_file);
+				gate_on_player->start_time_msecs = current_time_msecs;
+				MidiUtilPointerArray_add(gate_on_players, gate_on_player);
+			}
 
-	if (arp_midi_file != NULL)
-	{
-		Player_t arp_on_player = (Player_t)(malloc(sizeof(struct Player)));
-		arp_on_player->event = MidiFile_getFirstEvent(arp_midi_file);
-		arp_on_player->start_time_msecs = current_time_msecs;
-		arp_on_player->base_channel = channel;
-		arp_on_player->base_note = note;
-		arp_on_player->base_velocity = velocity;
-		MidiUtilPointerArray_add(arp_on_players, arp_on_player);
-	}
-
-	if ((seq_midi_file != NULL) && (MidiUtilPointerArray_getSize(seq_on_players) == 0))
-	{
-		Player_t seq_on_player = (Player_t)(malloc(sizeof(struct Player)));
-		seq_on_player->event = MidiFile_getFirstEvent(seq_midi_file);
-		seq_on_player->start_time_msecs = current_time_msecs;
-		MidiUtilPointerArray_add(seq_on_players, seq_on_player);
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -438,63 +483,73 @@ static void handle_virtual_note_off(int channel, int note, int velocity)
 {
 	long current_time_msecs = MidiUtil_getCurrentTimeMsecs();
 
-	if (echo_midi_file != NULL)
+	switch (mode)
 	{
-		Player_t echo_off_player = (Player_t)(malloc(sizeof(struct Player)));
-		echo_off_player->event = MidiFile_getFirstEvent(echo_midi_file);
-		echo_off_player->start_time_msecs = current_time_msecs;
-		echo_off_player->base_channel = channel;
-		echo_off_player->base_note = note;
-		echo_off_player->base_velocity = velocity;
-		MidiUtilPointerArray_add(echo_off_players, echo_off_player);
-	}
-
-	if (arp_midi_file != NULL)
-	{
-		int arp_on_player_number;
-
-		for (arp_on_player_number = 0; arp_on_player_number < MidiUtilPointerArray_getSize(arp_on_players); arp_on_player_number++)
+		case MODE_ECHO:
 		{
-			Player_t arp_on_player = (Player_t)(MidiUtilPointerArray_get(arp_on_players, arp_on_player_number));
-
-			/* turn off the first matching one */
-			if ((arp_on_player->base_channel == channel) && (arp_on_player->base_note == note))
-			{
-				MidiUtilPointerArray_remove(arp_on_players, arp_on_player_number);
-				arp_on_player->stop_time_msecs = current_time_msecs;
-				MidiUtilPointerArray_add(arp_off_players, arp_on_player);
-				break;
-			}
+			Player_t echo_off_player = (Player_t)(malloc(sizeof(struct Player)));
+			echo_off_player->event = MidiFile_getFirstEvent(midi_file);
+			echo_off_player->start_time_msecs = current_time_msecs;
+			echo_off_player->base_channel = channel;
+			echo_off_player->base_note = note;
+			echo_off_player->base_velocity = velocity;
+			MidiUtilPointerArray_add(echo_off_players, echo_off_player);
+			break;
 		}
-	}
-
-	if (seq_midi_file != NULL)
-	{
-		int seq_on_player_number;
-
-		for (seq_on_player_number = 0; seq_on_player_number < MidiUtilPointerArray_getSize(seq_on_players); seq_on_player_number++)
+		case MODE_TRIGGER:
 		{
-			Player_t seq_on_player = (Player_t)(MidiUtilPointerArray_get(seq_on_players, seq_on_player_number));
-			MidiFileEvent_t event;
+			int trigger_on_player_number;
 
-			for (event = MidiFileEvent_getPreviousEventInFile(seq_on_player->event); event != NULL; event = MidiFileEvent_getPreviousEventInFile(event))
+			for (trigger_on_player_number = 0; trigger_on_player_number < MidiUtilPointerArray_getSize(trigger_on_players); trigger_on_player_number++)
 			{
-				if (MidiFileEvent_isNoteStartEvent(event))
+				Player_t trigger_on_player = (Player_t)(MidiUtilPointerArray_get(trigger_on_players, trigger_on_player_number));
+
+				/* turn off the first matching one */
+				if ((trigger_on_player->base_channel == channel) && (trigger_on_player->base_note == note))
 				{
-					MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+					MidiUtilPointerArray_remove(trigger_on_players, trigger_on_player_number);
+					trigger_on_player->stop_time_msecs = current_time_msecs;
+					MidiUtilPointerArray_add(trigger_off_players, trigger_on_player);
+					break;
+				}
+			}
 
-					if (end_event != NULL)
+			break;
+		}
+		case MODE_GATE:
+		{
+			int gate_on_player_number;
+
+			for (gate_on_player_number = 0; gate_on_player_number < MidiUtilPointerArray_getSize(gate_on_players); gate_on_player_number++)
+			{
+				Player_t gate_on_player = (Player_t)(MidiUtilPointerArray_get(gate_on_players, gate_on_player_number));
+				MidiFileEvent_t event;
+
+				for (event = MidiFileEvent_getPreviousEventInFile(gate_on_player->event); event != NULL; event = MidiFileEvent_getPreviousEventInFile(event))
+				{
+					if (MidiFileEvent_isNoteStartEvent(event))
 					{
-						long end_event_time_msecs = seq_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(seq_midi_file, MidiFileEvent_getTick(end_event)) * 60000 / tempo_bpm);
+						MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
 
-						if (end_event_time_msecs >= current_time_msecs)
+						if (end_event != NULL)
 						{
-							int on_note = note + MidiFileNoteStartEvent_getNote(event) - 60;
-							if (on_note >= 0 && on_note < 128) send_note_off(channel, on_note, 0);
+							long end_event_time_msecs = gate_on_player->start_time_msecs + (long)(MidiFile_getBeatFromTick(midi_file, MidiFileEvent_getTick(end_event)) * 60000 / tempo_bpm);
+
+							if (end_event_time_msecs >= current_time_msecs)
+							{
+								int on_note = note + MidiFileNoteStartEvent_getNote(event) - 60;
+								if (on_note >= 0 && on_note < 128) send_note_off(channel, on_note, 0);
+							}
 						}
 					}
 				}
 			}
+
+			break;
+		}
+		default:
+		{
+			break;
 		}
 	}
 }
@@ -609,22 +664,20 @@ static void handle_exit(void *user_data)
 	rtmidi_close_port(midi_out);
 	MidiUtilPointerArray_free(echo_on_players);
 	MidiUtilPointerArray_free(echo_off_players);
-	MidiUtilPointerArray_free(arp_on_players);
-	MidiUtilPointerArray_free(arp_off_players);
-	MidiUtilPointerArray_free(seq_on_players);
-	MidiUtilPointerArray_free(seq_off_players);
+	MidiUtilPointerArray_free(trigger_on_players);
+	MidiUtilPointerArray_free(trigger_off_players);
+	MidiUtilPointerArray_free(gate_on_players);
+	MidiUtilPointerArray_free(gate_off_players);
 	MidiUtilLock_free(lock);
-	if (echo_midi_file != NULL) MidiFile_free(echo_midi_file);
-	if (arp_midi_file != NULL) MidiFile_free(arp_midi_file);
-	if (seq_midi_file != NULL) MidiFile_free(seq_midi_file);
+	MidiFile_free(midi_file);
 }
 
 int main(int argc, char **argv)
 {
-	float arp_loop_beats = -1;
-	float seq_loop_beats = 4;
+	float loop_beats = -1;
 	int i, j;
 
+	midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
 	lock = MidiUtilLock_new();
 
 	for (i = 0; i < 16; i++)
@@ -640,10 +693,10 @@ int main(int argc, char **argv)
 
 	echo_on_players = MidiUtilPointerArray_new(1024);
 	echo_off_players = MidiUtilPointerArray_new(1024);
-	arp_on_players = MidiUtilPointerArray_new(1024);
-	arp_off_players = MidiUtilPointerArray_new(1024);
-	seq_on_players = MidiUtilPointerArray_new(1024);
-	seq_off_players = MidiUtilPointerArray_new(1024);
+	trigger_on_players = MidiUtilPointerArray_new(1024);
+	trigger_off_players = MidiUtilPointerArray_new(1024);
+	gate_on_players = MidiUtilPointerArray_new(1024);
+	gate_off_players = MidiUtilPointerArray_new(1024);
 
 	for (i = 1; i < argc; i++)
 	{
@@ -667,68 +720,43 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
+		else if (strcmp(argv[i], "--echo") == 0)
+		{
+			mode = MODE_ECHO;
+		}
+		else if (strcmp(argv[i], "--trigger") == 0)
+		{
+			mode = MODE_TRIGGER;
+		}
+		else if (strcmp(argv[i], "--gate") == 0)
+		{
+			mode = MODE_GATE;
+		}
+		else if (strcmp(argv[i], "--note") == 0)
+		{
+			float beat;
+			float duration_beats;
+			int note_interval;
+			int velocity;
+			if (++i == argc) usage(argv[0]);
+			beat = atof(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			duration_beats = atof(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			note_interval = atoi(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			velocity = atof(argv[i]);
+			MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(midi_file, 1, 1), MidiFile_getTickFromBeat(midi_file, beat), MidiFile_getTickFromBeat(midi_file, beat + duration_beats), 0, 60 + note_interval, velocity, 0);
+		}
+		else if (strcmp(argv[i], "--loop") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			loop_beats = atof(argv[i]);
+		}
 		else if (strcmp(argv[i], "--tempo") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			tempo_bpm = atof(argv[i]);
-		}
-		else if (strcmp(argv[i], "--echo") == 0)
-		{
-			float beat;
-			int note_interval;
-			int velocity;
-			if (++i == argc) usage(argv[0]);
-			beat = atof(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			note_interval = atoi(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			velocity = atoi(argv[i]);
-			if (echo_midi_file == NULL) echo_midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
-			MidiFileTrack_createNoteOnEvent(MidiFile_getTrackByNumber(echo_midi_file, 1, 1), MidiFile_getTickFromBeat(echo_midi_file, beat), 0, 60 + note_interval, velocity);
-		}
-		else if (strcmp(argv[i], "--arp") == 0)
-		{
-			float beat;
-			float duration_beats;
-			int note_interval;
-			int velocity;
-			if (++i == argc) usage(argv[0]);
-			beat = atof(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			duration_beats = atof(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			note_interval = atoi(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			velocity = atof(argv[i]);
-			if (arp_midi_file == NULL) arp_midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
-			MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(arp_midi_file, 1, 1), MidiFile_getTickFromBeat(arp_midi_file, beat), MidiFile_getTickFromBeat(arp_midi_file, beat + duration_beats), 0, 60 + note_interval, velocity, 0);
-		}
-		else if (strcmp(argv[i], "--seq") == 0)
-		{
-			float beat;
-			float duration_beats;
-			int note_interval;
-			int velocity;
-			if (++i == argc) usage(argv[0]);
-			beat = atof(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			duration_beats = atof(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			note_interval = atoi(argv[i]);
-			if (++i == argc) usage(argv[0]);
-			velocity = atof(argv[i]);
-			if (seq_midi_file == NULL) seq_midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
-			MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(seq_midi_file, 1, 1), MidiFile_getTickFromBeat(seq_midi_file, beat), MidiFile_getTickFromBeat(seq_midi_file, beat + duration_beats), 0, 60 + note_interval, velocity, 0);
-		}
-		else if (strcmp(argv[i], "--arp-loop") == 0)
-		{
-			if (++i == argc) usage(argv[0]);
-			arp_loop_beats = atof(argv[i]);
-		}
-		else if (strcmp(argv[i], "--seq-loop") == 0)
-		{
-			if (++i == argc) usage(argv[0]);
-			seq_loop_beats = atof(argv[i]);
 		}
 		else
 		{
@@ -736,9 +764,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((midi_in == NULL) || (midi_out == NULL)) usage(argv[0]);
-	if ((arp_midi_file != NULL) && (arp_loop_beats >= 0)) MidiFileTrack_createMarkerEvent(MidiFile_getTrackByNumber(arp_midi_file, 1, 1), MidiFile_getTickFromBeat(arp_midi_file, arp_loop_beats), "loop");
-	if ((seq_midi_file != NULL) && (seq_loop_beats >= 0)) MidiFileTrack_createMarkerEvent(MidiFile_getTrackByNumber(seq_midi_file, 1, 1), MidiFile_getTickFromBeat(seq_midi_file, seq_loop_beats), "loop");
+	if ((midi_in == NULL) || (midi_out == NULL) || (mode == MODE_NONE)) usage(argv[0]);
+	if ((mode == MODE_GATE) && (loop_beats < 0)) loop_beats = 4;
+	if (loop_beats >= 0) MidiFileTrack_createMarkerEvent(MidiFile_getTrackByNumber(midi_file, 1, 1), MidiFile_getTickFromBeat(midi_file, loop_beats), "loop");
 	MidiUtil_startThread(player_thread_main, NULL);
 	MidiUtil_waitForExit(handle_exit, NULL);
 	return 0;
