@@ -95,17 +95,9 @@ a { color: #FF6600 }
 
 <p>Usage: onmidi --in &lt;port&gt; [ --out &lt;port&gt; ] [ --hold-length &lt;msecs&gt; ] [ --note-command &lt;note&gt; &lt;command&gt; | --controller-command &lt;controller number&gt; &lt;command&gt; | --controller-hold-command &lt;controller number&gt; &lt;command&gt; | --pitch-wheel-up-command &lt;command&gt; | --pitch-wheel-down-command &lt;command&gt; ] ...</p>
 
-<h3>netmidic and netmidid</h3>
-
-<p>These utilities speak NetMIDI, a trivial network protocol I created which sends standard MIDI messages over a TCP/IP connection as fast as possible.  They can be used to connect up the MIDI systems on two different machines over a network connection, even if they are running different operating systems.  The client forwards messages from the local MIDI system to a NetMIDI server.  The server forwards messages sent by the client to the local MIDI system.</p>
-
-<p>Usage: netmidic --in &lt;midi port&gt; --server &lt;hostname&gt; &lt;network port&gt;</p>
-
-<p>Usage: netmidid --port &lt;network port&gt; --out &lt;midi port&gt;</p>
-
 <h3>noteflurry</h3>
 
-<p><em>noteflurry</em> outputs a configurable sequence of notes for each note you play, transposed and velocity-scaled to match.  In echo mode, the sequence starts when you play a note and finishes on its own.  In trigger mode, the sequence pulses each note that you play, starting when you play the note.  In gate mode, the sequence pulses each note that you play, but it runs continuously so that pulses for multiple notes always line up.  These can achieve some of the same effects as a multi-tap delay, an arpeggiator, or an analogue-style sequencer, including the signature sounds of songs like Won't Get Fooled Again, Baba O'Riley, On the Run, and I Still Haven't Found What I'm Looking For, but you can get even more creative with your own patterns.  In addition, it can simply transpose or add parallel intervals if you tell it to use an echo on beat zero.</p>
+<p><em>noteflurry</em> outputs a configurable sequence of notes for each note you play, transposed and velocity-scaled to match.  In echo mode, the sequence starts when you play a note and finishes on its own.  In trigger mode, the sequence pulses each note that you play, starting when you play the note.  In gate mode, the sequence pulses each note that you play, but it runs continuously so that pulses for multiple notes always line up.  This can sound like a multi-tap delay, an arpeggiator, or an analogue-style sequencer, including the distinctive pulsing effects in the Who's "Won't Get Fooled Again" and "Baba O'Riley," Pink Floyd's "On the Run," and many songs by U2.  In addition, it can simply transpose or add parallel intervals if you tell it to use an echo on beat zero.</p>
 
 <p>Usage: noteflurry --in &lt;port&gt; --out &lt;port&gt; ( --echo | --trigger | --gate ) [ --note &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; ] ... [ --loop &lt;beats&gt; ] [ --tempo &lt;bpm, default 100&gt; ]</p>
 
@@ -126,6 +118,14 @@ a { color: #FF6600 }
 <p><em>notemap</em> lets you remap the layout of notes on your MIDI keyboard.  Explore the guitar concept of alternate tunings on the piano, set up an ergonomic drum kit for your fingers, etc.</p>
 
 <p>Usage: notemap --in &lt;port&gt; --out &lt;port&gt; [ --transpose &lt;n&gt; ] [ --map &lt;filename.xml&gt; ]</p>
+
+<h3>netmidic and netmidid</h3>
+
+<p>These utilities speak NetMIDI, a trivial network protocol I created which sends standard MIDI messages over a TCP/IP connection as fast as possible.  They can be used to connect up the MIDI systems on two different machines over a network connection, even if they are running different operating systems.  The client forwards messages from the local MIDI system to a NetMIDI server.  The server forwards messages sent by the client to the local MIDI system.</p>
+
+<p>Usage: netmidic --in &lt;midi port&gt; --server &lt;hostname&gt; &lt;network port&gt;</p>
+
+<p>Usage: netmidid --port &lt;network port&gt; --out &lt;midi port&gt;</p>
 
 <h2 id="midi-file-utilities">MIDI file utilities</h2>
 
