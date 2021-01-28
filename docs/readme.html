@@ -97,9 +97,9 @@ a { color: #FF6600 }
 
 <h3>noteflurry</h3>
 
-<p><em>noteflurry</em> outputs a configurable sequence of notes for each note you play, transposed and velocity-scaled to match.  In echo mode, the sequence starts when you play a note and finishes on its own.  In trigger mode, the sequence pulses each note that you play, starting when you play the note.  In gate mode, the sequence pulses each note that you play, but it runs continuously so that pulses for multiple notes always line up.  This can sound like a multi-tap delay, an arpeggiator, or an analogue-style sequencer, including the distinctive pulsing effects in the Who's "Won't Get Fooled Again" and "Baba O'Riley," Pink Floyd's "On the Run," and many songs by U2.  In addition, it can simply transpose or add parallel intervals if you tell it to use an echo on beat zero.</p>
+<p><em>noteflurry</em> outputs a configurable sequence of notes for each note you play, transposed and velocity-scaled to match.  Trigger means that the sequence should start each time you play a note, like an echo.  Gate means that the notes you play are pulsed according to the notes going by in the sequence.  Using them together produces a complicated rhythmic texture.  Overall, <em>noteflurry</em> can sound like a multi-tap delay, an arpeggiator, or an analogue-style sequencer, including the distinctive pulsing effects in the Who's "Won't Get Fooled Again" and "Baba O'Riley," Pink Floyd's "On the Run," and many songs by U2.  In addition, it can simply transpose or add parallel intervals if you use trigger mode with notes on beat zero.</p>
 
-<p>Usage: noteflurry --in &lt;port&gt; --out &lt;port&gt; ( --echo | --trigger | --gate ) [ --note &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; ] ... [ --loop &lt;beats&gt; ] [ --tempo &lt;bpm, default 100&gt; ]</p>
+<p>Usage: noteflurry --in &lt;port&gt; --out &lt;port&gt; [ --trigger ] [ --gate ] [ --note &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; ] ... [ --loop &lt;beats&gt; ] [ --tempo &lt;bpm, default 100&gt; ]</p>
 
 <h3>pedalsim</h3>
 
