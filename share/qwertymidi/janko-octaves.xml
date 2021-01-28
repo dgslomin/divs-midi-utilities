@@ -18,35 +18,35 @@ the lower rows, providing more range but fewer isomorphic intervals.
 
 <!-- Upper octave -->
 
-<map key="backtick" action="G4" />
-<map key="1" action="A4" />
-<map key="2" action="B4" />
-<map key="3" action="C#5" />
-<map key="4" action="D#5" />
-<map key="5" action="F5" />
-<map key="6" action="G5" />
-<map key="7" action="A5" />
-<map key="8" action="B5" />
-<map key="9" action="C#6" />
-<map key="0" action="D#6" />
-<map key="minus" action="F6" />
-<map key="equals" action="G6" />
-<map key="backspace" action="A6" />
+<map key="backtick" action="A4" />
+<map key="1" action="B4" />
+<map key="2" action="C#5" />
+<map key="3" action="D#5" />
+<map key="4" action="F5" />
+<map key="5" action="G5" />
+<map key="6" action="A5" />
+<map key="7" action="B5" />
+<map key="8" action="C#6" />
+<map key="9" action="D#6" />
+<map key="0" action="F6" />
+<map key="minus" action="G6" />
+<map key="equals" action="A6" />
+<map key="backspace" action="B6" />
 
-<map key="tab" action="G#4" />
-<map key="Q" action="A#4" />
-<map key="W" action="C5" />
-<map key="E" action="D5" />
-<map key="R" action="E5" />
-<map key="T" action="F#5" />
-<map key="Y" action="G#5" />
-<map key="U" action="A#5" />
-<map key="I" action="C6" />
-<map key="O" action="D6" />
-<map key="P" action="E6" />
-<map key="open-bracket" action="F#6" />
-<map key="close-bracket" action="G#6" />
-<map key="backslash" action="A#6" />
+<map key="tab" action="A#4" />
+<map key="Q" action="C5" />
+<map key="W" action="D5" />
+<map key="E" action="E5" />
+<map key="R" action="F#5" />
+<map key="T" action="G#5" />
+<map key="Y" action="A#5" />
+<map key="U" action="C6" />
+<map key="I" action="D6" />
+<map key="O" action="E6" />
+<map key="P" action="F#6" />
+<map key="open-bracket" action="G#6" />
+<map key="close-bracket" action="A#6" />
+<map key="backslash" action="C7" />
 
 <!-- Lower octave -->
 
