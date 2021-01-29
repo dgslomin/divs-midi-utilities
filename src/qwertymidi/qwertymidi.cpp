@@ -21,6 +21,7 @@
 #define ACTION_SHIFT_DOWN_NOTE 10008
 #define ACTION_STAY_UP_NOTE 10009
 #define ACTION_STAY_DOWN_NOTE 10010
+#define ACTION_SUSTAIN 10011
 
 static wxTextCtrl* text_box;
 static int startup_error = 0;
@@ -98,6 +99,10 @@ static void handle_xml_start_element(void *user_data, const XML_Char *name, cons
 			{
 				map[key] = ACTION_STAY_DOWN_NOTE;
 			}
+			else if (action == "sustain")
+			{
+				map[key] = ACTION_SUSTAIN;
+			}
 			else
 			{
 				int note = MidiUtil_getNoteNumberFromName(action.char_str());
@@ -124,6 +129,16 @@ static void send_note_off(int channel, int note)
 		unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
 		MidiUtilMessage_setNoteOff(message, channel, note, 0);
 		rtmidi_out_send_message(midi_out, message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
+	}
+}
+
+static void send_control_change(int channel, int number, int value)
+{
+	if (midi_out != NULL)
+	{
+		unsigned char message[MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE];
+		MidiUtilMessage_setControlChange(message, channel, number, value);
+		rtmidi_out_send_message(midi_out, message, MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE);
 	}
 }
 
@@ -219,6 +234,12 @@ static void handle_key_down(wxKeyEvent& event)
 				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-note\" />", key_name));
 				break;
 			}
+			case ACTION_SUSTAIN:
+			{
+				send_control_change(channel_number, 64, 127);
+				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"sustain\" />", key_name));
+				break;
+			}
 			default:
 			{
 				int note = action;
@@ -270,6 +291,11 @@ static void handle_key_up(wxKeyEvent& event)
 		case ACTION_SHIFT_DOWN_NOTE:
 		{
 			transposition++;
+			break;
+		}
+		case ACTION_SUSTAIN:
+		{
+			send_control_change(channel_number, 64, 0);
 			break;
 		}
 		default:
