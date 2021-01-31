@@ -117,3 +117,6 @@ create-self-signing-certificate:
 sign:
 	signtool sign /n sreal.com /fd SHA256 ..\bin\*.exe
 
+package: all clean sign
+	cd ..\..\ && zip -r midi-utilities.zip midi-utilities -x "*.git*"
+
