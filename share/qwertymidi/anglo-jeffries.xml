@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<!--
+Jeffries anglo concertina.
+
+Home position is pointer fingers on Y and I; space works the bellows.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="space" action="alt" />
+
+<!-- Left hand -->
+
+<map key="3" action="F3" alt-action="E3" />
+<map key="4" action="Bb3" alt-action="A3" />
+<map key="5" action="D#4" alt-action="C#4" />
+<map key="6" action="G4" alt-action="A4" />
+<map key="7" action="Bb4" alt-action="G#4" />
+
+<map key="W" action="G3" alt-action="C3" />
+<map key="E" action="B3" alt-action="G3" />
+<map key="R" action="D4" alt-action="C4" />
+<map key="T" action="F4" alt-action="E4" />
+<map key="Y" action="A4" alt-action="G4" />
+
+<map key="A" action="A3" alt-action="B3" />
+<map key="S" action="F#4" alt-action="D4" />
+<map key="D" action="A4" alt-action="G4" />
+<map key="F" action="C5" alt-action="B4" />
+<map key="G" action="E5" alt-action="D5" />
+
+<!-- Right hand -->
+
+<map key="8" action="C#5" alt-action="D#5" />
+<map key="9" action="D#5" alt-action="C#5" />
+<map key="0" action="G5" alt-action="G#5" />
+<map key="minus" action="Bb5" alt-action="C#6" />
+<map key="equals" action="D6" alt-action="A5" />
+
+<map key="I" action="B4" alt-action="C5" />
+<map key="O" action="D5" alt-action="E5" />
+<map key="P" action="F5" alt-action="G5" />
+<map key="open-bracket" action="A5" alt-action="C6" />
+<map key="close-bracket" action="B5" alt-action="E6" />
+
+<map key="K" action="F#5" alt-action="G5" />
+<map key="L" action="A5" alt-action="B5" />
+<map key="semicolon" action="C6" alt-action="D6" />
+<map key="single-quote" action="E6" alt-action="G6" />
+<map key="enter" action="F#6" alt-action="F6" />
+
+</qwertymidi>

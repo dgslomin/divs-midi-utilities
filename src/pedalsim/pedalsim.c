@@ -10,15 +10,15 @@
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
 static int do_sustain = 0;
-static int do_sustenuto = 0;
+static int do_sostenuto = 0;
 static int do_bass_sustain = 0;
 static int do_soft = 0;
 static int do_volume = 0;
-static int independent_sustenuto = 0;
+static int independent_sostenuto = 0;
 static int highest_bass_note = 59;
 static int max_soft_velocity = 95;
 static int sustain_controller_number = 64;
-static int sustenuto_controller_number = 66;
+static int sostenuto_controller_number = 66;
 static int bass_sustain_controller_number = 69;
 static int soft_controller_number = 67;
 static int volume_controller_number = 12;
@@ -28,13 +28,13 @@ static int soft_down[16];
 static int volume[16];
 static int note_down[16][128];
 static int note_held_by_sustain[16][128];
-static int note_included_in_sustenuto[16][128];
-static int note_held_by_sustenuto[16][128];
+static int note_included_in_sostenuto[16][128];
+static int note_held_by_sostenuto[16][128];
 static int note_held_by_bass_sustain[16][128];
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sustenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ]\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> [ --sustain ] [ --sostenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sostenuto ] [ --highest-bass-note <default B3> ] [ --max-soft-velocity <default 95> ] [ --sustain-controller <default 64> ] [ --sostenuto-controller <default 66> ] [ --bass-sustain-controller <default 69> ] [ --soft-controller <default 67> ] [ --volume-controller <default 12> ]\n", program_name);
 	exit(1);
 }
 
@@ -55,11 +55,11 @@ static void send_note_off(int channel, int note)
 static void handle_note_on(int channel, int note, int velocity)
 {
 	int scaled_velocity = velocity * (soft_down[channel] ? max_soft_velocity : 127) * volume[channel] / 127 / 127;
-	if (note_down[channel][note] || note_held_by_sustain[channel][note] || note_held_by_sustenuto[channel][note] || note_held_by_bass_sustain[channel][note]) send_note_off(channel, note);
+	if (note_down[channel][note] || note_held_by_sustain[channel][note] || note_held_by_sostenuto[channel][note] || note_held_by_bass_sustain[channel][note]) send_note_off(channel, note);
 	send_note_on(channel, note, scaled_velocity);
 	note_down[channel][note] = 1;
 	note_held_by_sustain[channel][note] = 0;
-	note_held_by_sustenuto[channel][note] = 0;
+	note_held_by_sostenuto[channel][note] = 0;
 	note_held_by_bass_sustain[channel][note] = 0;
 }
 
@@ -68,9 +68,9 @@ static void handle_note_off(int channel, int note)
 	if (note_down[channel][note])
 	{
 		if (sustain_down[channel]) note_held_by_sustain[channel][note] = 1;
-		if (note_included_in_sustenuto[channel][note]) note_held_by_sustenuto[channel][note] = 1;
+		if (note_included_in_sostenuto[channel][note]) note_held_by_sostenuto[channel][note] = 1;
 		if (bass_sustain_down[channel] && (note <= highest_bass_note)) note_held_by_bass_sustain[channel][note] = 1;
-		if (!(note_held_by_sustain[channel][note] || note_held_by_sustenuto[channel][note] || note_held_by_bass_sustain[channel][note])) send_note_off(channel, note);
+		if (!(note_held_by_sustain[channel][note] || note_held_by_sostenuto[channel][note] || note_held_by_bass_sustain[channel][note])) send_note_off(channel, note);
 		note_down[channel][note] = 0;
 	}
 }
@@ -88,7 +88,7 @@ static void handle_sustain_off(int channel)
 	{
 		if (note_held_by_sustain[channel][note])
 		{
-			if (!(note_held_by_sustenuto[channel][note] || note_held_by_bass_sustain[channel][note])) send_note_off(channel, note);
+			if (!(note_held_by_sostenuto[channel][note] || note_held_by_bass_sustain[channel][note])) send_note_off(channel, note);
 			note_held_by_sustain[channel][note] = 0;
 		}
 	}
@@ -96,29 +96,29 @@ static void handle_sustain_off(int channel)
 	sustain_down[channel] = 0;
 }
 
-static void handle_sustenuto_on(int channel)
+static void handle_sostenuto_on(int channel)
 {
 	int note;
 
 	for (note = 0; note < 128; note++)
 	{
-		if (note_down[channel][note] || (!independent_sustenuto && (sustain_down[channel] || (bass_sustain_down[channel] && (note <= highest_bass_note))))) note_included_in_sustenuto[channel][note] = 1;
+		if (note_down[channel][note] || (!independent_sostenuto && (sustain_down[channel] || (bass_sustain_down[channel] && (note <= highest_bass_note))))) note_included_in_sostenuto[channel][note] = 1;
 	}
 }
 
-static void handle_sustenuto_off(int channel)
+static void handle_sostenuto_off(int channel)
 {
 	int note;
 
 	for (note = 0; note < 128; note++)
 	{
-		if (note_held_by_sustenuto[channel][note])
+		if (note_held_by_sostenuto[channel][note])
 		{
 			if (!(note_held_by_sustain[channel][note] || note_held_by_bass_sustain[channel][note])) send_note_off(channel, note);
-			note_held_by_sustenuto[channel][note] = 0;
+			note_held_by_sostenuto[channel][note] = 0;
 		}
 
-		note_included_in_sustenuto[channel][note] = 0;
+		note_included_in_sostenuto[channel][note] = 0;
 	}
 }
 
@@ -135,7 +135,7 @@ static void handle_bass_sustain_off(int channel)
 	{
 		if (note_held_by_bass_sustain[channel][note])
 		{
-			if (!(note_held_by_sustain[channel][note] || note_held_by_sustenuto[channel][note])) send_note_off(channel, note);
+			if (!(note_held_by_sustain[channel][note] || note_held_by_sostenuto[channel][note])) send_note_off(channel, note);
 			note_held_by_bass_sustain[channel][note] = 0;
 		}
 	}
@@ -200,15 +200,15 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 					handle_sustain_off(channel);
 				}
 			}
-			else if (do_sustenuto && (number == sustenuto_controller_number))
+			else if (do_sostenuto && (number == sostenuto_controller_number))
 			{
 				if (value_above_middle)
 				{
-					handle_sustenuto_on(channel);
+					handle_sostenuto_on(channel);
 				}
 				else
 				{
-					handle_sustenuto_off(channel);
+					handle_sostenuto_off(channel);
 				}
 			}
 			else if (do_bass_sustain && (number == bass_sustain_controller_number))
@@ -273,8 +273,8 @@ int main(int argc, char **argv)
 		{
 			note_down[i][j] = 0;
 			note_held_by_sustain[i][j] = 0;
-			note_included_in_sustenuto[i][j] = 0;
-			note_held_by_sustenuto[i][j] = 0;
+			note_included_in_sostenuto[i][j] = 0;
+			note_held_by_sostenuto[i][j] = 0;
 			note_held_by_bass_sustain[i][j] = 0;
 		}
 	}
@@ -305,9 +305,9 @@ int main(int argc, char **argv)
 		{
 			do_sustain = 1;
 		}
-		else if (strcmp(argv[i], "--sustenuto") == 0)
+		else if (strcmp(argv[i], "--sostenuto") == 0)
 		{
-			do_sustenuto = 1;
+			do_sostenuto = 1;
 		}
 		else if (strcmp(argv[i], "--bass-sustain") == 0)
 		{
@@ -321,9 +321,9 @@ int main(int argc, char **argv)
 		{
 			do_volume = 1;
 		}
-		else if (strcmp(argv[i], "--independent-sustenuto") == 0)
+		else if (strcmp(argv[i], "--independent-sostenuto") == 0)
 		{
-			independent_sustenuto = 1;
+			independent_sostenuto = 1;
 		}
 		else if (strcmp(argv[i], "--highest-bass-note") == 0)
 		{
@@ -340,10 +340,10 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			sustain_controller_number = atoi(argv[i]);
 		}
-		else if (strcmp(argv[i], "--sustenuto-controller") == 0)
+		else if (strcmp(argv[i], "--sostenuto-controller") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			sustenuto_controller_number = atoi(argv[i]);
+			sostenuto_controller_number = atoi(argv[i]);
 		}
 		else if (strcmp(argv[i], "--bass-sustain-controller") == 0)
 		{

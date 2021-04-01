@@ -16,17 +16,16 @@ endif
 	cd lsmidiins && make -f Makefile.unix
 	cd lsmidiouts && make -f Makefile.unix
 	cd mish && make -f Makefile.unix
-	cd multiecho && make -f Makefile.unix
 	cd netmidic && make -f Makefile.unix
 	cd netmidid && make -f Makefile.unix
 	cd normalizesmf && make -f Makefile.unix
+	cd noteflurry && make -f Makefile.unix
 	cd notemap && make -f Makefile.unix
 	cd offset-tempo && make -f Makefile.unix
 	cd offset-velocity && make -f Makefile.unix
 	cd onmidi && make -f Makefile.unix
 	cd pedalsim && make -f Makefile.unix
 	cd playsmf && make -f Makefile.unix
-	cd pulsar && make -f Makefile.unix
 	cd quantize && make -f Makefile.unix
 	cd qwertymidi && make -f Makefile.unix
 	cd recordsmf && make -f Makefile.unix
@@ -57,17 +56,16 @@ endif
 	cd lsmidiins && make -f Makefile.unix clean
 	cd lsmidiouts && make -f Makefile.unix clean
 	cd mish && make -f Makefile.unix clean
-	cd multiecho && make -f Makefile.unix clean
 	cd netmidic && make -f Makefile.unix clean
 	cd netmidid && make -f Makefile.unix clean
 	cd normalizesmf && make -f Makefile.unix clean
+	cd noteflurry && make -f Makefile.unix clean
 	cd notemap && make -f Makefile.unix clean
 	cd offset-tempo && make -f Makefile.unix clean
 	cd offset-velocity && make -f Makefile.unix clean
 	cd onmidi && make -f Makefile.unix clean
 	cd pedalsim && make -f Makefile.unix clean
 	cd playsmf && make -f Makefile.unix clean
-	cd pulsar && make -f Makefile.unix clean
 	cd quantize && make -f Makefile.unix clean
 	cd qwertymidi && make -f Makefile.unix clean
 	cd recordsmf && make -f Makefile.unix clean
@@ -98,17 +96,16 @@ endif
 	cd lsmidiins && make -f Makefile.unix reallyclean
 	cd lsmidiouts && make -f Makefile.unix reallyclean
 	cd mish && make -f Makefile.unix reallyclean
-	cd multiecho && make -f Makefile.unix reallyclean
 	cd netmidic && make -f Makefile.unix reallyclean
 	cd netmidid && make -f Makefile.unix reallyclean
 	cd normalizesmf && make -f Makefile.unix reallyclean
+	cd noteflurry && make -f Makefile.unix reallyclean
 	cd notemap && make -f Makefile.unix reallyclean
 	cd offset-tempo && make -f Makefile.unix reallyclean
 	cd offset-velocity && make -f Makefile.unix reallyclean
 	cd onmidi && make -f Makefile.unix reallyclean
 	cd pedalsim && make -f Makefile.unix reallyclean
 	cd playsmf && make -f Makefile.unix reallyclean
-	cd pulsar && make -f Makefile.unix reallyclean
 	cd quantize && make -f Makefile.unix reallyclean
 	cd qwertymidi && make -f Makefile.unix reallyclean
 	cd recordsmf && make -f Makefile.unix reallyclean

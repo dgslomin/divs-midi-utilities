@@ -1,9 +1,12 @@
 
-..\..\bin\multiecho.exe: multiecho.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo /Fe..\..\bin\multiecho.exe multiecho.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+..\..\bin\noteflurry.exe: noteflurry.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\noteflurry.exe noteflurry.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
 
-multiecho.obj: multiecho.c
-	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c multiecho.c
+noteflurry.obj: noteflurry.c
+	cl /nologo /I..\midifile /I..\midiutil /I..\3rdparty\rtmidi /c noteflurry.c
+
+midifile.obj: ..\midifile\midifile.c
+	cl /nologo /I..\midifile /c ..\midifile\midifile.c
 
 midiutil-common.obj: ..\midiutil\midiutil-common.c
 	cl /nologo /I..\midiutil /c ..\midiutil\midiutil-common.c
@@ -21,7 +24,8 @@ rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 	cl /nologo /EHsc /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
-	@if exist multiecho.obj del multiecho.obj
+	@if exist noteflurry.obj del noteflurry.obj
+	@if exist midifile.obj del midifile.obj
 	@if exist midiutil-common.obj del midiutil-common.obj
 	@if exist midiutil-system.obj del midiutil-system.obj
 	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
@@ -29,5 +33,5 @@ clean:
 	@if exist rtmidi_c.obj del rtmidi_c.obj
 
 reallyclean: clean
-	@if exist ..\..\bin\multiecho.exe del ..\..\bin\multiecho.exe
+	@if exist ..\..\bin\noteflurry.exe del ..\..\bin\noteflurry.exe
 

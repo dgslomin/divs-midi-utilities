@@ -21,6 +21,8 @@
 #define ACTION_SHIFT_DOWN_NOTE 10008
 #define ACTION_STAY_UP_NOTE 10009
 #define ACTION_STAY_DOWN_NOTE 10010
+#define ACTION_SUSTAIN 10011
+#define ACTION_ALT 10012
 
 static wxTextCtrl* text_box;
 static int startup_error = 0;
@@ -28,10 +30,72 @@ static RtMidiOutPtr midi_out = NULL;
 static int channel_number = 0;
 static int program_number = -1;
 static int velocity = 64;
-static int map[512];
+static int map[512][2];
 static int down[512];
 static int down_transposition[512];
 static int transposition = 0;
+static int alt = 0;
+
+static void add_mapping(int key, int alt, wxString action)
+{
+	if (action == "noop")
+	{
+		map[key][alt] = ACTION_NOOP;
+	}
+	else if (action == "exit")
+	{
+		map[key][alt] = ACTION_EXIT;
+	}
+	else if (action == "panic")
+	{
+		map[key][alt] = ACTION_PANIC;
+	}
+	else if (action == "shift-up-octave")
+	{
+		map[key][alt] = ACTION_SHIFT_UP_OCTAVE;
+	}
+	else if (action == "shift-down-octave")
+	{
+		map[key][alt] = ACTION_SHIFT_DOWN_OCTAVE;
+	}
+	else if (action == "stay-up-octave")
+	{
+		map[key][alt] = ACTION_STAY_UP_OCTAVE;
+	}
+	else if (action == "stay-down-octave")
+	{
+		map[key][alt] = ACTION_STAY_DOWN_OCTAVE;
+	}
+	else if (action == "shift-up-note")
+	{
+		map[key][alt] = ACTION_SHIFT_UP_NOTE;
+	}
+	else if (action == "shift-down-note")
+	{
+		map[key][alt] = ACTION_SHIFT_DOWN_NOTE;
+	}
+	else if (action == "stay-up-note")
+	{
+		map[key][alt] = ACTION_STAY_UP_NOTE;
+	}
+	else if (action == "stay-down-note")
+	{
+		map[key][alt] = ACTION_STAY_DOWN_NOTE;
+	}
+	else if (action == "sustain")
+	{
+		map[key][alt] = ACTION_SUSTAIN;
+	}
+	else if (action == "alt")
+	{
+		map[key][alt] = ACTION_ALT;
+	}
+	else
+	{
+		int note = MidiUtil_getNoteNumberFromName(action.char_str());
+		if (note >= 0) map[key][alt] = note;
+	}
+}
 
 static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
 {
@@ -39,6 +103,7 @@ static void handle_xml_start_element(void *user_data, const XML_Char *name, cons
 	{
 		int key = -1;
 		wxString action = wxEmptyString;
+		wxString alt_action = wxEmptyString;
 
 		for (int i = 0; attributes[i] != NULL; i += 2)
 		{
@@ -50,59 +115,103 @@ static void handle_xml_start_element(void *user_data, const XML_Char *name, cons
 			{
 				action = attributes[i + 1];
 			}
+			else if (strcmp(attributes[i], "alt-action") == 0)
+			{
+				alt_action = attributes[i + 1];
+			}
 		}
 
-		if ((key >= 0) && (action != wxEmptyString))
+		if (key >= 0)
 		{
-			if (action == "noop")
+			if (action == wxEmptyString)
 			{
-				map[key] = ACTION_NOOP;
-			}
-			else if (action == "exit")
-			{
-				map[key] = ACTION_EXIT;
-			}
-			else if (action == "panic")
-			{
-				map[key] = ACTION_PANIC;
-			}
-			else if (action == "shift-up-octave")
-			{
-				map[key] = ACTION_SHIFT_UP_OCTAVE;
-			}
-			else if (action == "shift-down-octave")
-			{
-				map[key] = ACTION_SHIFT_DOWN_OCTAVE;
-			}
-			else if (action == "stay-up-octave")
-			{
-				map[key] = ACTION_STAY_UP_OCTAVE;
-			}
-			else if (action == "stay-down-octave")
-			{
-				map[key] = ACTION_STAY_DOWN_OCTAVE;
-			}
-			else if (action == "shift-up-note")
-			{
-				map[key] = ACTION_SHIFT_UP_NOTE;
-			}
-			else if (action == "shift-down-note")
-			{
-				map[key] = ACTION_SHIFT_DOWN_NOTE;
-			}
-			else if (action == "stay-up-note")
-			{
-				map[key] = ACTION_STAY_UP_NOTE;
-			}
-			else if (action == "stay-down-note")
-			{
-				map[key] = ACTION_STAY_DOWN_NOTE;
+				add_mapping(key, 0, "noop");
+				add_mapping(key, 1, (alt_action == wxEmptyString) ? "noop" : alt_action);
 			}
 			else
 			{
-				int note = MidiUtil_getNoteNumberFromName(action.char_str());
-				if (note >= 0) map[key] = note;
+				add_mapping(key, 0, action);
+				add_mapping(key, 1, (alt_action == wxEmptyString) ? action : alt_action);
 			}
+		}
+	}
+}
+
+static void print_key_binding(wxString key_name, int action)
+{
+	switch (action)
+	{
+		case ACTION_NOOP:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"noop\" />", key_name));
+			break;
+		}
+		case ACTION_EXIT:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"exit\" />", key_name));
+			break;
+		}
+		case ACTION_PANIC:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"panic\" />", key_name));
+			break;
+		}
+		case ACTION_SHIFT_UP_OCTAVE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-octave\" />", key_name));
+			break;
+		}
+		case ACTION_STAY_UP_OCTAVE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-octave\" />", key_name));
+			break;
+		}
+		case ACTION_SHIFT_DOWN_OCTAVE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-octave\" />", key_name));
+			break;
+		}
+		case ACTION_STAY_DOWN_OCTAVE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-octave\" />", key_name));
+			break;
+		}
+		case ACTION_SHIFT_UP_NOTE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-note\" />", key_name));
+			break;
+		}
+		case ACTION_STAY_UP_NOTE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-note\" />", key_name));
+			break;
+		}
+		case ACTION_SHIFT_DOWN_NOTE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-note\" />", key_name));
+			break;
+		}
+		case ACTION_STAY_DOWN_NOTE:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-note\" />", key_name));
+			break;
+		}
+		case ACTION_SUSTAIN:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"sustain\" />", key_name));
+			break;
+		}
+		case ACTION_ALT:
+		{
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"alt\" />", key_name));
+			break;
+		}
+		default:
+		{
+			char note_name[128];
+			MidiUtil_setNoteNameFromNumber(action, note_name);
+			text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%s\" />", key_name, note_name));
+			break;
 		}
 	}
 }
@@ -127,6 +236,16 @@ static void send_note_off(int channel, int note)
 	}
 }
 
+static void send_control_change(int channel, int number, int value)
+{
+	if (midi_out != NULL)
+	{
+		unsigned char message[MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE];
+		MidiUtilMessage_setControlChange(message, channel, number, value);
+		rtmidi_out_send_message(midi_out, message, MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE);
+	}
+}
+
 static void send_program_change(int channel, int number)
 {
 	if (midi_out != NULL)
@@ -143,103 +262,99 @@ static void panic(int channel)
 	for (i = 0; i < 127; i++) send_note_off(channel, i);
 }
 
-static void handle_key_down(wxKeyEvent& event)
+static void do_key_down_action(int key_code, int action);
+static void do_key_up_action(int key_code, int action);
+
+static void do_key_down_action(int key_code, int action)
 {
-	int key_code = event.GetKeyCode();
-
-	if (!down[key_code])
+	switch (action)
 	{
-		wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
-		int action = map[key_code];
-		down[key_code] = 1;
-
-		switch (action)
+		case ACTION_NOOP:
 		{
-			case ACTION_NOOP:
+			break;
+		}
+		case ACTION_EXIT:
+		{
+			wxExit();
+			break;
+		}
+		case ACTION_PANIC:
+		{
+			panic(channel_number);
+			break;
+		}
+		case ACTION_SHIFT_UP_OCTAVE:
+		{
+			transposition += 12;
+			break;
+		}
+		case ACTION_STAY_UP_OCTAVE:
+		{
+			transposition += 12;
+			break;
+		}
+		case ACTION_SHIFT_DOWN_OCTAVE:
+		{
+			transposition -= 12;
+			break;
+		}
+		case ACTION_STAY_DOWN_OCTAVE:
+		{
+			transposition -= 12;
+			break;
+		}
+		case ACTION_SHIFT_UP_NOTE:
+		{
+			transposition++;
+			break;
+		}
+		case ACTION_STAY_UP_NOTE:
+		{
+			transposition++;
+			break;
+		}
+		case ACTION_SHIFT_DOWN_NOTE:
+		{
+			transposition--;
+			break;
+		}
+		case ACTION_STAY_DOWN_NOTE:
+		{
+			transposition--;
+			break;
+		}
+		case ACTION_SUSTAIN:
+		{
+			send_control_change(channel_number, 64, 127);
+			break;
+		}
+		case ACTION_ALT:
+		{
+			int i;
+
+			for (i = 0; i < 512; i++)
 			{
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"noop\" />", key_name));
-				break;
+				if (down[i] && (map[i][0] != ACTION_ALT) && (map[i][alt] != map[i][1]))
+				{
+					do_key_up_action(i, map[i][alt]);
+					do_key_down_action(i, map[i][1]);
+				}
 			}
-			case ACTION_EXIT:
-			{
-				wxExit();
-				break;
-			}
-			case ACTION_PANIC:
-			{
-				panic(channel_number);
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"panic\" />", key_name));
-				break;
-			}
-			case ACTION_SHIFT_UP_OCTAVE:
-			{
-				transposition += 12;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-octave\" />", key_name));
-				break;
-			}
-			case ACTION_STAY_UP_OCTAVE:
-			{
-				transposition += 12;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-octave\" />", key_name));
-				break;
-			}
-			case ACTION_SHIFT_DOWN_OCTAVE:
-			{
-				transposition -= 12;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-octave\" />", key_name));
-				break;
-			}
-			case ACTION_STAY_DOWN_OCTAVE:
-			{
-				transposition -= 12;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-octave\" />", key_name));
-				break;
-			}
-			case ACTION_SHIFT_UP_NOTE:
-			{
-				transposition++;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-up-note\" />", key_name));
-				break;
-			}
-			case ACTION_STAY_UP_NOTE:
-			{
-				transposition++;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-up-note\" />", key_name));
-				break;
-			}
-			case ACTION_SHIFT_DOWN_NOTE:
-			{
-				transposition--;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"shift-down-note\" />", key_name));
-				break;
-			}
-			case ACTION_STAY_DOWN_NOTE:
-			{
-				transposition--;
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"stay-down-note\" />", key_name));
-				break;
-			}
-			default:
-			{
-				int note = action;
-				int transposed_note = note + transposition;
-				char note_name[128];
-				if ((transposed_note >= 0) && (transposed_note < 128)) send_note_on(channel_number, transposed_note, velocity);
-				down_transposition[key_code] = transposition;
-				MidiUtil_setNoteNameFromNumber(note, note_name);
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%s\" />", key_name, note_name));
-				break;
-			}
+
+			alt = 1;
+			break;
+		}
+		default:
+		{
+			int transposed_note = action + transposition;
+			if ((transposed_note >= 0) && (transposed_note < 128)) send_note_on(channel_number, transposed_note, velocity);
+			break;
 		}
 	}
 }
 
-static void handle_key_up(wxKeyEvent& event)
+static void do_key_up_action(int key_code, int action)
 {
-	int key_code = event.GetKeyCode();
-	int action = map[key_code];
-	down[key_code] = 0;
-
 	switch (action)
 	{
 		case ACTION_NOOP:
@@ -272,6 +387,27 @@ static void handle_key_up(wxKeyEvent& event)
 			transposition++;
 			break;
 		}
+		case ACTION_SUSTAIN:
+		{
+			send_control_change(channel_number, 64, 0);
+			break;
+		}
+		case ACTION_ALT:
+		{
+			int i;
+
+			for (i = 0; i < 512; i++)
+			{
+				if (down[i] && (map[i][0] != ACTION_ALT) && (map[i][alt] != map[i][0]))
+				{
+					do_key_up_action(i, map[i][alt]);
+					do_key_down_action(i, map[i][0]);
+				}
+			}
+
+			alt = 0;
+			break;
+		}
 		default:
 		{
 			int transposed_note = action + down_transposition[key_code];
@@ -279,6 +415,29 @@ static void handle_key_up(wxKeyEvent& event)
 			break;
 		}
 	}
+}
+
+static void handle_key_down(wxKeyEvent& event)
+{
+	int key_code = event.GetKeyCode();
+
+	if (!down[key_code])
+	{
+		wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
+		int action = map[key_code][alt];
+		down[key_code] = 1;
+		down_transposition[key_code] = transposition;
+		do_key_down_action(key_code, action);
+		print_key_binding(key_name, action);
+	}
+}
+
+static void handle_key_up(wxKeyEvent& event)
+{
+	int key_code = event.GetKeyCode();
+	int action = map[key_code][alt];
+	down[key_code] = 0;
+	do_key_up_action(key_code, action);
 }
 
 static void handle_kill_focus(wxFocusEvent& event)
@@ -307,7 +466,8 @@ bool Application::OnInit()
 
 	for (i = 0; i < 512; i++)
 	{
-		map[i] = ACTION_NOOP;
+		map[i][0] = ACTION_NOOP;
+		map[i][1] = ACTION_NOOP;
 		down[i] = 0;
 		down_transposition[i] = 0;
 	}

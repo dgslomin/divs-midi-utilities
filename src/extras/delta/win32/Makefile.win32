@@ -1,0 +1,10 @@
+
+delta.exe: delta.c
+	cl /nologo /Fedelta.exe delta.c winmm.lib
+
+clean:
+	@if exist delta.obj del delta.obj
+
+reallyclean: clean
+	@if exist delta.exe del delta.exe
+

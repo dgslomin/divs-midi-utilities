@@ -9,8 +9,9 @@
 
 static RtMidiInPtr midi_in = NULL;
 static RtMidiOutPtr midi_out = NULL;
-static int interval = 0;
-static int does_it_count = 1;
+static int down_transposition[128];
+static int transposition = 0;
+static int pitch_wheel_state = 0;
 
 static void usage(char *program_name)
 {
@@ -24,7 +25,8 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 	{
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
-			int new_note = MidiUtilNoteOffMessage_getNote(message) + interval;
+			int note = MidiUtilNoteOffMessage_getNote(message);
+			int new_note = note + down_transposition[note];
 
 			if (new_note >= 0 && new_note < 128)
 			{
@@ -32,10 +34,14 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 				MidiUtilMessage_setNoteOff(new_message, MidiUtilNoteOffMessage_getChannel(message), new_note, MidiUtilNoteOffMessage_getVelocity(message));
 				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
 			}
+
+			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
-			int new_note = MidiUtilNoteOnMessage_getNote(message) + interval;
+			int note = MidiUtilNoteOnMessage_getNote(message);
+			int new_note = note + transposition;
+			down_transposition[note] = transposition;
 
 			if (new_note >= 0 && new_note < 128)
 			{
@@ -43,27 +49,32 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 				MidiUtilMessage_setNoteOn(new_message, MidiUtilNoteOnMessage_getChannel(message), new_note, MidiUtilNoteOnMessage_getVelocity(message));
 				rtmidi_out_send_message(midi_out, new_message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
 			}
+
+			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
 		{
 			int value = MidiUtilPitchWheelMessage_getValue(message);
 
-			if (does_it_count)
+			if (value > 0x3500)
 			{
- 				if (value > 0x3500)
+				if (pitch_wheel_state != 1)
 				{
-					interval += 12;
-					does_it_count = 0;
-				}
-				else if (value < 0x500)
-				{
-					interval -= 12;
-					does_it_count = 0;
+					pitch_wheel_state = 1;
+					transposition += 12;
 				}
 			}
-			else if (value > 0x1500 && value < 0x2500)
+			else if (value < 0x500)
 			{
-				does_it_count = 1;
+				if (pitch_wheel_state != -1)
+				{
+					pitch_wheel_state = -1;
+					transposition -= 12;
+				}
+			}
+			else
+			{
+				pitch_wheel_state = 0;
 			}
 
 			break;
@@ -85,6 +96,8 @@ static void handle_exit(void *user_data)
 int main(int argc, char **argv)
 {
 	int i;
+
+	for (i = 0; i < 128; i++) down_transposition[i] = 0;
 
 	for (i = 1; i < argc; i++)
 	{

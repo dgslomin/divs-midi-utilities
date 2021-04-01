@@ -5,10 +5,10 @@ jumpoctave: jumpoctave.o midimsg.o
 	$(CC) -o jumpoctave jumpoctave.o midimsg.o
 
 jumpoctave.o: jumpoctave.c
-	$(CC) -I../midimsg -c jumpoctave.c
+	$(CC) -I../../midimsg -c jumpoctave.c
 
-midimsg.o: ../midimsg/midimsg.c
-	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+midimsg.o: ../../midimsg/midimsg.c
+	$(CC) -I../../midimsg -c ../../midimsg/midimsg.c
 
 clean:
 	rm -f jumpoctave.o

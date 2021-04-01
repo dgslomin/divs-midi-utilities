@@ -33,6 +33,13 @@ static void usage(char *program_name)
 	exit(1);
 }
 
+/* Call system() in a background thread to prevent it from blocking. */
+static void run_command_thread_main(void *user_data)
+{
+	char *command = (char *)(user_data);
+	system(command);
+}
+
 static void handle_controller_alarm(int cancelled, void *user_data)
 {
 	ControllerHoldId_t controller_hold_id = (ControllerHoldId_t)(user_data);
@@ -42,7 +49,7 @@ static void handle_controller_alarm(int cancelled, void *user_data)
 		if (controller_hold_ids[controller_hold_id->number] == controller_hold_id)
 		{
 			controller_hold_ids[controller_hold_id->number] = NULL;
-			system(controller_hold_commands[controller_hold_id->number]);
+			MidiUtil_startThread(run_command_thread_main, controller_hold_commands[controller_hold_id->number]);
 		}
 	}
 
@@ -63,7 +70,7 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 			}
 			else
 			{
-				if (MidiUtilNoteOnMessage_getVelocity(message) > 0) system(note_commands[note]);
+				if (MidiUtilNoteOnMessage_getVelocity(message) > 0) MidiUtil_startThread(run_command_thread_main, note_commands[note]);
 			}
 
 			break;
@@ -86,7 +93,7 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 
 					if (controller_hold_commands[number] == NULL)
 					{
-						system(controller_commands[number]);
+						MidiUtil_startThread(run_command_thread_main, controller_commands[number]);
 					}
 					else
 					{
@@ -106,7 +113,7 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 						if (controller_hold_ids[number] != NULL)
 						{
 							controller_hold_ids[number] = NULL;
-							system(controller_commands[number]);
+							MidiUtil_startThread(run_command_thread_main, controller_commands[number]);
 						}
 					}
 				}
@@ -124,17 +131,29 @@ static void handle_midi_message(double timestamp, const unsigned char *message, 
 			{
 				int value = MidiUtilPitchWheelMessage_getValue(message);
 
-				if ((value >= 0x3500) && (pitch_wheel_state != 1))
+				if (value >= 0x3500)
 				{
-					pitch_wheel_state = 1;
-					if (pitch_wheel_up_command != NULL) system(pitch_wheel_up_command);
+					if (pitch_wheel_state != 1)
+					{
+						pitch_wheel_state = 1;
+						if (pitch_wheel_up_command != NULL) MidiUtil_startThread(run_command_thread_main, pitch_wheel_up_command);
+					}
 				}
-				else if ((value < 0x500) && (pitch_wheel_state != -1))
+				else if (value < 0x500)
 				{
-					pitch_wheel_state = -1;
-					if (pitch_wheel_down_command != NULL) system(pitch_wheel_down_command);
+					if (pitch_wheel_state != -1)
+					{
+						pitch_wheel_state = -1;
+						if (pitch_wheel_down_command != NULL) MidiUtil_startThread(run_command_thread_main, pitch_wheel_down_command);
+					}
+				}
+				else
+				{
+					pitch_wheel_state = 0;
 				}
 			}
+
+			break;
 		}
 		default:
 		{

@@ -1,4 +1,6 @@
 
+default: ..\..\bin\xmltosmf.exe ..\..\bin\libexpat.dll
+
 ..\..\bin\xmltosmf.exe: xmltosmf.obj midifile.obj
 	cl /nologo /Fe..\..\bin\xmltosmf.exe xmltosmf.obj midifile.obj ..\3rdparty\expat\libexpat.lib
 
@@ -7,6 +9,9 @@ xmltosmf.obj: xmltosmf.c ..\midifile\midifile.h
 
 midifile.obj: ..\midifile\midifile.c ..\midifile\midifile.h
 	cl /nologo /I..\midifile /c ..\midifile\midifile.c
+
+..\..\bin\libexpat.dll: ..\3rdparty\expat\libexpat.dll
+	copy ..\3rdparty\expat\libexpat.dll ..\..\bin
 
 clean:
 	@if exist xmltosmf.obj del xmltosmf.obj

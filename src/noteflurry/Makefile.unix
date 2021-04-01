@@ -13,11 +13,14 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../bin/pulsar: pulsar.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/pulsar pulsar.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../bin/noteflurry: noteflurry.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/noteflurry noteflurry.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
 
-pulsar.o: pulsar.c
-	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c pulsar.c
+noteflurry.o: noteflurry.c
+	$(CC) $(CFLAGS) -I../midifile -I../midiutil -I../3rdparty/rtmidi -c noteflurry.c
+
+midifile.o: ../midifile/midifile.c
+	$(CC) $(CFLAGS) -I../midifile -c ../midifile/midifile.c
 
 midiutil-common.o: ../midiutil/midiutil-common.c
 	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-common.c
@@ -35,7 +38,8 @@ rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
 	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
-	rm -f pulsar.o
+	rm -f noteflurry.o
+	rm -f midifile.o
 	rm -f midiutil-common.o
 	rm -f midiutil-system.o
 	rm -f midiutil-rtmidi.o
@@ -43,5 +47,5 @@ clean:
 	rm -f rtmidi_c.o
 
 reallyclean: clean
-	rm -f ../../bin/pulsar
+	rm -f ../../bin/noteflurry
 

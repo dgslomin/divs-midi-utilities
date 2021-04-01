@@ -5,10 +5,10 @@ intervals: intervals.o midimsg.o
 	$(CC) -o intervals intervals.o midimsg.o
 
 intervals.o: intervals.c
-	$(CC) -I../midimsg -c intervals.c
+	$(CC) -I../../midimsg -c intervals.c
 
-midimsg.o: ../midimsg/midimsg.c
-	$(CC) -I../midimsg -c ../midimsg/midimsg.c
+midimsg.o: ../../midimsg/midimsg.c
+	$(CC) -I../../midimsg -c ../../midimsg/midimsg.c
 
 clean:
 	rm -f intervals.o

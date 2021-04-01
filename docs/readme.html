@@ -21,7 +21,7 @@ a { color: #FF6600 }
 
 <h2 id="news">News</h2>
 
-<p>2021-01-21 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
+<p>2021-01-28 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
 
 <h2 id="realtime-midi-utilities">Realtime MIDI utilities</h2>
 
@@ -81,7 +81,7 @@ a { color: #FF6600 }
 
 <h3>qwertymidi and delta</h3>
 
-<p><em>qwertymidi</em> lets you use your computer keyboard as if it were a synthesizer keyboard.  It supports custom mapping of the keyboard layout by means of a config file.  Sample maps are provided for conventional and von Janko pianos; Hayden, English, and Maccann concertinas; different chromatic button accordions; and more.  For portability reasons this has to be a GUI application, but it still takes all its options from the command line.</p>
+<p><em>qwertymidi</em> lets you use your computer keyboard as if it were a synthesizer keyboard.  It supports custom mapping of the keyboard layout by means of a config file.  Sample maps are provided for conventional and von Janko pianos, Hayden, English, Anglo, and Maccann concertinas, different chromatic button accordions, and more.  For portability reasons this has to be a GUI application, but it still takes all its options from the command line.</p>
 
 <p><em>delta</em> is a fun to play, monophonic variation on <em>qwertymidi</em> which maps keys on the computer keyboard to relative intervals instead of absolute pitches.  It was inspired by the unusual <a href="http://www.samchillian.com/">Samchillian</a> MIDI controller I read about online.  It also supports custom keyboard mappings.</p>
 
@@ -93,31 +93,19 @@ a { color: #FF6600 }
 
 <p><em>onmidi</em> runs programs or scripts in response to MIDI input.  It's particularly useful for turning pages in on-screen sheet music.</p>
 
-<p>Usage: onpedal --in &lt;port&gt; [ --out &lt;port&gt; ] [ --hold-length &lt;n&gt; ] [ --note-command &lt;note&gt; &lt;command&gt; | --controller-command &lt;controller number&gt; &lt;command&gt; | --controller-hold-command &lt;controller number&gt; &lt;command&gt; | --pitch-wheel-up-command &lt;command&gt; | --pitch-wheel-down-command &lt;command&gt; ] ...</p>
+<p>Usage: onmidi --in &lt;port&gt; [ --out &lt;port&gt; ] [ --hold-length &lt;msecs&gt; ] [ --note-command &lt;note&gt; &lt;command&gt; | --controller-command &lt;controller number&gt; &lt;command&gt; | --controller-hold-command &lt;controller number&gt; &lt;command&gt; | --pitch-wheel-up-command &lt;command&gt; | --pitch-wheel-down-command &lt;command&gt; ] ...</p>
 
-<h3>netmidic and netmidid</h3>
+<h3>noteflurry</h3>
 
-<p>These utilities speak NetMIDI, a trivial network protocol I created which sends standard MIDI messages over a TCP/IP connection as fast as possible.  They can be used to connect up the MIDI systems on two different machines over a network connection, even if they are running different operating systems.  The client forwards messages from the local MIDI system to a NetMIDI server.  The server forwards messages sent by the client to the local MIDI system.</p>
+<p><em>noteflurry</em> outputs a configurable sequence of notes for each note you play, transposed and velocity-scaled to match.  Trigger means that the sequence should start each time you play a note, like an echo.  Gate means that the notes you play are pulsed according to the notes going by in the sequence.  Using them together produces a complicated rhythmic texture.  Overall, <em>noteflurry</em> can sound like a multi-tap delay, an arpeggiator, or an analogue-style sequencer, including the distinctive pulsing effects in the Who's "Won't Get Fooled Again" and "Baba O'Riley," Pink Floyd's "On the Run," and many songs by U2.  In addition, it can simply transpose or add parallel intervals if you use trigger mode with notes on beat zero.</p>
 
-<p>Usage: netmidic --in &lt;midi port&gt; --server &lt;hostname&gt; &lt;network port&gt;</p>
-
-<p>Usage: netmidid --port &lt;network port&gt; --out &lt;midi port&gt;</p>
-
-<h3>multiecho and pulsar</h3>
-
-<p><em>multiecho</em> adds multiple echoes to your performance, with configurable delay, pitch offset, and velocity scaling.  By setting the delay to zero, you can use it for transposing or adding intervals.</p>
-
-<p><em>pulsar</em> pulses any depressed notes according to a configurable rhythm.</p>
-
-<p>Usage: multiecho --in &lt;port&gt; --out &lt;port&gt; [ --echo &lt;delay msecs&gt; &lt;note interval&gt; &lt;velocity scaling&gt; ] ...</p>
-
-<p>Usage: pulsar --in &lt;port&gt; --out &lt;port&gt; [ --pulse &lt;on msecs&gt; &lt;off msecs&gt; ] ...</p>
+<p>Usage: noteflurry --in &lt;port&gt; --out &lt;port&gt; [ --trigger ] [ --gate ] [ --note &lt;beat&gt; &lt;duration beats&gt; &lt;note interval&gt; &lt;velocity&gt; ] ... [ --loop &lt;beats&gt; ] [ --tempo &lt;bpm, default 100&gt; ]</p>
 
 <h3>pedalsim</h3>
 
-<p><em>pedalsim</em> simulates the pedals of a piano when you want to use a controller's physical pedals to drive a synthesis engine that doesn't understand what those pedals mean.  This is very common for sustenuto, bass sustain, and the soft pedal, but even regular sustain isn't natively supported by more simplistic soft synths.  It also tries to simulate an organ-style volume pedal, but this feature is more limited in its usefulness; because it works by adjusting incoming note velocities, it only affects new notes coming in, leaving the sustained ones alone.</p>
+<p><em>pedalsim</em> simulates the pedals of a piano when you want to use a controller's physical pedals to drive a synthesis engine that doesn't understand what those pedals mean.  This is very common for sostenuto, bass sustain, and the soft pedal, but even regular sustain isn't natively supported by more simplistic soft synths.  It also tries to simulate an organ-style volume pedal, but this feature is more limited in its usefulness; because it works by adjusting incoming note velocities, it only affects new notes coming in, leaving the sustained ones alone.</p>
 
-<p>Usage: pedalsim --in &lt;port&gt; --out &lt;port&gt; [ --sustain ] [ --sustenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sustenuto ] [ --highest-bass-note &lt;default B3&gt; ] [ --max-soft-velocity &lt;default 95&gt; ] [ --sustain-controller &lt;default 64&gt; ] [ --sustenuto-controller &lt;default 66&gt; ] [ --bass-sustain-controller &lt;default 69&gt; ] [ --soft-controller &lt;default 67&gt; ] [ --volume-controller &lt;default 12&gt; ]</p>
+<p>Usage: pedalsim --in &lt;port&gt; --out &lt;port&gt; [ --sustain ] [ --sostenuto ] [ --bass-sustain ] [ --soft ] [ --volume ] [ --independent-sostenuto ] [ --highest-bass-note &lt;default B3&gt; ] [ --max-soft-velocity &lt;default 95&gt; ] [ --sustain-controller &lt;default 64&gt; ] [ --sostenuto-controller &lt;default 66&gt; ] [ --bass-sustain-controller &lt;default 69&gt; ] [ --soft-controller &lt;default 67&gt; ] [ --volume-controller &lt;default 12&gt; ]</p>
 
 <h3>jumpoctave</h3>
 
@@ -130,6 +118,14 @@ a { color: #FF6600 }
 <p><em>notemap</em> lets you remap the layout of notes on your MIDI keyboard.  Explore the guitar concept of alternate tunings on the piano, set up an ergonomic drum kit for your fingers, etc.</p>
 
 <p>Usage: notemap --in &lt;port&gt; --out &lt;port&gt; [ --transpose &lt;n&gt; ] [ --map &lt;filename.xml&gt; ]</p>
+
+<h3>netmidic and netmidid</h3>
+
+<p>These utilities speak NetMIDI, a trivial network protocol I created which sends standard MIDI messages over a TCP/IP connection as fast as possible.  They can be used to connect up the MIDI systems on two different machines over a network connection, even if they are running different operating systems.  The client forwards messages from the local MIDI system to a NetMIDI server.  The server forwards messages sent by the client to the local MIDI system.</p>
+
+<p>Usage: netmidic --in &lt;midi port&gt; --server &lt;hostname&gt; &lt;network port&gt;</p>
+
+<p>Usage: netmidid --port &lt;network port&gt; --out &lt;midi port&gt;</p>
 
 <h2 id="midi-file-utilities">MIDI file utilities</h2>
 
@@ -221,7 +217,7 @@ a { color: #FF6600 }
 
 <h2 id="extras">Extras</h2>
 
-<p>Also provided is the source code to several obsolete or incomplete programs in the "extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>midithru</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>onmessage</em>, <em>onpedal</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
+<p>Also provided is the source code to several obsolete or incomplete programs in the "extras" directory.  They're included in the package primarily so that I don't lose track of them, but there's useful code to borrow in there, and I may return to working on some of them if there's enough demand.  These include <em>alsamidi2net</em>, <em>alsamidi2pipe</em>, <em>beatbox</em>, <em>fakesustain</em>, <em>imp</em>, <em>intervals</em>, <em>joycc</em>, <em>joypedal</em>, <em>mciplaysmf</em>, <em>metercaster</em>, <em>midimon</em>, <em>midithru</em>, <em>multiecho</em>, <em>net2alsamidi</em>, <em>net2pipe</em>, <em>onmessage</em>, <em>onpedal</em>, <em>padpedal</em>, <em>pedalnote</em>, <em>pipe2alsamidi</em>, <em>pipe2net</em>, <em>Piano Protagonist</em>, <em>pulsar</em>, <em>rw</em>, <em>smftosqlite</em>, <em>sqlitetosmf</em>, <em>transpose</em>, <em>velocityfader</em>, <em>velocity-map</em>, <em>verbosify</em>, <em>xmidiqwerty</em>, older platform-specific versions of the main utilities, and several attempts to build a full linear or step-based sequencer, the latest of which is called <em>Seqer</em>.  This last is something of a quixotic quest for me which has been going on for many years, and most of my standalone utilities are actually spin-offs from that project.</p>
 
 <h2 id="helpful-hints">Helpful hints</h2>
 
@@ -229,7 +225,7 @@ a { color: #FF6600 }
 
 <p>Most of the realtime utilities are designed to connect to existing MIDI ports.  That's fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>routemidi</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
 
-<p>If you don't have a hardware synthesizer or fancy virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
+<p>If you don't have a hardware synthesizer or virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
 
 <h2 id="license">License</h2>
 
@@ -248,7 +244,7 @@ a { color: #FF6600 }
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2021-01-21</p>
+last modified 2021-01-28</p>
 
 </body>
 </html>
