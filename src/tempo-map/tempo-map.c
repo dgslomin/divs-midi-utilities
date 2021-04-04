@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <midifile.h>
+#include <midiutil-common.h>
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s ( --click-track <n> | --constant-tempo <beats per minute> ) [ --out <filename.mid> ] <filename.mid>\n", program_name);
+	fprintf(stderr, "Usage:  %s ( --click-track <n> | --constant-tempo <beats per minute> ) [ --click-to-beat-ratio <clicks> <beats> ] [ --note-click-to-beat-ratio <note> <clicks> <beats> ] [ --out <filename.mid> ] <filename.mid>\n", program_name);
 	exit(1);
 }
 
@@ -15,7 +16,7 @@ static MidiFileEvent_t get_first_click_event(MidiFile_t midi_file, int click_tra
 	MidiFileTrack_t click_track = MidiFile_getTrackByNumber(midi_file, click_track_number, 0);
 	MidiFileEvent_t click_event = MidiFileTrack_getFirstEvent(click_track);
 
-	while ((click_event != NULL) && (! MidiFileEvent_isNoteStartEvent(click_event)))
+	while ((click_event != NULL) && !MidiFileEvent_isNoteStartEvent(click_event))
 	{
 		click_event = MidiFileEvent_getNextEventInTrack(click_event);
 	}
@@ -29,9 +30,31 @@ static MidiFileEvent_t get_next_click_event(MidiFileEvent_t click_event)
 	{
 		click_event = MidiFileEvent_getNextEventInTrack(click_event);
 	}
-	while ((click_event != NULL) && (! MidiFileEvent_isNoteStartEvent(click_event)));
+	while ((click_event != NULL) && !MidiFileEvent_isNoteStartEvent(click_event));
 
 	return click_event;
+}
+
+static float get_output_tempo(MidiFile_t input_midi_file, MidiFileEvent_t left_click_event, MidiFileEvent_t right_click_event)
+{
+	float left_click_time = (left_click_event == NULL) ? 0.0 : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(left_click_event));
+	float right_click_time = (right_click_event == NULL) ? (left_click_time + 0.5) : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(right_click_event));
+	return 60.0 / (right_click_time - left_click_time);
+}
+
+static float get_output_beat_increment(MidiFileEvent_t left_click_event, int default_ratio_clicks, int default_ratio_beats, int *note_ratio_clicks, int *note_ratio_beats)
+{
+	if (left_click_event == NULL)
+	{
+		return 1.0;
+	}
+	else
+	{
+		int note = MidiFileNoteStartEvent_getNote(left_click_event);
+		int ratio_clicks = (note_ratio_clicks[note] == 0) ? default_ratio_clicks : note_ratio_clicks[note];
+		int ratio_beats = (note_ratio_beats[note] == 0) ? default_ratio_beats : note_ratio_beats[note];
+		return (float)(ratio_beats) / ratio_clicks; 
+	}
 }
 
 static MidiFileEvent_t clone_event(MidiFileEvent_t input_event, MidiFile_t output_midi_file, long output_event_tick)
@@ -86,16 +109,21 @@ int main(int argc, char **argv)
 	int i;
 	int click_track_number = 0;
 	float constant_tempo = -1.0;
+	int default_ratio_clicks = 1;
+	int default_ratio_beats = 1;
+	int note_ratio_clicks[128];
+	int note_ratio_beats[128];
 	char *output_filename = NULL;
 	char *input_filename = NULL;
 	MidiFile_t input_midi_file;
 	MidiFile_t output_midi_file;
-	int left_click_number;
-	float left_click_time;
-	MidiFileEvent_t right_click_event;
-	float right_click_time;
-	float previous_output_tempo;
 	MidiFileEvent_t input_event;
+
+	for (i = 0; i < 128; i++)
+	{
+		note_ratio_clicks[i] = 0;
+		note_ratio_beats[i] = 0;
+	}
 
 	for (i = 1; i < argc; i++)
 	{
@@ -108,6 +136,23 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 			constant_tempo = atof(argv[i]);
+		}
+		else if (strcmp(argv[i], "--click-to-beat-ratio") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			default_ratio_clicks = atoi(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			default_ratio_beats = atoi(argv[i]);
+		}
+		else if (strcmp(argv[i], "--note-click-to-beat-ratio") == 0)
+		{
+			int note;
+			if (++i == argc) usage(argv[0]);
+			note = MidiUtil_getNoteNumberFromName(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			note_ratio_clicks[note] = atoi(argv[i]);
+			if (++i == argc) usage(argv[0]);
+			note_ratio_beats[note] = atoi(argv[i]);
 		}
 		else if (strcmp(argv[i], "--out") == 0)
 		{
@@ -135,51 +180,45 @@ int main(int argc, char **argv)
 
 	if (MidiFile_getFileFormat(input_midi_file) != 1)
 	{
-		fprintf(stderr, "Error:  Because this algorithm makes use of multiple, simultaneous tracks, it requires MIDI files in format 1.\n");
+		fprintf(stderr, "Error:  Because this algorithm makes use of multiple simultaneous tracks, it requires MIDI files in format 1.\n");
 		exit(1);
 	}
 
-	if (MidiFile_getDivisionType(input_midi_file) != MIDI_FILE_DIVISION_TYPE_PPQ)
-	{
-		fprintf(stderr, "Error:  Because this algorithm makes use of tempo events, it requires MIDI files which use the PPQ division type, not SMPTE.\n");
-		exit(1);
-	}
-
-	output_midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, MidiFile_getResolution(input_midi_file));
+	output_midi_file = MidiFile_new(1, MidiFile_getDivisionType(input_midi_file), MidiFile_getResolution(input_midi_file));
 
 	if (click_track_number > 0)
 	{
-		left_click_number = 0;
-		left_click_time = 0.0;
-		right_click_event = get_first_click_event(input_midi_file, click_track_number);
+		MidiFileEvent_t left_click_event = NULL;
+		MidiFileEvent_t right_click_event = get_first_click_event(input_midi_file, click_track_number);
+		float output_beat = 0.0;
+		float previous_output_tempo = -1.0;
 
-		if (right_click_event == NULL)
+		while ((right_click_event != NULL) && (MidiFileEvent_getTick(right_click_event) == 0))
 		{
-			right_click_time = 0.5; /* default tempo of 120 BPM */
-		}
-		else
-		{
-			right_click_time = MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(right_click_event));
+			left_click_event = right_click_event;
+			right_click_event = get_next_click_event(right_click_event);
 		}
 
-		previous_output_tempo = -1.0; /* force at least one tempo event to be emitted */
-
-		while (1)
+		do
 		{
-			float output_tempo = 60.0 / (right_click_time - left_click_time);
+			float output_tempo = get_output_tempo(input_midi_file, left_click_event, right_click_event);
 
 			if (output_tempo != previous_output_tempo)
 			{
-				MidiFileTrack_createTempoEvent(MidiFile_getTrackByNumber(output_midi_file, 0, 1), MidiFile_getTickFromBeat(output_midi_file, left_click_number), output_tempo);
+				MidiFileTrack_createTempoEvent(MidiFile_getTrackByNumber(output_midi_file, 0, 1), MidiFile_getTickFromBeat(output_midi_file, output_beat), output_tempo);
 				previous_output_tempo = output_tempo;
 			}
 
-			left_click_number++;
-			left_click_time = right_click_time;
-			right_click_event = get_next_click_event(right_click_event);
-			if (right_click_event == NULL) break;
-			right_click_time = MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(right_click_event));
+			output_beat += get_output_beat_increment(left_click_event, default_ratio_clicks, default_ratio_beats, note_ratio_clicks, note_ratio_beats);
+
+			do
+			{
+				left_click_event = right_click_event;
+				right_click_event = get_next_click_event(right_click_event);
+			}
+			while ((right_click_event != NULL) && (MidiFileEvent_getTick(right_click_event) == MidiFileEvent_getTick(left_click_event)));
 		}
+		while (right_click_event != NULL);
 	}
 	else
 	{
@@ -188,7 +227,7 @@ int main(int argc, char **argv)
 
 	for (input_event = MidiFile_getFirstEvent(input_midi_file); input_event != NULL; input_event = MidiFileEvent_getNextEventInFile(input_event))
 	{
-		if (! MidiFileEvent_isTempoEvent(input_event))
+		if (!MidiFileEvent_isTempoEvent(input_event))
 		{
 			clone_event(input_event, output_midi_file, MidiFile_getTickFromTime(output_midi_file, MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(input_event))));
 		}

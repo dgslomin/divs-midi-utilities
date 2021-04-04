@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 	long last_tick;
 	MidiFileTrack_t click_track;
 	MidiFileEvent_t event;
-	long click = 1;
+	long click = 0;
 
 	for (i = 1; i < argc; i++)
 	{

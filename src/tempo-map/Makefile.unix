@@ -1,18 +1,22 @@
 
 CC=gcc
 
-../../bin/tempo-map: tempo-map.o midifile.o
-	$(CC) -o../../bin/tempo-map tempo-map.o midifile.o
+../../bin/tempo-map: tempo-map.o midifile.o midiutil-common.o
+	$(CC) -o../../bin/tempo-map tempo-map.o midifile.o midiutil-common.o
 
 tempo-map.o: tempo-map.c ../midifile/midifile.h
-	$(CC) -I../midifile -c tempo-map.c
+	$(CC) -I../midifile -I../midiutil -c tempo-map.c
 
 midifile.o: ../midifile/midifile.c ../midifile/midifile.h
 	$(CC) -I../midifile -c ../midifile/midifile.c
 
+midiutil-common.o: ../midiutil/midiutil-common.c
+	$(CC) -I../midiutil -c ../midiutil/midiutil-common.c
+
 clean:
 	rm -f tempo-map.o
 	rm -f midifile.o
+	rm -f midiutil-common.o
 
 reallyclean: clean
 	rm -f ../../bin/tempo-map
