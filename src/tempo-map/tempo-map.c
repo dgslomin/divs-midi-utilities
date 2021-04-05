@@ -35,28 +35,6 @@ static MidiFileEvent_t get_next_click_event(MidiFileEvent_t click_event)
 	return click_event;
 }
 
-static float get_output_tempo(MidiFile_t input_midi_file, MidiFileEvent_t left_click_event, MidiFileEvent_t right_click_event)
-{
-	float left_click_time = (left_click_event == NULL) ? 0.0 : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(left_click_event));
-	float right_click_time = (right_click_event == NULL) ? (left_click_time + 0.5) : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(right_click_event));
-	return 60.0 / (right_click_time - left_click_time);
-}
-
-static float get_output_beat_increment(MidiFileEvent_t left_click_event, int default_ratio_clicks, int default_ratio_beats, int *note_ratio_clicks, int *note_ratio_beats)
-{
-	if (left_click_event == NULL)
-	{
-		return 1.0;
-	}
-	else
-	{
-		int note = MidiFileNoteStartEvent_getNote(left_click_event);
-		int ratio_clicks = (note_ratio_clicks[note] == 0) ? default_ratio_clicks : note_ratio_clicks[note];
-		int ratio_beats = (note_ratio_beats[note] == 0) ? default_ratio_beats : note_ratio_beats[note];
-		return (float)(ratio_beats) / ratio_clicks; 
-	}
-}
-
 static MidiFileEvent_t clone_event(MidiFileEvent_t input_event, MidiFile_t output_midi_file, long output_event_tick)
 {
 	switch (MidiFileEvent_getType(input_event))
@@ -107,7 +85,7 @@ static MidiFileEvent_t clone_event(MidiFileEvent_t input_event, MidiFile_t outpu
 int main(int argc, char **argv)
 {
 	int i;
-	int click_track_number = 0;
+	int click_track_number = -1;
 	float constant_tempo = -1.0;
 	int default_ratio_clicks = 1;
 	int default_ratio_beats = 1;
@@ -169,7 +147,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (((click_track_number == 0) && (constant_tempo < 0.0)) || (input_filename == NULL)) usage(argv[0]);
+	if (((click_track_number < 0) && (constant_tempo < 0.0)) || (input_filename == NULL)) usage(argv[0]);
 	if (output_filename == NULL) output_filename = input_filename;
 
 	if ((input_midi_file = MidiFile_load(input_filename)) == NULL)
@@ -186,7 +164,7 @@ int main(int argc, char **argv)
 
 	output_midi_file = MidiFile_new(1, MidiFile_getDivisionType(input_midi_file), MidiFile_getResolution(input_midi_file));
 
-	if (click_track_number > 0)
+	if (click_track_number >= 0)
 	{
 		MidiFileEvent_t left_click_event = NULL;
 		MidiFileEvent_t right_click_event = get_first_click_event(input_midi_file, click_track_number);
@@ -201,7 +179,20 @@ int main(int argc, char **argv)
 
 		do
 		{
-			float output_tempo = get_output_tempo(input_midi_file, left_click_event, right_click_event);
+			float left_click_time = (left_click_event == NULL) ? 0.0 : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(left_click_event));
+			float right_click_time = (right_click_event == NULL) ? (left_click_time + 0.5) : MidiFile_getTimeFromTick(input_midi_file, MidiFileEvent_getTick(right_click_event));
+			int ratio_clicks = default_ratio_clicks;
+			int ratio_beats = default_ratio_beats;
+			float output_tempo;
+
+			if (left_click_event != NULL)
+			{
+				int note = MidiFileNoteStartEvent_getNote(left_click_event);
+				if (note_ratio_clicks[note] != 0) ratio_clicks = note_ratio_clicks[note];
+				if (note_ratio_beats[note] != 0) ratio_beats = note_ratio_beats[note];
+			}
+
+			output_tempo = 60.0 * ratio_beats / ratio_clicks / (right_click_time - left_click_time);
 
 			if (output_tempo != previous_output_tempo)
 			{
@@ -209,7 +200,7 @@ int main(int argc, char **argv)
 				previous_output_tempo = output_tempo;
 			}
 
-			output_beat += get_output_beat_increment(left_click_event, default_ratio_clicks, default_ratio_beats, note_ratio_clicks, note_ratio_beats);
+			output_beat += (float)(ratio_beats) / ratio_clicks;
 
 			do
 			{
