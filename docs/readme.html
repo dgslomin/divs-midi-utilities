@@ -21,6 +21,8 @@ a { color: #FF6600 }
 
 <h2 id="news">News</h2>
 
+<p>2021-04-05 - Tempo map now supports clicks that don't correspond to quarter notes.</p>
+
 <p>2021-01-28 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
 
 <h2 id="realtime-midi-utilities">Realtime MIDI utilities</h2>
@@ -147,7 +149,9 @@ a { color: #FF6600 }
 
 <p><em>tempo-map</em> is a utility for "metercasting", a unique algorithm for adjusting the timing of a MIDI sequence.  Unlike conventional quantization, metercasting does not replace the human characteristics of your playing with a mechanistic feel.  First, you record your performance without a metronome, as with <em>brainstorm</em>.  Next, ignoring any beat markers your sequencer might display, you add a click track consisting of one note per beat, synchronized with your performance.  <em>tempo-map</em> then processes the file, adjusting the timestamps of existing events and inserting new tempo events so that performance sounds the same when played back, but the notes will line up with beats when displayed in the sequencer.  You can then selectively delete the inserted tempo events, resulting in a steady but still completely nuanced recording.</p>
 
-<p>Usage: tempo-map --click-track &lt;n&gt; [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+<p>Usage: tempo-map ( --click-track &lt;n&gt; | --constant-tempo &lt;beats per minute&gt; ) [ --click-to-beat-ratio &lt;clicks&gt; &lt;beats&gt; ] [ --note-click-to-beat-ratio &lt;note&gt; &lt;clicks&gt; &lt;beats&gt; ] [ --out &lt;filename.mid&gt; ] &lt;filename.mid&gt;</p>
+
+<p>MIDI defines the "beats per minute" of tempo in terms of quarter note beats, regardless of time signature.  In meters like 6/8, musicians will often think in dotted quarter note beats, and would prefer to lay down a click track with one click per dotted quarter note; the click to beat ratio provides the necessary conversion.  For meters which distinguish between "long beats" and "short beats" (like a 2-2-3 rhythm in 7/8 time), use different notes for the the long clicks than the short clicks and set a different ratio for each.</p>
 
 <h3>click-track</h3>
 
