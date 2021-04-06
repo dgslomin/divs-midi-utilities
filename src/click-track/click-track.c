@@ -28,7 +28,11 @@ int main(int argc, char **argv)
 
 	for (i = 1; i < argc; i++)
 	{
-		if (strcmp(argv[i], "--click-to-beat-ratio") == 0)
+		if (strcmp(argv[i], "--help") == 0)
+		{
+			usage(argv[0]);
+		}
+		else if (strcmp(argv[i], "--click-to-beat-ratio") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			ratio_clicks = atoi(argv[i]);
@@ -55,13 +59,9 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			output_filename = argv[i];
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 

@@ -45,13 +45,9 @@ int main(int argc, char **argv)
 			if (++i == argc) usage(argv[0]);
 			track_number = atoi(argv[i]);
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 

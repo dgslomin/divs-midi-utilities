@@ -23,13 +23,9 @@ int main(int argc, char **argv)
 		{
 			usage(argv[0]);
 		}
-		else if (input_filename == NULL)
-		{
-			input_filename = argv[i];
-		}
 		else
 		{
-			usage(argv[0]);
+			input_filename = argv[i];
 		}
 	}
 
