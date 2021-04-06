@@ -7,7 +7,7 @@
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s ( --click-track <n> | --constant-tempo <beats per minute> ) [ --click-to-beat-ratio <clicks> <beats> ] [ --note-click-to-beat-ratio <note> <clicks> <beats> ] [ --out <filename.mid> ] <filename.mid>\n", program_name);
+	fprintf(stderr, "Usage:  %s ( --click-track <n> | --constant-tempo <beats per minute> ) [ --click-to-beat-ratio <clicks> <beats> ] [ --note-click-to-beat-ratio <note> <clicks> <beats> ] ... [ --out <filename.mid> ] <filename.mid>\n", program_name);
 	exit(1);
 }
 
