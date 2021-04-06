@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		MidiFileTrack_createTempoEvent(MidiFile_getTrackByNumber(output_midi_file, 0, 1), 0, constant_tempo);
+		MidiFileTrack_createTempoEvent(MidiFile_getTrackByNumber(output_midi_file, 0, 1), 0, constant_tempo * default_ratio_beats / default_ratio_clicks);
 	}
 
 	for (input_event = MidiFile_getFirstEvent(input_midi_file); input_event != NULL; input_event = MidiFileEvent_getNextEventInFile(input_event))
