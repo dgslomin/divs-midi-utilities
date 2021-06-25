@@ -112,5 +112,8 @@ clustering algorithm:
 				labels[label_number].row = labels[label_number - 1].row + 1
 				end_x = max(end_x, labels[label_number].x + labels[label_number].width)
 			else:
-				# TODO
+				labels[label_number].x = end_x
+				labels[label_number].row = 0
+				cluster_start = label_number
+				end_x = labels[label_number].x + labels[label_number].width
 
