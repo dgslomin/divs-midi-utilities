@@ -1,0 +1,119 @@
+
+tall staircase algorithm:
+	def compute_layout(labels):
+		for label_number in range(labels.length):
+			labels[label_number].x = labels[label_number].preferred_x
+			labels[label_number].row = label_number
+
+wide staircase algorithm:
+	def compute_layout(labels):
+		for label_number in range(labels.length):
+			if label_number == 0:
+				labels[label_number].x = labels[label_number].preferred_x
+				labels[label_number].row = 0
+			else if labels[label_number].preferred_x == labels[label_number - 1].preferred_x:
+				labels[label_number].x = labels[label_number - 1].x + labels[label_number - 1].width
+				labels[label_number].row = labels[label_number - 1].row
+			else:
+				labels[label_number].x = labels[label_number].preferred_x
+				labels[label_number].row = labels[label_number - 1].row + 1
+
+tall wrapped algorithm:
+	def compute_layout(labels):
+		for label_number in range(labels.length):
+			labels[label_number].x = labels[label_number].preferred_x
+			should_wrap = true
+			
+			for previous_label_number in backwards_range(label_number):
+				if labels[label_number].x < labels[previous_label_number].x + labels[previous_label_number].width:
+					should_wrap = false
+					break
+				else if labels[previous_label_number].row == 0:
+					break
+
+			if should_wrap:
+				labels[label_number].row = 0
+			else:
+				labels[label_number].row = labels[label_number - 1].row + 1
+
+wide wrapped algorithm:
+	def compute_layout(labels):
+		for label_number in range(labels.length):
+			if label_number == 0:
+				labels[label_number].x = labels[label_number].preferred_x
+				labels[label_number].row = 0
+			else if labels[label_number].preferred_x == labels[label_number - 1].preferred_x:
+				labels[label_number].x = labels[label_number - 1].x + labels[label_number - 1].width
+				labels[label_number].row = labels[label_number - 1].row
+			else:
+				labels[label_number].x = labels[label_number].preferred_x
+				should_wrap = true
+			
+				for previous_label_number in backwards_range(label_number):
+					if labels[label_number].x < labels[previous_label_number].x + labels[previous_label_number].width:
+						should_wrap = false
+						break
+					else if labels[previous_label_number].row == 0:
+						break
+
+				if should_wrap:
+					labels[label_number].row = 0
+				else:
+					labels[label_number].row = labels[label_number - 1].row + 1
+
+tall brick algorithm:
+	def compute_layout(labels):
+		row_ends = []
+
+		for label_number in range(labels.length):
+			labels[label_number].x = labels[label_number].preferred_x
+
+			for row in range(row_ends.length):
+				if labels[label_number].x >= row_ends[row]:
+					break
+
+			labels[label_number].row = row
+			row_ends[row] = labels[label_number].x + labels[label_number].width
+
+wide brick algorithm:
+	def compute_layout(labels):
+		row_ends = []
+
+		for label_number in range(labels.length):
+			if label_number == 0:
+				labels[label_number].x = labels[label_number].preferred_x
+				labels[label_number].row = 0
+			else if labels[label_number].preferred_x == labels[label_number - 1].preferred_x:
+				labels[label_number].x = labels[label_number - 1].x + labels[label_number - 1].width
+				labels[label_number].row = labels[label_number - 1].row
+			else:
+				labels[label_number].x = labels[label_number].preferred_x
+
+				for row in range(row_ends.length):
+					if labels[label_number].x >= row_ends[row]:
+						break
+
+				labels[label_number].row = row
+				row_ends[row] = labels[label_number].x + labels[label_number].width
+
+clustering algorithm:
+	def compute_layout(labels, number_of_rows):
+		cluster_start = 0
+		end_x = 0
+
+		for label_number in range(labels.length):
+			if labels[label_number].preferred_x >= end_x:
+				labels[label_number].x = labels[label_number].preferred_x
+				labels[label_number].row = 0
+				cluster_start = label_number
+				end_x = labels[label_number].x + labels[label_number].width
+			else if label_number - cluster_start < number_of_rows:
+				labels[label_number].x = labels[cluster_start].x
+				labels[label_number].row = labels[label_number - 1].row + 1
+				end_x = max(end_x, labels[label_number].x + labels[label_number].width)
+			else:
+				labels[label_number].x = end_x
+				labels[label_number].row = 0
+				cluster_start = label_number
+				end_x = labels[label_number].x + labels[label_number].width
+
