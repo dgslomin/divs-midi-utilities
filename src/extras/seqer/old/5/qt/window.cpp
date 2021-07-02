@@ -1,5 +1,7 @@
 
+#include <QAction>
 #include <QCloseEvent>
+#include <QKeySequence>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QSettings>
@@ -11,6 +13,11 @@ Window::Window()
 {
 	this->setWindowTitle("Seqer");
 
+	QAction* close_action = new QAction(tr("&Close"));
+	this->addAction(close_action);
+	close_action->setShortcut(QKeySequence(QKeySequence::Close));
+	connect(close_action, SIGNAL(triggered()), this, SLOT(close()));
+
 	QMenuBar* menu_bar = this->menuBar();
 	QMenu* file_menu = menu_bar->addMenu(tr("&File"));
 	file_menu->addAction(tr("&New"));
@@ -19,7 +26,7 @@ Window::Window()
 	file_menu->addAction(tr("&Save"));
 	file_menu->addAction(tr("Save &As..."));
 	file_menu->addSeparator();
-	file_menu->addAction(tr("&Close"));
+	file_menu->addAction(close_action);
 	file_menu->addAction(tr("&Quit"));
 	QMenu* edit_menu = menu_bar->addMenu(tr("&Edit"));
 	edit_menu->addAction(tr("&Undo"));
