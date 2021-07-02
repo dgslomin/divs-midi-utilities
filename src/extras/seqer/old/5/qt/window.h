@@ -3,12 +3,15 @@
 
 class Window;
 
+#include <QCloseEvent>
 #include <QMainWindow>
 #include <QSplitter>
 #include <QTabWidget>
 
 class Window: public QMainWindow
 {
+	Q_OBJECT
+
 public:
 	QSplitter* sidebar_splitter;
 	QSplitter* lane_splitter;

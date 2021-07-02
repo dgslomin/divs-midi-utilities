@@ -1,9 +1,9 @@
 
 #include <QApplication>
-#include <QSettings>
+#include <QMessageBox>
 #include "window.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char** argv)
 {
 	QApplication application(argc, argv);
 	application.setOrganizationName("Sreal");
