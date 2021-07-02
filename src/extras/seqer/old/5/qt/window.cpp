@@ -94,6 +94,7 @@ Window::Window()
 	this->sidebar_tab_widget->setTabPosition(QTabWidget::North);
 	this->sidebar_tab_widget->setDocumentMode(true);
 	this->sidebar_tab_widget->setElideMode(Qt::ElideNone);
+	this->sidebar_tab_widget->setUsesScrollButtons(false);
 
 	this->sidebar_tab_widget->addTab(new QTextEdit("inspector placeholder"), tr("Inspector"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("tracks placeholder"), tr("Tracks"));
