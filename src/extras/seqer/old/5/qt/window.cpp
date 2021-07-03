@@ -12,68 +12,8 @@
 Window::Window()
 {
 	this->setWindowTitle("Seqer");
-
-	QAction* close_action = new QAction(tr("&Close"));
-	this->addAction(close_action);
-	close_action->setShortcut(QKeySequence(QKeySequence::Close));
-	connect(close_action, SIGNAL(triggered()), this, SLOT(close()));
-
-	QMenuBar* menu_bar = this->menuBar();
-	QMenu* file_menu = menu_bar->addMenu(tr("&File"));
-	file_menu->addAction(tr("&New"));
-	file_menu->addAction(tr("New &Window"));
-	file_menu->addAction(tr("&Open..."));
-	file_menu->addAction(tr("&Save"));
-	file_menu->addAction(tr("Save &As..."));
-	file_menu->addSeparator();
-	file_menu->addAction(close_action);
-	file_menu->addAction(tr("&Quit"));
-	QMenu* edit_menu = menu_bar->addMenu(tr("&Edit"));
-	edit_menu->addAction(tr("&Undo"));
-	edit_menu->addAction(tr("&Redo"));
-	edit_menu->addSeparator();
-	edit_menu->addAction(tr("Cu&t"));
-	edit_menu->addAction(tr("&Copy"));
-	edit_menu->addAction(tr("&Paste"));
-	edit_menu->addAction(tr("&Delete"));
-	edit_menu->addSeparator();
-	edit_menu->addAction(tr("Select &All"));
-	edit_menu->addAction(tr("Select &None"));
-	edit_menu->addAction(tr("Select Ti&me Range"));
-	QMenu* view_menu = menu_bar->addMenu(tr("&View"));
-	view_menu->addAction(tr("Next Lane"));
-	view_menu->addAction(tr("Pre&vious Lane"));
-	view_menu->addSeparator();
-	view_menu->addAction(tr("&Add Lane"));
-	view_menu->addAction(tr("&Remove Lane"));
-	view_menu->addAction(tr("Move Lane Up"));
-	view_menu->addAction(tr("Move Lane Down"));
-	view_menu->addSeparator();
-	view_menu->addAction(tr("Zoom &In Lane"));
-	view_menu->addAction(tr("Zoom &Out Lane"));
-	view_menu->addAction(tr("Zoom &In Time"));
-	view_menu->addAction(tr("Zoom &Out Time"));
-	QMenu* transport_menu = menu_bar->addMenu(tr("Trans&port"));
-	transport_menu->addAction(tr("&Play"));
-	transport_menu->addAction(tr("&Stop"));
-	transport_menu->addAction(tr("&Record"));
-	transport_menu->addSeparator();
-	transport_menu->addAction(tr("Set Playback Position"));
-	transport_menu->addAction(tr("Go to Playback Position"));
-	transport_menu->addSeparator();
-	transport_menu->addAction(tr("&Next Marker"));
-	transport_menu->addAction(tr("Pre&vious Marker"));
-	transport_menu->addAction(tr("Go to &Marker..."));
-	QMenu* tools_menu = menu_bar->addMenu(tr("&Tools"));
-	tools_menu->addAction(tr("External &Utility..."));
-	tools_menu->addSeparator();
-	tools_menu->addAction(tr("&Record Macro..."));
-	tools_menu->addAction(tr("&Macros..."));
-	tools_menu->addSeparator();
-	tools_menu->addAction(tr("&Preferences..."));
-	QMenu* help_menu = menu_bar->addMenu(tr("&Help"));
-	help_menu->addAction(tr("&User Manual"));
-	help_menu->addAction(tr("&About Seqer"));
+	this->createMenuBar();
+	this->statusBar();
 
 	this->sidebar_splitter = new QSplitter(Qt::Horizontal);
 	this->setCentralWidget(sidebar_splitter);
@@ -99,8 +39,6 @@ Window::Window()
 	this->sidebar_tab_widget->addTab(new QTextEdit("tracks placeholder"), tr("Tracks"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("channels placeholder"), tr("Channels"));
 
-	this->statusBar();
-
 	QSettings settings;
 	this->restoreGeometry(settings.value("state/window-geometry").toByteArray());
 	this->restoreState(settings.value("state/window-state").toByteArray());
@@ -118,5 +56,252 @@ void Window::closeEvent(QCloseEvent* event)
 	settings.setValue("state/sidebar-splitter-state", this->sidebar_splitter->saveState());
 	settings.setValue("state/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
 	QMainWindow::closeEvent(event);
+}
+
+void Window::createMenuBar()
+{
+	this->createFileMenu();
+	this->createEditMenu();
+	this->createViewMenu();
+	this->createTransportMenu();
+	this->createToolsMenu();
+	this->createHelpMenu();
+}
+
+void Window::createFileMenu()
+{
+	QMenu* file_menu = this->menuBar()->addMenu(tr("&File"));
+
+	QAction* new_action = new QAction(tr("&New"));
+	this->addAction(new_action);
+	file_menu->addAction(new_action);
+	new_action->setShortcut(QKeySequence(QKeySequence::New));
+
+	QAction* new_window_action = new QAction(tr("New &Window"));
+	this->addAction(new_window_action);
+	new_window_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_N));
+	file_menu->addAction(new_window_action);
+
+	QAction* open_action = new QAction(tr("&Open..."));
+	this->addAction(open_action);
+	file_menu->addAction(open_action);
+	open_action->setShortcut(QKeySequence(QKeySequence::Open));
+
+	QAction* save_action = new QAction(tr("&Save"));
+	this->addAction(save_action);
+	file_menu->addAction(save_action);
+	save_action->setShortcut(QKeySequence(QKeySequence::Save));
+
+	QAction* save_as_action = new QAction(tr("Save &As..."));
+	this->addAction(save_as_action);
+	save_as_action->setShortcut(QKeySequence(QKeySequence::SaveAs));
+	file_menu->addAction(save_as_action);
+
+	file_menu->addSeparator();
+
+	QAction* close_action = new QAction(tr("&Close"));
+	this->addAction(close_action);
+	file_menu->addAction(close_action);
+	close_action->setShortcut(QKeySequence(QKeySequence::Close));
+	connect(close_action, SIGNAL(triggered()), this, SLOT(close()));
+
+	QAction* quit_action = new QAction(tr("&Quit"));
+	this->addAction(quit_action);
+	file_menu->addAction(quit_action);
+	quit_action->setShortcut(QKeySequence(QKeySequence::Quit));
+}
+
+void Window::createEditMenu()
+{
+	QMenu* edit_menu = this->menuBar()->addMenu(tr("&Edit"));
+
+	QAction* undo_action = new QAction(tr("&Undo"));
+	this->addAction(undo_action);
+	edit_menu->addAction(undo_action);
+	undo_action->setShortcut(QKeySequence(QKeySequence::Undo));
+
+	QAction* redo_action = new QAction(tr("&Redo"));
+	this->addAction(redo_action);
+	edit_menu->addAction(redo_action);
+	redo_action->setShortcut(QKeySequence(QKeySequence::Redo));
+
+	edit_menu->addSeparator();
+
+	QAction* cut_action = new QAction(tr("Cu&t"));
+	this->addAction(cut_action);
+	edit_menu->addAction(cut_action);
+	cut_action->setShortcut(QKeySequence(QKeySequence::Cut));
+
+	QAction* copy_action = new QAction(tr("&Copy"));
+	this->addAction(copy_action);
+	edit_menu->addAction(copy_action);
+	copy_action->setShortcut(QKeySequence(QKeySequence::Copy));
+
+	QAction* paste_action = new QAction(tr("&Paste"));
+	this->addAction(paste_action);
+	edit_menu->addAction(paste_action);
+	paste_action->setShortcut(QKeySequence(QKeySequence::Paste));
+
+	QAction* delete_action = new QAction(tr("&Delete"));
+	this->addAction(delete_action);
+	edit_menu->addAction(delete_action);
+	delete_action->setShortcut(QKeySequence(QKeySequence::Delete));
+
+	edit_menu->addSeparator();
+
+	QAction* select_all_action = new QAction(tr("Select &All"));
+	this->addAction(select_all_action);
+	edit_menu->addAction(select_all_action);
+	select_all_action->setShortcut(QKeySequence(QKeySequence::SelectAll));
+
+	QAction* select_none_action = new QAction(tr("Select &None"));
+	this->addAction(select_none_action);
+	edit_menu->addAction(select_none_action);
+	select_none_action->setShortcut(QKeySequence(QKeySequence::Deselect));
+
+	QAction* select_time_range_action = new QAction(tr("Select Ti&me Range"));
+	this->addAction(select_time_range_action);
+	edit_menu->addAction(select_time_range_action);
+}
+
+void Window::createViewMenu()
+{
+	QMenu* view_menu = this->menuBar()->addMenu(tr("&View"));
+
+	QAction* next_lane_action = new QAction(tr("&Next Lane"));
+	this->addAction(next_lane_action);
+	view_menu->addAction(next_lane_action);
+	next_lane_action->setShortcut(QKeySequence(QKeySequence::NextChild));
+
+	QAction* previous_lane_action = new QAction(tr("Pre&vious Lane"));
+	this->addAction(previous_lane_action);
+	view_menu->addAction(previous_lane_action);
+	previous_lane_action->setShortcut(QKeySequence(QKeySequence::PreviousChild));
+
+	view_menu->addSeparator();
+
+	QAction* add_lane_action = new QAction(tr("&Add Lane"));
+	this->addAction(add_lane_action);
+	view_menu->addAction(add_lane_action);
+
+	QAction* remove_lane_action = new QAction(tr("&Remove Lane"));
+	this->addAction(remove_lane_action);
+	view_menu->addAction(remove_lane_action);
+
+	QAction* move_lane_up_action = new QAction(tr("Move Lane &Up"));
+	this->addAction(move_lane_up_action);
+	view_menu->addAction(move_lane_up_action);
+
+	QAction* move_lane_down_action = new QAction(tr("Move Lane &Down"));
+	this->addAction(move_lane_down_action);
+	view_menu->addAction(move_lane_down_action);
+
+	view_menu->addSeparator();
+
+	QAction* zoom_in_time_action = new QAction(tr("Zoom &In Time"));
+	this->addAction(zoom_in_time_action);
+	view_menu->addAction(zoom_in_time_action);
+	zoom_in_time_action->setShortcut(QKeySequence(QKeySequence::ZoomIn));
+
+	QAction* zoom_out_time_action = new QAction(tr("Zoom &Out Time"));
+	this->addAction(zoom_out_time_action);
+	view_menu->addAction(zoom_out_time_action);
+	zoom_out_time_action->setShortcut(QKeySequence(QKeySequence::ZoomOut));
+
+	QAction* zoom_in_lane_action = new QAction(tr("Zoom &In Lane"));
+	this->addAction(zoom_in_lane_action);
+	view_menu->addAction(zoom_in_lane_action);
+
+	QAction* zoom_out_lane_action = new QAction(tr("Zoom &Out Lane"));
+	this->addAction(zoom_out_lane_action);
+	view_menu->addAction(zoom_out_lane_action);
+}
+
+void Window::createTransportMenu()
+{
+	QMenu* transport_menu = this->menuBar()->addMenu(tr("Trans&port"));
+
+	QAction* play_action = new QAction(tr("&Play"));
+	this->addAction(play_action);
+	transport_menu->addAction(play_action);
+	play_action->setShortcut(QKeySequence(Qt::Key_Space));
+
+	QAction* stop_action = new QAction(tr("&Stop"));
+	this->addAction(stop_action);
+	transport_menu->addAction(stop_action);
+	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
+
+	QAction* record_action = new QAction(tr("&Record"));
+	this->addAction(record_action);
+	transport_menu->addAction(record_action);
+	record_action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+
+	transport_menu->addSeparator();
+
+	QAction* set_playback_position_action = new QAction(tr("Set Playback Position"));
+	this->addAction(set_playback_position_action);
+	transport_menu->addAction(set_playback_position_action);
+
+	QAction* go_to_playback_position_action = new QAction(tr("Go to Playback Position"));
+	this->addAction(go_to_playback_position_action);
+	transport_menu->addAction(go_to_playback_position_action);
+
+	transport_menu->addSeparator();
+
+	QAction* next_marker_action = new QAction(tr("&Next Marker"));
+	this->addAction(next_marker_action);
+	transport_menu->addAction(next_marker_action);
+	next_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToNextWord));
+
+	QAction* previous_marker_action = new QAction(tr("Pre&vious Marker"));
+	this->addAction(previous_marker_action);
+	transport_menu->addAction(previous_marker_action);
+	previous_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToPreviousWord));
+
+	QAction* go_to_marker_action = new QAction(tr("Go to &Marker..."));
+	this->addAction(go_to_marker_action);
+	transport_menu->addAction(go_to_marker_action);
+	go_to_marker_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M));
+}
+
+void Window::createToolsMenu()
+{
+	QMenu* tools_menu = this->menuBar()->addMenu(tr("&Tools"));
+
+	QAction* external_utility_action = new QAction(tr("External &Utility..."));
+	this->addAction(external_utility_action);
+	tools_menu->addAction(external_utility_action);
+	external_utility_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_U));
+
+	tools_menu->addSeparator();
+
+	QAction* record_macro_action = new QAction(tr("&Record Macro..."));
+	this->addAction(record_macro_action);
+	tools_menu->addAction(record_macro_action);
+	record_macro_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R));
+
+	QAction* macros_action = new QAction(tr("&Macros..."));
+	this->addAction(macros_action);
+	tools_menu->addAction(macros_action);
+
+	tools_menu->addSeparator();
+
+	QAction* preferences_action = new QAction(tr("&Preferences..."));
+	this->addAction(preferences_action);
+	tools_menu->addAction(preferences_action);
+	preferences_action->setShortcut(QKeySequence(QKeySequence::Preferences));
+}
+
+void Window::createHelpMenu()
+{
+	QMenu* help_menu = this->menuBar()->addMenu(tr("&Help"));
+
+	QAction* user_manual_action = new QAction(tr("&User Manual"));
+	this->addAction(user_manual_action);
+	help_menu->addAction(user_manual_action);
+
+	QAction* about_seqer_action = new QAction(tr("&About Seqer"));
+	this->addAction(about_seqer_action);
+	help_menu->addAction(about_seqer_action);
 }
 

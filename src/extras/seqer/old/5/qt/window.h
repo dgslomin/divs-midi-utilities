@@ -13,12 +13,21 @@ class Window: public QMainWindow
 	Q_OBJECT
 
 public:
+	Window();
+
+private:
 	QSplitter* sidebar_splitter;
 	QSplitter* lane_splitter;
 	QTabWidget* sidebar_tab_widget;
 
-	Window();
 	void closeEvent(QCloseEvent* event);
+	void createMenuBar();
+	void createFileMenu();
+	void createEditMenu();
+	void createViewMenu();
+	void createTransportMenu();
+	void createToolsMenu();
+	void createHelpMenu();
 };
 
 #endif
