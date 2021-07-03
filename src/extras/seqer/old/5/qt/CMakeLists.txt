@@ -12,12 +12,9 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
-add_executable(Seqer
-	main.cpp
-	window.cpp
-	../../../../../midifile/midifile.c
-	resources.qrc
-)
+add_executable(Seqer main.cpp sequence.cpp window.cpp ../../../../../midifile/midifile.c resources.qrc)
+
+target_include_directories(Seqer PRIVATE ../../../../../midifile)
 
 target_link_libraries(Seqer PRIVATE Qt6::Widgets)
 

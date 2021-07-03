@@ -1,16 +1,25 @@
 
+#include <set>
 #include <QAction>
 #include <QCloseEvent>
+#include <QFileDialog>
+#include <QGuiApplication>
 #include <QKeySequence>
 #include <QMainWindow>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QSettings>
 #include <QSplitter>
 #include <QTextEdit>
+#include <QWindow>
+#include "midifile.h"
 #include "window.h"
 
-Window::Window()
+Window::Window(Window* existing_window)
 {
+	this->sequence = (existing_window == NULL) ? new Sequence() : existing_window->sequence;
+	this->sequence->addWindow(this);
+
 	this->setWindowTitle("Seqer");
 	this->createMenuBar();
 	this->statusBar();
@@ -46,6 +55,14 @@ Window::Window()
 	this->lane_splitter->restoreState(settings.value("state/lane-splitter-state").toByteArray());
 	this->sidebar_splitter->restoreState(settings.value("state/sidebar-splitter-state").toByteArray());
 	this->sidebar_tab_widget->setCurrentIndex(settings.value("state/sidebar-tab-index", 0).toInt());
+	this->use_linear_time = settings.value("view/use-linear-time", false).toBool();
+	this->pixels_per_beat = settings.value("view/pixels-per-beat", 40).toInt();
+	this->pixels_per_second = settings.value("view/pixels-per-second", 40).toInt();
+}
+
+Window::~Window()
+{
+	this->sequence->removeWindow(this);
 }
 
 void Window::closeEvent(QCloseEvent* event)
@@ -57,6 +74,217 @@ void Window::closeEvent(QCloseEvent* event)
 	settings.setValue("state/sidebar-splitter-state", this->sidebar_splitter->saveState());
 	settings.setValue("state/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
 	QMainWindow::closeEvent(event);
+}
+
+bool Window::isModified()
+{
+	return this->sequence->is_modified;
+}
+
+bool Window::isLastWindowForSequence()
+{
+	return (this->sequence->windows.size() == 1);
+}
+
+QString Window::getFilename()
+{
+	return this->sequence->filename;
+}
+
+void Window::new_()
+{
+	if (!this->saveChangesIfNeeded()) return;
+	this->sequence->removeWindow(this);
+	this->sequence = new Sequence();
+	this->sequence->addWindow(this);
+	this->refreshData();
+}
+
+void Window::newWindow()
+{
+	(new Window(this))->show();
+}
+
+void Window::open()
+{
+	if (!this->saveChangesIfNeeded()) return;
+
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("MIDI Files (*.mid)"));
+
+	if (!filename.isEmpty())
+	{
+		if (!this->load(filename))
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Cannot open the specified MIDI file."));
+		}
+	}
+}
+
+bool Window::load(QString filename)
+{
+	MidiFile_t new_midi_file = MidiFile_load(filename.toUtf8().data());
+	if (new_midi_file == NULL) return false;
+	this->sequence->removeWindow(this);
+	this->sequence = new Sequence();
+	this->sequence->addWindow(this);
+	this->sequence->filename = filename;
+	MidiFile_free(this->sequence->midi_file);
+	this->sequence->midi_file = new_midi_file;
+	this->refreshData();
+	return true;
+}
+
+bool Window::saveChangesIfNeeded()
+{
+	if (!(this->isModified() && this->isLastWindowForSequence())) return true;
+	return this->saveChanges();
+}
+
+bool Window::saveChanges()
+{
+	switch (QMessageBox::question(this, tr("Save Changes"), tr("Do you want to save changes to the current file?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel))
+	{
+		case QMessageBox::Yes:
+		{
+			return this->save();
+		}
+		case QMessageBox::Cancel:
+		{
+			return false;
+		}
+		default:
+		{
+			return true;
+		}
+	}
+}
+
+bool Window::save()
+{
+	if (this->getFilename().isEmpty())
+	{
+		return this->saveAs();
+	}
+	else
+	{
+		if (this->sequence->save())
+		{
+			return true;
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Cannot save the specified MIDI file."));
+			return false;
+		}
+	}
+}
+
+bool Window::saveAs()
+{
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("MIDI Files (*.mid)"));
+
+	if (filename.isEmpty())
+	{
+		return false;
+	}
+	else
+	{
+		if (this->sequence->saveAs(filename))
+		{
+			return true;
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Cannot save the specified MIDI file."));
+			return false;
+		}
+	}
+}
+
+void Window::quit()
+{
+	std::set<Sequence*> sequences;
+	bool is_modified = false;
+
+	for (QWindow* top_level_window: QGuiApplication::topLevelWindows())
+	{
+		Window* window = qobject_cast<Window*>(top_level_window);
+
+		if (window != NULL)
+		{
+			sequences.insert(window->sequence);
+			if (window->isModified()) is_modified = true;
+		}
+	}
+
+	if (sequences.size() == 1)
+	{
+		if (!is_modified || this->saveChanges()) QGuiApplication::quit();
+	}
+	else
+	{
+		if (!is_modified || QMessageBox::question(this, tr("Quit"), tr("Really quit without saving changes?"), QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok) QGuiApplication::quit();
+	}
+}
+
+void Window::selectAll()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 1);
+	}
+}
+
+void Window::selectNone()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 0);
+	}
+}
+
+void Window::addLane()
+{
+}
+
+void Window::removeLane()
+{
+}
+
+void Window::focusInspector()
+{
+}
+
+void Window::refreshData()
+{
+}
+
+void Window::refreshDisplay()
+{
+}
+
+int Window::getXFromTick(long tick)
+{
+	if (this->use_linear_time)
+	{
+		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second) - this->scroll_x;
+	}
+	else
+	{
+		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat) - this->scroll_x;
+	}
+}
+
+long Window::getTickFromX(int x)
+{
+	if (this->use_linear_time)
+	{
+		return MidiFile_getTickFromTime(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_second);
+	}
+	else
+	{
+		return MidiFile_getTickFromBeat(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_beat);
+	}
 }
 
 void Window::createMenuBar()

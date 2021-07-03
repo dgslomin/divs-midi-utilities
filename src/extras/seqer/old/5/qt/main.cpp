@@ -9,18 +9,16 @@ int main(int argc, char** argv)
 	application.setOrganizationName("Sreal");
 	application.setOrganizationDomain("sreal.com");
 	application.setApplicationName("Seqer");
-	Window window;
+	Window window(NULL);
 	window.show();
 
-#if 0
 	if (argc > 1)
 	{
-		if (!window->load(argv[1]))
+		if (!window.load(argv[1]))
 		{
-			QMessageBox::warning(window, "Error", "Cannot open the specified MIDI file.");
+			QMessageBox::warning(&window, "Error", "Cannot open the specified MIDI file.");
 		}
 	}
-#endif
 
 	return application.exec();
 }
