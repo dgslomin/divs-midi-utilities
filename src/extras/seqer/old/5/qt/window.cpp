@@ -91,7 +91,7 @@ QString Window::getFilename()
 	return this->sequence->filename;
 }
 
-void Window::new_()
+void Window::newFile()
 {
 	if (this->isModified() && this->isLastWindowForSequence())
 	{
@@ -307,7 +307,7 @@ void Window::createFileMenu()
 	this->addAction(new_action);
 	file_menu->addAction(new_action);
 	new_action->setShortcut(QKeySequence(QKeySequence::New));
-	connect(new_action, SIGNAL(triggered()), this, SLOT(new_()));
+	connect(new_action, SIGNAL(triggered()), this, SLOT(newSequence()));
 
 	QAction* new_window_action = new QAction(tr("New &Window"));
 	this->addAction(new_window_action);

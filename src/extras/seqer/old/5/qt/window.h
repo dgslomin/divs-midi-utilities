@@ -41,7 +41,7 @@ public:
 	void createHelpMenu();
 
 public slots:
-	void new_();
+	void newFile();
 	void newWindow();
 	void open();
 	void open(QString filename);
