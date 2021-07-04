@@ -91,7 +91,7 @@ QString Window::getFilename()
 	return this->sequence->filename;
 }
 
-void Window::newFile()
+void Window::newSequence()
 {
 	if (this->isModified() && this->isLastWindowForSequence())
 	{
