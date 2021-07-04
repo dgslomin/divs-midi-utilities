@@ -11,15 +11,7 @@ int main(int argc, char** argv)
 	application.setApplicationName("Seqer");
 	Window window(NULL);
 	window.show();
-
-	if (argc > 1)
-	{
-		if (!window.load(argv[1]))
-		{
-			QMessageBox::warning(&window, "Error", "Cannot open the specified MIDI file.");
-		}
-	}
-
+	if (argc > 1) window.open(argv[1]);
 	return application.exec();
 }
 

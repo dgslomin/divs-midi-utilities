@@ -29,22 +29,7 @@ public:
 	bool isModified();
 	bool isLastWindowForSequence();
 	QString getFilename();
-	void new_();
-	void newWindow();
-	void open();
-	bool load(QString filename);
-	bool saveChangesIfNeeded();
-	bool saveChanges();
-	bool save();
-	bool saveAs();
-	void quit();
-	void selectAll();
-	void selectNone();
-	void addLane();
-	void removeLane();
-	void focusInspector();
-	void refreshData();
-	void refreshDisplay();
+	bool save(bool ask_first, bool save_as, QString filename);
 	int getXFromTick(long tick);
 	long getTickFromX(int x);
 	void createMenuBar();
@@ -54,6 +39,23 @@ public:
 	void createTransportMenu();
 	void createToolsMenu();
 	void createHelpMenu();
+
+public slots:
+	void new_();
+	void newWindow();
+	void open();
+	void open(QString filename);
+	void save();
+	void saveAs();
+	void saveAs(QString filename);
+	void quit();
+	void selectAll();
+	void selectNone();
+	void addLane();
+	void removeLane();
+	void focusInspector();
+	void refreshData();
+	void refreshDisplay();
 };
 
 #endif

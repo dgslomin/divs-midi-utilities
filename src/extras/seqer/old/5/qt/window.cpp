@@ -93,7 +93,11 @@ QString Window::getFilename()
 
 void Window::new_()
 {
-	if (!this->saveChangesIfNeeded()) return;
+	if (this->isModified() && this->isLastWindowForSequence())
+	{
+		if (!this->save(true, false, "")) return;
+	}
+
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
@@ -107,23 +111,25 @@ void Window::newWindow()
 
 void Window::open()
 {
-	if (!this->saveChangesIfNeeded()) return;
+	if (this->isModified() && this->isLastWindowForSequence())
+	{
+		if (!this->save(true, false, "")) return;
+	}
 
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("MIDI Files (*.mid)"));
-
-	if (!filename.isEmpty())
-	{
-		if (!this->load(filename))
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Cannot open the specified MIDI file."));
-		}
-	}
+	if (!filename.isEmpty()) this->open(filename);
 }
 
-bool Window::load(QString filename)
+void Window::open(QString filename)
 {
 	MidiFile_t new_midi_file = MidiFile_load(filename.toUtf8().data());
-	if (new_midi_file == NULL) return false;
+
+	if (new_midi_file == NULL)
+	{
+		QMessageBox::warning(this, tr("Error"), tr("Cannot open the specified MIDI file."));
+		return;
+	}
+
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
@@ -131,39 +137,59 @@ bool Window::load(QString filename)
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
 	this->refreshData();
-	return true;
 }
 
-bool Window::saveChangesIfNeeded()
+void Window::save()
 {
-	if (!(this->isModified() && this->isLastWindowForSequence())) return true;
-	return this->saveChanges();
+	this->save(false, false, "");
 }
 
-bool Window::saveChanges()
+void Window::saveAs()
 {
-	switch (QMessageBox::question(this, tr("Save Changes"), tr("Do you want to save changes to the current file?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel))
+	this->save(false, true, "");
+}
+
+void Window::saveAs(QString filename)
+{
+	this->save(false, true, filename);
+}
+
+bool Window::save(bool ask_first, bool save_as, QString filename)
+{
+	if (ask_first)
 	{
-		case QMessageBox::Yes:
+		switch (QMessageBox::question(this, tr("Save Changes"), tr("Do you want to save changes to the current file?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel))
 		{
-			return this->save();
+			case QMessageBox::Yes:
+			{
+				break;
+			}
+			case QMessageBox::No:
+			{
+				return true;
+			}
+			default:
+			{
+				return false;
+			}
 		}
-		case QMessageBox::Cancel:
+	}
+
+	if (this->getFilename().isEmpty() || save_as)
+	{
+		if (filename.isEmpty()) filename = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("MIDI Files (*.mid)"));
+
+		if (filename.isEmpty())
 		{
 			return false;
 		}
-		default:
+		else
 		{
-			return true;
+			if (this->sequence->saveAs(filename))
+			{
+				return true;
+			}
 		}
-	}
-}
-
-bool Window::save()
-{
-	if (this->getFilename().isEmpty())
-	{
-		return this->saveAs();
 	}
 	else
 	{
@@ -171,34 +197,10 @@ bool Window::save()
 		{
 			return true;
 		}
-		else
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Cannot save the specified MIDI file."));
-			return false;
-		}
 	}
-}
 
-bool Window::saveAs()
-{
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("MIDI Files (*.mid)"));
-
-	if (filename.isEmpty())
-	{
-		return false;
-	}
-	else
-	{
-		if (this->sequence->saveAs(filename))
-		{
-			return true;
-		}
-		else
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Cannot save the specified MIDI file."));
-			return false;
-		}
-	}
+	QMessageBox::warning(this, tr("Error"), tr("Cannot save the specified MIDI file."));
+	return false;
 }
 
 void Window::quit()
@@ -219,7 +221,7 @@ void Window::quit()
 
 	if (sequences.size() == 1)
 	{
-		if (!is_modified || this->saveChanges()) QGuiApplication::quit();
+		if (!is_modified || this->save(true, false, "")) QGuiApplication::quit();
 	}
 	else
 	{
@@ -305,26 +307,31 @@ void Window::createFileMenu()
 	this->addAction(new_action);
 	file_menu->addAction(new_action);
 	new_action->setShortcut(QKeySequence(QKeySequence::New));
+	connect(new_action, SIGNAL(triggered()), this, SLOT(new_()));
 
 	QAction* new_window_action = new QAction(tr("New &Window"));
 	this->addAction(new_window_action);
 	new_window_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_N));
 	file_menu->addAction(new_window_action);
+	connect(new_window_action, SIGNAL(triggered()), this, SLOT(newWindow()));
 
 	QAction* open_action = new QAction(tr("&Open..."));
 	this->addAction(open_action);
 	file_menu->addAction(open_action);
 	open_action->setShortcut(QKeySequence(QKeySequence::Open));
+	connect(open_action, SIGNAL(triggered()), this, SLOT(open()));
 
 	QAction* save_action = new QAction(tr("&Save"));
 	this->addAction(save_action);
 	file_menu->addAction(save_action);
 	save_action->setShortcut(QKeySequence(QKeySequence::Save));
+	connect(save_action, SIGNAL(triggered()), this, SLOT(save()));
 
 	QAction* save_as_action = new QAction(tr("Save &As..."));
 	this->addAction(save_as_action);
 	save_as_action->setShortcut(QKeySequence(QKeySequence::SaveAs));
 	file_menu->addAction(save_as_action);
+	connect(save_as_action, SIGNAL(triggered()), this, SLOT(saveAs()));
 
 	file_menu->addSeparator();
 
@@ -338,6 +345,7 @@ void Window::createFileMenu()
 	this->addAction(quit_action);
 	file_menu->addAction(quit_action);
 	quit_action->setShortcut(QKeySequence(QKeySequence::Quit));
+	connect(quit_action, SIGNAL(triggered()), this, SLOT(quit()));
 }
 
 void Window::createEditMenu()
@@ -382,11 +390,13 @@ void Window::createEditMenu()
 	this->addAction(select_all_action);
 	edit_menu->addAction(select_all_action);
 	select_all_action->setShortcut(QKeySequence(QKeySequence::SelectAll));
+	connect(select_all_action, SIGNAL(triggered()), this, SLOT(selectAll()));
 
 	QAction* select_none_action = new QAction(tr("Select &None"));
 	this->addAction(select_none_action);
 	edit_menu->addAction(select_none_action);
-	select_none_action->setShortcut(QKeySequence(QKeySequence::Deselect));
+	select_none_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_A));
+	connect(select_none_action, SIGNAL(triggered()), this, SLOT(selectNone()));
 
 	QAction* select_time_range_action = new QAction(tr("Select Ti&me Range"));
 	this->addAction(select_time_range_action);
@@ -412,10 +422,12 @@ void Window::createViewMenu()
 	QAction* add_lane_action = new QAction(tr("&Add Lane"));
 	this->addAction(add_lane_action);
 	view_menu->addAction(add_lane_action);
+	connect(add_lane_action, SIGNAL(triggered()), this, SLOT(addLane()));
 
 	QAction* remove_lane_action = new QAction(tr("&Remove Lane"));
 	this->addAction(remove_lane_action);
 	view_menu->addAction(remove_lane_action);
+	connect(remove_lane_action, SIGNAL(triggered()), this, SLOT(removeLane()));
 
 	QAction* move_lane_up_action = new QAction(tr("Move Lane &Up"));
 	this->addAction(move_lane_up_action);
