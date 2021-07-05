@@ -38,17 +38,13 @@ Lane::Lane(Window* window)
 	this->unselected_event_color = settings.value("lane/unselected-event-color", QColorConstants::White).value<QColor>();
 	this->unselected_event_border_color = settings.value("lane/unselected-event-text-color", QColorConstants::Black).value<QColor>();
 	this->unselected_event_text_color = settings.value("lane/unselected-event-border-color", QColorConstants::Black).value<QColor>();
-	this->selected_event_color = settings.value("lane/selected-event-color", QColorConstants::Blue).value<QColor>();
+	this->selected_event_color = settings.value("lane/selected-event-color", QColorConstants::DarkBlue).value<QColor>();
 	this->selected_event_border_color = settings.value("lane/selected-event-border-color", QColorConstants::Black).value<QColor>();
 	this->selected_event_text_color = settings.value("lane/selected-event-text-color", QColorConstants::White).value<QColor>();
-	this->cursor_color = settings.value("lane/cursor-color", QColorConstants::Blue).value<QColor>();
-	this->selection_rect_color = settings.value("lane/selection-rect-color", QColorConstants::Blue).value<QColor>();
+	this->cursor_color = settings.value("lane/cursor-color", QColorConstants::DarkBlue).value<QColor>();
+	this->selection_rect_color = settings.value("lane/selection-rect-color", QColorConstants::DarkBlue).value<QColor>();
 	this->selection_rect_border_color = settings.value("lane/selection-rect-border-color", QColorConstants::Black).value<QColor>();
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
-}
-
-Lane::~Lane()
-{
 }
 
 void Lane::paintEvent(QPaintEvent* event)
@@ -73,13 +69,13 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	this->paintEvents(&painter, this->width(), this->height(), selected_events_x_offset, selected_events_y_offset);
 
-	painter.setPen(QPen(this->cursor_color));
+	painter.setPen(this->cursor_color);
 	painter.drawLine(this->cursor_x, 0, this->cursor_x, this->height());
 
 	if (should_paint_selection_rect)
 	{
 		painter.setBrush(QBrush(this->selection_rect_color));
-		painter.setPen(QPen(this->selection_rect_border_color));
+		painter.setPen(this->selection_rect_border_color);
 		painter.drawRect(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
 	}
 }

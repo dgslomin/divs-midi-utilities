@@ -12,9 +12,9 @@ class Sequence
 {
 public:
 	std::list<Window*> windows;
-	QString filename;
-	MidiFile_t midi_file;
-	bool is_modified;
+	QString filename = "";
+	MidiFile_t midi_file = NULL;
+	bool is_modified = false;
 
 	Sequence();
 	~Sequence();

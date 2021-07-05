@@ -18,10 +18,10 @@ public:
 	QSplitter* sidebar_splitter;
 	QSplitter* lane_splitter;
 	QTabWidget* sidebar_tab_widget;
+	int scroll_x = 0;
 	bool use_linear_time;
 	int pixels_per_beat;
 	int pixels_per_second;
-	int scroll_x;
 
 	Window(Window* existing_window);
 	~Window();

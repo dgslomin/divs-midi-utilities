@@ -17,18 +17,18 @@ class Lane: public QWidget
 
 public:
 	Window* window;
-	MidiFileTrack_t track;
-	int cursor_x;
-	int cursor_y;
-	bool mouse_down;
-	int mouse_down_x;
-	int mouse_down_y;
-	MidiFileEvent_t mouse_down_midi_event;
-	bool mouse_down_midi_event_is_new;
-	int mouse_drag_x;
-	int mouse_drag_y;
-	bool mouse_drag_x_allowed;
-	bool mouse_drag_y_allowed;
+	MidiFileTrack_t track = NULL;
+	int cursor_x = 0;
+	int cursor_y = 0;
+	bool mouse_down = false;
+	int mouse_down_x = 0;
+	int mouse_down_y = 0;
+	MidiFileEvent_t mouse_down_midi_event = NULL;
+	bool mouse_down_midi_event_is_new = false;
+	int mouse_drag_x = 0;
+	int mouse_drag_y = 0;
+	bool mouse_drag_x_allowed = false;
+	bool mouse_drag_y_allowed = false;
 	QColor background_color;
 	QColor white_note_background_color;
 	QColor black_note_background_color;
@@ -44,8 +44,6 @@ public:
 	int mouse_drag_threshold;
 
 	Lane(Window* window);
-	~Lane();
-
 	void paintEvent(QPaintEvent* event);
 	void mousePressEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);

@@ -14,6 +14,7 @@
 #include <QWindow>
 #include "inspector-sidebar.h"
 #include "midifile.h"
+#include "note-lane.h"
 #include "window.h"
 
 Window::Window(Window* existing_window)
@@ -35,7 +36,7 @@ Window::Window(Window* existing_window)
 	this->lane_splitter->setChildrenCollapsible(false);
 	this->lane_splitter->setHandleWidth(0);
 
-	this->lane_splitter->addWidget(new QTextEdit("lane placeholder 1"));
+	this->lane_splitter->addWidget(new NoteLane(this));
 	this->lane_splitter->addWidget(new QTextEdit("lane placeholder 2"));
 	this->lane_splitter->addWidget(new QTextEdit("lane placeholder 3"));
 
