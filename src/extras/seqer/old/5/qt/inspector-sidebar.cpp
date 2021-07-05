@@ -3,6 +3,7 @@
 #include <QFormLayout>
 #include <QFrame>
 #include <QLineEdit>
+#include <QPalette>
 #include "inspector-sidebar.h"
 #include "window.h"
 
@@ -20,7 +21,7 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	QFrame* separator = new QFrame();
 	layout->addRow(separator);
 	separator->setFrameShape(QFrame::HLine);
-	separator->setFrameShadow(QFrame::Sunken);
+	separator->setForegroundRole(QPalette::Mid);
 	separator->setMinimumHeight(16);
 
 	QLineEdit* event_type_line_edit = new QLineEdit();
