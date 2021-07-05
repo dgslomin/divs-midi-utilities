@@ -12,6 +12,7 @@
 #include <QSplitter>
 #include <QTextEdit>
 #include <QWindow>
+#include "inspector-sidebar.h"
 #include "midifile.h"
 #include "window.h"
 
@@ -45,7 +46,7 @@ Window::Window(Window* existing_window)
 	this->sidebar_tab_widget->setElideMode(Qt::ElideNone);
 	this->sidebar_tab_widget->setUsesScrollButtons(false);
 
-	this->sidebar_tab_widget->addTab(new QTextEdit("inspector placeholder"), tr("Inspector"));
+	this->sidebar_tab_widget->addTab(new InspectorSidebar(this), tr("Inspector"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("tracks placeholder"), tr("Tracks"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("channels placeholder"), tr("Channels"));
 
