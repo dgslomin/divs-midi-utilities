@@ -51,14 +51,14 @@ Window::Window(Window* existing_window)
 	this->sidebar_tab_widget->addTab(new QTextEdit("channels placeholder"), tr("Channels"));
 
 	QSettings settings;
-	this->restoreGeometry(settings.value("state/window-geometry").toByteArray());
-	this->restoreState(settings.value("state/window-state").toByteArray());
-	this->lane_splitter->restoreState(settings.value("state/lane-splitter-state").toByteArray());
-	this->sidebar_splitter->restoreState(settings.value("state/sidebar-splitter-state").toByteArray());
-	this->sidebar_tab_widget->setCurrentIndex(settings.value("state/sidebar-tab-index", 0).toInt());
-	this->use_linear_time = settings.value("view/use-linear-time", false).toBool();
-	this->pixels_per_beat = settings.value("view/pixels-per-beat", 40).toInt();
-	this->pixels_per_second = settings.value("view/pixels-per-second", 40).toInt();
+	this->restoreGeometry(settings.value("window/window-geometry").toByteArray());
+	this->restoreState(settings.value("window/window-state").toByteArray());
+	this->lane_splitter->restoreState(settings.value("window/lane-splitter-state").toByteArray());
+	this->sidebar_splitter->restoreState(settings.value("window/sidebar-splitter-state").toByteArray());
+	this->sidebar_tab_widget->setCurrentIndex(settings.value("window/sidebar-tab-index", 0).toInt());
+	this->use_linear_time = settings.value("window/use-linear-time", false).toBool();
+	this->pixels_per_beat = settings.value("window/pixels-per-beat", 40).toInt();
+	this->pixels_per_second = settings.value("window/pixels-per-second", 40).toInt();
 }
 
 Window::~Window()
@@ -69,11 +69,11 @@ Window::~Window()
 void Window::closeEvent(QCloseEvent* event)
 {
 	QSettings settings;
-	settings.setValue("state/window-geometry", this->saveGeometry());
-	settings.setValue("state/window-state", this->saveState());
-	settings.setValue("state/lane-splitter-state", this->lane_splitter->saveState());
-	settings.setValue("state/sidebar-splitter-state", this->sidebar_splitter->saveState());
-	settings.setValue("state/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
+	settings.setValue("window/window-geometry", this->saveGeometry());
+	settings.setValue("window/window-state", this->saveState());
+	settings.setValue("window/lane-splitter-state", this->lane_splitter->saveState());
+	settings.setValue("window/sidebar-splitter-state", this->sidebar_splitter->saveState());
+	settings.setValue("window/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
 	QMainWindow::closeEvent(event);
 }
 
@@ -304,11 +304,11 @@ void Window::createFileMenu()
 {
 	QMenu* file_menu = this->menuBar()->addMenu(tr("&File"));
 
-	QAction* new_action = new QAction(tr("&New"));
-	this->addAction(new_action);
-	file_menu->addAction(new_action);
-	new_action->setShortcut(QKeySequence(QKeySequence::New));
-	connect(new_action, SIGNAL(triggered()), this, SLOT(newSequence()));
+	QAction* new_sequence_action = new QAction(tr("&New"));
+	this->addAction(new_sequence_action);
+	file_menu->addAction(new_sequence_action);
+	new_sequence_action->setShortcut(QKeySequence(QKeySequence::New));
+	connect(new_sequence_action, SIGNAL(triggered()), this, SLOT(newSequence()));
 
 	QAction* new_window_action = new QAction(tr("New &Window"));
 	this->addAction(new_window_action);
