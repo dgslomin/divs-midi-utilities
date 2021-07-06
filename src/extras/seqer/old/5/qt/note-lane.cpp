@@ -15,20 +15,22 @@ NoteLane::NoteLane(Window* window): Lane(window)
 	this->scroll_y = settings.value("note-lane/scroll-y", 0).toInt();
 }
 
-void NoteLane::paintBackground(QPainter* painter, int width, int height)
+void NoteLane::paintBackground(QPainter* painter)
 {
+	int width = this->width();
+	int height = this->height();
 	painter->fillRect(0, 0, width, height, this->background_color);
 	bool black_note[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 
-	for (int note = this->getNoteFromY(0), last_note = this->getNoteFromY(height); note < last_note; note++)
+	for (int note = this->getNoteFromY(height), last_note = this->getNoteFromY(0); note < last_note; note++)
 	{
 		painter->fillRect(0, this->getYFromNote(note), width, this->pixels_per_note, black_note[note % 12] ? this->black_note_background_color : this->white_note_background_color);
 	}
 }
 
-void NoteLane::paintEvents(QPainter* painter, int width, int height, int selected_events_x_offset, int selected_events_y_offset)
+void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
-	QRect bounds(0, 0, width, height);
+	QRect bounds(0, 0, this->width(), this->height());
 	QBrush unselected_event_brush = QBrush(this->unselected_event_color);
 	QBrush selected_event_brush = QBrush(this->selected_event_color);
 
@@ -123,11 +125,11 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 
 int NoteLane::getYFromNote(int note)
 {
-	return (note * this->pixels_per_note) - this->scroll_y;
+	return this->height() - ((note * this->pixels_per_note) - this->scroll_y);
 }
 
 int NoteLane::getNoteFromY(int y)
 {
-	return (y + this->scroll_y) / this->pixels_per_note;
+	return (this->height() - (y + this->scroll_y)) / this->pixels_per_note;
 }
 

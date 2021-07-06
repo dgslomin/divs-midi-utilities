@@ -50,16 +50,16 @@ Lane::Lane(Window* window)
 void Lane::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
+	this->paintBackground(&painter);
 
-	this->paintBackground(&painter, this->width(), this->height());
-
-	bool should_paint_selection_rect = false;
 	int selected_events_x_offset = 0;
 	int selected_events_y_offset = 0;
 
-	if (this->mouse_down && (this->mouse_down_midi_event != NULL))
+	if (this->mouse_down && (this->mouse_down_midi_event == NULL))
 	{
-		should_paint_selection_rect = true;
+		painter.setBrush(QBrush(this->selection_rect_color));
+		painter.setPen(this->selection_rect_border_color);
+		painter.drawRect(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
 	}
 	else
 	{
@@ -67,17 +67,10 @@ void Lane::paintEvent(QPaintEvent* event)
 		if (this->mouse_drag_y_allowed) selected_events_y_offset = this->mouse_drag_y - this->mouse_down_y;
 	}
 
-	this->paintEvents(&painter, this->width(), this->height(), selected_events_x_offset, selected_events_y_offset);
-
 	painter.setPen(this->cursor_color);
 	painter.drawLine(this->cursor_x, 0, this->cursor_x, this->height());
 
-	if (should_paint_selection_rect)
-	{
-		painter.setBrush(QBrush(this->selection_rect_color));
-		painter.setPen(this->selection_rect_border_color);
-		painter.drawRect(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
-	}
+	this->paintEvents(&painter, selected_events_x_offset, selected_events_y_offset);
 }
 
 void Lane::mousePressEvent(QMouseEvent* event)
@@ -85,8 +78,8 @@ void Lane::mousePressEvent(QMouseEvent* event)
 	if (event->button() == Qt::LeftButton)
 	{
 		this->mouse_down = true;
-		this->mouse_down_x = event->x();
-		this->mouse_down_y = event->y();
+		this->mouse_down_x = event->position().x();
+		this->mouse_down_y = event->position().y();
 		this->mouse_down_midi_event = this->getEventFromXY(this->mouse_down_x, this->mouse_down_y);
 		this->mouse_down_midi_event_is_new = false;
 		this->mouse_drag_x = this->mouse_down_x;
@@ -94,7 +87,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 		this->mouse_drag_x_allowed = false;
 		this->mouse_drag_y_allowed = false;
 
-		if ((this->mouse_down_midi_event == NULL) && (event->modifiers() & Qt::ShiftModifier == 0))
+		if ((this->mouse_down_midi_event == NULL) && ((event->modifiers() & Qt::ShiftModifier) == 0))
 		{
 			this->window->selectNone();
 
@@ -116,8 +109,8 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 
 	if (event->button() == Qt::LeftButton)
 	{
-		int mouse_x = event->x();
-		int mouse_y = event->y();
+		int mouse_x = event->position().x();
+		int mouse_y = event->position().y();
 
 		if (this->mouse_down_midi_event == NULL)
 		{
@@ -150,7 +143,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			}
 			else
 			{
-				if ((event->modifiers() & Qt::ShiftModifier == 0) && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
+				if (((event->modifiers() & Qt::ShiftModifier) == 0) && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
 				{
 					this->window->focusInspector();
 				}
@@ -166,8 +159,8 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 {
 	if (this->mouse_down)
 	{
-		this->mouse_drag_x = event->x();
-		this->mouse_drag_y = event->y();
+		this->mouse_drag_x = event->position().x();
+		this->mouse_drag_y = event->position().y();
 		if (abs(this->mouse_drag_x - this->mouse_down_x) > this->mouse_drag_threshold) this->mouse_drag_x_allowed = true;
 		if (abs(this->mouse_drag_y - this->mouse_down_y) > this->mouse_drag_threshold) this->mouse_drag_y_allowed = true;
 		this->update();

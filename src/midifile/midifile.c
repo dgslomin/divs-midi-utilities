@@ -2237,6 +2237,7 @@ MidiFileEvent_t MidiFileTrack_createNoteOffEvent(MidiFileTrack_t track, long tic
 	new_event->u.note_off.note = note;
 	new_event->u.note_off.velocity = velocity;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2256,6 +2257,7 @@ MidiFileEvent_t MidiFileTrack_createNoteOnEvent(MidiFileTrack_t track, long tick
 	new_event->u.note_on.note = note;
 	new_event->u.note_on.velocity = velocity;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2275,6 +2277,7 @@ MidiFileEvent_t MidiFileTrack_createKeyPressureEvent(MidiFileTrack_t track, long
 	new_event->u.key_pressure.note = note;
 	new_event->u.key_pressure.amount = amount;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2294,6 +2297,7 @@ MidiFileEvent_t MidiFileTrack_createControlChangeEvent(MidiFileTrack_t track, lo
 	new_event->u.control_change.number = number;
 	new_event->u.control_change.value = value;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2312,6 +2316,7 @@ MidiFileEvent_t MidiFileTrack_createProgramChangeEvent(MidiFileTrack_t track, lo
 	new_event->u.program_change.channel = channel;
 	new_event->u.program_change.number = number;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2330,6 +2335,7 @@ MidiFileEvent_t MidiFileTrack_createChannelPressureEvent(MidiFileTrack_t track, 
 	new_event->u.channel_pressure.channel = channel;
 	new_event->u.channel_pressure.amount = amount;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2348,6 +2354,7 @@ MidiFileEvent_t MidiFileTrack_createPitchWheelEvent(MidiFileTrack_t track, long 
 	new_event->u.pitch_wheel.channel = channel;
 	new_event->u.pitch_wheel.value = value;
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2367,6 +2374,7 @@ MidiFileEvent_t MidiFileTrack_createSysexEvent(MidiFileTrack_t track, long tick,
 	new_event->u.sysex.data_buffer = malloc(data_length);
 	memcpy(new_event->u.sysex.data_buffer, data_buffer, data_length);
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2388,6 +2396,7 @@ MidiFileEvent_t MidiFileTrack_createMetaEvent(MidiFileTrack_t track, long tick, 
 	memcpy(new_event->u.meta.data_buffer, data_buffer, data_length);
 	new_event->u.meta.data_buffer[data_length] = '\0';
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;
@@ -2513,6 +2522,7 @@ MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick,
 	new_event->tick = tick;
 	MidiFileVoiceEvent_setData(new_event, data);
 	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
 	add_event(new_event);
 
 	return new_event;

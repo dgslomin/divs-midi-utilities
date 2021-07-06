@@ -20,8 +20,8 @@ public:
 	int scroll_y;
 
 	NoteLane(Window* window);
-	void paintBackground(QPainter* painter, int width, int height);
-	void paintEvents(QPainter* painter, int width, int height, int selected_events_x_offset, int selected_events_y_offset);
+	void paintBackground(QPainter* painter);
+	void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset);
 	MidiFileEvent_t getEventFromXY(int x, int y);
 	MidiFileEvent_t addEventAtXY(int x, int y);
 	void moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset);

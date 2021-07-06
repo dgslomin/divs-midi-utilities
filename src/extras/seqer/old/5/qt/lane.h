@@ -49,8 +49,8 @@ public:
 	void mouseReleaseEvent(QMouseEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
 
-	virtual void paintBackground(QPainter* painter, int width, int height) = 0;
-	virtual void paintEvents(QPainter* painter, int width, int height, int selected_events_x_offset, int selected_events_y_offset) = 0;
+	virtual void paintBackground(QPainter* painter) = 0;
+	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
 	virtual MidiFileEvent_t getEventFromXY(int x, int y) = 0;
 	virtual MidiFileEvent_t addEventAtXY(int x, int y) = 0;
 	virtual void moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset) = 0;

@@ -81,7 +81,7 @@ void Window::closeEvent(QCloseEvent* event)
 void Window::paintEvent(QPaintEvent* event)
 {
 	this->setWindowModified(this->sequence->is_modified);
-	this->setWindowTitle(this->sequence->filename.isEmpty() ? "Seqer" : (this->sequence->filename + "[*] - Seqer"));
+	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? "(untitled)" : this->sequence->filename));
 	QMainWindow::paintEvent(event);
 }
 
