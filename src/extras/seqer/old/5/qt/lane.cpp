@@ -7,6 +7,7 @@
 #include <QPainter>
 #include <QPen>
 #include <QSettings>
+#include <QStatusBar>
 #include <QWidget>
 #include "lane.h"
 #include "midifile.h"
@@ -30,6 +31,26 @@ Lane::Lane(Window* window)
 	this->addAction(toggle_event_selection_action);
 	toggle_event_selection_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
 	connect(toggle_event_selection_action, SIGNAL(triggered()), this, SLOT(toggleEventSelection()));
+
+	QAction* cursor_left_action = new QAction(tr("Cursor Left"));
+	this->addAction(cursor_left_action);
+	cursor_left_action->setShortcut(QKeySequence(Qt::Key_Left));
+	connect(cursor_left_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+
+	QAction* cursor_right_action = new QAction(tr("Cursor Right"));
+	this->addAction(cursor_right_action);
+	cursor_right_action->setShortcut(QKeySequence(Qt::Key_Right));
+	connect(cursor_right_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+
+	QAction* cursor_up_action = new QAction(tr("Cursor Up"));
+	this->addAction(cursor_up_action);
+	cursor_up_action->setShortcut(QKeySequence(Qt::Key_Up));
+	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+
+	QAction* cursor_down_action = new QAction(tr("Cursor Down"));
+	this->addAction(cursor_down_action);
+	cursor_down_action->setShortcut(QKeySequence(Qt::Key_Down));
+	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
 
 	QSettings settings;
 	this->background_color = settings.value("lane/background-color", QColorConstants::White).value<QColor>();
@@ -96,6 +117,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				this->mouse_down_midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
 				MidiFileEvent_setSelected(this->mouse_down_midi_event, 1);
 				this->mouse_down_midi_event_is_new = true;
+				this->window->statusBar()->showMessage("DIVDEBUG: mouse press, not at event, no shift, at cursor");
 			}
 
 			this->window->sequence->updateWindows();
@@ -116,14 +138,17 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		{
 			if ((mouse_x == this->mouse_down_x) && (mouse_y == this->mouse_down_y))
 			{
-				this->cursor_x = mouse_y;
+				this->cursor_x = mouse_x;
 				this->cursor_y = mouse_y;
+				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, not at event, at cursor");
 			}
 			else
 			{
 				this->selectEventsInRect(std::min(this->mouse_down_x, mouse_x), std::min(this->mouse_down_y, mouse_y), std::abs(mouse_x - this->mouse_down_x), std::abs(mouse_y - this->mouse_down_y));
-				should_update = true;
+				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, not at event, not at cursor");
 			}
+
+			should_update = true;
 		}
 		else
 		{
@@ -140,12 +165,15 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 						should_update = true;
 					}
 				}
+
+				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, at event, dragged");
 			}
 			else
 			{
 				if (((event->modifiers() & Qt::ShiftModifier) == 0) && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
 				{
 					this->window->focusInspector();
+					this->window->statusBar()->showMessage("DIVDEBUG: mouse release, at old event, no shift, not dragged");
 				}
 			}
 		}
@@ -236,5 +264,29 @@ void Lane::toggleEventSelection()
 	}
 
 	this->window->sequence->updateWindows();
+}
+
+void Lane::cursorLeft()
+{
+	this->cursor_x--;
+	this->update();
+}
+
+void Lane::cursorRight()
+{
+	this->cursor_x++;
+	this->update();
+}
+
+void Lane::cursorUp()
+{
+	this->cursor_y--;
+	this->update();
+}
+
+void Lane::cursorDown()
+{
+	this->cursor_y++;
+	this->update();
 }
 
