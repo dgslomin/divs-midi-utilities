@@ -6,8 +6,10 @@
 #include <QGuiApplication>
 #include <QKeySequence>
 #include <QMainWindow>
+#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPaintEvent>
 #include <QSettings>
 #include <QSplitter>
 #include <QTextEdit>
@@ -21,8 +23,6 @@ Window::Window(Window* existing_window)
 {
 	this->sequence = (existing_window == NULL) ? new Sequence() : existing_window->sequence;
 	this->sequence->addWindow(this);
-
-	this->setWindowTitle("Seqer");
 	this->createMenuBar();
 	this->statusBar();
 
@@ -78,24 +78,16 @@ void Window::closeEvent(QCloseEvent* event)
 	QMainWindow::closeEvent(event);
 }
 
-bool Window::isModified()
+void Window::paintEvent(QPaintEvent* event)
 {
-	return this->sequence->is_modified;
-}
-
-bool Window::isLastWindowForSequence()
-{
-	return (this->sequence->windows.size() == 1);
-}
-
-QString Window::getFilename()
-{
-	return this->sequence->filename;
+	this->setWindowModified(this->sequence->is_modified);
+	this->setWindowTitle(this->sequence->filename.isEmpty() ? "Seqer" : (this->sequence->filename + "[*] - Seqer"));
+	QMainWindow::paintEvent(event);
 }
 
 void Window::newSequence()
 {
-	if (this->isModified() && this->isLastWindowForSequence())
+	if (this->sequence->is_modified && (this->sequence->windows.size() == 1))
 	{
 		if (!this->save(true, false, "")) return;
 	}
@@ -103,7 +95,7 @@ void Window::newSequence()
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
-	this->refreshData();
+	this->update();
 }
 
 void Window::newWindow()
@@ -113,7 +105,7 @@ void Window::newWindow()
 
 void Window::open()
 {
-	if (this->isModified() && this->isLastWindowForSequence())
+	if (this->sequence->is_modified && (this->sequence->windows.size() == 1))
 	{
 		if (!this->save(true, false, "")) return;
 	}
@@ -138,7 +130,7 @@ void Window::open(QString filename)
 	this->sequence->filename = filename;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	this->refreshData();
+	this->update();
 }
 
 void Window::save()
@@ -177,7 +169,7 @@ bool Window::save(bool ask_first, bool save_as, QString filename)
 		}
 	}
 
-	if (this->getFilename().isEmpty() || save_as)
+	if (this->sequence->filename.isEmpty() || save_as)
 	{
 		if (filename.isEmpty()) filename = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("MIDI Files (*.mid)"));
 
@@ -217,7 +209,7 @@ void Window::quit()
 		if (window != NULL)
 		{
 			sequences.insert(window->sequence);
-			if (window->isModified()) is_modified = true;
+			if (window->sequence->is_modified) is_modified = true;
 		}
 	}
 
@@ -237,6 +229,8 @@ void Window::selectAll()
 	{
 		MidiFileEvent_setSelected(midi_event, 1);
 	}
+
+	this->sequence->updateWindows();
 }
 
 void Window::selectNone()
@@ -245,6 +239,8 @@ void Window::selectNone()
 	{
 		MidiFileEvent_setSelected(midi_event, 0);
 	}
+
+	this->sequence->updateWindows();
 }
 
 void Window::addLane()
@@ -256,14 +252,6 @@ void Window::removeLane()
 }
 
 void Window::focusInspector()
-{
-}
-
-void Window::refreshData()
-{
-}
-
-void Window::refreshDisplay()
 {
 }
 

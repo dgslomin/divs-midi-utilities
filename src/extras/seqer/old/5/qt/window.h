@@ -5,6 +5,7 @@ class Window;
 
 #include <QCloseEvent>
 #include <QMainWindow>
+#include <QPaintEvent>
 #include <QSplitter>
 #include <QTabWidget>
 #include "sequence.h"
@@ -26,9 +27,7 @@ public:
 	Window(Window* existing_window);
 	~Window();
 	void closeEvent(QCloseEvent* event);
-	bool isModified();
-	bool isLastWindowForSequence();
-	QString getFilename();
+	void paintEvent(QPaintEvent* event);
 	bool save(bool ask_first, bool save_as, QString filename);
 	int getXFromTick(long tick);
 	long getTickFromX(int x);
@@ -54,8 +53,6 @@ public slots:
 	void addLane();
 	void removeLane();
 	void focusInspector();
-	void refreshData();
-	void refreshDisplay();
 };
 
 #endif

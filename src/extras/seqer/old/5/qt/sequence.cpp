@@ -26,15 +26,9 @@ void Sequence::removeWindow(Window* window)
 	if (this->windows.empty()) delete this;
 }
 
-void Sequence::refreshData()
+void Sequence::updateWindows()
 {
-	this->is_modified = true;
-	for (std::list<Window*>::iterator window_iterator = this->windows.begin(); window_iterator != this->windows.end(); window_iterator++) (*window_iterator)->refreshData();
-}
-
-void Sequence::refreshDisplay()
-{
-	for (std::list<Window*>::iterator window_iterator = this->windows.begin(); window_iterator != this->windows.end(); window_iterator++) (*window_iterator)->refreshDisplay();
+	for (std::list<Window*>::iterator window_iterator = this->windows.begin(); window_iterator != this->windows.end(); window_iterator++) (*window_iterator)->update();
 }
 
 bool Sequence::save()
@@ -44,7 +38,7 @@ bool Sequence::save()
 	if (MidiFile_save(this->midi_file, this->filename.toUtf8().data()) == 0)
 	{
 		this->is_modified = false;
-		this->refreshDisplay();
+		this->updateWindows();
 		return true;
 	}
 	else
@@ -59,7 +53,7 @@ bool Sequence::saveAs(QString filename)
 	{
 		this->filename = filename;
 		this->is_modified = false;
-		this->refreshDisplay();
+		this->updateWindows();
 		return true;
 	}
 	else

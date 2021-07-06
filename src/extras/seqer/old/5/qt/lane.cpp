@@ -104,12 +104,16 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				MidiFileEvent_setSelected(this->mouse_down_midi_event, 1);
 				this->mouse_down_midi_event_is_new = true;
 			}
+
+			this->window->sequence->updateWindows();
 		}
 	}
 }
 
 void Lane::mouseReleaseEvent(QMouseEvent* event)
 {
+	bool should_update = false;
+
 	if (event->button() == Qt::LeftButton)
 	{
 		int mouse_x = event->x();
@@ -125,6 +129,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			else
 			{
 				this->selectEventsInRect(std::min(this->mouse_down_x, mouse_x), std::min(this->mouse_down_y, mouse_y), std::abs(mouse_x - this->mouse_down_x), std::abs(mouse_y - this->mouse_down_y));
+				should_update = true;
 			}
 		}
 		else
@@ -139,6 +144,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 					if (MidiFileEvent_isSelected(midi_event))
 					{
 						this->moveEventByXY(midi_event, x_offset, y_offset);
+						should_update = true;
 					}
 				}
 			}
@@ -152,6 +158,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		}
 
 		this->mouse_down = false;
+		if (should_update) this->window->sequence->updateWindows();
 	}
 }
 
@@ -163,13 +170,14 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 		this->mouse_drag_y = event->y();
 		if (abs(this->mouse_drag_x - this->mouse_down_x) > this->mouse_drag_threshold) this->mouse_drag_x_allowed = true;
 		if (abs(this->mouse_drag_y - this->mouse_down_y) > this->mouse_drag_threshold) this->mouse_drag_y_allowed = true;
-		this->window->refreshDisplay();
+		this->update();
 	}
 }
 
 void Lane::editEvent()
 {
 	bool selection_is_empty = true;
+	bool should_update = false;
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
@@ -188,6 +196,7 @@ void Lane::editEvent()
 		{
 			cursor_midi_event = this->addEventAtXY(this->cursor_x, this->cursor_y);
 			MidiFileEvent_setSelected(cursor_midi_event, 1);
+			should_update = true;
 		}
 		else
 		{
@@ -199,6 +208,8 @@ void Lane::editEvent()
 	{
 		this->window->focusInspector();
 	}
+
+	if (should_update) this->window->sequence->updateWindows();
 }
 
 void Lane::selectEvent()
@@ -214,6 +225,8 @@ void Lane::selectEvent()
 		this->window->selectNone();
 		MidiFileEvent_setSelected(cursor_midi_event, 1);
 	}
+
+	this->window->sequence->updateWindows();
 }
 
 void Lane::toggleEventSelection()
@@ -228,5 +241,7 @@ void Lane::toggleEventSelection()
 	{
 		MidiFileEvent_setSelected(cursor_midi_event, !MidiFileEvent_isSelected(cursor_midi_event));
 	}
+
+	this->window->sequence->updateWindows();
 }
 

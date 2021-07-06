@@ -20,8 +20,7 @@ public:
 	~Sequence();
 	void addWindow(Window* window);
 	void removeWindow(Window* window);
-	void refreshData();
-	void refreshDisplay();
+	void updateWindows();
 	bool save();
 	bool saveAs(QString filename);
 };
