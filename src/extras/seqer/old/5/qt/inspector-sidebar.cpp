@@ -21,6 +21,7 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	QFrame* separator = new QFrame();
 	layout->addRow(separator);
 	separator->setFrameShape(QFrame::HLine);
+	separator->setLineWidth(0);
 	separator->setForegroundRole(QPalette::Mid);
 	separator->setMinimumHeight(16);
 

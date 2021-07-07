@@ -32,15 +32,14 @@ public:
 	QColor background_color;
 	QColor white_note_background_color;
 	QColor black_note_background_color;
-	QColor unselected_event_color;
-	QColor unselected_event_border_color;
-	QColor unselected_event_text_color;
-	QColor selected_event_color;
-	QColor selected_event_border_color;
-	QColor selected_event_text_color;
-	QColor cursor_color;
-	QColor selection_rect_color;
-	QColor selection_rect_border_color;
+	QPen unselected_event_pen;
+	QBrush unselected_event_brush;
+	QPen unselected_event_text_pen;
+	QPen selected_event_pen;
+	QBrush selected_event_brush;
+	QPen selected_event_text_pen;
+	QPen cursor_pen;
+	QPen selection_rect_pen;
 	int mouse_drag_threshold;
 
 	Lane(Window* window);

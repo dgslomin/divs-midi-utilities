@@ -31,8 +31,6 @@ void NoteLane::paintBackground(QPainter* painter)
 void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
 	QRect bounds(0, 0, this->width(), this->height());
-	QBrush unselected_event_brush = QBrush(this->unselected_event_color);
-	QBrush selected_event_brush = QBrush(this->selected_event_color);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
@@ -44,13 +42,13 @@ void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int 
 			{
 				if (MidiFileEvent_isSelected(midi_event))
 				{
-					painter->setBrush(selected_event_brush);
-					painter->setPen(this->selected_event_border_color);
+					painter->setPen(this->selected_event_pen);
+					painter->setBrush(this->selected_event_brush);
 				}
 				else
 				{
-					painter->setBrush(unselected_event_brush);
-					painter->setPen(this->unselected_event_border_color);
+					painter->setPen(this->unselected_event_pen);
+					painter->setBrush(this->unselected_event_brush);
 				}
 
 				painter->drawRect(rect);
