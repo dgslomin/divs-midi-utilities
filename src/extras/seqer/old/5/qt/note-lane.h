@@ -15,7 +15,7 @@ class NoteLane: public Lane
 
 public:
 	int channel = 0;
-	int velocity = 0;
+	int velocity = 63;
 	int pixels_per_note;
 	int scroll_y;
 

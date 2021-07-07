@@ -76,6 +76,7 @@ MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 	int start_tick = this->window->getTickFromX(x);
 	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
 	int note = this->getNoteFromY(y);
+	qDebug("NoteLane::addEventAtXY(%d, %d) { start_tick = %d, end_tick = %d, channel = %d, note = %d, velocity = %d }", x, y, start_tick, end_tick, this->channel, note, this->velocity);
 	return MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
 }
 

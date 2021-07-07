@@ -17,7 +17,7 @@ class Lane: public QWidget
 
 public:
 	Window* window;
-	MidiFileTrack_t track = NULL;
+	MidiFileTrack_t track;
 	int cursor_x = 0;
 	int cursor_y = 0;
 	bool mouse_down = false;

@@ -8,7 +8,6 @@
 #include <QPainter>
 #include <QPen>
 #include <QSettings>
-#include <QStatusBar>
 #include <QWidget>
 #include "lane.h"
 #include "midifile.h"
@@ -67,8 +66,10 @@ Lane::Lane(Window* window)
 	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 200)).value<QColor>());
 	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", QColorConstants::White).value<QColor>());
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 63)).value<QColor>());
-	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 127)).value<QColor>(), 2, Qt::DashLine);
+	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 127)).value<QColor>(), 1.5, Qt::DashLine);
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
+
+	this->track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, 1, 1);
 }
 
 void Lane::paintEvent(QPaintEvent* event)
@@ -121,7 +122,6 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				this->mouse_down_midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
 				MidiFileEvent_setSelected(this->mouse_down_midi_event, 1);
 				this->mouse_down_midi_event_is_new = true;
-				this->window->statusBar()->showMessage("DIVDEBUG: mouse press, not at event, no shift, at cursor");
 			}
 
 			this->window->sequence->updateWindows();
@@ -144,12 +144,10 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			{
 				this->cursor_x = mouse_x;
 				this->cursor_y = mouse_y;
-				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, not at event, at cursor");
 			}
 			else
 			{
 				this->selectEventsInRect(std::min(this->mouse_down_x, mouse_x), std::min(this->mouse_down_y, mouse_y), std::abs(mouse_x - this->mouse_down_x), std::abs(mouse_y - this->mouse_down_y));
-				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, not at event, not at cursor");
 			}
 
 			should_update = true;
@@ -169,15 +167,12 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 						should_update = true;
 					}
 				}
-
-				this->window->statusBar()->showMessage("DIVDEBUG: mouse release, at event, dragged");
 			}
 			else
 			{
 				if (((event->modifiers() & Qt::ShiftModifier) == 0) && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
 				{
 					this->window->focusInspector();
-					this->window->statusBar()->showMessage("DIVDEBUG: mouse release, at old event, no shift, not dragged");
 				}
 			}
 		}
