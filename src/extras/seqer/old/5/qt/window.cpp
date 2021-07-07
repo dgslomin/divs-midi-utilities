@@ -81,7 +81,7 @@ void Window::closeEvent(QCloseEvent* event)
 void Window::paintEvent(QPaintEvent* event)
 {
 	this->setWindowModified(this->sequence->is_modified);
-	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("(untitled)") : this->sequence->filename));
+	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("Untitled") : this->sequence->filename));
 	QMainWindow::paintEvent(event);
 }
 
@@ -110,7 +110,7 @@ void Window::open()
 		if (!this->save(true, false, "")) return;
 	}
 
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("MIDI Files (*.mid)"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), QSettings().value("window/directory", "").toString(), tr("MIDI Files (*.mid)"));
 	if (!filename.isEmpty()) this->open(filename);
 }
 
@@ -131,6 +131,7 @@ void Window::open(QString filename)
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
 	this->update();
+	QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 }
 
 void Window::save()
@@ -171,7 +172,7 @@ bool Window::save(bool ask_first, bool save_as, QString filename)
 
 	if (this->sequence->filename.isEmpty() || save_as)
 	{
-		if (filename.isEmpty()) filename = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("MIDI Files (*.mid)"));
+		if (filename.isEmpty()) filename = QFileDialog::getSaveFileName(this, tr("Save File"), QSettings().value("window/directory", "").toString(), tr("MIDI Files (*.mid)"));
 
 		if (filename.isEmpty())
 		{
@@ -181,6 +182,7 @@ bool Window::save(bool ask_first, bool save_as, QString filename)
 		{
 			if (this->sequence->saveAs(filename))
 			{
+				QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 				return true;
 			}
 		}
@@ -455,12 +457,12 @@ void Window::createTransportMenu()
 	QAction* play_action = new QAction(tr("&Play"));
 	this->addAction(play_action);
 	transport_menu->addAction(play_action);
-	play_action->setShortcut(QKeySequence(Qt::Key_Space));
+	play_action->setShortcut(QKeySequence(Qt::Key_P));
 
 	QAction* stop_action = new QAction(tr("&Stop"));
 	this->addAction(stop_action);
 	transport_menu->addAction(stop_action);
-	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
+	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_P));
 
 	QAction* record_action = new QAction(tr("&Record"));
 	this->addAction(record_action);

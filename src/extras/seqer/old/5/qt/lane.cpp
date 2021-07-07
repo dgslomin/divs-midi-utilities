@@ -2,6 +2,7 @@
 #include <QAction>
 #include <QBrush>
 #include <QColor>
+#include <QGuiApplication>
 #include <QKeySequence>
 #include <QMouseEvent>
 #include <QPainter>
@@ -16,6 +17,7 @@
 Lane::Lane(Window* window)
 {
 	this->window = window;
+	this->setFocusPolicy(Qt::StrongFocus);
 
 	QAction* edit_event_action = new QAction(tr("Edit Event"));
 	this->addAction(edit_event_action);
@@ -35,7 +37,7 @@ Lane::Lane(Window* window)
 	QAction* cursor_left_action = new QAction(tr("Cursor Left"));
 	this->addAction(cursor_left_action);
 	cursor_left_action->setShortcut(QKeySequence(Qt::Key_Left));
-	connect(cursor_left_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+	connect(cursor_left_action, SIGNAL(triggered()), this, SLOT(cursorLeft()));
 
 	QAction* cursor_right_action = new QAction(tr("Cursor Right"));
 	this->addAction(cursor_right_action);
@@ -45,25 +47,27 @@ Lane::Lane(Window* window)
 	QAction* cursor_up_action = new QAction(tr("Cursor Up"));
 	this->addAction(cursor_up_action);
 	cursor_up_action->setShortcut(QKeySequence(Qt::Key_Up));
-	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorUp()));
 
 	QAction* cursor_down_action = new QAction(tr("Cursor Down"));
 	this->addAction(cursor_down_action);
 	cursor_down_action->setShortcut(QKeySequence(Qt::Key_Down));
-	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
+	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
 
 	QSettings settings;
+	QColor button_color = QGuiApplication::palette().color(QPalette::Button);
+	QColor highlight_color = QGuiApplication::palette().color(QPalette::Highlight);
 	this->background_color = settings.value("lane/background-color", QColorConstants::White).value<QColor>();
 	this->white_note_background_color = settings.value("lane/white-note-background-color", QColorConstants::White).value<QColor>();
-	this->black_note_background_color = settings.value("lane/black-note-background-color", QColorConstants::LightGray).value<QColor>();
+	this->black_note_background_color = settings.value("lane/black-note-background-color", QColor::fromHsl(button_color.hslHue(), button_color.hslSaturation(), 230)).value<QColor>();
 	this->unselected_event_color = settings.value("lane/unselected-event-color", QColorConstants::White).value<QColor>();
 	this->unselected_event_border_color = settings.value("lane/unselected-event-text-color", QColorConstants::Black).value<QColor>();
 	this->unselected_event_text_color = settings.value("lane/unselected-event-border-color", QColorConstants::Black).value<QColor>();
-	this->selected_event_color = settings.value("lane/selected-event-color", QColorConstants::DarkBlue).value<QColor>();
+	this->selected_event_color = settings.value("lane/selected-event-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 200)).value<QColor>();
 	this->selected_event_border_color = settings.value("lane/selected-event-border-color", QColorConstants::Black).value<QColor>();
 	this->selected_event_text_color = settings.value("lane/selected-event-text-color", QColorConstants::White).value<QColor>();
-	this->cursor_color = settings.value("lane/cursor-color", QColorConstants::DarkBlue).value<QColor>();
-	this->selection_rect_color = settings.value("lane/selection-rect-color", QColorConstants::DarkBlue).value<QColor>();
+	this->cursor_color = settings.value("lane/cursor-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 63)).value<QColor>();
+	this->selection_rect_color = settings.value("lane/selection-rect-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 200)).value<QColor>();
 	this->selection_rect_border_color = settings.value("lane/selection-rect-border-color", QColorConstants::Black).value<QColor>();
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
