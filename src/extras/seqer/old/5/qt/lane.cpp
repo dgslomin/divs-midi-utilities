@@ -82,9 +82,12 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	if (this->mouse_down && (this->mouse_down_midi_event == NULL))
 	{
-		painter.setPen(this->selection_rect_pen);
-		painter.setBrush(Qt::NoBrush);
-		painter.drawRect(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
+ 		if ((this->mouse_drag_x != this->mouse_down_x) && (this->mouse_drag_y != this->mouse_down_y))
+		{
+			painter.setPen(this->selection_rect_pen);
+			painter.setBrush(Qt::NoBrush);
+			painter.drawRect(this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x - this->mouse_down_x, this->mouse_drag_y - this->mouse_down_y);
+		}
 	}
 	else
 	{
@@ -101,6 +104,8 @@ void Lane::paintEvent(QPaintEvent* event)
 
 void Lane::mousePressEvent(QMouseEvent* event)
 {
+	qDebug("mousePressEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+
 	if (event->button() == Qt::LeftButton)
 	{
 		this->mouse_down = true;
@@ -131,6 +136,8 @@ void Lane::mousePressEvent(QMouseEvent* event)
 
 void Lane::mouseReleaseEvent(QMouseEvent* event)
 {
+	qDebug("mouseReleaseEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+
 	bool should_update = false;
 
 	if (event->button() == Qt::LeftButton)
@@ -159,7 +166,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 				int x_offset = this->mouse_drag_x_allowed ? (this->mouse_drag_x - this->mouse_down_x) : 0;
 				int y_offset = this->mouse_drag_y_allowed ? (this->mouse_drag_y - this->mouse_down_y) : 0;
 
-				for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+				while (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file))
 				{
 					if (MidiFileEvent_isSelected(midi_event))
 					{
@@ -178,12 +185,18 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		}
 
 		this->mouse_down = false;
+		this->mouse_down_midi_event = NULL;
+		this->mouse_down_midi_event_is_new = false;
+		this->mouse_drag_x_allowed = false;
+		this->mouse_drag_y_allowed = false;
 		if (should_update) this->window->sequence->updateWindows();
 	}
 }
 
 void Lane::mouseMoveEvent(QMouseEvent* event)
 {
+	qDebug("mouseMoveEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+
 	if (this->mouse_down)
 	{
 		this->mouse_drag_x = event->position().x();

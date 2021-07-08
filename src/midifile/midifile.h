@@ -20,6 +20,9 @@
  * 3.  MidiFile_visitEvents() and MidiFileTrack_visitEvents() are specially
  *     designed so that you can add, delete, or change the tick of events
  *     (thereby modifying the sorting order) without upsetting the iterator.
+ *     MidiFile_iterateEvents() and MidiFileTrack_iterateEvents() do the same
+ *     thing without requiring a callback; invoke them repeatedly until they
+ *     return NULL.
  *
  * 4.  Any data passed into these functions is memory-managed by the caller.
  *     Any data returned from these functions is memory-managed by the API.
@@ -125,6 +128,7 @@ MidiFileTrack_t MidiFile_getLastTrack(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getFirstEvent(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getLastEvent(MidiFile_t midi_file);
 int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
+MidiFileEvent_t MidiFile_iterateEvents(MidiFile_t midi_file);
 int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label);
 int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label);
 
@@ -190,6 +194,7 @@ MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick,
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
 int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
+MidiFileEvent_t MidiFileTrack_iterateEvents(MidiFileTrack_t track);
 
 int MidiFileEvent_delete(MidiFileEvent_t event);
 int MidiFileEvent_detach(MidiFileEvent_t event);

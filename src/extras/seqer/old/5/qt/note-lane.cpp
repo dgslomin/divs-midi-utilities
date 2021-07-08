@@ -76,16 +76,19 @@ MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 	int start_tick = this->window->getTickFromX(x);
 	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
 	int note = this->getNoteFromY(y);
-	qDebug("NoteLane::addEventAtXY(%d, %d) { start_tick = %d, end_tick = %d, channel = %d, note = %d, velocity = %d }", x, y, start_tick, end_tick, this->channel, note, this->velocity);
 	return MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
 }
 
 void NoteLane::moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset)
 {
 	MidiFileEvent_t note_end_midi_event = MidiFileNoteStartEvent_getNoteEndEvent(midi_event);
-	MidiFileEvent_setTick(midi_event, this->window->getTickFromX(this->window->getXFromTick(MidiFileEvent_getTick(midi_event)) + x_offset));
-	MidiFileEvent_setTick(note_end_midi_event, this->window->getTickFromX(this->window->getXFromTick(MidiFileEvent_getTick(note_end_midi_event)) + x_offset));
-	MidiFileNoteStartEvent_setNote(midi_event, this->getNoteFromY(this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event)) + y_offset));
+	int start_x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
+	int end_x = this->window->getXFromTick(MidiFileEvent_getTick(note_end_midi_event));
+	int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
+	qDebug("moveEventByXY(%d, %d, %d, %d)", start_x, y, x_offset, y_offset);
+	MidiFileEvent_setTick(midi_event, this->window->getTickFromX(start_x + x_offset));
+	MidiFileEvent_setTick(note_end_midi_event, this->window->getTickFromX(end_x + x_offset));
+	MidiFileNoteStartEvent_setNote(midi_event, this->getNoteFromY(y + y_offset));
 }
 
 void NoteLane::selectEventsInRect(int x, int y, int width, int height)
@@ -111,6 +114,8 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 	int start_x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
 	int end_x = this->window->getXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
 	int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
+
+	qDebug("getRectFromEvent(%d, %d, %d, %d)", start_x, y, selected_events_x_offset, selected_events_y_offset);
 
 	if (MidiFileEvent_isSelected(midi_event))
 	{
