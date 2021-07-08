@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<!--
+International system / Tex-Mex / Norteno diatonic button accordion.
+Most one and two row diatonic button accordions (including Cajun and
+Viennese but excluding Irish) are basically subsets of this layout.
+
+Space works the bellows.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="space" action="alt" />
+
+<map key="W" action="C#5" alt-action="Eb5" />
+<map key="E" action="E4" alt-action="C4" />
+<map key="R" action="G4" alt-action="F4" />
+<map key="T" action="Bb4" alt-action="A4" />
+<map key="Y" action="D5" alt-action="C5" />
+<map key="U" action="E5" alt-action="F5" />
+<map key="I" action="G5" alt-action="A5" />
+<map key="O" action="Bb5" alt-action="C6" />
+<map key="P" action="D6" alt-action="F6" />
+<map key="open-bracket" action="E6" alt-action="A6" />
+
+<map key="A" action="G#4" alt-action="F#4" />
+<map key="S" action="B3" alt-action="G3" />
+<map key="D" action="D4" alt-action="C4" />
+<map key="F" action="F4" alt-action="E4" />
+<map key="G" action="A4" alt-action="G4" />
+<map key="H" action="B4" alt-action="C5" />
+<map key="J" action="D5" alt-action="E5" />
+<map key="K" action="F5" alt-action="G5" />
+<map key="L" action="A5" alt-action="C6" />
+<map key="semicolon" action="B5" alt-action="E6" />
+<map key="single-quote" action="D6" alt-action="G6" />
+
+<map key="Z" action="Eb4" alt-action="C#4" />
+<map key="X" action="A3" alt-action="G3" />
+<map key="C" action="C4" alt-action="B3" />
+<map key="V" action="E4" alt-action="D4" />
+<map key="B" action="F#4" alt-action="G4" />
+<map key="N" action="A4" alt-action="B4" />
+<map key="M" action="C5" alt-action="D5" />
+<map key="comma" action="E5" alt-action="G5" />
+<map key="period" action="F#5" alt-action="B5" />
+<map key="slash" action="A5" alt-action="D6" />
+
+</qwertymidi>

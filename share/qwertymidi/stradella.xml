@@ -17,7 +17,7 @@ There is also no octave doubling to disguise the wrap-around between B and C.
 <map key="f4" action="stay-up-note" />
 <map key="space" action="shift-down-octave" />
 
-<map key="back-tick" action="Bb3" />
+<map key="backtick" action="Bb3" />
 <map key="1" action="F3" />
 <map key="2" action="C3" />
 <map key="3" action="G3" />

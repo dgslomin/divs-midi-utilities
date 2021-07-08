@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<!--
+Irish diatonic button accordion.
+
+Space works the bellows.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="space" action="alt" />
+
+<map key="W" action="F3" alt-action="C3" />
+<map key="E" action="A3" alt-action="E3" />
+<map key="R" action="B3" alt-action="G3" />
+<map key="T" action="D4" alt-action="C4" />
+<map key="Y" action="F4" alt-action="E4" />
+<map key="U" action="A4" alt-action="G4" />
+<map key="I" action="B4" alt-action="C5" />
+<map key="O" action="D5" alt-action="E5" />
+<map key="P" action="F5" alt-action="G5" />
+<map key="open-bracket" action="A5" alt-action="C6" />
+<map key="close-bracket" action="B5" alt-action="E6" />
+
+<map key="A" action="E3" alt-action="B2" />
+<map key="S" action="G#3" alt-action="D#3" />
+<map key="D" action="A#3" alt-action="F#3" />
+<map key="F" action="C#4" alt-action="B3" />
+<map key="G" action="E4" alt-action="D#4" />
+<map key="H" action="G#4" alt-action="F#4" />
+<map key="J" action="A#4" alt-action="B4" />
+<map key="K" action="C#5" alt-action="D#5" />
+<map key="L" action="E5" alt-action="F#5" />
+<map key="semicolon" action="G#5" alt-action="B5" />
+<map key="single-quote" action="A#5" alt-action="D#6" />
+<map key="enter" action="C#6" alt-action="F#6" />
+
+</qwertymidi>
