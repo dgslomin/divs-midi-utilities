@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+
+<!--
+Accordion Stradella bass.
+
+Qwertymidi can only map a key to a single note at a time, so this is a rough
+approximation.  For the major and minor chord rows, only the third is played.
+There is also no octave doubling to disguise the wrap-around between B and C.
+-->
+
+<qwertymidi>
+
+<map key="escape" action="exit" />
+<map key="f1" action="stay-down-octave" />
+<map key="f2" action="stay-up-octave" />
+<map key="f3" action="stay-down-note" />
+<map key="f4" action="stay-up-note" />
+<map key="space" action="shift-down-octave" />
+
+<map key="back-tick" action="Bb3" />
+<map key="1" action="F3" />
+<map key="2" action="C3" />
+<map key="3" action="G3" />
+<map key="4" action="D3" />
+<map key="5" action="A3" />
+<map key="6" action="E3" />
+<map key="7" action="B3" />
+<map key="8" action="F#3" />
+<map key="9" action="C#3" />
+<map key="0" action="G#3" />
+<map key="minus" action="D#3" />
+<map key="equals" action="A#3" />
+<map key="backspace" action="F3" />
+
+<map key="Q" action="Db3" />
+<map key="W" action="Ab3" />
+<map key="E" action="Eb3" />
+<map key="R" action="Bb3" />
+<map key="T" action="F3" />
+<map key="Y" action="C3" />
+<map key="U" action="G3" />
+<map key="I" action="D3" />
+<map key="O" action="A3" />
+<map key="P" action="E3" />
+<map key="open-bracket" action="B3" />
+<map key="close-bracket" action="F#3" />
+<map key="backslash" action="C#3" />
+
+<map key="A" action="F4" />
+<map key="S" action="C4" />
+<map key="D" action="G4" />
+<map key="F" action="D4" />
+<map key="G" action="A4" />
+<map key="H" action="E4" />
+<map key="J" action="B4" />
+<map key="K" action="F#4" />
+<map key="L" action="C#4" />
+<map key="semicolon" action="G#4" />
+<map key="single-quote" action="D#4" />
+<map key="enter" action="A#4" />
+
+<map key="Z" action="E4" />
+<map key="X" action="B4" />
+<map key="C" action="Gb4" />
+<map key="V" action="Db4" />
+<map key="B" action="Ab4" />
+<map key="N" action="Eb4" />
+<map key="M" action="Bb4" />
+<map key="comma" action="F4" />
+<map key="period" action="C4" />
+<map key="slash" action="G4" />
+
+</qwertymidi>
