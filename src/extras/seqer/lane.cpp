@@ -195,7 +195,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 
 void Lane::mouseMoveEvent(QMouseEvent* event)
 {
-	qDebug("mouseMoveEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+	// qDebug("mouseMoveEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
 
 	if (this->mouse_down)
 	{

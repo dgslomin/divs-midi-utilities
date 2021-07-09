@@ -93,7 +93,9 @@ void NoteLane::moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_off
 
 void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 {
-	QRect bounds(x, height - y, width, height);
+	qDebug("selectEventsInRect(%d, %d, %d, %d)", x, y, width, height);
+
+	QRect bounds(x, y, width, height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
