@@ -1,97 +1,193 @@
 
-Current plans for the sequencer project ("Seqer"), as of 2013-02-13:
+Current plans for the sequencer project ("Seqer") as of 2021-07-01:
 
-This generation of Seqer is centered around a single megawidget, which combines aspects of an event list and a piano roll.  The event list portion is traditional in its columns, but its rows are worth discussion.
+Switching to Qt instead of wx.
 
-There is one row for each event.  Rows are grouped into "steps" of a configurable time unit.  Events don't have to occur at the start of a step.  If no event occurs during a particular step, an empty row is displayed.  If more than one event occurs during a step, additional rows are displayed, stretching the vertical axis out of its normal, linear scale.
+This generation of Seqer is based around a linear piano roll window.
 
-A vertical piano roll functions as an additional, graphical column in the table, with time mapped into a vertical position by interpolating between the vertical positions where successive steps start (ignoring individual rows).
+The piano roll consists of a configurable list of horizontal lanes, all of which are tied to the same time ruler (configurable for linearity in musical time versus wall-clock time but displaying both).  There are different types of lanes for notes, numeric values, and labels.  Note lanes are obvious, and numeric value lanes are used for velocity, controllers, pitch bend, aftertouch, and tempo.
+
+Label lanes are used for lyrics, markers, text events, time signatures, key signatures, and the event type names of any events in the file (this last case takes the place of a traditional event list view).  They consist of short strings in boxes whose left edges align with a particular time on the time ruler, but are shoved out of a single horizontal row if they would overlap other label boxes.  The order of events strictly follows the order they occur in the file.
+
+There is a side panel with different tabs.  The inspector tab allows you to see and edit all the properties of the currently selected event(s), which removes the need to expose all properties directly in the lanes.  It also lets you edit properties of the current lane including what type of lane, which controller to use for a controller lane, and whether it should start a new lane group (which shares track and channel settings as well as which note to use for a key pressure lane).  The tracks tab shows the list of tracks in the file, with controls for mute, solo, arm, show/hide, which track to use for new events, rename, add, remove, and reorder.  The channels tab shows the standard list of 16 channels with controls for show/hide and which channel to use for new events; the same channel choices are used for all tracks.
+
+There is an editing caret in the current lane, where new events will be inserted.  You can use the keyboard to navigate it in the cardinal directions (by pixel, by quantization granularity, by octave, to the next/previous marker, etc) or to the nearest displayed event in that direction, whichever is closer.  You can also move the caret by clicking with the mouse.  If you navigate to an event via either input device, the selection is replaced with that event.  If you hold shift while doing so, that event is added to the selection.  You can also drag-select with the mouse if you start in an empty space.  Dragging an event moves it; events in note lanes differentiate between the horizontal effects of dragging on the middle of the box (start and end time), left edge (start time), and right edge (end time).  There are also keyboard controls for incrementing or decrementing (by pixel, by quantization granularity, by octave, etc) properties of the currently selected event.
+
+The playback caret is not the same as the editing caret but can be set from it.  There's an operation to insert time (for all tracks) at the editing caret.  There's also an operation to start selecting a time range (with subsequent navigation) rather than a set of events, which can be used for deleting, copying, and pasting across all events in all tracks whether or not they are visible.
+
+The editing caret (time only), playback caret, selected events, and selected time range are all stored as data inside the MIDI file not ephemerally in the view.  This allows the undo stack to be a simple list of file snapshots, as well as supporting external helper utilities.
 
 
 
+click on empty spot with shift:  set cursor
+click on empty spot with cursor:  clear selection, add event, select it
+click on empty spot:  clear selection, set cursor
+click on event with shift:  toggle event selection
+click on selected event with cursor:  edit selected events
+click on selected event:  set cursor
+click on event:  clear selection, select event, set cursor
+drag from empty spot with shift:  select events dragged over
+drag from empty spot with cursor:  clear selection, add event, select it, move it, set cursor
+drag from empty spot:  clear selection, select events dragged over
+drag from event:  move selected events, set cursor
+enter key when selection is not empty:  edit selected events
+enter key on empty spot:  add event, select it
+enter key on event:  select event, edit it
+space key on empty spot:  clear selection
+space key on event with shift:  toggle event selection
+space key on event:  clear selection, select event
+
+on mouse down:
+	capture mouse
+	mouse_down = true
+	mouse_down_x = mouse.x
+	mouse_down_y = mouse.y
+	mouse_down_event = NULL
+	mouse_down_event_is_new = false
+	mouse_drag_horizontal_allowed = false
+	mouse_drag_vertical_allowed = false
+
+	for each event:
+		if event intersects point(mouse.x, mouse.y):
+			mouse_down_event = event
+			break
+
+	if mouse_down_event == NULL:
+		if shift is not pressed:
+			for each event:
+				event.is_selected = false
+
+			if mouse.x == cursor_x and mouse.y == cursor_y:
+				add event at point(mouse.x, mouse.y)
+				event.is_selected = true
+				mouse_down_event = event
+				mouse_down_event_is_new = true
+
+on mouse up:
+	if mouse_down_event == NULL:
+		if mouse.x == mouse_down_x and mouse.y == mouse_down_y:
+			cursor_x = mouse.x
+			cursor_y = mouse.y
+		else:
+			for each event:
+				if event intersects rect(mouse_down_x, mouse_down_y, mouse.x, mouse.y):
+					event.is_selected = true
+
+	else:
+		if (mouse_drag_horizontal_allowed and mouse.x != mouse_down_x) or (mouse_drag_vertical_allowed and mouse.y != mouse_down_y):
+			for each event:
+				if event.is_selected:
+					target_x = event.x
+					target_y = event.y
+
+					if mouse_drag_horizontal_allowed:
+						target_x += mouse_drag_x - mouse_down_x
+
+					if mouse_drag_vertical_allowed:
+						target_y += mouse_drag_y - mouse_down_y
+
+					move event to point(target_x, target_y)
+
+		else:
+			if shift is not pressed and (not mouse_down_event_is_new) and (mouse.x == cursor.x and mouse.y == cursor.y):
+				open property editor
+
+		cursor_x = mouse.x
+		cursor_y = mouse.y
+
+	mouse_down = false
+	release mouse
+
+on mouse motion:
+	if mouse_down:
+		mouse_drag_x = mouse.x
+		mouse_drag_y = mouse.y
+
+		if abs(mouse_drag_x - mouse_down_x) > mouse_drag_threshold:
+			mouse_drag_horizontal_allowed = true
+
+		if abs(mouse_drag_y - mouse_down_y) > mouse_drag_threshold:
+			mouse_drag_vertical_allowed = true
+
+		repaint
+
+on paint:
+	should_paint_selection_rect = mouse_down and mouse_down_event == NULL:
+
+	if should_paint_selection_rect:
+		paint selection rect(mouse_down_x, mouse_down_y, mouse_drag_x, mouse_drag_y)
+
+	for each event:
+		target_x = event.x
+		target_y = event.y
+
+		if event.is_selected and not should_paint_selection_rect:
+			if mouse_drag_horizontal_allowed:
+				target_x += mouse_drag_x - mouse_down_x
+
+			if mouse_drag_vertical_allowed:
+				target_y += mouse_drag_y - mouse_down_y
+
+		paint event at point(target_x, target_y)
+
+on enter key:
+	selection_is_empty = true
+
+	for each event:
+		if event.is_selected:
+			selection_is_empty = false
+			break
+
+	if selection_is_empty:
+		cursor_event = NULL
+
+		for each event:
+			if event intersects point(cursor_x, cursor_y):
+				cursor_event = event
+				break
+
+		if cursor_event == NULL:
+			add event at point(cursor_x, cursor_y)
+			event.is_selected = true
+		else:
+			cursor_event.is_selected = true
+			open property editor
+
+	else:
+		open property editor
+
+on space key:
+	cursor_event = NULL
+
+	for each event:
+		if event intersects point(cursor_x, cursor_y):
+			cursor_event = event
+			break
+
+	if cursor_event == NULL:
+		for each event:
+			event.is_selected = false
+
+	else:
+		if shift is pressed:
+			toggle cursor_event.is_selected
+		else:
+			for each event:
+				event.is_selected = false
+
+			cursor_event.is_selected = true
 
 
 
 
 TODO:
-	selection/clipboard infrastructure
-	save preferences
-	event grid
-		remaining insert/delete/edit operations
-		mouse support for navigate/select
-	piano roll
-		mouse support for select
-	realtime MIDI infrastructure
-		mapping from port name strings (arbitrarily user-selectable) to actual output ports
-		no arming of tracks; record should always target the current track
-		MIDI sync master
-		MIDI sync slave (much harder)
-	macros
-		Current plan (of many possible approaches):
-		Macros would be based solely around record and playback of other commands.
-		There would be 36 available macro slots, one for each letter and number.
-		A vi-like record command which would take the slot identifier as an argument (no popup dialog when the record command is invoked from a keyboard shortcut).  Invoking the record command again would finish the recording.
-		Pressing alt+shift+(slot) [ctrl+shift+(slot) on Mac] would invoke the macro.  Since this type of keyboard binding supports hold-down-to-repeat, there's no need for a vi-like "." command or user-controllable mapping of arbitrary keystrokes.
-		Open question: should macros persist in the application's saved state?
-	external tool infrastructure
-		There should be a command for running the current sequence through an external program whose command line can be specified in a popup (with substitution parameters for input/output temp filenames).  An option would control whether this is uni- or bidirectional.  If bidirectional, the sequence would be replaced by the output of the tool, but Seqer would attempt to apply the same view settings and cursor location as had been in effect before the tool was invoked.
-		This would be a quick way to get tempo mapping, etc. into Seqer, as well as supporting user scripting.  Would be particularly nice in combination with macros.
-	non-realtime MIDI input
-		step-time recording = add at current grid step and don't automatically move on to the next step
-		also support MMC for remote control of the transport
-
-
-
-
-
-
-
-What should the columns be?
-
-cakewalk: track, hmsf time, mbt time, channel, type, note, velocity, duration
-cubase: type, time, end time, duration, note, velocity, release velocity, channel, comment
-logic: time, type, channel, note, velocity, duration
-dp: time, note, velocity, release velocity, duration
-reaper: index, time, duration, channel, type, note, velocity
-seqer: type, time, track, channel, note, velocity, duration, release velocity
-
-
-
-
-
-
-
-Step size and zoom:
-
-   Amount: [6				  ]
-
-	 Mode: (x) Steps per measure
-		   ( ) Measures per step
-		   ( ) Seconds per step
-
-		   [Ok] [Cancel]
-
-
-In "steps per measure" mode, zoom in and out moves through a series of zoom levels which consists of the factors of the numerator of the current time signature, followed by powers of two times that numerator (e.g., for 12/8 it would be 1, 2, 3, 4, 6, 12, 24, 48, 96...).  The dialog lets the user type in a non-series number to achieve tuplets.  Zoom in or out from a tuplet goes to the next nearest series number.
-
-Measures in other time signatures than the current are assigned the nearest zoom level in their respective series (determined by comparing duration in quarter notes, and rounding to the finer zoom level when ambiguous).  The other time signatures always get a series value even when the current time signature has been assigned a non-series tuplet.
-
-In "measures per step" mode, zoom in and out moves through powers of two.
-
-One measure per step is not exactly the same as one step per measure, since the latter is affected by time signature (e.g., setting the zoom to one step per measure when the current measure is in 3/8 results in two steps per measure for other sections of the song in 6/8).  Zooming out from one step per measure results in two measures per step.  Zooming in from one measure per step results in the second value in the current measure's "steps per measure" series.  This allows the user to get to both one measure per step and one step per measure solely by zooming in and out, by overshooting and coming back.
-
-In "seconds per step" mode, zoom in and out moves through factors of two just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
-
-
-
-
-
-
-
-
-Piano roll formatting:
-
-data to express: current, selected, track, velocity
-available primitives: fill color, fill shade, border color, border shade, border thickness
-preferences: avoid color, avoid high difference in shade between fill and border
+lanes in the window
+lane rulers
+note start/middle/end drag
+side panels
+undo stack
+keyboard navigation and tweaking
+preferences
+playback
+recording
 
