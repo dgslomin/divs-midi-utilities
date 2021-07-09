@@ -10,59 +10,59 @@ seqer.exe: aftertouch-event.obj color.obj control-change-event.obj key-signature
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
-aftertouch-event.obj: aftertouch-event.cpp ..\..\midifile\midifile.h aftertouch-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c aftertouch-event.cpp
+aftertouch-event.obj: aftertouch-event.cpp ..\..\..\..\midifile\midifile.h aftertouch-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c aftertouch-event.cpp
 
 color.obj: color.cpp
 	cl /nologo $(FLAGS) $(WXINCLUDES) /c color.cpp
 
-control-change-event.obj: control-change-event.cpp ..\..\midifile\midifile.h control-change-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c control-change-event.cpp
+control-change-event.obj: control-change-event.cpp ..\..\..\..\midifile\midifile.h control-change-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c control-change-event.cpp
 
-key-signature-event.obj: key-signature-event.cpp ..\..\midifile\midifile.h key-signature-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c key-signature-event.cpp
+key-signature-event.obj: key-signature-event.cpp ..\..\..\..\midifile\midifile.h key-signature-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c key-signature-event.cpp
 
-lyric-event.obj: lyric-event.cpp ..\..\midifile\midifile.h lyric-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c lyric-event.cpp
+lyric-event.obj: lyric-event.cpp ..\..\..\..\midifile\midifile.h lyric-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lyric-event.cpp
 
-marker-event.obj: marker-event.cpp ..\..\midifile\midifile.h marker-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c marker-event.cpp
+marker-event.obj: marker-event.cpp ..\..\..\..\midifile\midifile.h marker-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c marker-event.cpp
 
-midifile.obj: ..\..\midifile\midifile.c ..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) /I..\..\midifile /c ..\..\midifile\midifile.c
+midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
+	cl /nologo $(FLAGS) /I..\..\..\..\midifile /c ..\..\..\..\midifile\midifile.c
 
-music-math.obj: music-math.cpp ..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c music-math.cpp
+music-math.obj: music-math.cpp ..\..\..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c music-math.cpp
 
-note-event.obj: note-event.cpp ..\..\midifile\midifile.h note-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c note-event.cpp
+note-event.obj: note-event.cpp ..\..\..\..\midifile\midifile.h note-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c note-event.cpp
 
-pitch-bend-event.obj: pitch-bend-event.cpp ..\..\midifile\midifile.h pitch-bend-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c pitch-bend-event.cpp
+pitch-bend-event.obj: pitch-bend-event.cpp ..\..\..\..\midifile\midifile.h pitch-bend-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c pitch-bend-event.cpp
 
-port-event.obj: port-event.cpp ..\..\midifile/midifile.h port-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c port-event.cpp
+port-event.obj: port-event.cpp ..\..\..\..\midifile/midifile.h port-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c port-event.cpp
 
-program-change-event.obj: program-change-event.cpp ..\..\midifile\midifile.h program-change-event.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c program-change-event.cpp
+program-change-event.obj: program-change-event.cpp ..\..\..\..\midifile\midifile.h program-change-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c program-change-event.cpp
 
-seqer.obj: seqer.cpp ..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c seqer.cpp
+seqer.obj: seqer.cpp ..\..\..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c seqer.cpp
 
-sequence-editor.obj: sequence-editor.cpp ..\..\midifile\midifile.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c sequence-editor.cpp
+sequence-editor.obj: sequence-editor.cpp ..\..\..\..\midifile\midifile.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c sequence-editor.cpp
 
-system-exclusive-event.obj: system-exclusive-event.cpp ..\..\midifile\midifile.h sequence-editor.h system-exclusive-event.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c system-exclusive-event.cpp
+system-exclusive-event.obj: system-exclusive-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h system-exclusive-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c system-exclusive-event.cpp
 
-tempo-event.obj: tempo-event.cpp ..\..\midifile\midifile.h sequence-editor.h tempo-event.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c tempo-event.cpp
+tempo-event.obj: tempo-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h tempo-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c tempo-event.cpp
 
-text-event.obj: text-event.cpp ..\..\midifile\midifile.h sequence-editor.h text-event.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c text-event.cpp
+text-event.obj: text-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h text-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c text-event.cpp
 
-time-signature-event.obj: time-signature-event.cpp ..\..\midifile\midifile.h sequence-editor.h time-signature-event.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\midifile /c time-signature-event.cpp
+time-signature-event.obj: time-signature-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h time-signature-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c time-signature-event.cpp
 
 seqer.res: seqer.rc seqer.ico
 	rc /nologo $(WXINCLUDES) /r /fo seqer.res seqer.rc
