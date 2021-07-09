@@ -23,8 +23,6 @@ struct MidiFile
 	struct MidiFileMeasureBeatTick *measure_beat_tick;
 	struct MidiFileHourMinuteSecond *hour_minute_second;
 	struct MidiFileHourMinuteSecondFrame *hour_minute_second_frame;
-	struct MidiFileEvent *event_iterator_current;
-	struct MidiFileEvent *event_iterator_next;
 };
 
 struct MidiFileTrack
@@ -1118,9 +1116,13 @@ MidiFile_t MidiFile_new(int file_format, MidiFileDivisionType_t division_type, i
 	midi_file->measure_beat_tick = MidiFileMeasureBeatTick_new();
 	midi_file->hour_minute_second = MidiFileHourMinuteSecond_new();
 	midi_file->hour_minute_second_frame = MidiFileHourMinuteSecondFrame_new();
-	midi_file->event_iterator_current = NULL;
-	midi_file->event_iterator_next = NULL;
 	return midi_file;
+}
+
+MidiFile_t MidiFile_newFromTemplate(MidiFile_t template_midi_file)
+{
+	if (template_midi_file == NULL) return MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
+	return MidiFile_new(MidiFile_getFileFormat(template_midi_file), MidiFile_getDivisionType(template_midi_file), MidiFile_getResolution(template_midi_file));
 }
 
 int MidiFile_free(MidiFile_t midi_file)
@@ -1330,34 +1332,6 @@ int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t vi
 	}
 
 	return 0;
-}
-
-MidiFileEvent_t MidiFile_iterateEvents(MidiFile_t midi_file)
-{
-	if (midi_file == NULL) return NULL;
-
-	if (midi_file->event_iterator_current == NULL)
-	{
-		for (midi_file->event_iterator_current = MidiFile_getFirstEvent(midi_file); midi_file->event_iterator_current != NULL; midi_file->event_iterator_current = MidiFileEvent_getNextEventInFile(midi_file->event_iterator_current)) midi_file->event_iterator_current->should_be_visited = 1;
-		midi_file->event_iterator_current = MidiFile_getFirstEvent(midi_file);
-	}
-	else
-	{
-		midi_file->event_iterator_current = midi_file->event_iterator_next;
-	}
-
-	while ((midi_file->event_iterator_current != NULL) && !(midi_file->event_iterator_current->should_be_visited))
-	{
-		midi_file->event_iterator_current = MidiFileEvent_getNextEventInFile(midi_file->event_iterator_current);
-	}
-
-	if (midi_file->event_iterator_current != NULL)
-	{
-		midi_file->event_iterator_current->should_be_visited = 0;
-		midi_file->event_iterator_next = MidiFileEvent_getNextEventInFile(midi_file->event_iterator_current);
-	}
-
-	return midi_file->event_iterator_current;
 }
 
 int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label)
@@ -2560,6 +2534,67 @@ MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick,
 	return new_event;
 }
 
+MidiFileEvent_t MidiFileTrack_copyEvent(MidiFileTrack_t track, MidiFileEvent_t event)
+{
+	MidiFileEvent_t new_event = NULL;
+
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+		{
+			new_event = MidiFileTrack_createNoteOffEvent(track, MidiFileEvent_getTick(event), MidiFileNoteOffEvent_getChannel(event), MidiFileNoteOffEvent_getNote(event), MidiFileNoteOffEvent_getVelocity(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+		{
+			new_event = MidiFileTrack_createNoteOnEvent(track, MidiFileEvent_getTick(event), MidiFileNoteOnEvent_getChannel(event), MidiFileNoteOnEvent_getNote(event), MidiFileNoteOnEvent_getVelocity(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		{
+			new_event = MidiFileTrack_createKeyPressureEvent(track, MidiFileEvent_getTick(event), MidiFileKeyPressureEvent_getChannel(event), MidiFileKeyPressureEvent_getNote(event), MidiFileKeyPressureEvent_getAmount(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
+		{
+			new_event = MidiFileTrack_createControlChangeEvent(track, MidiFileEvent_getTick(event), MidiFileControlChangeEvent_getChannel(event), MidiFileControlChangeEvent_getNumber(event), MidiFileControlChangeEvent_getValue(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
+		{
+			new_event = MidiFileTrack_createPitchWheelEvent(track, MidiFileEvent_getTick(event), MidiFilePitchWheelEvent_getChannel(event), MidiFilePitchWheelEvent_getValue(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
+		{
+			new_event = MidiFileTrack_createProgramChangeEvent(track, MidiFileEvent_getTick(event), MidiFileProgramChangeEvent_getChannel(event), MidiFileProgramChangeEvent_getNumber(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			new_event = MidiFileTrack_createChannelPressureEvent(track, MidiFileEvent_getTick(event), MidiFileChannelPressureEvent_getChannel(event), MidiFileChannelPressureEvent_getAmount(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_SYSEX:
+		{
+			new_event = MidiFileTrack_createSysexEvent(track, MidiFileEvent_getTick(event), MidiFileSysexEvent_getDataLength(event), MidiFileSysexEvent_getData(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_META:
+		{
+			new_event = MidiFileTrack_createMetaEvent(track, MidiFileEvent_getTick(event), MidiFileMetaEvent_getNumber(event), MidiFileMetaEvent_getDataLength(event), MidiFileMetaEvent_getData(event));
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+
+	MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+	return new_event;
+}
+
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track)
 {
 	if (track == NULL) return NULL;
@@ -2592,34 +2627,6 @@ int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallbac
 	}
 
 	return 0;
-}
-
-MidiFileEvent_t MidiFileTrack_iterateEvents(MidiFileTrack_t track)
-{
-	if (track == NULL) return NULL;
-
-	if (track->midi_file->event_iterator_current == NULL)
-	{
-		for (track->midi_file->event_iterator_current = MidiFileTrack_getFirstEvent(track); track->midi_file->event_iterator_current != NULL; track->midi_file->event_iterator_current = MidiFileEvent_getNextEventInTrack(track->midi_file->event_iterator_current)) track->midi_file->event_iterator_current->should_be_visited = 1;
-		track->midi_file->event_iterator_current = MidiFileTrack_getFirstEvent(track);
-	}
-	else
-	{
-		track->midi_file->event_iterator_current = track->midi_file->event_iterator_next;
-	}
-
-	while ((track->midi_file->event_iterator_current != NULL) && !(track->midi_file->event_iterator_current->should_be_visited))
-	{
-		track->midi_file->event_iterator_current = MidiFileEvent_getNextEventInTrack(track->midi_file->event_iterator_current);
-	}
-
-	if (track->midi_file->event_iterator_current != NULL)
-	{
-		track->midi_file->event_iterator_current->should_be_visited = 0;
-		track->midi_file->event_iterator_next = MidiFileEvent_getNextEventInTrack(track->midi_file->event_iterator_current);
-	}
-
-	return track->midi_file->event_iterator_current;
 }
 
 int MidiFileEvent_delete(MidiFileEvent_t event)

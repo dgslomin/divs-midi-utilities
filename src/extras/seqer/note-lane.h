@@ -14,7 +14,6 @@ class NoteLane: public Lane
 	Q_OBJECT
 
 public:
-	int channel = 0;
 	int velocity = 63;
 	int pixels_per_note;
 	int scroll_y;
@@ -24,7 +23,7 @@ public:
 	void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset);
 	MidiFileEvent_t getEventFromXY(int x, int y);
 	MidiFileEvent_t addEventAtXY(int x, int y);
-	void moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset);
+	void moveEventsByXY(int x_offset, int y_offset);
 	void selectEventsInRect(int x, int y, int width, int height);
 	QRect getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
 	int getYFromNote(int note);

@@ -3,7 +3,7 @@
 
 /*
  * Div's Standard MIDI File API
- * Copyright 2003-2020 by David G. Slomin
+ * Copyright 2003-2021 by David G. Slomin
  * Provided under the terms of the BSD license
  *
  * Usage notes:
@@ -20,9 +20,11 @@
  * 3.  MidiFile_visitEvents() and MidiFileTrack_visitEvents() are specially
  *     designed so that you can add, delete, or change the tick of events
  *     (thereby modifying the sorting order) without upsetting the iterator.
- *     MidiFile_iterateEvents() and MidiFileTrack_iterateEvents() do the same
- *     thing without requiring a callback; invoke them repeatedly until they
- *     return NULL.
+ *     Note that this only protects the current event in the iterator; if
+ *     you need to modify multiple events at once while iterating (such as a
+ *     note start and end pairs), you are better off making a copy of the
+ *     whole file rather than attempting to make the modifications in place.
+ *     See MidiFile_newFromTemplate() and MidiFileTrack_copyEvent().
  *
  * 4.  Any data passed into these functions is memory-managed by the caller.
  *     Any data returned from these functions is memory-managed by the API.
@@ -111,6 +113,7 @@ int MidiFile_saveToBuffer(MidiFile_t midi_file, unsigned char *buffer);
 int MidiFile_getFileSize(MidiFile_t midi_file);
 
 MidiFile_t MidiFile_new(int file_format, MidiFileDivisionType_t division_type, int resolution);
+MidiFile_t MidiFile_newFromTemplate(MidiFile_t template_midi_file);
 int MidiFile_free(MidiFile_t midi_file);
 int MidiFile_getFileFormat(MidiFile_t midi_file);
 int MidiFile_setFileFormat(MidiFile_t midi_file, int file_format);
@@ -191,6 +194,7 @@ MidiFileEvent_t MidiFileTrack_createTempoEvent(MidiFileTrack_t track, long tick,
 MidiFileEvent_t MidiFileTrack_createTimeSignatureEvent(MidiFileTrack_t track, long tick, int numerator, int denominator);
 MidiFileEvent_t MidiFileTrack_createKeySignatureEvent(MidiFileTrack_t track, long tick, int number, int minor);
 MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick, unsigned long data);
+MidiFileEvent_t MidiFileTrack_copyEvent(MidiFileTrack_t track, MidiFileEvent_t event);
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
 int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);

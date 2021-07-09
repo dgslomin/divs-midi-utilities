@@ -68,8 +68,6 @@ Lane::Lane(Window* window)
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 63)).value<QColor>());
 	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 127)).value<QColor>(), 1.5, Qt::DashLine);
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
-
-	this->track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, 1, 1);
 }
 
 void Lane::paintEvent(QPaintEvent* event)
@@ -104,7 +102,7 @@ void Lane::paintEvent(QPaintEvent* event)
 
 void Lane::mousePressEvent(QMouseEvent* event)
 {
-	qDebug("mousePressEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+	// qDebug("mousePressEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
 
 	if (event->button() == Qt::LeftButton)
 	{
@@ -136,7 +134,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 
 void Lane::mouseReleaseEvent(QMouseEvent* event)
 {
-	qDebug("mouseReleaseEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
+	// qDebug("mouseReleaseEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
 
 	bool should_update = false;
 
@@ -166,13 +164,10 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 				int x_offset = this->mouse_drag_x_allowed ? (this->mouse_drag_x - this->mouse_down_x) : 0;
 				int y_offset = this->mouse_drag_y_allowed ? (this->mouse_drag_y - this->mouse_down_y) : 0;
 
-				while (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file))
+				if ((x_offset != 0) || (y_offset != 0))
 				{
-					if (MidiFileEvent_isSelected(midi_event))
-					{
-						this->moveEventByXY(midi_event, x_offset, y_offset);
-						should_update = true;
-					}
+					this->moveEventsByXY(x_offset, y_offset);
+					should_update = true;
 				}
 			}
 			else

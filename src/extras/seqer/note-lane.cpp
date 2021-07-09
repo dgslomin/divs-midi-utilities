@@ -76,24 +76,54 @@ MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 	int start_tick = this->window->getTickFromX(x);
 	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
 	int note = this->getNoteFromY(y);
-	return MidiFileTrack_createNoteStartAndEndEvents(this->track, start_tick, end_tick, this->channel, note, this->velocity, 0);
+	return MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 1), start_tick, end_tick, this->channel, note, this->velocity, 0);
 }
 
-void NoteLane::moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset)
+void NoteLane::moveEventsByXY(int x_offset, int y_offset)
 {
-	MidiFileEvent_t note_end_midi_event = MidiFileNoteStartEvent_getNoteEndEvent(midi_event);
-	int start_x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
-	int end_x = this->window->getXFromTick(MidiFileEvent_getTick(note_end_midi_event));
-	int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
-	qDebug("moveEventByXY(%d, %d, %d, %d)", start_x, y, x_offset, y_offset);
-	MidiFileEvent_setTick(midi_event, this->window->getTickFromX(start_x + x_offset));
-	MidiFileEvent_setTick(note_end_midi_event, this->window->getTickFromX(end_x + x_offset));
-	MidiFileNoteStartEvent_setNote(midi_event, this->getNoteFromY(y + y_offset));
+	// We make a copy because changing both start and end events while iterating destabilizes the iterator (even with visitEvents()).
+	MidiFile_t new_midi_file = MidiFile_newFromTemplate(this->window->sequence->midi_file);
+
+	for (MidiFileTrack_t track = MidiFile_getFirstTrack(this->window->sequence->midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		MidiFileTrack_t new_track = MidiFile_createTrack(new_midi_file);
+
+		for (MidiFileEvent_t midi_event = MidiFileTrack_getFirstEvent(track); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
+		{
+			if (MidiFileEvent_isNoteStartEvent(midi_event))
+			{
+				MidiFileEvent_t new_midi_event = MidiFileTrack_copyEvent(new_track, midi_event);
+				MidiFileEvent_t new_note_end_midi_event = MidiFileTrack_copyEvent(new_track, MidiFileNoteStartEvent_getNoteEndEvent(midi_event));
+
+				if (MidiFileEvent_isSelected(new_midi_event))
+				{
+					int start_x = this->window->getXFromTick(MidiFileEvent_getTick(new_midi_event));
+					int end_x = this->window->getXFromTick(MidiFileEvent_getTick(new_note_end_midi_event));
+					int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(new_midi_event));
+
+					MidiFileEvent_setTick(new_midi_event, this->window->getTickFromX(start_x + x_offset));
+					MidiFileEvent_setTick(new_note_end_midi_event, this->window->getTickFromX(end_x + x_offset));
+					MidiFileNoteStartEvent_setNote(new_midi_event, this->getNoteFromY(y + y_offset));
+				}
+			}
+			else if (MidiFileNoteEndEvent_getNoteStartEvent(midi_event) != NULL)
+			{
+				// These are handled as part of the note start logic
+			}
+			else
+			{
+				MidiFileTrack_copyEvent(new_track, midi_event);
+			}
+		}
+	}
+
+	MidiFile_free(this->window->sequence->midi_file);
+	this->window->sequence->midi_file = new_midi_file;
 }
 
 void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 {
-	qDebug("selectEventsInRect(%d, %d, %d, %d)", x, y, width, height);
+	// qDebug("selectEventsInRect(%d, %d, %d, %d)", x, y, width, height);
 
 	QRect bounds(x, y, width, height);
 
@@ -117,7 +147,7 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 	int end_x = this->window->getXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
 	int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
 
-	qDebug("getRectFromEvent(%d, %d, %d, %d)", start_x, y, selected_events_x_offset, selected_events_y_offset);
+	// qDebug("getRectFromEvent(%d, %d, %d, %d)", start_x, y, selected_events_x_offset, selected_events_y_offset);
 
 	if (MidiFileEvent_isSelected(midi_event))
 	{

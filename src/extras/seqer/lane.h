@@ -17,7 +17,8 @@ class Lane: public QWidget
 
 public:
 	Window* window;
-	MidiFileTrack_t track;
+	int track_number = 1;
+	int channel = 0;
 	int cursor_x = 0;
 	int cursor_y = 0;
 	bool mouse_down = false;
@@ -52,7 +53,7 @@ public:
 	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
 	virtual MidiFileEvent_t getEventFromXY(int x, int y) = 0;
 	virtual MidiFileEvent_t addEventAtXY(int x, int y) = 0;
-	virtual void moveEventByXY(MidiFileEvent_t midi_event, int x_offset, int y_offset) = 0;
+	virtual void moveEventsByXY(int x_offset, int y_offset) = 0;
 	virtual void selectEventsInRect(int x, int y, int width, int height) = 0;
 
 public slots:
