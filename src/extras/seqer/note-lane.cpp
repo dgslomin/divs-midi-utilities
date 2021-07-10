@@ -123,8 +123,6 @@ void NoteLane::moveEventsByXY(int x_offset, int y_offset)
 
 void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 {
-	// qDebug("selectEventsInRect(%d, %d, %d, %d)", x, y, width, height);
-
 	QRect bounds(x, y, width, height);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
@@ -133,7 +131,7 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 		{
 			QRect rect = this->getRectFromEvent(midi_event, 0, 0);
 
-			if (rect.intersects(bounds))
+			if (rect.intersects(bounds) || rect.contains(x, y))
 			{
 				MidiFileEvent_setSelected(midi_event, 1);
 			}
@@ -146,8 +144,6 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 	int start_x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
 	int end_x = this->window->getXFromTick(MidiFileEvent_getTick(MidiFileNoteStartEvent_getNoteEndEvent(midi_event)));
 	int y = this->getYFromNote(MidiFileNoteStartEvent_getNote(midi_event));
-
-	// qDebug("getRectFromEvent(%d, %d, %d, %d)", start_x, y, selected_events_x_offset, selected_events_y_offset);
 
 	if (MidiFileEvent_isSelected(midi_event))
 	{

@@ -78,7 +78,7 @@ void Lane::paintEvent(QPaintEvent* event)
 	int selected_events_x_offset = 0;
 	int selected_events_y_offset = 0;
 
-	if (this->mouse_down && (this->mouse_down_midi_event == NULL))
+	if (this->mouse_operation == LANE_MOUSE_OPERATION_RECT_SELECT)
 	{
  		if ((this->mouse_drag_x != this->mouse_down_x) && (this->mouse_drag_y != this->mouse_down_y))
 		{
@@ -102,97 +102,112 @@ void Lane::paintEvent(QPaintEvent* event)
 
 void Lane::mousePressEvent(QMouseEvent* event)
 {
-	// qDebug("mousePressEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
-
 	if (event->button() == Qt::LeftButton)
 	{
-		this->mouse_down = true;
+		this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
 		this->mouse_down_x = event->position().x();
 		this->mouse_down_y = event->position().y();
-		this->mouse_down_midi_event = this->getEventFromXY(this->mouse_down_x, this->mouse_down_y);
-		this->mouse_down_midi_event_is_new = false;
 		this->mouse_drag_x = this->mouse_down_x;
 		this->mouse_drag_y = this->mouse_down_y;
 		this->mouse_drag_x_allowed = false;
 		this->mouse_drag_y_allowed = false;
 
-		if ((this->mouse_down_midi_event == NULL) && ((event->modifiers() & Qt::ShiftModifier) == 0))
+		MidiFileEvent_t midi_event = this->getEventFromXY(this->mouse_down_x, this->mouse_down_y);
+		bool shift = ((event->modifiers() & Qt::ShiftModifier) != 0);
+
+		if (midi_event == NULL)
 		{
-			this->window->selectNone();
+			this->mouse_operation = LANE_MOUSE_OPERATION_RECT_SELECT;
 
-			if ((this->mouse_down_x == this->cursor_x) && (this->mouse_down_y == this->cursor_y))
+ 			if (!shift)
 			{
-				this->mouse_down_midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
-				MidiFileEvent_setSelected(this->mouse_down_midi_event, 1);
-				this->mouse_down_midi_event_is_new = true;
-			}
+				this->window->selectNone();
 
-			this->window->sequence->updateWindows();
+				if ((this->mouse_down_x == this->cursor_x) && (this->mouse_down_y == this->cursor_y))
+				{
+					midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
+					MidiFileEvent_setSelected(midi_event, 1);
+					this->mouse_operation = LANE_MOUSE_OPERATION_ADD_EVENT;
+				}
+			}
 		}
+		else
+		{
+			if (MidiFileEvent_isSelected(midi_event))
+			{
+				if (shift)
+				{
+					MidiFileEvent_setSelected(midi_event, 0);
+					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
+				}
+				else
+				{
+					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
+				}
+			}
+			else
+			{
+ 				if (shift)
+				{
+					MidiFileEvent_setSelected(midi_event, 1);
+					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
+				}
+				else
+				{
+					this->window->selectNone();
+					MidiFileEvent_setSelected(midi_event, 1);
+					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
+				}
+			}
+		}
+
+		this->window->sequence->updateWindows();
 	}
 }
 
 void Lane::mouseReleaseEvent(QMouseEvent* event)
 {
-	// qDebug("mouseReleaseEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
-
-	bool should_update = false;
-
 	if (event->button() == Qt::LeftButton)
 	{
-		int mouse_x = event->position().x();
-		int mouse_y = event->position().y();
+		int mouse_up_x = event->position().x();
+		int mouse_up_y = event->position().y();
 
-		if (this->mouse_down_midi_event == NULL)
+		if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS))
 		{
-			if ((mouse_x == this->mouse_down_x) && (mouse_y == this->mouse_down_y))
-			{
-				this->cursor_x = mouse_x;
-				this->cursor_y = mouse_y;
-			}
-			else
-			{
-				this->selectEventsInRect(std::min(this->mouse_down_x, mouse_x), std::min(this->mouse_down_y, mouse_y), std::abs(mouse_x - this->mouse_down_x), std::abs(mouse_y - this->mouse_down_y));
-			}
-
-			should_update = true;
-		}
-		else
-		{
-			if ((this->mouse_drag_x_allowed && (mouse_x != this->mouse_down_x)) || (this->mouse_drag_y_allowed && (mouse_y != this->mouse_down_y)))
+			if ((this->mouse_drag_x_allowed && (mouse_up_x != this->mouse_down_x)) || (this->mouse_drag_y_allowed && (mouse_up_y != this->mouse_down_y)))
 			{
 				int x_offset = this->mouse_drag_x_allowed ? (this->mouse_drag_x - this->mouse_down_x) : 0;
 				int y_offset = this->mouse_drag_y_allowed ? (this->mouse_drag_y - this->mouse_down_y) : 0;
-
-				if ((x_offset != 0) || (y_offset != 0))
-				{
-					this->moveEventsByXY(x_offset, y_offset);
-					should_update = true;
-				}
+				this->moveEventsByXY(x_offset, y_offset);
 			}
 			else
 			{
-				if (((event->modifiers() & Qt::ShiftModifier) == 0) && !this->mouse_down_midi_event_is_new && (mouse_x == this->cursor_x) && (mouse_y == this->cursor_y))
-				{
-					this->window->focusInspector();
-				}
+				if (this->mouse_operation != LANE_MOUSE_OPERATION_ADD_EVENT) this->window->focusInspector();
+			}
+		}
+		else if (this->mouse_operation == LANE_MOUSE_OPERATION_RECT_SELECT)
+		{
+			if ((mouse_up_x == this->mouse_down_x) && (mouse_up_y == this->mouse_down_y))
+			{
+				this->cursor_x = mouse_up_x;
+				this->cursor_y = mouse_up_y;
+			}
+			else
+			{
+				this->selectEventsInRect(std::min(this->mouse_down_x, mouse_up_x), std::min(this->mouse_down_y, mouse_up_y), std::abs(mouse_up_x - this->mouse_down_x), std::abs(mouse_up_y - this->mouse_down_y));
 			}
 		}
 
-		this->mouse_down = false;
-		this->mouse_down_midi_event = NULL;
-		this->mouse_down_midi_event_is_new = false;
+		this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
 		this->mouse_drag_x_allowed = false;
 		this->mouse_drag_y_allowed = false;
-		if (should_update) this->window->sequence->updateWindows();
+		this->window->sequence->updateWindows();
 	}
 }
 
 void Lane::mouseMoveEvent(QMouseEvent* event)
 {
-	// qDebug("mouseMoveEvent(%d, %d)", (int)(event->position().x()), (int)(event->position().y()));
-
-	if (this->mouse_down)
+	if (this->mouse_operation != LANE_MOUSE_OPERATION_NONE)
 	{
 		this->mouse_drag_x = event->position().x();
 		this->mouse_drag_y = event->position().y();
@@ -205,7 +220,6 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 void Lane::editEvent()
 {
 	bool selection_is_empty = true;
-	bool should_update = false;
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
@@ -224,7 +238,7 @@ void Lane::editEvent()
 		{
 			cursor_midi_event = this->addEventAtXY(this->cursor_x, this->cursor_y);
 			MidiFileEvent_setSelected(cursor_midi_event, 1);
-			should_update = true;
+			this->window->sequence->updateWindows();
 		}
 		else
 		{
@@ -236,8 +250,6 @@ void Lane::editEvent()
 	{
 		this->window->focusInspector();
 	}
-
-	if (should_update) this->window->sequence->updateWindows();
 }
 
 void Lane::selectEvent()

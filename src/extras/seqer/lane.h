@@ -11,6 +11,14 @@ class Lane;
 #include "midifile.h"
 #include "window.h"
 
+enum LaneMouseOperation
+{
+	LANE_MOUSE_OPERATION_NONE,
+	LANE_MOUSE_OPERATION_RECT_SELECT,
+	LANE_MOUSE_OPERATION_ADD_EVENT,
+	LANE_MOUSE_OPERATION_DRAG_EVENTS
+};
+
 class Lane: public QWidget
 {
 	Q_OBJECT
@@ -21,11 +29,9 @@ public:
 	int channel = 0;
 	int cursor_x = 0;
 	int cursor_y = 0;
-	bool mouse_down = false;
+	LaneMouseOperation mouse_operation;
 	int mouse_down_x = 0;
 	int mouse_down_y = 0;
-	MidiFileEvent_t mouse_down_midi_event = NULL;
-	bool mouse_down_midi_event_is_new = false;
 	int mouse_drag_x = 0;
 	int mouse_drag_y = 0;
 	bool mouse_drag_x_allowed = false;
