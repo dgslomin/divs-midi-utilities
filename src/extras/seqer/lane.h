@@ -46,6 +46,7 @@ public:
 	QBrush selected_event_brush;
 	QPen selected_event_text_pen;
 	QPen cursor_pen;
+	QBrush cursor_brush;
 	QPen selection_rect_pen;
 	int mouse_drag_threshold;
 

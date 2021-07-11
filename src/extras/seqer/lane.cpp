@@ -7,11 +7,20 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPen>
+#include <QPoint>
 #include <QSettings>
 #include <QWidget>
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"
+
+static QColor themeColor(int lightness, int dark_theme_lightness)
+{
+	int theme_hue, theme_saturation, theme_lightness;
+	QGuiApplication::palette().color(QPalette::Button).getHsl(&theme_hue, &theme_saturation, &theme_lightness);
+	bool dark_theme = (theme_lightness < 127);
+	return QColor::fromHsl(theme_hue, theme_saturation, dark_theme ? dark_theme_lightness : lightness);
+}
 
 Lane::Lane(Window* window)
 {
@@ -54,19 +63,18 @@ Lane::Lane(Window* window)
 	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
 
 	QSettings settings;
-	QColor button_color = QGuiApplication::palette().color(QPalette::Button);
-	QColor highlight_color = QGuiApplication::palette().color(QPalette::Highlight);
-	this->background_color = settings.value("lane/background-color", QColorConstants::White).value<QColor>();
-	this->white_note_background_color = settings.value("lane/white-note-background-color", QColorConstants::White).value<QColor>();
-	this->black_note_background_color = settings.value("lane/black-note-background-color", QColor::fromHsl(button_color.hslHue(), button_color.hslSaturation(), 230)).value<QColor>();
-	this->unselected_event_pen = QPen(settings.value("lane/unselected-event-border-color", QColorConstants::Black).value<QColor>());
-	this->unselected_event_brush = QBrush(settings.value("lane/unselected-event-color", QColorConstants::White).value<QColor>());
-	this->unselected_event_text_pen = QPen(settings.value("lane/unselected-event-text-color", QColorConstants::Black).value<QColor>());
-	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", QColorConstants::Black).value<QColor>());
-	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 200)).value<QColor>());
-	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", QColorConstants::White).value<QColor>());
-	this->cursor_pen = QPen(settings.value("lane/cursor-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 63)).value<QColor>());
-	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", QColor::fromHsl(highlight_color.hslHue(), highlight_color.hslSaturation(), 127)).value<QColor>(), 1.5, Qt::DashLine);
+	this->background_color = settings.value("lane/background-color", themeColor(255, 0)).value<QColor>();
+	this->white_note_background_color = settings.value("lane/white-note-background-color", themeColor(255, 0)).value<QColor>();
+	this->black_note_background_color = settings.value("lane/black-note-background-color", themeColor(230, 50)).value<QColor>();
+	this->unselected_event_pen = QPen(settings.value("lane/unselected-event-border-color", themeColor(0, 180)).value<QColor>());
+	this->unselected_event_brush = QBrush(settings.value("lane/unselected-event-color", themeColor(255, 0)).value<QColor>());
+	this->unselected_event_text_pen = QPen(settings.value("lane/unselected-event-text-color", themeColor(0, 255)).value<QColor>());
+	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", themeColor(0, 180)).value<QColor>());
+	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", themeColor(200, 100)).value<QColor>());
+	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", themeColor(255, 0)).value<QColor>());
+	this->cursor_pen = QPen(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
+	this->cursor_brush = QBrush(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
+	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", themeColor(100, 200)).value<QColor>(), 1.5, Qt::DashLine);
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
 
@@ -93,11 +101,16 @@ void Lane::paintEvent(QPaintEvent* event)
 		if (this->mouse_drag_y_allowed) selected_events_y_offset = this->mouse_drag_y - this->mouse_down_y;
 	}
 
-	painter.setPen(this->cursor_pen);
-	painter.setBrush(Qt::NoBrush);
-	painter.drawLine(this->cursor_x, 0, this->cursor_x, this->height());
-
 	this->paintEvents(&painter, selected_events_x_offset, selected_events_y_offset);
+
+	painter.setPen(this->cursor_pen);
+	painter.setBrush(this->cursor_brush);
+	painter.drawLine(this->cursor_x, 0, this->cursor_x, this->cursor_y);
+	QPoint upper_arrowhead[] = { QPoint(this->cursor_x, this->cursor_y), QPoint(this->cursor_x - 2, this->cursor_y - 2), QPoint(this->cursor_x + 2, this->cursor_y - 2) };
+	painter.drawConvexPolygon(upper_arrowhead, 3);
+	painter.drawLine(this->cursor_x, cursor_y + 6, this->cursor_x, this->height());
+	QPoint lower_arrowhead[] = { QPoint(this->cursor_x, this->cursor_y + 6), QPoint(this->cursor_x - 2, this->cursor_y + 8), QPoint(this->cursor_x + 2, this->cursor_y + 8) };
+	painter.drawConvexPolygon(lower_arrowhead, 3);
 }
 
 void Lane::mousePressEvent(QMouseEvent* event)
