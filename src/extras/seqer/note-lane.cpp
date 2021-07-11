@@ -71,6 +71,11 @@ MidiFileEvent_t NoteLane::getEventFromXY(int x, int y)
 	return NULL;
 }
 
+QPoint NoteLane::getPointFromEvent(MidiFileEvent_t midi_event)
+{
+	return this->getRectFromEvent(midi_event, 0, 0).topLeft();
+}
+
 MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 {
 	int start_tick = this->window->getTickFromX(x);

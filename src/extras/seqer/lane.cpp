@@ -169,7 +169,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				{
 					this->window->selectNone();
 					MidiFileEvent_setSelected(midi_event, 1);
-					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
+					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR;
 				}
 			}
 		}
@@ -185,7 +185,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		int mouse_up_x = event->position().x();
 		int mouse_up_y = event->position().y();
 
-		if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS))
+		if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
 		{
 			if ((this->mouse_drag_x_allowed && (mouse_up_x != this->mouse_down_x)) || (this->mouse_drag_y_allowed && (mouse_up_y != this->mouse_down_y)))
 			{
@@ -195,7 +195,13 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			}
 			else
 			{
-				if (this->mouse_operation != LANE_MOUSE_OPERATION_ADD_EVENT) this->window->focusInspector();
+				if ((this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR)) this->window->focusInspector();
+			}
+
+			if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
+			{
+				this->cursor_x = mouse_up_x;
+				this->cursor_y = mouse_up_y;
 			}
 		}
 		else if (this->mouse_operation == LANE_MOUSE_OPERATION_RECT_SELECT)

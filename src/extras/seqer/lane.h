@@ -7,6 +7,7 @@ class Lane;
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPoint>
 #include <QWidget>
 #include "midifile.h"
 #include "window.h"
@@ -16,7 +17,8 @@ enum LaneMouseOperation
 	LANE_MOUSE_OPERATION_NONE,
 	LANE_MOUSE_OPERATION_RECT_SELECT,
 	LANE_MOUSE_OPERATION_ADD_EVENT,
-	LANE_MOUSE_OPERATION_DRAG_EVENTS
+	LANE_MOUSE_OPERATION_DRAG_EVENTS,
+	LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR
 };
 
 class Lane: public QWidget
@@ -59,6 +61,7 @@ public:
 	virtual void paintBackground(QPainter* painter) = 0;
 	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
 	virtual MidiFileEvent_t getEventFromXY(int x, int y) = 0;
+	virtual QPoint getPointFromEvent(MidiFileEvent_t midi_event) = 0;
 	virtual MidiFileEvent_t addEventAtXY(int x, int y) = 0;
 	virtual void moveEventsByXY(int x_offset, int y_offset) = 0;
 	virtual void selectEventsInRect(int x, int y, int width, int height) = 0;
