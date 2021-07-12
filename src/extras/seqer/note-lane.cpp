@@ -59,15 +59,27 @@ void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int 
 
 MidiFileEvent_t NoteLane::getEventFromXY(int x, int y)
 {
+	qDebug("getEventFromXY(%d, %d)", x, y);
+
 	for (MidiFileEvent_t midi_event = MidiFile_getLastEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
 	{
+		qDebug("getEventFromXY(%d, %d), midi_event = %p", x, y, midi_event);
+
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
 			QRect rect = this->getRectFromEvent(midi_event, 0, 0);
-			if (rect.contains(x, y)) return midi_event;
+
+			qDebug("getEventFromXY(%d, %d), midi_event = %p, is note start, rect(%d, %d, %d, %d)", x, y, midi_event, rect.x(), rect.y(), rect.width(), rect.height());
+
+			if (rect.contains(x, y, false))
+			{
+				qDebug("getEventFromXY(%d, %d), midi_event = %p, is note start, rect(%d, %d, %d, %d), match!", x, y, midi_event, rect.x(), rect.y(), rect.width(), rect.height());
+				return midi_event;
+			}
 		}
 	}
 
+	qDebug("getEventFromXY(%d, %d), no match", x, y);
 	return NULL;
 }
 
@@ -78,14 +90,21 @@ QPoint NoteLane::getPointFromEvent(MidiFileEvent_t midi_event)
 
 MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 {
+	qDebug("addEventAtXY(%d, %d)", x, y);
 	int start_tick = this->window->getTickFromX(x);
 	int end_tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1);
 	int note = this->getNoteFromY(y);
-	return MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 1), start_tick, end_tick, this->channel, note, this->velocity, 0);
+	qDebug("getNoteFromY(%d) => %d", y, note);
+	qDebug("getYFromNote(%d) => %d", note, this->getYFromNote(note));
+	MidiFileEvent_t midi_event =  MidiFileTrack_createNoteStartAndEndEvents(MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 1), start_tick, end_tick, this->channel, note, this->velocity, 0);
+	QRect rect = this->getRectFromEvent(midi_event, 0, 0);
+	qDebug("newly added event rect(%d, %d, %d, %d)", rect.x(), rect.y(), rect.width(), rect.height());
+	return midi_event;
 }
 
 void NoteLane::moveEventsByXY(int x_offset, int y_offset)
 {
+	qDebug("moveEventsByXY(%d, %d)", x_offset, y_offset);
 	// We make a copy because changing both start and end events while iterating destabilizes the iterator (even with visitEvents()).
 	MidiFile_t new_midi_file = MidiFile_newFromTemplate(this->window->sequence->midi_file);
 
@@ -136,7 +155,7 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 		{
 			QRect rect = this->getRectFromEvent(midi_event, 0, 0);
 
-			if (rect.intersects(bounds) || rect.contains(x, y))
+			if (rect.intersects(bounds))
 			{
 				MidiFileEvent_setSelected(midi_event, 1);
 			}
@@ -162,11 +181,11 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 
 int NoteLane::getYFromNote(int note)
 {
-	return this->height() - ((note * this->pixels_per_note) - this->scroll_y);
+	return this->height() - ((note + 1) * this->pixels_per_note) /* + this->scroll_y */;
 }
 
 int NoteLane::getNoteFromY(int y)
 {
-	return (this->height() - (y + this->scroll_y)) / this->pixels_per_note;
+	return (this->height() - y - 1 /* - this->scroll_y */) / this->pixels_per_note;
 }
 

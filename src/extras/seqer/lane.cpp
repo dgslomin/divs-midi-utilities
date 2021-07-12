@@ -192,6 +192,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 	{
 		int mouse_up_x = event->position().x();
 		int mouse_up_y = event->position().y();
+		qDebug("mouse_down(%d, %d), mouse_drag(%d, %d, %d, %d), mouse_up(%d, %d)", this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x, this->mouse_drag_y, this->mouse_drag_x_allowed, this->mouse_drag_y_allowed, mouse_up_x, mouse_up_y);
 
 		if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
 		{
@@ -208,9 +209,15 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 
 			if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
 			{
-				QPoint midi_event_position = this->getPointFromEvent(this->getEventFromXY(mouse_up_x, mouse_up_y));
-				this->cursor_x = midi_event_position.x();
-				this->cursor_y = midi_event_position.y();
+				MidiFileEvent_t midi_event = this->getEventFromXY(mouse_up_x, mouse_up_y);
+
+				if (midi_event != NULL)
+				{
+					// TODO: this should never be null, but round down from add plus round down from move can sometimes make the event end up more than pixels_per_note away from mouse_up_y
+					QPoint midi_event_position = this->getPointFromEvent(midi_event);
+					this->cursor_x = midi_event_position.x();
+					this->cursor_y = midi_event_position.y();
+				}
 			}
 		}
 		else if (this->mouse_operation == LANE_MOUSE_OPERATION_RECT_SELECT)
