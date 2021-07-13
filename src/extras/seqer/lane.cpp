@@ -2,7 +2,6 @@
 #include <QAction>
 #include <QBrush>
 #include <QColor>
-#include <QGuiApplication>
 #include <QKeySequence>
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -11,17 +10,10 @@
 #include <QPoint>
 #include <QSettings>
 #include <QWidget>
+#include "colors.h"
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"
-
-static QColor themeColor(int lightness, int dark_theme_lightness)
-{
-	int theme_hue, theme_saturation, theme_lightness;
-	QGuiApplication::palette().color(QPalette::Button).getHsl(&theme_hue, &theme_saturation, &theme_lightness);
-	bool dark_theme = (theme_lightness < 127);
-	return QColor::fromHsl(theme_hue, theme_saturation, dark_theme ? dark_theme_lightness : lightness);
-}
 
 Lane::Lane(Window* window)
 {
@@ -59,19 +51,19 @@ Lane::Lane(Window* window)
 	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
 
 	QSettings settings;
-	this->background_color = settings.value("lane/background-color", themeColor(255, 0)).value<QColor>();
-	this->white_note_background_color = settings.value("lane/white-note-background-color", themeColor(255, 0)).value<QColor>();
-	this->black_note_background_color = settings.value("lane/black-note-background-color", themeColor(230, 50)).value<QColor>();
-	this->unselected_event_pen = QPen(settings.value("lane/unselected-event-border-color", themeColor(0, 180)).value<QColor>());
-	this->unselected_event_brush = QBrush(settings.value("lane/unselected-event-color", themeColor(255, 0)).value<QColor>());
-	this->unselected_event_text_pen = QPen(settings.value("lane/unselected-event-text-color", themeColor(0, 255)).value<QColor>());
-	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", themeColor(0, 180)).value<QColor>());
-	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", themeColor(200, 100)).value<QColor>());
-	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", themeColor(255, 0)).value<QColor>());
-	this->cursor_pen = QPen(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
-	this->cursor_brush = QBrush(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
-	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", themeColor(0, 180)).value<QColor>(), 1, Qt::DashLine);
-	this->time_line_pen = QPen(settings.value("lan/time-line-color", themeColor(220, 60)).value<QColor>());
+	this->background_color = settings.value("lane/background-color", Colors::buttonShade(255, 0)).value<QColor>();
+	this->white_note_background_color = settings.value("lane/white-note-background-color", Colors::buttonShade(255, 0)).value<QColor>();
+	this->black_note_background_color = settings.value("lane/black-note-background-color", Colors::buttonShade(230, 50)).value<QColor>();
+	this->unselected_event_pen = QPen(settings.value("lane/unselected-event-border-color", Colors::buttonShade(0, 180)).value<QColor>());
+	this->unselected_event_brush = QBrush(settings.value("lane/unselected-event-color", Colors::buttonShade(255, 0)).value<QColor>());
+	this->unselected_event_text_pen = QPen(settings.value("lane/unselected-event-text-color", Colors::textShade(0, 255)).value<QColor>());
+	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", Colors::buttonShade(0, 180)).value<QColor>());
+	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", Colors::buttonShade(200, 100)).value<QColor>());
+	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", Colors::textShade(255, 0)).value<QColor>());
+	this->cursor_pen = QPen(settings.value("lane/cursor-color", Colors::buttonShade(100, 200)).value<QColor>());
+	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(100, 200)).value<QColor>());
+	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 180)).value<QColor>(), 1, Qt::DashLine);
+	this->time_line_pen = QPen(settings.value("lan/time-line-color", Colors::buttonShade(220, 60)).value<QColor>());
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
 
@@ -303,7 +295,9 @@ void Lane::wheelEvent(QWheelEvent* event)
 	}
 	else
 	{
-		this->window->scroll_x = std::max(this->window->scroll_x - pixel_delta_x, 0);
+		int old_scroll_x = this->window->scroll_x;
+		this->window->scroll_x = std::max(old_scroll_x - pixel_delta_x, 0);
+		this->window->cursor_x = this->window->cursor_x + old_scroll_x - this->window->scroll_x;
 		this->scrollYBy(pixel_delta_y);
 	}
 

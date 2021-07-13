@@ -147,6 +147,7 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 void NoteLane::scrollYBy(int y_offset)
 {
 	this->scroll_y += y_offset;
+	this->cursor_y += y_offset;
 }
 
 void NoteLane::zoomYBy(int y_offset)
