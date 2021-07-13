@@ -28,10 +28,10 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 	QPainter painter(this);
 	long min_tick = this->window->getTickFromX(0);
 	long max_tick = this->window->getTickFromX(this->width());
-	int min_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick));
-	int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick));
-	int min_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick));
-	int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick));
+	int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+	int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+	int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+	int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
 	int line_height = painter.fontMetrics().lineSpacing();
 	int measure_beat_y;
 	int hour_minute_second_y;
@@ -67,7 +67,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 
 		if (x >= max_x)
 		{
-			painter.drawText(x, measure_beat_y + line_height, label);
+			painter.drawText(x, measure_beat_y + line_height - 2, label);
 			max_x = x + painter.fontMetrics().horizontalAdvance(label);
 		}
 	}
@@ -91,7 +91,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 
 		if (x >= max_x)
 		{
-			painter.drawText(x, hour_minute_second_y + line_height, label);
+			painter.drawText(x, hour_minute_second_y + line_height - 2, label);
 			max_x = x + painter.fontMetrics().horizontalAdvance(label);
 		}
 	}

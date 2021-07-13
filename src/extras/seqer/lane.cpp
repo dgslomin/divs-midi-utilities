@@ -257,7 +257,7 @@ void Lane::wheelEvent(QWheelEvent* event)
 	}
 	else
 	{
-		this->window->scroll_x -= pixel_delta_x;
+		this->window->scroll_x = std::max(this->window->scroll_x - pixel_delta_x, 0);
 		this->scrollYBy(pixel_delta_y);
 	}
 
