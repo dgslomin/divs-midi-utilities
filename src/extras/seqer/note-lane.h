@@ -27,7 +27,8 @@ public:
 	MidiFileEvent_t addEventAtXY(int x, int y);
 	void moveEventsByXY(int x_offset, int y_offset);
 	void selectEventsInRect(int x, int y, int width, int height);
-	void moveCursorToEvent(MidiFileEvent_t midi_event);
+	void scrollYBy(int y_offset);
+	void zoomYBy(int y_offset);
 	QRect getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
 	int getYFromNote(int note);
 	int getNoteFromY(int y);

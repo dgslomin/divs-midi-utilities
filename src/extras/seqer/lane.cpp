@@ -105,11 +105,11 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);
-	painter.drawLine(this->cursor_x, 0, this->cursor_x, this->cursor_y);
-	QPoint upper_arrowhead[] = { QPoint(this->cursor_x, this->cursor_y), QPoint(this->cursor_x - 2, this->cursor_y - 2), QPoint(this->cursor_x + 2, this->cursor_y - 2) };
+	painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->cursor_y);
+	QPoint upper_arrowhead[] = { QPoint(this->window->cursor_x, this->cursor_y), QPoint(this->window->cursor_x - 2, this->cursor_y - 2), QPoint(this->window->cursor_x + 2, this->cursor_y - 2) };
 	painter.drawConvexPolygon(upper_arrowhead, 3);
-	painter.drawLine(this->cursor_x, cursor_y + 6, this->cursor_x, this->height());
-	QPoint lower_arrowhead[] = { QPoint(this->cursor_x, this->cursor_y + 6), QPoint(this->cursor_x - 2, this->cursor_y + 8), QPoint(this->cursor_x + 2, this->cursor_y + 8) };
+	painter.drawLine(this->window->cursor_x, cursor_y + 6, this->window->cursor_x, this->height());
+	QPoint lower_arrowhead[] = { QPoint(this->window->cursor_x, this->cursor_y + 6), QPoint(this->window->cursor_x - 2, this->cursor_y + 8), QPoint(this->window->cursor_x + 2, this->cursor_y + 8) };
 	painter.drawConvexPolygon(lower_arrowhead, 3);
 }
 
@@ -136,7 +136,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 			{
 				this->window->selectNone();
 
-				if ((this->mouse_down_x == this->cursor_x) && (this->mouse_down_y == this->cursor_y))
+				if ((this->mouse_down_x == this->window->cursor_x) && (this->mouse_down_y == this->cursor_y))
 				{
 					midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
 					MidiFileEvent_setSelected(midi_event, 1);
@@ -197,13 +197,13 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			{
 				QPoint midi_event_position = this->getPointFromEvent(this->getEventFromXY(this->mouse_down_x, this->mouse_down_y));
 
-				if ((this->cursor_x == midi_event_position.x()) && (this->cursor_y == midi_event_position.y()))
+				if ((this->window->cursor_x == midi_event_position.x()) && (this->cursor_y == midi_event_position.y()))
 				{
 					this->window->focusInspector();
 				}
 				else
 				{
-					this->cursor_x = midi_event_position.x();
+					this->window->cursor_x = midi_event_position.x();
 					this->cursor_y = midi_event_position.y();
 				}
 			}
@@ -212,7 +212,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		{
 			if ((mouse_up_x == this->mouse_down_x) && (mouse_up_y == this->mouse_down_y))
 			{
-				this->cursor_x = mouse_up_x;
+				this->window->cursor_x = mouse_up_x;
 				this->cursor_y = mouse_up_y;
 			}
 			else
@@ -240,6 +240,34 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 	}
 }
 
+void Lane::wheelEvent(QWheelEvent* event)
+{
+	int pixel_delta_x = event->angleDelta().x() / 8;
+	int pixel_delta_y = event->angleDelta().y() / 8;
+	bool control = ((event->modifiers() & Qt::ControlModifier) != 0);
+
+	if (control)
+	{
+		if (this->window->use_linear_time)
+		{
+			this->window->pixels_per_second = std::max(this->window->pixels_per_second + pixel_delta_x, 1);
+		}
+		else
+		{
+			this->window->pixels_per_beat = std::max(this->window->pixels_per_beat + pixel_delta_x, 1);
+		}
+
+		this->zoomYBy(-pixel_delta_y);
+	}
+	else
+	{
+		this->window->scroll_x = std::max(this->window->scroll_x - pixel_delta_x, 0);
+		this->scrollYBy(pixel_delta_y);
+	}
+
+	this->window->update();
+}
+
 void Lane::editEvent()
 {
 	bool selection_is_empty = true;
@@ -255,11 +283,11 @@ void Lane::editEvent()
 
 	if (selection_is_empty)
 	{
-		MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->cursor_x, this->cursor_y);
+		MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
 
 		if (cursor_midi_event == NULL)
 		{
-			cursor_midi_event = this->addEventAtXY(this->cursor_x, this->cursor_y);
+			cursor_midi_event = this->addEventAtXY(this->window->cursor_x, this->cursor_y);
 			MidiFileEvent_setSelected(cursor_midi_event, 1);
 			this->window->sequence->updateWindows();
 		}
@@ -277,7 +305,7 @@ void Lane::editEvent()
 
 void Lane::selectEvent()
 {
-	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->cursor_x, this->cursor_y);
+	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
 
 	if (cursor_midi_event == NULL)
 	{
@@ -294,7 +322,7 @@ void Lane::selectEvent()
 
 void Lane::toggleEventSelection()
 {
-	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->cursor_x, this->cursor_y);
+	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
 
 	if (cursor_midi_event == NULL)
 	{
@@ -310,14 +338,14 @@ void Lane::toggleEventSelection()
 
 void Lane::cursorLeft()
 {
-	this->cursor_x--;
-	this->update();
+	this->window->cursor_x--;
+	this->window->update();
 }
 
 void Lane::cursorRight()
 {
-	this->cursor_x++;
-	this->update();
+	this->window->cursor_x++;
+	this->window->update();
 }
 
 void Lane::cursorUp()

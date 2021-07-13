@@ -19,6 +19,7 @@ public:
 	QSplitter* sidebar_splitter;
 	QSplitter* lane_splitter;
 	QTabWidget* sidebar_tab_widget;
+	int cursor_x = 0;
 	int scroll_x = 0;
 	bool use_linear_time;
 	int pixels_per_beat;

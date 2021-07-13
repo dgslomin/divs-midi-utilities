@@ -27,7 +27,6 @@ public:
 	Window* window;
 	int track_number = 1;
 	int channel = 0;
-	int cursor_x = 0;
 	int cursor_y = 0;
 	LaneMouseOperation mouse_operation;
 	int mouse_down_x = 0;
@@ -55,6 +54,7 @@ public:
 	void mousePressEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* event);
 
 	virtual void paintBackground(QPainter* painter) = 0;
 	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
@@ -63,6 +63,8 @@ public:
 	virtual MidiFileEvent_t addEventAtXY(int x, int y) = 0;
 	virtual void moveEventsByXY(int x_offset, int y_offset) = 0;
 	virtual void selectEventsInRect(int x, int y, int width, int height) = 0;
+	virtual void scrollYBy(int y_offset) = 0;
+	virtual void zoomYBy(int y_offset) = 0;
 
 public slots:
 	void editEvent();
