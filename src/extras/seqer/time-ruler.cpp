@@ -48,22 +48,13 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 		hour_minute_second_y = 0;
 	}
 
-	painter.setPen(QGuiApplication::palette().color(QPalette::Mid));
-
-	for (int beat = min_beat; beat < max_beat; beat++)
-	{
-		int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
-		painter.drawLine(x, measure_beat_y, x, measure_beat_y + line_height);
-	}
-
-	painter.setPen(QGuiApplication::palette().color(QPalette::Text));
-	max_x = 0;
+	max_x = -this->width();
 
 	for (int beat = min_beat; beat < max_beat; beat++)
 	{
 		long tick = MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat);
 		int x = this->window->getXFromTick(tick);
-		QString label = QString(" %1 ").arg(MidiFile_getMeasureBeatStringFromTick(this->window->sequence->midi_file, tick));
+		QString label = QString("%1  ").arg(MidiFile_getMeasureBeatStringFromTick(this->window->sequence->midi_file, tick));
 
 		if (x >= max_x)
 		{
@@ -72,22 +63,13 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 		}
 	}
 
-	painter.setPen(QGuiApplication::palette().color(QPalette::Mid));
-
-	for (int time = min_time; time < max_time; time++)
-	{
-		int x = this->window->getXFromTick(MidiFile_getTickFromTime(this->window->sequence->midi_file, time));
-		painter.drawLine(x, hour_minute_second_y, x, hour_minute_second_y + line_height);
-	}
-
-	painter.setPen(QGuiApplication::palette().color(QPalette::Text));
-	max_x = 0;
+	max_x = -this->width();
 
 	for (int time = min_time; time < max_time; time++)
 	{
 		long tick = MidiFile_getTickFromTime(this->window->sequence->midi_file, time);
 		int x = this->window->getXFromTick(tick);
-		QString label = QString(" %1 ").arg(MidiFile_getHourMinuteSecondStringFromTick(this->window->sequence->midi_file, tick));
+		QString label = QString("%1  ").arg(MidiFile_getHourMinuteSecondStringFromTick(this->window->sequence->midi_file, tick));
 
 		if (x >= max_x)
 		{

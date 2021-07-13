@@ -71,13 +71,49 @@ Lane::Lane(Window* window)
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
 	this->cursor_brush = QBrush(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
 	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", themeColor(0, 180)).value<QColor>(), 1, Qt::DashLine);
+	this->time_line_pen = QPen(settings.value("lan/time-line-color", themeColor(220, 60)).value<QColor>());
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
 
 void Lane::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
+
+	// background
+
 	this->paintBackground(&painter);
+
+	// time lines
+
+	painter.setPen(this->time_line_pen);
+	painter.setBrush(Qt::NoBrush);
+	long min_tick = this->window->getTickFromX(0);
+	long max_tick = this->window->getTickFromX(this->width());
+
+	if (this->window->use_linear_time)
+	{
+		int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+		int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+
+		for (int time = min_time; time < max_time; time++)
+		{
+			int x = this->window->getXFromTick(MidiFile_getTickFromTime(this->window->sequence->midi_file, time));
+			painter.drawLine(x, 0, x, this->height());
+		}
+	}
+	else
+	{
+		int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+		int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+
+		for (int beat = min_beat; beat < max_beat; beat++)
+		{
+			int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
+			painter.drawLine(x, 0, x, this->height());
+		}
+	}
+
+	// selection rectangle
 
 	int selected_events_x_offset = 0;
 	int selected_events_y_offset = 0;
@@ -97,7 +133,11 @@ void Lane::paintEvent(QPaintEvent* event)
 		if (this->mouse_drag_y_allowed) selected_events_y_offset = this->mouse_drag_y - this->mouse_down_y;
 	}
 
+	// events
+
 	this->paintEvents(&painter, selected_events_x_offset, selected_events_y_offset);
+
+	// cursor
 
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);

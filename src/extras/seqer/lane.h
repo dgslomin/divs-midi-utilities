@@ -47,6 +47,7 @@ public:
 	QPen cursor_pen;
 	QBrush cursor_brush;
 	QPen selection_rect_pen;
+	QPen time_line_pen;
 	int mouse_drag_threshold;
 
 	Lane(Window* window);
