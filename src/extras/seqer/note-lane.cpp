@@ -177,6 +177,6 @@ int NoteLane::getYFromNote(int note)
 
 int NoteLane::getNoteFromY(int y)
 {
-	return (this->height() - y - 1 - this->scroll_y) / this->pixels_per_note;
+	return (this->height() - y - 1 + this->scroll_y) / this->pixels_per_note;
 }
 
