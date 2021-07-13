@@ -33,13 +33,13 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 
 	if (this->window->use_linear_time)
 	{
-		measure_beat_y = font_metrics.lineSpacing() + font_metrics.ascent();
-		hour_minute_second_y = font_metrics.leading() + font_metrics.ascent();
+		measure_beat_y = font_metrics.leading() + font_metrics.ascent();
+		hour_minute_second_y = font_metrics.lineSpacing() + font_metrics.ascent();
 	}
 	else
 	{
-		measure_beat_y = font_metrics.leading() + font_metrics.ascent();
-		hour_minute_second_y = font_metrics.lineSpacing() + font_metrics.ascent();
+		measure_beat_y = font_metrics.lineSpacing() + font_metrics.ascent();
+		hour_minute_second_y = font_metrics.leading() + font_metrics.ascent();
 	}
 
 	painter.setPen(Colors::textShade(150, 200));
