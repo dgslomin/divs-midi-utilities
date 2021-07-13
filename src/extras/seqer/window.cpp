@@ -399,15 +399,23 @@ void Window::createViewMenu()
 {
 	QMenu* view_menu = this->menuBar()->addMenu(tr("&View"));
 
-	QAction* next_lane_action = new QAction(tr("&Next Lane"));
-	this->addAction(next_lane_action);
-	view_menu->addAction(next_lane_action);
-	next_lane_action->setShortcut(QKeySequence(QKeySequence::NextChild));
+	QAction* zoom_in_time_action = new QAction(tr("Zoom &In Time"));
+	this->addAction(zoom_in_time_action);
+	view_menu->addAction(zoom_in_time_action);
+	zoom_in_time_action->setShortcut(QKeySequence(QKeySequence::ZoomIn));
 
-	QAction* previous_lane_action = new QAction(tr("Pre&vious Lane"));
-	this->addAction(previous_lane_action);
-	view_menu->addAction(previous_lane_action);
-	previous_lane_action->setShortcut(QKeySequence(QKeySequence::PreviousChild));
+	QAction* zoom_out_time_action = new QAction(tr("Zoom &Out Time"));
+	this->addAction(zoom_out_time_action);
+	view_menu->addAction(zoom_out_time_action);
+	zoom_out_time_action->setShortcut(QKeySequence(QKeySequence::ZoomOut));
+
+	QAction* zoom_in_lane_action = new QAction(tr("Zoom &In Lane"));
+	this->addAction(zoom_in_lane_action);
+	view_menu->addAction(zoom_in_lane_action);
+
+	QAction* zoom_out_lane_action = new QAction(tr("Zoom &Out Lane"));
+	this->addAction(zoom_out_lane_action);
+	view_menu->addAction(zoom_out_lane_action);
 
 	view_menu->addSeparator();
 
@@ -428,26 +436,6 @@ void Window::createViewMenu()
 	QAction* move_lane_down_action = new QAction(tr("Move Lane &Down"));
 	this->addAction(move_lane_down_action);
 	view_menu->addAction(move_lane_down_action);
-
-	view_menu->addSeparator();
-
-	QAction* zoom_in_time_action = new QAction(tr("Zoom &In Time"));
-	this->addAction(zoom_in_time_action);
-	view_menu->addAction(zoom_in_time_action);
-	zoom_in_time_action->setShortcut(QKeySequence(QKeySequence::ZoomIn));
-
-	QAction* zoom_out_time_action = new QAction(tr("Zoom &Out Time"));
-	this->addAction(zoom_out_time_action);
-	view_menu->addAction(zoom_out_time_action);
-	zoom_out_time_action->setShortcut(QKeySequence(QKeySequence::ZoomOut));
-
-	QAction* zoom_in_lane_action = new QAction(tr("Zoom &In Lane"));
-	this->addAction(zoom_in_lane_action);
-	view_menu->addAction(zoom_in_lane_action);
-
-	QAction* zoom_out_lane_action = new QAction(tr("Zoom &Out Lane"));
-	this->addAction(zoom_out_lane_action);
-	view_menu->addAction(zoom_out_lane_action);
 }
 
 void Window::createTransportMenu()
