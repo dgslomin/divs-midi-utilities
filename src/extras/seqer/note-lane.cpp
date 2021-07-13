@@ -22,7 +22,7 @@ void NoteLane::paintBackground(QPainter* painter)
 	painter->fillRect(0, 0, width, height, this->background_color);
 	bool black_note[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 
-	for (int note = this->getNoteFromY(height), last_note = this->getNoteFromY(0); note < last_note; note++)
+	for (int note = 0; note < 128; note++)
 	{
 		painter->fillRect(0, this->getYFromNote(note), width, this->pixels_per_note, black_note[note % 12] ? this->black_note_background_color : this->white_note_background_color);
 	}
@@ -146,7 +146,7 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 
 void NoteLane::scrollYBy(int y_offset)
 {
-	this->scroll_y = std::max(this->scroll_y + y_offset, 0);
+	this->scroll_y += y_offset;
 }
 
 void NoteLane::zoomYBy(int y_offset)
