@@ -3,32 +3,43 @@
 #include <QFormLayout>
 #include <QFrame>
 #include <QLineEdit>
+#include <QMargins>
 #include <QPalette>
+#include <QVBoxLayout>
 #include "inspector-sidebar.h"
 #include "window.h"
 
 InspectorSidebar::InspectorSidebar(Window* window)
 {
 	this->window = window;
-	QFormLayout* layout = new QFormLayout(this);
+	QVBoxLayout* outer_layout = new QVBoxLayout(this);
+	QMargins outer_layout_contents_margins = outer_layout->contentsMargins();
+	outer_layout_contents_margins.setLeft(0);
+	outer_layout_contents_margins.setRight(0);
+	outer_layout->setContentsMargins(outer_layout_contents_margins);
+
+	QFormLayout* lane_layout = new QFormLayout();
+	outer_layout->addLayout(lane_layout);
 
 	QLineEdit* lane_type_line_edit = new QLineEdit();
-	layout->addRow(tr("Lane Type"), lane_type_line_edit);
+	lane_layout->addRow(tr("Lane Type"), lane_type_line_edit);
 
 	QLineEdit* lane_controller_line_edit = new QLineEdit();
-	layout->addRow(tr("Controller"), lane_controller_line_edit);
+	lane_layout->addRow(tr("Controller"), lane_controller_line_edit);
 
 	QFrame* separator = new QFrame();
-	layout->addRow(separator);
+	outer_layout->addWidget(separator);
 	separator->setFrameShape(QFrame::HLine);
 	separator->setLineWidth(0);
 	separator->setForegroundRole(QPalette::Mid);
-	separator->setMinimumHeight(16);
+
+	QFormLayout* event_layout = new QFormLayout();
+	outer_layout->addLayout(event_layout, 1);
 
 	QLineEdit* event_type_line_edit = new QLineEdit();
-	layout->addRow(tr("Event Type"), event_type_line_edit);
+	event_layout->addRow(tr("Event Type"), event_type_line_edit);
 
 	QLineEdit* event_time_line_edit = new QLineEdit();
-	layout->addRow(tr("Time"), event_time_line_edit);
+	event_layout->addRow(tr("Time"), event_time_line_edit);
 }
 
