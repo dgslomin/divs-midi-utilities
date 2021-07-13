@@ -74,7 +74,7 @@ Lane::Lane(Window* window)
 	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", themeColor(255, 0)).value<QColor>());
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
 	this->cursor_brush = QBrush(settings.value("lane/cursor-color", themeColor(100, 200)).value<QColor>());
-	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", themeColor(100, 200)).value<QColor>(), 1.5, Qt::DashLine);
+	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", themeColor(0, 180)).value<QColor>(), 1, Qt::DashLine);
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
 
@@ -257,7 +257,7 @@ void Lane::wheelEvent(QWheelEvent* event)
 			this->window->pixels_per_beat = std::max(this->window->pixels_per_beat + pixel_delta_x, 1);
 		}
 
-		this->zoomYBy(-pixel_delta_y);
+		this->zoomYBy(-pixel_delta_y / 8);
 	}
 	else
 	{
