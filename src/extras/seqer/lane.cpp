@@ -127,24 +127,20 @@ void Lane::mousePressEvent(QMouseEvent* event)
 
 		MidiFileEvent_t midi_event = this->getEventFromXY(this->mouse_down_x, this->mouse_down_y);
 		bool shift = ((event->modifiers() & Qt::ShiftModifier) != 0);
-		qDebug("-----");
 
 		if (midi_event == NULL)
 		{
 			this->mouse_operation = LANE_MOUSE_OPERATION_RECT_SELECT;
-			qDebug("1");
 
  			if (!shift)
 			{
 				this->window->selectNone();
-				qDebug("2");
 
 				if ((this->mouse_down_x == this->cursor_x) && (this->mouse_down_y == this->cursor_y))
 				{
 					midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
 					MidiFileEvent_setSelected(midi_event, 1);
-					this->mouse_operation = LANE_MOUSE_OPERATION_ADD_EVENT;
-					qDebug("3");
+					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
 				}
 			}
 		}
@@ -156,12 +152,10 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				{
 					MidiFileEvent_setSelected(midi_event, 0);
 					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
-					qDebug("4");
 				}
 				else
 				{
 					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
-					qDebug("5");
 				}
 			}
 			else
@@ -170,14 +164,12 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				{
 					MidiFileEvent_setSelected(midi_event, 1);
 					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
-					qDebug("6");
 				}
 				else
 				{
 					this->window->selectNone();
 					MidiFileEvent_setSelected(midi_event, 1);
-					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR;
-					qDebug("7");
+					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
 				}
 			}
 		}
@@ -192,9 +184,8 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 	{
 		int mouse_up_x = event->position().x();
 		int mouse_up_y = event->position().y();
-		qDebug("mouse_down(%d, %d), mouse_drag(%d, %d, %d, %d), mouse_up(%d, %d)", this->mouse_down_x, this->mouse_down_y, this->mouse_drag_x, this->mouse_drag_y, this->mouse_drag_x_allowed, this->mouse_drag_y_allowed, mouse_up_x, mouse_up_y);
 
-		if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
+		if (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS)
 		{
 			if ((this->mouse_drag_x_allowed && (mouse_up_x != this->mouse_down_x)) || (this->mouse_drag_y_allowed && (mouse_up_y != this->mouse_down_y)))
 			{
@@ -204,17 +195,14 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			}
 			else
 			{
-				if ((this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR)) this->window->focusInspector();
-			}
+				QPoint midi_event_position = this->getPointFromEvent(this->getEventFromXY(this->mouse_down_x, this->mouse_down_y));
 
-			if ((this->mouse_operation == LANE_MOUSE_OPERATION_ADD_EVENT) || (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS_AND_MOVE_CURSOR))
-			{
-				MidiFileEvent_t midi_event = this->getEventFromXY(mouse_up_x, mouse_up_y);
-
-				if (midi_event != NULL)
+				if ((this->cursor_x == midi_event_position.x()) && (this->cursor_y == midi_event_position.y()))
 				{
-					// TODO: this should never be null, but round down from add plus round down from move can sometimes make the event end up more than pixels_per_note away from mouse_up_y
-					QPoint midi_event_position = this->getPointFromEvent(midi_event);
+					this->window->focusInspector();
+				}
+				else
+				{
 					this->cursor_x = midi_event_position.x();
 					this->cursor_y = midi_event_position.y();
 				}
