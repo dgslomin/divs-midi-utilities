@@ -92,24 +92,30 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	if (this->window->use_linear_time)
 	{
-		int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
-		int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
-
-		for (int time = min_time; time < max_time; time++)
+		if (this->window->pixels_per_second > 1)
 		{
-			int x = this->window->getXFromTick(MidiFile_getTickFromTime(this->window->sequence->midi_file, time));
-			painter.drawLine(x, 0, x, this->height());
+			int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+			int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+
+			for (int time = min_time; time < max_time; time++)
+			{
+				int x = this->window->getXFromTick(MidiFile_getTickFromTime(this->window->sequence->midi_file, time));
+				painter.drawLine(x, 0, x, this->height());
+			}
 		}
 	}
 	else
 	{
-		int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
-		int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
-
-		for (int beat = min_beat; beat < max_beat; beat++)
+		if (this->window->pixels_per_beat > 1)
 		{
-			int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
-			painter.drawLine(x, 0, x, this->height());
+			int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+			int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+
+			for (int beat = min_beat; beat < max_beat; beat++)
+			{
+				int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
+				painter.drawLine(x, 0, x, this->height());
+			}
 		}
 	}
 
