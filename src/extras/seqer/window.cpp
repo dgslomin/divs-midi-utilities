@@ -36,6 +36,7 @@ Window::Window(Window* existing_window)
 	QWidget* lane_vbox = new QWidget();
 	this->sidebar_splitter->addWidget(lane_vbox);
 	QVBoxLayout* lane_vbox_layout = new QVBoxLayout(lane_vbox);
+	lane_vbox_layout->setSpacing(0);
 	lane_vbox_layout->setContentsMargins(0, 0, 0, 0);
 
 	lane_vbox_layout->addWidget(new TimeRuler(this));

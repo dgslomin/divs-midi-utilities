@@ -1,5 +1,6 @@
 
 #include <QFont>
+#include <QFontMetrics>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QSettings>
@@ -20,25 +21,25 @@ TimeRuler::TimeRuler(Window* window)
 	font.setPointSizeF(font.pointSizeF() * font_scaling_factor);
 	this->setFont(font);
 
-	this->setMinimumHeight(this->fontMetrics().lineSpacing() * 2);
+	this->setFixedHeight(this->fontMetrics().lineSpacing() * 2);
 }
 
 void TimeRuler::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
-	int line_height = painter.fontMetrics().lineSpacing();
+	QFontMetrics font_metrics = painter.fontMetrics();
 	int measure_beat_y;
 	int hour_minute_second_y;
 
 	if (this->window->use_linear_time)
 	{
-		measure_beat_y = 0;
-		hour_minute_second_y = line_height;
+		measure_beat_y = font_metrics.lineSpacing() + font_metrics.ascent();
+		hour_minute_second_y = font_metrics.leading() + font_metrics.ascent();
 	}
 	else
 	{
-		measure_beat_y = line_height;
-		hour_minute_second_y = 0;
+		measure_beat_y = font_metrics.leading() + font_metrics.ascent();
+		hour_minute_second_y = font_metrics.lineSpacing() + font_metrics.ascent();
 	}
 
 	painter.setPen(Colors::textShade(150, 200));
@@ -56,7 +57,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 
 			if ((tick == 0) || (x > max_x))
 			{
-				painter.drawText(x, measure_beat_y + line_height, label);
+				painter.drawText(x, measure_beat_y, label);
 				max_x = x + painter.fontMetrics().horizontalAdvance(label);
 			}
 
@@ -77,7 +78,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 
 			if ((tick == 0) || (x > max_x))
 			{
-				painter.drawText(x, hour_minute_second_y + line_height, label);
+				painter.drawText(x, hour_minute_second_y, label);
 				max_x = x + painter.fontMetrics().horizontalAdvance(label);
 			}
 
