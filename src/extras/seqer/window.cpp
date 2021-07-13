@@ -47,7 +47,9 @@ Window::Window(Window* existing_window)
 	this->sidebar_tab_widget->setElideMode(Qt::ElideNone);
 	this->sidebar_tab_widget->setUsesScrollButtons(false);
 
-	this->sidebar_tab_widget->addTab(new InspectorSidebar(this), tr("Inspector"));
+	this->inspector_sidebar = new InspectorSidebar(this);
+	this->sidebar_tab_widget->addTab(inspector_sidebar, tr("Inspector"));
+
 	this->sidebar_tab_widget->addTab(new QTextEdit("tracks placeholder"), tr("Tracks"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("channels placeholder"), tr("Channels"));
 
@@ -255,6 +257,7 @@ void Window::removeLane()
 
 void Window::focusInspector()
 {
+	this->inspector_sidebar->setFocus(Qt::OtherFocusReason);
 }
 
 int Window::getXFromTick(long tick)

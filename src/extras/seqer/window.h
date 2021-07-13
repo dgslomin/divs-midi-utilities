@@ -8,6 +8,7 @@ class Window;
 #include <QPaintEvent>
 #include <QSplitter>
 #include <QTabWidget>
+#include "inspector-sidebar.h"
 #include "sequence.h"
 
 class Window: public QMainWindow
@@ -19,6 +20,7 @@ public:
 	QSplitter* sidebar_splitter;
 	QSplitter* lane_splitter;
 	QTabWidget* sidebar_tab_widget;
+	InspectorSidebar* inspector_sidebar;
 	int cursor_x = 0;
 	int scroll_x = 0;
 	bool use_linear_time;
