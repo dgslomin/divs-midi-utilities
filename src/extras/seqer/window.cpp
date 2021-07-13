@@ -457,12 +457,12 @@ void Window::createTransportMenu()
 	QAction* play_action = new QAction(tr("&Play"));
 	this->addAction(play_action);
 	transport_menu->addAction(play_action);
-	play_action->setShortcut(QKeySequence(Qt::Key_P));
+	play_action->setShortcut(QKeySequence(Qt::Key_Space));
 
 	QAction* stop_action = new QAction(tr("&Stop"));
 	this->addAction(stop_action);
 	transport_menu->addAction(stop_action);
-	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_P));
+	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
 
 	QAction* record_action = new QAction(tr("&Record"));
 	this->addAction(record_action);

@@ -34,13 +34,8 @@ Lane::Lane(Window* window)
 
 	QAction* select_event_action = new QAction(tr("Select Event"));
 	this->addAction(select_event_action);
-	select_event_action->setShortcut(QKeySequence(Qt::Key_Space));
+	select_event_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Return));
 	connect(select_event_action, SIGNAL(triggered()), this, SLOT(selectEvent()));
-
-	QAction* toggle_event_selection_action = new QAction(tr("Toggle Event Selection"));
-	this->addAction(toggle_event_selection_action);
-	toggle_event_selection_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
-	connect(toggle_event_selection_action, SIGNAL(triggered()), this, SLOT(toggleEventSelection()));
 
 	QAction* cursor_left_action = new QAction(tr("Cursor Left"));
 	this->addAction(cursor_left_action);
@@ -270,36 +265,27 @@ void Lane::wheelEvent(QWheelEvent* event)
 
 void Lane::editEvent()
 {
-	bool selection_is_empty = true;
+	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
 
-	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	if (cursor_midi_event == NULL)
 	{
-		if (MidiFileEvent_isSelected(midi_event))
-		{
-			selection_is_empty = false;
-			break;
-		}
-	}
-
-	if (selection_is_empty)
-	{
-		MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
-
-		if (cursor_midi_event == NULL)
-		{
-			cursor_midi_event = this->addEventAtXY(this->window->cursor_x, this->cursor_y);
-			MidiFileEvent_setSelected(cursor_midi_event, 1);
-			this->window->sequence->updateWindows();
-		}
-		else
-		{
-			MidiFileEvent_setSelected(cursor_midi_event, 1);
-			this->window->focusInspector();
-		}
+		this->window->selectNone();
+		cursor_midi_event = this->addEventAtXY(this->window->cursor_x, this->cursor_y);
+		MidiFileEvent_setSelected(cursor_midi_event, 1);
+		this->window->sequence->updateWindows();
 	}
 	else
 	{
-		this->window->focusInspector();
+		if (MidiFileEvent_isSelected(cursor_midi_event))
+		{
+			this->window->focusInspector();
+		}
+		else
+		{
+			this->window->selectNone();
+			MidiFileEvent_setSelected(cursor_midi_event, 1);
+			this->window->sequence->updateWindows();
+		}
 	}
 }
 
@@ -307,33 +293,11 @@ void Lane::selectEvent()
 {
 	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
 
-	if (cursor_midi_event == NULL)
-	{
-		this->window->selectNone();
-	}
-	else
-	{
-		this->window->selectNone();
-		MidiFileEvent_setSelected(cursor_midi_event, 1);
-	}
-
-	this->window->sequence->updateWindows();
-}
-
-void Lane::toggleEventSelection()
-{
-	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
-
-	if (cursor_midi_event == NULL)
-	{
-		this->window->selectNone();
-	}
-	else
+	if (cursor_midi_event != NULL)
 	{
 		MidiFileEvent_setSelected(cursor_midi_event, !MidiFileEvent_isSelected(cursor_midi_event));
+		this->window->sequence->updateWindows();
 	}
-
-	this->window->sequence->updateWindows();
 }
 
 void Lane::cursorLeft()

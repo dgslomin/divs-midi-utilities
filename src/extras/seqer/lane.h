@@ -69,7 +69,6 @@ public:
 public slots:
 	void editEvent();
 	void selectEvent();
-	void toggleEventSelection();
 	void cursorLeft();
 	void cursorRight();
 	void cursorUp();
