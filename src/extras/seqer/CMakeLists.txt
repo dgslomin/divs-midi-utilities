@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
-add_executable(Seqer inspector-sidebar.cpp lane.cpp main.cpp note-lane.cpp sequence.cpp window.cpp ../../midifile/midifile.c resources.qrc)
+add_executable(Seqer inspector-sidebar.cpp lane.cpp main.cpp note-lane.cpp sequence.cpp time-ruler.cpp window.cpp ../../midifile/midifile.c resources.qrc)
 
 target_include_directories(Seqer PRIVATE ../../midifile)
 

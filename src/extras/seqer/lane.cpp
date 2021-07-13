@@ -5,6 +5,7 @@
 #include <QGuiApplication>
 #include <QKeySequence>
 #include <QMouseEvent>
+#include <QPaintEvent>
 #include <QPainter>
 #include <QPen>
 #include <QPoint>

@@ -13,10 +13,12 @@
 #include <QSettings>
 #include <QSplitter>
 #include <QTextEdit>
+#include <QVBoxLayout>
 #include <QWindow>
 #include "inspector-sidebar.h"
 #include "midifile.h"
 #include "note-lane.h"
+#include "time-ruler.h"
 #include "window.h"
 
 Window::Window(Window* existing_window)
@@ -31,8 +33,15 @@ Window::Window(Window* existing_window)
 	this->sidebar_splitter->setChildrenCollapsible(false);
 	this->sidebar_splitter->setHandleWidth(0);
 
+	QWidget* lane_vbox = new QWidget();
+	this->sidebar_splitter->addWidget(lane_vbox);
+	QVBoxLayout* lane_vbox_layout = new QVBoxLayout(lane_vbox);
+	lane_vbox_layout->setContentsMargins(0, 0, 0, 0);
+
+	lane_vbox_layout->addWidget(new TimeRuler(this));
+
 	this->lane_splitter = new QSplitter(Qt::Vertical);
-	this->sidebar_splitter->addWidget(this->lane_splitter);
+	lane_vbox_layout->addWidget(this->lane_splitter);
 	this->lane_splitter->setChildrenCollapsible(false);
 	this->lane_splitter->setHandleWidth(0);
 
