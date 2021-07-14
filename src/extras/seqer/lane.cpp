@@ -152,8 +152,8 @@ void Lane::mousePressEvent(QMouseEvent* event)
 	if (event->button() == Qt::LeftButton)
 	{
 		this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
-		this->mouse_down_x = event->position().x();
-		this->mouse_down_y = event->position().y();
+		this->mouse_down_x = event->pos().x();
+		this->mouse_down_y = event->pos().y();
 		this->mouse_drag_x = this->mouse_down_x;
 		this->mouse_drag_y = this->mouse_down_y;
 		this->mouse_drag_x_allowed = false;
@@ -216,8 +216,8 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
-		int mouse_up_x = event->position().x();
-		int mouse_up_y = event->position().y();
+		int mouse_up_x = event->pos().x();
+		int mouse_up_y = event->pos().y();
 
 		if (this->mouse_operation == LANE_MOUSE_OPERATION_DRAG_EVENTS)
 		{
@@ -266,8 +266,8 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 {
 	if (this->mouse_operation != LANE_MOUSE_OPERATION_NONE)
 	{
-		this->mouse_drag_x = event->position().x();
-		this->mouse_drag_y = event->position().y();
+		this->mouse_drag_x = event->pos().x();
+		this->mouse_drag_y = event->pos().y();
 		if (abs(this->mouse_drag_x - this->mouse_down_x) > this->mouse_drag_threshold) this->mouse_drag_x_allowed = true;
 		if (abs(this->mouse_drag_y - this->mouse_down_y) > this->mouse_drag_threshold) this->mouse_drag_y_allowed = true;
 		this->update();
