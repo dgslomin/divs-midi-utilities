@@ -58,7 +58,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 			if ((tick == 0) || (x > max_x))
 			{
 				painter.drawText(x, measure_beat_y, label);
-				max_x = x + painter.fontMetrics().horizontalAdvance(label);
+				max_x = x + painter.fontMetrics().width(label);
 			}
 
 			beat++;
@@ -79,7 +79,7 @@ void TimeRuler::paintEvent(QPaintEvent* event)
 			if ((tick == 0) || (x > max_x))
 			{
 				painter.drawText(x, hour_minute_second_y, label);
-				max_x = x + painter.fontMetrics().horizontalAdvance(label);
+				max_x = x + painter.fontMetrics().width(label);
 			}
 
 			time++;
