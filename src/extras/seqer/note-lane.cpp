@@ -40,17 +40,9 @@ void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int 
 
 			if (rect.intersects(bounds))
 			{
-				if (MidiFileEvent_isSelected(midi_event))
-				{
-					painter->setPen(this->selected_event_pen);
-					painter->setBrush(this->selected_event_brush);
-				}
-				else
-				{
-					painter->setPen(this->unselected_event_pen);
-					painter->setBrush(this->unselected_event_brush);
-				}
-
+				bool is_selected = MidiFileEvent_isSelected(midi_event);
+				painter->setPen(is_selected ? this->selected_event_pen : this->unselected_event_pen);
+				painter->setBrush(is_selected ? this->selected_event_brush : this->unselected_event_brush);
 				painter->drawRect(rect);
 			}
 		}
@@ -135,11 +127,7 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 		if (MidiFileEvent_isNoteStartEvent(midi_event))
 		{
 			QRect rect = this->getRectFromEvent(midi_event, 0, 0);
-
-			if (rect.intersects(bounds))
-			{
-				MidiFileEvent_setSelected(midi_event, 1);
-			}
+			if (rect.intersects(bounds)) MidiFileEvent_setSelected(midi_event, 1);
 		}
 	}
 }
