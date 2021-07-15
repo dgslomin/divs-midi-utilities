@@ -31,6 +31,7 @@ void NoteLane::paintBackground(QPainter* painter)
 void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
 	QRect bounds(0, 0, this->width(), this->height());
+	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
@@ -40,9 +41,10 @@ void NoteLane::paintEvents(QPainter* painter, int selected_events_x_offset, int 
 
 			if (rect.intersects(bounds))
 			{
+				bool is_background = (MidiFileEvent_getTrack(midi_event) != current_track);
 				bool is_selected = MidiFileEvent_isSelected(midi_event);
-				painter->setPen(is_selected ? this->selected_event_pen : this->unselected_event_pen);
-				painter->setBrush(is_selected ? this->selected_event_brush : this->unselected_event_brush);
+				painter->setPen(is_background ? (is_selected ? this->selected_background_event_pen : this->unselected_background_event_pen) : (is_selected ? this->selected_event_pen : this->unselected_event_pen));
+				painter->setBrush(is_background ? (is_selected ? this->selected_background_event_brush : this->unselected_background_event_brush) : (is_selected ? this->selected_event_brush : this->unselected_event_brush));
 				painter->drawRect(rect);
 			}
 		}

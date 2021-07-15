@@ -59,7 +59,13 @@ Lane::Lane(Window* window)
 	this->unselected_event_text_pen = QPen(settings.value("lane/unselected-event-text-color", Colors::textShade(0, 255)).value<QColor>());
 	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", Colors::buttonShade(0, 180)).value<QColor>());
 	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", Colors::buttonShade(200, 100)).value<QColor>());
-	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", Colors::textShade(255, 0)).value<QColor>());
+	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", Colors::textShade(0, 255)).value<QColor>());
+	this->unselected_background_event_pen = QPen(settings.value("lane/unselected-background-event-border-color", Colors::buttonShade(175, 80)).value<QColor>());
+	this->unselected_background_event_brush = QBrush(settings.value("lane/unselected-background-event-color", Colors::buttonShade(255, 100)).value<QColor>());
+	this->unselected_background_event_text_pen = QPen(settings.value("lane/unselected-background-event-text-color", Colors::textShade(175, 80)).value<QColor>());
+	this->selected_background_event_pen = QPen(settings.value("lane/selected-background-event-border-color", Colors::buttonShade(175, 80)).value<QColor>());
+	this->selected_background_event_brush = QBrush(settings.value("lane/selected-background-event-color", Colors::buttonShade(220, 100)).value<QColor>());
+	this->selected_background_event_text_pen = QPen(settings.value("lane/selected-background-event-text-color", Colors::textShade(175, 80)).value<QColor>());
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", Colors::buttonShade(0, 255)).value<QColor>());
 	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(255, 0)).value<QColor>());
 	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 255)).value<QColor>(), 1, Qt::DashLine);
@@ -187,6 +193,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				}
 				else
 				{
+					this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
 					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
 				}
 			}
@@ -195,12 +202,14 @@ void Lane::mousePressEvent(QMouseEvent* event)
  				if (shift)
 				{
 					MidiFileEvent_setSelected(midi_event, 1);
+					this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
 					this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
 				}
 				else
 				{
 					this->window->selectNone();
 					MidiFileEvent_setSelected(midi_event, 1);
+					this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
 					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
 				}
 			}
@@ -323,6 +332,7 @@ void Lane::editEvent()
 		{
 			this->window->selectNone();
 			MidiFileEvent_setSelected(cursor_midi_event, 1);
+			this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(cursor_midi_event));
 			this->window->sequence->updateWindows();
 		}
 	}

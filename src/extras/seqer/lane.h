@@ -44,6 +44,12 @@ public:
 	QPen selected_event_pen;
 	QBrush selected_event_brush;
 	QPen selected_event_text_pen;
+	QPen unselected_background_event_pen;
+	QBrush unselected_background_event_brush;
+	QPen unselected_background_event_text_pen;
+	QPen selected_background_event_pen;
+	QBrush selected_background_event_brush;
+	QPen selected_background_event_text_pen;
 	QPen cursor_pen;
 	QBrush cursor_brush;
 	QPen selection_rect_pen;
