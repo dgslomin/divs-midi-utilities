@@ -60,9 +60,9 @@ Lane::Lane(Window* window)
 	this->selected_event_pen = QPen(settings.value("lane/selected-event-border-color", Colors::buttonShade(0, 180)).value<QColor>());
 	this->selected_event_brush = QBrush(settings.value("lane/selected-event-color", Colors::buttonShade(200, 100)).value<QColor>());
 	this->selected_event_text_pen = QPen(settings.value("lane/selected-event-text-color", Colors::textShade(255, 0)).value<QColor>());
-	this->cursor_pen = QPen(settings.value("lane/cursor-color", Colors::buttonShade(100, 200)).value<QColor>());
-	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(100, 200)).value<QColor>());
-	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 180)).value<QColor>(), 1, Qt::DashLine);
+	this->cursor_pen = QPen(settings.value("lane/cursor-color", Colors::buttonShade(0, 255)).value<QColor>());
+	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(255, 0)).value<QColor>());
+	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 255)).value<QColor>(), 1, Qt::DashLine);
 	this->time_line_pen = QPen(settings.value("lan/time-line-color", Colors::buttonShade(220, 60)).value<QColor>());
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
@@ -140,11 +140,9 @@ void Lane::paintEvent(QPaintEvent* event)
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);
 	painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->cursor_y);
-	QPoint upper_arrowhead[] = { QPoint(this->window->cursor_x, this->cursor_y), QPoint(this->window->cursor_x - 2, this->cursor_y - 2), QPoint(this->window->cursor_x + 2, this->cursor_y - 2) };
-	painter.drawConvexPolygon(upper_arrowhead, 3);
 	painter.drawLine(this->window->cursor_x, cursor_y + 6, this->window->cursor_x, this->height());
-	QPoint lower_arrowhead[] = { QPoint(this->window->cursor_x, this->cursor_y + 6), QPoint(this->window->cursor_x - 2, this->cursor_y + 8), QPoint(this->window->cursor_x + 2, this->cursor_y + 8) };
-	painter.drawConvexPolygon(lower_arrowhead, 3);
+	painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
+	painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + 6, 4, 4);
 }
 
 void Lane::mousePressEvent(QMouseEvent* event)
