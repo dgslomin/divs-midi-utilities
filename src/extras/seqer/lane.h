@@ -70,8 +70,8 @@ public:
 	virtual MidiFileEvent_t addEventAtXY(int x, int y) = 0;
 	virtual void moveEventsByXY(int x_offset, int y_offset) = 0;
 	virtual void selectEventsInRect(int x, int y, int width, int height) = 0;
-	virtual void scrollYBy(int y_offset) = 0;
-	virtual void zoomYBy(int y_offset) = 0;
+	virtual void scrollYBy(int offset) = 0;
+	virtual void zoomYBy(float factor) = 0;
 
 public slots:
 	void editEvent();

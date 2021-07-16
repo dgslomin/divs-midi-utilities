@@ -70,8 +70,8 @@ Window::Window(Window* existing_window)
 	this->sidebar_splitter->restoreState(settings.value("window/sidebar-splitter-state").toByteArray());
 	this->sidebar_tab_widget->setCurrentIndex(settings.value("window/sidebar-tab-index", 0).toInt());
 	this->use_linear_time = settings.value("window/use-linear-time", false).toBool();
-	this->pixels_per_beat = settings.value("window/pixels-per-beat", 40).toInt();
-	this->pixels_per_second = settings.value("window/pixels-per-second", 40).toInt();
+	this->pixels_per_beat = settings.value("window/pixels-per-beat", 40.0).toFloat();
+	this->pixels_per_second = settings.value("window/pixels-per-second", 40.0).toFloat();
 }
 
 Window::~Window()
@@ -274,11 +274,11 @@ int Window::getXFromTick(long tick)
 {
 	if (this->use_linear_time)
 	{
-		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second) - this->scroll_x;
+		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second - this->scroll_x);
 	}
 	else
 	{
-		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat) - this->scroll_x;
+		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat - this->scroll_x);
 	}
 }
 
@@ -286,12 +286,34 @@ long Window::getTickFromX(int x)
 {
 	if (this->use_linear_time)
 	{
-		return MidiFile_getTickFromTime(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_second);
+		return MidiFile_getTickFromTime(this->sequence->midi_file, (x + this->scroll_x) / this->pixels_per_second);
 	}
 	else
 	{
-		return MidiFile_getTickFromBeat(this->sequence->midi_file, (float)(x + this->scroll_x) / this->pixels_per_beat);
+		return MidiFile_getTickFromBeat(this->sequence->midi_file, (x + this->scroll_x) / this->pixels_per_beat);
 	}
+}
+
+void Window::scrollXBy(float offset)
+{
+	float old_scroll_x = this->scroll_x;
+	this->scroll_x = std::max(old_scroll_x - offset, 0.0f);
+	this->cursor_x += (int)(old_scroll_x - this->scroll_x);
+	this->update();
+}
+
+void Window::zoomXBy(float factor)
+{
+	if (this->use_linear_time)
+	{
+		this->pixels_per_second *= factor;
+	}
+	else
+	{
+		this->pixels_per_beat *= factor;
+	}
+
+	this->update();
 }
 
 void Window::createMenuBar()

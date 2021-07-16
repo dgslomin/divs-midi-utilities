@@ -134,15 +134,15 @@ void NoteLane::selectEventsInRect(int x, int y, int width, int height)
 	}
 }
 
-void NoteLane::scrollYBy(int y_offset)
+void NoteLane::scrollYBy(int offset)
 {
-	this->scroll_y += y_offset;
-	this->cursor_y += y_offset;
+	this->scroll_y += offset;
+	this->cursor_y += offset;
 }
 
-void NoteLane::zoomYBy(int y_offset)
+void NoteLane::zoomYBy(float factor)
 {
-	this->pixels_per_note = std::max(this->pixels_per_note - y_offset, 1);
+	this->pixels_per_note *= factor;
 }
 
 QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)

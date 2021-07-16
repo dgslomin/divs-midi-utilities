@@ -22,10 +22,10 @@ public:
 	QTabWidget* sidebar_tab_widget;
 	InspectorSidebar* inspector_sidebar;
 	int cursor_x = 0;
-	int scroll_x = 0;
+	float scroll_x = 0;
 	bool use_linear_time;
-	int pixels_per_beat;
-	int pixels_per_second;
+	float pixels_per_beat;
+	float pixels_per_second;
 
 	Window(Window* existing_window);
 	~Window();
@@ -34,6 +34,8 @@ public:
 	bool save(bool ask_first, bool save_as, QString filename);
 	int getXFromTick(long tick);
 	long getTickFromX(int x);
+	void scrollXBy(float offset);
+	void zoomXBy(float factor);
 	void createMenuBar();
 	void createFileMenu();
 	void createEditMenu();

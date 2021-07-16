@@ -75,6 +75,8 @@ Lane::Lane(Window* window)
 
 void Lane::paintEvent(QPaintEvent* event)
 {
+	Q_UNUSED(event)
+
 	QPainter painter(this);
 
 	// background
@@ -90,7 +92,7 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	if (this->window->use_linear_time)
 	{
-		if (this->window->pixels_per_second > 1)
+		if (this->window->pixels_per_second >= 8.0)
 		{
 			int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
 			int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
@@ -104,7 +106,7 @@ void Lane::paintEvent(QPaintEvent* event)
 	}
 	else
 	{
-		if (this->window->pixels_per_beat > 1)
+		if (this->window->pixels_per_beat >= 8.0)
 		{
 			int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
 			int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
@@ -283,29 +285,19 @@ void Lane::mouseMoveEvent(QMouseEvent* event)
 
 void Lane::wheelEvent(QWheelEvent* event)
 {
-	int pixel_delta_x = event->angleDelta().x() / 8;
-	int pixel_delta_y = event->angleDelta().y() / 8;
+	int x_offset = event->angleDelta().x();
+	int y_offset = event->angleDelta().y();
 	bool control = ((event->modifiers() & Qt::ControlModifier) != 0);
 
 	if (control)
 	{
-		if (this->window->use_linear_time)
-		{
-			this->window->pixels_per_second = std::max(this->window->pixels_per_second + pixel_delta_x, 1);
-		}
-		else
-		{
-			this->window->pixels_per_beat = std::max(this->window->pixels_per_beat + pixel_delta_x, 1);
-		}
-
-		this->zoomYBy(-pixel_delta_y / 8);
+		this->window->zoomXBy(x_offset / 960.0 + 1.0);
+		this->zoomYBy(y_offset / 960.0 + 1.0);
 	}
 	else
 	{
-		int old_scroll_x = this->window->scroll_x;
-		this->window->scroll_x = std::max(old_scroll_x - pixel_delta_x, 0);
-		this->window->cursor_x = this->window->cursor_x + old_scroll_x - this->window->scroll_x;
-		this->scrollYBy(pixel_delta_y);
+		this->window->scrollXBy(x_offset);
+		this->scrollYBy(y_offset);
 	}
 
 	this->window->update();

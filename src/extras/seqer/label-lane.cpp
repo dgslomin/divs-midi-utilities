@@ -96,16 +96,16 @@ void LabelLane::selectEventsInRect(int x, int y, int width, int height)
 	}
 }
 
-void LabelLane::scrollYBy(int y_offset)
+void LabelLane::scrollYBy(int offset)
 {
 	// not supported
-	Q_UNUSED(y_offset)
+	Q_UNUSED(offset)
 }
 
-void LabelLane::zoomYBy(int y_offset)
+void LabelLane::zoomYBy(float factor)
 {
 	// not supported
-	Q_UNUSED(y_offset)
+	Q_UNUSED(factor)
 }
 
 void LabelLane::layoutLabels(int selected_events_x_offset)

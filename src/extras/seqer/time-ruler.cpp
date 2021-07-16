@@ -26,6 +26,8 @@ TimeRuler::TimeRuler(Window* window)
 
 void TimeRuler::paintEvent(QPaintEvent* event)
 {
+	Q_UNUSED(event)
+
 	QPainter painter(this);
 	QFontMetrics font_metrics = painter.fontMetrics();
 	int measure_beat_y;

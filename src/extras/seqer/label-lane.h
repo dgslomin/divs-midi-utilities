@@ -25,8 +25,8 @@ public:
 	MidiFileEvent_t getEventFromXY(int x, int y);
 	QPoint getPointFromEvent(MidiFileEvent_t midi_event);
 	void selectEventsInRect(int x, int y, int width, int height);
-	void scrollYBy(int y_offset);
-	void zoomYBy(int y_offset);
+	void scrollYBy(int offset);
+	void zoomYBy(float factor);
 	void layoutLabels(int selected_events_x_offset);
 
 	virtual void populateLabels() = 0;
