@@ -304,6 +304,8 @@ void Window::scrollXBy(float offset)
 
 void Window::zoomXBy(float factor)
 {
+	long cursor_tick = this->getTickFromX(this->cursor_x);
+
 	if (this->use_linear_time)
 	{
 		this->pixels_per_second *= factor;
@@ -313,6 +315,7 @@ void Window::zoomXBy(float factor)
 		this->pixels_per_beat *= factor;
 	}
 
+	this->cursor_x = this->getXFromTick(cursor_tick);
 	this->update();
 }
 

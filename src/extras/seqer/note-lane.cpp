@@ -138,11 +138,15 @@ void NoteLane::scrollYBy(int offset)
 {
 	this->scroll_y += offset;
 	this->cursor_y += offset;
+	this->update();
 }
 
 void NoteLane::zoomYBy(float factor)
 {
+	int cursor_note = this->getNoteFromY(this->cursor_y);
 	this->pixels_per_note *= factor;
+	this->cursor_y = this->getYFromNote(cursor_note);
+	this->update();
 }
 
 QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)

@@ -3,8 +3,9 @@
 
 class TimeRuler;
 
+#include <QMouseEvent>
 #include <QPaintEvent>
-#include <QPainter>
+#include <QWheelEvent>
 #include <QWidget>
 #include "window.h"
 
@@ -19,6 +20,8 @@ public:
 
 public slots:
 	void paintEvent(QPaintEvent* event);
+	void mousePressEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* event);
 };
 
 #endif
