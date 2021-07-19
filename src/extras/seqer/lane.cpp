@@ -25,31 +25,37 @@ Lane::Lane(Window* window)
 	QAction* edit_event_action = new QAction(tr("Edit Event"));
 	this->addAction(edit_event_action);
 	edit_event_action->setShortcut(QKeySequence(Qt::Key_Return));
+	edit_event_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(edit_event_action, SIGNAL(triggered()), this, SLOT(editEvent()));
 
 	QAction* select_event_action = new QAction(tr("Select Event"));
 	this->addAction(select_event_action);
 	select_event_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Return));
+	select_event_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(select_event_action, SIGNAL(triggered()), this, SLOT(selectEvent()));
 
 	QAction* cursor_left_action = new QAction(tr("Cursor Left"));
 	this->addAction(cursor_left_action);
 	cursor_left_action->setShortcut(QKeySequence(Qt::Key_Left));
+	cursor_left_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(cursor_left_action, SIGNAL(triggered()), this, SLOT(cursorLeft()));
 
 	QAction* cursor_right_action = new QAction(tr("Cursor Right"));
 	this->addAction(cursor_right_action);
 	cursor_right_action->setShortcut(QKeySequence(Qt::Key_Right));
+	cursor_right_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(cursor_right_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
 
 	QAction* cursor_up_action = new QAction(tr("Cursor Up"));
 	this->addAction(cursor_up_action);
 	cursor_up_action->setShortcut(QKeySequence(Qt::Key_Up));
+	cursor_up_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorUp()));
 
 	QAction* cursor_down_action = new QAction(tr("Cursor Down"));
 	this->addAction(cursor_down_action);
 	cursor_down_action->setShortcut(QKeySequence(Qt::Key_Down));
+	cursor_down_action->setShortcutContext(Qt::WidgetShortcut);
 	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
 
 	QSettings settings;
