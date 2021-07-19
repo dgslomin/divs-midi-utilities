@@ -3,15 +3,17 @@
 
 class Sequence;
 
-#include <list>
+#include <QObject>
 #include <QString>
 #include "midifile.h"
 #include "window.h"
 
-class Sequence
+class Sequence: QObject
 {
+Q_OBJECT
+
 public:
-	std::list<Window*> windows;
+	int number_of_windows = 0;
 	QString filename = "";
 	MidiFile_t midi_file = NULL;
 	bool is_modified = false;
@@ -20,9 +22,11 @@ public:
 	~Sequence();
 	void addWindow(Window* window);
 	void removeWindow(Window* window);
-	void updateWindows();
 	bool save();
 	bool saveAs(QString filename);
+
+signals:
+	void updated();
 };
 
 #endif

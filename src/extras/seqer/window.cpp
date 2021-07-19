@@ -99,7 +99,7 @@ void Window::paintEvent(QPaintEvent* event)
 
 void Window::newSequence()
 {
-	if (this->sequence->is_modified && (this->sequence->windows.size() == 1))
+	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1))
 	{
 		if (!this->save(true, false, "")) return;
 	}
@@ -107,7 +107,7 @@ void Window::newSequence()
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
-	this->update();
+	emit this->sequence->updated();
 }
 
 void Window::newWindow()
@@ -117,7 +117,7 @@ void Window::newWindow()
 
 void Window::open()
 {
-	if (this->sequence->is_modified && (this->sequence->windows.size() == 1))
+	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1))
 	{
 		if (!this->save(true, false, "")) return;
 	}
@@ -142,7 +142,7 @@ void Window::open(QString filename)
 	this->sequence->filename = filename;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	this->update();
+	emit this->sequence->updated();
 	QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 }
 
@@ -244,7 +244,7 @@ void Window::selectAll()
 		MidiFileEvent_setSelected(midi_event, 1);
 	}
 
-	this->sequence->updateWindows();
+	emit this->sequence->updated();
 }
 
 void Window::selectNone()
@@ -254,7 +254,7 @@ void Window::selectNone()
 		MidiFileEvent_setSelected(midi_event, 0);
 	}
 
-	this->sequence->updateWindows();
+	emit this->sequence->updated();
 }
 
 void Window::addLane()

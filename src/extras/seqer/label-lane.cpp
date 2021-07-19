@@ -32,7 +32,12 @@ void LabelLane::paintEvents(QPainter* painter, int selected_events_x_offset, int
 {
 	Q_UNUSED(selected_events_y_offset)
 
-	this->populateLabels();
+	if (this->sequence_updated)
+	{
+		this->populateLabels();
+		this->computeLabelWidths();
+	}
+
 	this->layoutLabels(selected_events_x_offset);
 
 	QFontMetrics font_metrics = this->fontMetrics();
@@ -108,10 +113,20 @@ void LabelLane::zoomYBy(float factor)
 	Q_UNUSED(factor)
 }
 
-void LabelLane::layoutLabels(int selected_events_x_offset)
+void LabelLane::computeLabelWidths()
 {
 	QFontMetrics font_metrics = this->fontMetrics();
-	int row_height = font_metrics.lineSpacing() + 4;
+
+	for (int label_number = 0; label_number < this->labels.size(); label_number++)
+	{
+		Label& label = this->labels[label_number];
+		label.width = font_metrics.boundingRect(label.text).width() + 4;
+	}
+}
+
+void LabelLane::layoutLabels(int selected_events_x_offset)
+{
+	int row_height = this->fontMetrics().lineSpacing() + 4;
 	int number_of_rows = this->height() / row_height;
 	int cluster_start = 0;
 	int end_x = INT_MIN;
@@ -123,7 +138,6 @@ void LabelLane::layoutLabels(int selected_events_x_offset)
 	{
 		Label& label = this->labels[label_number];
 		label.preferred_x = this->window->getXFromTick(MidiFileEvent_getTick(label.midi_event)) + (MidiFileEvent_isSelected(label.midi_event) ? selected_events_x_offset : 0);
-		label.width = font_metrics.boundingRect(label.text).width() + 4;
 	}
 
 	if (selected_events_x_offset != 0)

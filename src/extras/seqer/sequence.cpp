@@ -5,9 +5,7 @@
 
 Sequence::Sequence()
 {
-	this->filename = "";
-	this->midi_file = MidiFile_new(1, MIDI_FILE_DIVISION_TYPE_PPQ, 960);
-	this->is_modified = false;
+	this->midi_file = MidiFile_newFromTemplate(NULL);
 }
 
 Sequence::~Sequence()
@@ -17,18 +15,15 @@ Sequence::~Sequence()
 
 void Sequence::addWindow(Window* window)
 {
-	this->windows.push_back(window);
+	this->number_of_windows++;
+	connect(this, SIGNAL(updated()), window, SIGNAL(sequenceUpdated()));
 }
 
 void Sequence::removeWindow(Window* window)
 {
-	this->windows.remove(window);
-	if (this->windows.empty()) delete this;
-}
-
-void Sequence::updateWindows()
-{
-	for (std::list<Window*>::iterator window_iterator = this->windows.begin(); window_iterator != this->windows.end(); window_iterator++) (*window_iterator)->update();
+	disconnect(this, SIGNAL(updated()), window, SIGNAL(sequenceUpdated()));
+	this->number_of_windows--;
+	if (this->number_of_windows == 0) delete this;
 }
 
 bool Sequence::save()
@@ -38,7 +33,7 @@ bool Sequence::save()
 	if (MidiFile_save(this->midi_file, this->filename.toUtf8().data()) == 0)
 	{
 		this->is_modified = false;
-		this->updateWindows();
+		emit updated();
 		return true;
 	}
 	else
@@ -53,7 +48,7 @@ bool Sequence::saveAs(QString filename)
 	{
 		this->filename = filename;
 		this->is_modified = false;
-		this->updateWindows();
+		emit updated();
 		return true;
 	}
 	else

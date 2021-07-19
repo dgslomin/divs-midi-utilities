@@ -27,6 +27,7 @@ public:
 	void selectEventsInRect(int x, int y, int width, int height);
 	void scrollYBy(int offset);
 	void zoomYBy(float factor);
+	void computeLabelWidths();
 	void layoutLabels(int selected_events_x_offset);
 
 	virtual void populateLabels() = 0;

@@ -58,6 +58,9 @@ public slots:
 	void addLane();
 	void removeLane();
 	void focusInspector();
+
+signals:
+	void sequenceUpdated();
 };
 
 #endif

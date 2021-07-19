@@ -25,6 +25,7 @@ class Lane: public QWidget
 
 public:
 	Window* window;
+	bool sequence_updated = true;
 	int track_number = 1;
 	int channel = 0;
 	int cursor_y = 0;
@@ -74,6 +75,7 @@ public:
 	virtual void zoomYBy(float factor) = 0;
 
 public slots:
+	void sequenceUpdated();
 	void editEvent();
 	void selectEvent();
 	void cursorLeft();
