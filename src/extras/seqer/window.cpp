@@ -32,7 +32,6 @@ Window::Window(Window* existing_window)
 	this->sidebar_splitter = new QSplitter(Qt::Horizontal);
 	this->setCentralWidget(sidebar_splitter);
 	this->sidebar_splitter->setChildrenCollapsible(false);
-	this->sidebar_splitter->setHandleWidth(0);
 
 	QWidget* lane_vbox = new QWidget();
 	this->sidebar_splitter->addWidget(lane_vbox);
@@ -45,7 +44,6 @@ Window::Window(Window* existing_window)
 	this->lane_splitter = new QSplitter(Qt::Vertical);
 	lane_vbox_layout->addWidget(this->lane_splitter);
 	this->lane_splitter->setChildrenCollapsible(false);
-	this->lane_splitter->setHandleWidth(0);
 
 	this->lane_splitter->addWidget(new NoteLane(this));
 	this->lane_splitter->addWidget(new EventTypeLabelLane(this));
