@@ -44,8 +44,8 @@ public:
 	int width;
 	int x;
 	int row;
-	
-	Label(MidiFileEvent_t midi_event, QString text);
+
+	Label(MidiFileEvent_t midi_event = NULL, QString text = NULL);
 };
 
 #endif

@@ -365,26 +365,6 @@ static int MidiFileIO_seek(MidiFileIO_t io, long offset, int whence)
 	}
 }
 
-static signed short interpret_int16(unsigned char *buffer)
-{
-	return ((signed short)(buffer[0]) << 8) | (signed short)(buffer[1]);
-}
-
-static signed short read_int16(MidiFileIO_t io)
-{
-	unsigned char buffer[2];
-	MidiFileIO_read(io, 2, buffer);
-	return interpret_int16(buffer);
-}
-
-static void write_int16(MidiFileIO_t io, signed short value)
-{
-	unsigned char buffer[2];
-	buffer[0] = (unsigned char)((value >> 8) & 0xFF);
-	buffer[1] = (unsigned char)(value & 0xFF);
-	MidiFileIO_write(io, 2, buffer);
-}
-
 static unsigned short interpret_uint16(unsigned char *buffer)
 {
 	return ((unsigned short)(buffer[0]) << 8) | (unsigned short)(buffer[1]);
@@ -1853,7 +1833,6 @@ long MidiFile_getTickFromMeasureBeatTick(MidiFile_t midi_file, MidiFileMeasureBe
 		float time_signature_event_measure = 0.0;
 		long time_signature_event_visible_measure = 1;
 		long time_signature_event_visible_beat = 1;
-		float time_signature_event_visible_tick = 0.0;
 		int numerator = 4;
 		int denominator = 4;
 
@@ -1872,7 +1851,6 @@ long MidiFile_getTickFromMeasureBeatTick(MidiFile_t midi_file, MidiFileMeasureBe
 				time_signature_event_measure = next_time_signature_event_measure;
 				time_signature_event_visible_measure = next_time_signature_event_visible_measure;
 				time_signature_event_visible_beat = next_time_signature_event_visible_beat;
-				time_signature_event_visible_tick = next_time_signature_event_visible_tick;
 				numerator = MidiFileTimeSignatureEvent_getNumerator(event);
 				denominator = MidiFileTimeSignatureEvent_getDenominator(event);
 			}
