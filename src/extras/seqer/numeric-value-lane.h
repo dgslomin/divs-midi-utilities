@@ -16,7 +16,8 @@ class NumericValueLane: public Lane
 
 public:
 	float pixels_per_value = 1.0;
-	float scroll_y;
+	float scroll_y = 0.0;
+	int handle_size;
 
 	NumericValueLane(Window* window);
 	void paintBackground(QPainter* painter);

@@ -2,12 +2,15 @@
 #include <QPainter>
 #include <QPoint>
 #include <QRect>
+#include <QSettings>
 #include "midifile.h"
 #include "numeric-value-lane.h"
 #include "window.h"
 
 NumericValueLane::NumericValueLane(Window* window): Lane(window)
 {
+	QSettings settings;
+	this->handle_size = settings.value("numeric-value-lane/handle-size", 6).toInt();
 }
 
 void NumericValueLane::paintBackground(QPainter* painter)
@@ -107,18 +110,25 @@ void NumericValueLane::zoomYBy(float factor)
 
 QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
 {
-	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event)) + selected_events_x_offset;
-	int y = this->getYFromValue(this->getEventValue(midi_event)) + selected_events_y_offset;
-	return QRect(x - 2, y - 2, 5, 5);
+	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
+	int y = this->getYFromValue(this->getEventValue(midi_event));
+
+	if (MidiFileEvent_isSelected(midi_event))
+	{
+		x += selected_events_x_offset;
+		y += selected_events_y_offset;
+	}
+
+	return QRect(x, y, this->handle_size, this->handle_size);
 }
 
 int NumericValueLane::getYFromValue(float value)
 {
-	return (int)(value * this->pixels_per_value) - this->scroll_y;
+	return this->height() - this->handle_size - (int)(value * this->pixels_per_value) + this->scroll_y;
 }
 
 float NumericValueLane::getValueFromY(int y)
 {
-	return (float)(y + this->scroll_y) / this->pixels_per_value;
+	return (float)(this->height() - this->handle_size - y + this->scroll_y) / this->pixels_per_value;
 }
 

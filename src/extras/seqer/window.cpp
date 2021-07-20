@@ -15,6 +15,7 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QWindow>
+#include "controller-lane.h"
 #include "event-type-label-lane.h"
 #include "inspector-sidebar.h"
 #include "midifile.h"
@@ -46,6 +47,7 @@ Window::Window(Window* existing_window)
 	this->lane_splitter->setChildrenCollapsible(false);
 
 	this->lane_splitter->addWidget(new NoteLane(this));
+	this->lane_splitter->addWidget(new ControllerLane(this));
 	this->lane_splitter->addWidget(new EventTypeLabelLane(this));
 
 	this->sidebar_tab_widget = new QTabWidget();
