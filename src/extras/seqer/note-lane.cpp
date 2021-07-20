@@ -1,6 +1,6 @@
 
-#include <QBrush>
 #include <QPainter>
+#include <QPoint>
 #include <QRect>
 #include <QSettings>
 #include "lane.h"
