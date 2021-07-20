@@ -137,8 +137,8 @@ MidiFileTrack_t MidiFile_getFirstTrack(MidiFile_t midi_file);
 MidiFileTrack_t MidiFile_getLastTrack(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getFirstEvent(MidiFile_t midi_file);
 MidiFileEvent_t MidiFile_getLastEvent(MidiFile_t midi_file);
-int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
 MidiFileEvent_t MidiFile_iterateEvents(MidiFile_t midi_file);
+int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
 int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label);
 int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label);
 int MidiFile_convertStandardEventsToNoteEvents(MidiFile_t midi_file);
@@ -214,8 +214,8 @@ MidiFileEvent_t MidiFileTrack_createVoiceEvent(MidiFileTrack_t track, long tick,
 MidiFileEvent_t MidiFileTrack_copyEvent(MidiFileTrack_t track, MidiFileEvent_t event);
 MidiFileEvent_t MidiFileTrack_getFirstEvent(MidiFileTrack_t track);
 MidiFileEvent_t MidiFileTrack_getLastEvent(MidiFileTrack_t track);
-int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
 MidiFileEvent_t MidiFileTrack_iterateEvents(MidiFileTrack_t track);
+int MidiFileTrack_visitEvents(MidiFileTrack_t track, MidiFileEventVisitorCallback_t visitor_callback, void *user_data);
 
 int MidiFileEvent_delete(MidiFileEvent_t event);
 int MidiFileEvent_detach(MidiFileEvent_t event);
