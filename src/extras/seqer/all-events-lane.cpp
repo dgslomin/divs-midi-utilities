@@ -1,15 +1,15 @@
 
 #include <QString>
-#include "event-type-label-lane.h"
+#include "all-events-lane.h"
 #include "label-lane.h"
 #include "midifile.h"
 #include "window.h"
 
-EventTypeLabelLane::EventTypeLabelLane(Window* window): LabelLane(window)
+AllEventsLane::AllEventsLane(Window* window): LabelLane(window)
 {
 }
 
-void EventTypeLabelLane::populateLabels()
+void AllEventsLane::populateLabels()
 {
 	this->labels.clear();
 
@@ -19,27 +19,27 @@ void EventTypeLabelLane::populateLabels()
 
 		if (MidiFileEvent_isTextEvent(midi_event))
 		{
-			label_text = tr("Text");
+			label_text = tr("Tx");
 		}
 		else if (MidiFileEvent_isLyricEvent(midi_event))
 		{
-			label_text = tr("Lyric");
+			label_text = tr("L");
 		}
 		else if (MidiFileEvent_isMarkerEvent(midi_event))
 		{
-			label_text = tr("Marker");
+			label_text = tr("Mk");
 		}
 		else if (MidiFileEvent_isTempoEvent(midi_event))
 		{
-			label_text = tr("Tempo");
+			label_text = tr("Tp");
 		}
 		else if (MidiFileEvent_isTimeSignatureEvent(midi_event))
 		{
-			label_text = tr("Meter");
+			label_text = tr("Ts");
 		}
 		else if (MidiFileEvent_isKeySignatureEvent(midi_event))
 		{
-			label_text = tr("Key");
+			label_text = tr("Ks");
 		}
 		else
 		{
@@ -47,67 +47,67 @@ void EventTypeLabelLane::populateLabels()
 			{
 				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
 				{
-					label_text = tr("Note");
+					label_text = tr("N");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 				{
-					label_text = tr("Note");
+					label_text = tr("N");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 				{
-					label_text = tr("Pressure");
+					label_text = tr("P");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
 				{
-					label_text = tr("Control");
+					label_text = tr("C");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PROGRAM_CHANGE:
 				{
-					label_text = tr("Program");
+					label_text = tr("Pc");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
 				{
-					label_text = tr("Pressure");
+					label_text = tr("P");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_PITCH_WHEEL:
 				{
-					label_text = tr("Bend");
+					label_text = tr("B");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_SYSEX:
 				{
-					label_text = tr("Sysex");
+					label_text = tr("Sx");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_META:
 				{
-					label_text = tr("Meta");
+					label_text = tr("Ma");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_NOTE:
 				{
-					label_text = tr("Note");
+					label_text = tr("N");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE:
 				{
-					label_text = tr("Control");
+					label_text = tr("C");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_RPN:
 				{
-					label_text = tr("Control");
+					label_text = tr("C");
 					break;
 				}
 				case MIDI_FILE_EVENT_TYPE_NRPN:
 				{
-					label_text = tr("Control");
+					label_text = tr("C");
 					break;
 				}
 				default:
@@ -121,7 +121,7 @@ void EventTypeLabelLane::populateLabels()
 	}
 }
 
-MidiFileEvent_t EventTypeLabelLane::addEventAtXY(int x, int y)
+MidiFileEvent_t AllEventsLane::addEventAtXY(int x, int y)
 {
 	// TODO
 	Q_UNUSED(x)
@@ -129,7 +129,7 @@ MidiFileEvent_t EventTypeLabelLane::addEventAtXY(int x, int y)
 	return NULL;
 }
 
-void EventTypeLabelLane::moveEventsByXY(int x_offset, int y_offset)
+void AllEventsLane::moveEventsByXY(int x_offset, int y_offset)
 {
 	// TODO
 	Q_UNUSED(x_offset)
