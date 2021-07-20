@@ -102,7 +102,11 @@ typedef enum
 	MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE,
 	MIDI_FILE_EVENT_TYPE_PITCH_WHEEL,
 	MIDI_FILE_EVENT_TYPE_SYSEX,
-	MIDI_FILE_EVENT_TYPE_META
+	MIDI_FILE_EVENT_TYPE_META,
+	MIDI_FILE_EVENT_TYPE_NOTE,
+	MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE,
+	MIDI_FILE_EVENT_TYPE_RPN,
+	MIDI_FILE_EVENT_TYPE_NRPN
 }
 MidiFileEventType_t;
 
@@ -134,6 +138,12 @@ int MidiFile_visitEvents(MidiFile_t midi_file, MidiFileEventVisitorCallback_t vi
 MidiFileEvent_t MidiFile_iterateEvents(MidiFile_t midi_file);
 int MidiFile_convertSelectionFlagsToTextEvents(MidiFile_t midi_file, char *label);
 int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label);
+int MidiFile_convertStandardEventsToNoteEvents(MidiFile_t midi_file);
+int MidiFile_convertNoteEventsToStandardEvents(MidiFile_t midi_file);
+int MidiFile_convertStandardEventsToFineControlChangeEvents(MidiFile_t midi_file);
+int MidiFile_convertFineControlChangeEventsToStandardEvents(MidiFile_t midi_file);
+int MidiFile_convertStandardEventsToRpnAndNrpnEvents(MidiFile_t midi_file);
+int MidiFile_convertRpnAndNrpnEventsToStandardEvents(MidiFile_t midi_file);
 
 float MidiFile_getBeatFromTick(MidiFile_t midi_file, long tick);
 long MidiFile_getTickFromBeat(MidiFile_t midi_file, float beat);
@@ -185,6 +195,10 @@ MidiFileEvent_t MidiFileTrack_createChannelPressureEvent(MidiFileTrack_t track, 
 MidiFileEvent_t MidiFileTrack_createPitchWheelEvent(MidiFileTrack_t track, long tick, int channel, int value);
 MidiFileEvent_t MidiFileTrack_createSysexEvent(MidiFileTrack_t track, long tick, int data_length, unsigned char *data_buffer);
 MidiFileEvent_t MidiFileTrack_createMetaEvent(MidiFileTrack_t track, long tick, int number, int data_length, unsigned char *data_buffer);
+MidiFileEvent_t MidiFileTrack_createNoteEvent(MidiFileTrack_t track, long tick, long duration_ticks, int channel, int note, int start_velocity, int end_velocity);
+MidiFileEvent_t MidiFileTrack_createFineControlChangeEvent(MidiFileTrack_t track, long tick, int channel, int number, int value);
+MidiFileEvent_t MidiFileTrack_createRpnEvent(MidiFileTrack_t track, long tick, int channel, int number, int value);
+MidiFileEvent_t MidiFileTrack_createNrpnEvent(MidiFileTrack_t track, long tick, int channel, int number, int value);
 MidiFileEvent_t MidiFileTrack_createNoteStartAndEndEvents(MidiFileTrack_t track, long start_tick, long end_tick, int channel, int note, int start_velocity, int end_velocity); /* returns the start event */
 MidiFileEvent_t MidiFileTrack_createTextEvent(MidiFileTrack_t track, long tick, char *text);
 MidiFileEvent_t MidiFileTrack_createLyricEvent(MidiFileTrack_t track, long tick, char *text);
@@ -221,6 +235,7 @@ int MidiFileEvent_isNoteEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteStartEvent(MidiFileEvent_t event);
 int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event);
 int MidiFileEvent_isPressureEvent(MidiFileEvent_t event);
+int MidiFileEvent_isControlChangeEvent(MidiFileEvent_t event);
 int MidiFileEvent_isTextEvent(MidiFileEvent_t event);
 int MidiFileEvent_isLyricEvent(MidiFileEvent_t event);
 int MidiFileEvent_isMarkerEvent(MidiFileEvent_t event);
@@ -282,6 +297,38 @@ int MidiFileMetaEvent_setNumber(MidiFileEvent_t event, int number);
 int MidiFileMetaEvent_getDataLength(MidiFileEvent_t event);
 unsigned char *MidiFileMetaEvent_getData(MidiFileEvent_t event);
 int MidiFileMetaEvent_setData(MidiFileEvent_t event, int data_length, unsigned char *data_buffer);
+
+long MidiFileNoteEvent_getDurationTicks(MidiFileEvent_t event);
+int MidiFileNoteEvent_setDurationTicks(MidiFileEvent_t event, long duration_ticks);
+int MidiFileNoteEvent_getChannel(MidiFileEvent_t event);
+int MidiFileNoteEvent_setChannel(MidiFileEvent_t event, int channel);
+int MidiFileNoteEvent_getNote(MidiFileEvent_t event);
+int MidiFileNoteEvent_setNote(MidiFileEvent_t event, int note);
+int MidiFileNoteEvent_getVelocity(MidiFileEvent_t event);
+int MidiFileNoteEvent_setVelocity(MidiFileEvent_t event, int velocity);
+int MidiFileNoteEvent_getEndVelocity(MidiFileEvent_t event);
+int MidiFileNoteEvent_setEndVelocity(MidiFileEvent_t event, int end_velocity);
+
+int MidiFileFineControlChangeEvent_getChannel(MidiFileEvent_t event);
+int MidiFileFineControlChangeEvent_setChannel(MidiFileEvent_t event, int channel);
+int MidiFileFineControlChangeEvent_getNumber(MidiFileEvent_t event);
+int MidiFileFineControlChangeEvent_setNumber(MidiFileEvent_t event, int number);
+int MidiFileFineControlChangeEvent_getValue(MidiFileEvent_t event);
+int MidiFileFineControlChangeEvent_setValue(MidiFileEvent_t event, int value);
+
+int MidiFileRpnEvent_getChannel(MidiFileEvent_t event);
+int MidiFileRpnEvent_setChannel(MidiFileEvent_t event, int channel);
+int MidiFileRpnEvent_getNumber(MidiFileEvent_t event);
+int MidiFileRpnEvent_setNumber(MidiFileEvent_t event, int number);
+int MidiFileRpnEvent_getValue(MidiFileEvent_t event);
+int MidiFileRpnEvent_setValue(MidiFileEvent_t event, int value);
+
+int MidiFileNrpnEvent_getChannel(MidiFileEvent_t event);
+int MidiFileNrpnEvent_setChannel(MidiFileEvent_t event, int channel);
+int MidiFileNrpnEvent_getNumber(MidiFileEvent_t event);
+int MidiFileNrpnEvent_setNumber(MidiFileEvent_t event, int number);
+int MidiFileNrpnEvent_getValue(MidiFileEvent_t event);
+int MidiFileNrpnEvent_setValue(MidiFileEvent_t event, int value);
 
 int MidiFileNoteStartEvent_getChannel(MidiFileEvent_t event);
 int MidiFileNoteStartEvent_setChannel(MidiFileEvent_t event, int channel);

@@ -115,6 +115,40 @@ struct MidiFileEvent
 			unsigned char *data_buffer;
 		}
 		meta;
+
+		struct
+		{
+			long duration_ticks;
+			int channel;
+			int note;
+			int velocity;
+			int end_velocity;
+		}
+		note;
+
+		struct
+		{
+			int channel;
+			int number;
+			int value;
+		}
+		fine_control_change;
+
+		struct
+		{
+			int channel;
+			int number;
+			int value;
+		}
+		rpn;
+
+		struct
+		{
+			int channel;
+			int number;
+			int value;
+		}
+		nrpn;
 	}
 	u;
 
@@ -1352,6 +1386,491 @@ int MidiFile_convertTextEventsToSelectionFlags(MidiFile_t midi_file, char *label
 	return 0;
 }
 
+int MidiFile_convertStandardEventsToNoteEvents(MidiFile_t midi_file)
+{
+	MidiFileEvent_t event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		MidiFileEvent_t end_event = MidiFileNoteStartEvent_getNoteEndEvent(event);
+
+		if (end_event != NULL)
+		{
+			MidiFileEvent_t new_event = MidiFileTrack_createNoteEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileEvent_getTick(end_event) - MidiFileEvent_getTick(event),
+				MidiFileNoteStartEvent_getChannel(event),
+				MidiFileNoteStartEvent_getNote(event),
+				MidiFileNoteStartEvent_getVelocity(event),
+				MidiFileNoteEndEvent_getVelocity(end_event));
+
+			MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setNextEvent(event, new_event);
+			MidiFileEvent_delete(event);
+			event = new_event;
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertNoteEventsToStandardEvents(MidiFile_t midi_file)
+{
+	MidiFileEvent_t event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NOTE)
+		{
+			MidiFileEvent_t note_start_event = MidiFileTrack_createNoteStartAndEndEvents(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileEvent_getTick(event) + MidiFileNoteEvent_getDurationTicks(event),
+				MidiFileNoteEvent_getChannel(event),
+				MidiFileNoteEvent_getNote(event),
+				MidiFileNoteEvent_getVelocity(event),
+				MidiFileNoteEvent_getEndVelocity(event));
+
+			MidiFileEvent_setSelected(note_start_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setNextEvent(event, note_start_event);
+			MidiFileEvent_delete(event);
+			event = note_start_event;
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertStandardEventsToFineControlChangeEvents(MidiFile_t midi_file)
+{
+	MidiFileTrack_t track;
+
+	if (midi_file == NULL) return -1;
+
+	for (track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		int values[16][64];
+		MidiFileEvent_t event, next_event;
+
+		memset(values, 0, sizeof (int) * 16 * 64);
+
+		for (event = MidiFileTrack_getFirstEvent(track); event != NULL; event = next_event)
+		{
+			next_event = MidiFileEvent_getNextEventInTrack(event);
+
+			if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE)
+			{
+				if (MidiFileControlChangeEvent_getNumber(event) < 32)
+				{
+					if (MidiFileEvent_isControlChangeEvent(next_event)
+						&& (MidiFileControlChangeEvent_getChannel(next_event) == MidiFileControlChangeEvent_getChannel(event))
+						&& (MidiFileControlChangeEvent_getNumber(next_event) == MidiFileControlChangeEvent_getNumber(event) + 32))
+					{
+						MidiFileEvent_t new_event = MidiFileTrack_createFineControlChangeEvent(
+							track,
+							MidiFileEvent_getTick(next_event),
+							MidiFileControlChangeEvent_getChannel(event),
+							MidiFileControlChangeEvent_getNumber(event),
+							(MidiFileControlChangeEvent_getValue(event) << 7) | MidiFileControlChangeEvent_getValue(next_event));
+
+						values[MidiFileControlChangeEvent_getChannel(event)][MidiFileControlChangeEvent_getNumber(event)] = MidiFileControlChangeEvent_getValue(event);
+						values[MidiFileControlChangeEvent_getChannel(next_event)][MidiFileControlChangeEvent_getNumber(next_event)] = MidiFileControlChangeEvent_getValue(next_event);
+						MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+						MidiFileEvent_setNextEvent(next_event, new_event);
+						MidiFileEvent_delete(event);
+						MidiFileEvent_delete(next_event);
+						next_event = MidiFileEvent_getNextEventInTrack(new_event);
+					}
+					else
+					{
+						MidiFileEvent_t new_event = MidiFileTrack_createFineControlChangeEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							MidiFileControlChangeEvent_getNumber(event),
+							(MidiFileControlChangeEvent_getValue(event) << 7) | values[MidiFileControlChangeEvent_getChannel(event)][MidiFileControlChangeEvent_getNumber(event) + 32]);
+
+						values[MidiFileControlChangeEvent_getChannel(event)][MidiFileControlChangeEvent_getNumber(event)] = MidiFileControlChangeEvent_getValue(event);
+						MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+						MidiFileEvent_setNextEvent(event, new_event);
+						MidiFileEvent_delete(event);
+						next_event = MidiFileEvent_getNextEventInTrack(new_event);
+					}
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) < 64)
+				{
+					MidiFileEvent_t new_event = MidiFileTrack_createFineControlChangeEvent(
+						track,
+						MidiFileEvent_getTick(event),
+						MidiFileControlChangeEvent_getChannel(event),
+						MidiFileControlChangeEvent_getNumber(event),
+						(values[MidiFileControlChangeEvent_getChannel(event)][MidiFileControlChangeEvent_getNumber(event) - 32] << 7) | MidiFileControlChangeEvent_getValue(event));
+
+					values[MidiFileControlChangeEvent_getChannel(event)][MidiFileControlChangeEvent_getNumber(event)] = MidiFileControlChangeEvent_getValue(event);
+					MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+					MidiFileEvent_setNextEvent(event, new_event);
+					MidiFileEvent_delete(event);
+					next_event = MidiFileEvent_getNextEventInTrack(new_event);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertFineControlChangeEventsToStandardEvents(MidiFile_t midi_file)
+{
+	MidiFileEvent_t event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)
+		{
+			MidiFileEvent_t msb_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileFineControlChangeEvent_getChannel(event),
+				MidiFileFineControlChangeEvent_getNumber(event),
+				(MidiFileFineControlChangeEvent_getValue(event) >> 7) & 0x7F);
+
+			MidiFileEvent_t lsb_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileFineControlChangeEvent_getChannel(event),
+				MidiFileFineControlChangeEvent_getNumber(event) + 32,
+				MidiFileFineControlChangeEvent_getValue(event) & 0x7F);
+
+			MidiFileEvent_setSelected(msb_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(lsb_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setNextEvent(event, msb_event);
+			MidiFileEvent_setNextEvent(msb_event, lsb_event);
+			MidiFileEvent_delete(event);
+			event = lsb_event;
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertStandardEventsToRpnAndNrpnEvents(MidiFile_t midi_file)
+{
+	MidiFileTrack_t track;
+
+	if (midi_file == NULL) return -1;
+
+	for (track = MidiFile_getFirstTrack(midi_file); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		int is_nrpn[16];
+		int numbers[16];
+		int values[16];
+		MidiFileEvent_t event, next_event;
+
+		memset(is_nrpn, 0, sizeof (int) * 16);
+		memset(numbers, 0, sizeof (int) * 16);
+		memset(values, 0, sizeof (int) * 16);
+
+		for (event = MidiFileTrack_getFirstEvent(track); event != NULL; event = next_event)
+		{
+			next_event = MidiFileEvent_getNextEventInTrack(event);
+
+			if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE)
+			{
+				if (MidiFileControlChangeEvent_getNumber(event) == 101)
+				{
+					if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+					{
+						is_nrpn[MidiFileControlChangeEvent_getChannel(event)] = 0;
+						numbers[MidiFileControlChangeEvent_getChannel(event)] = MidiFileControlChangeEvent_getValue(event) << 7;
+					}
+					else
+					{
+						numbers[MidiFileControlChangeEvent_getChannel(event)] = (MidiFileControlChangeEvent_getValue(event) << 7) | (numbers[MidiFileControlChangeEvent_getChannel(event)] & 0x7F) ;
+					}
+
+					values[MidiFileControlChangeEvent_getChannel(event)] = 0;
+					MidiFileEvent_delete(event);
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) == 100)
+				{
+					if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+					{
+						is_nrpn[MidiFileControlChangeEvent_getChannel(event)] = 0;
+						numbers[MidiFileControlChangeEvent_getChannel(event)] = MidiFileControlChangeEvent_getValue(event);
+					}
+					else
+					{
+						numbers[MidiFileControlChangeEvent_getChannel(event)] = (numbers[MidiFileControlChangeEvent_getChannel(event)] & ~0x7F) | MidiFileControlChangeEvent_getValue(event);
+					}
+
+					values[MidiFileControlChangeEvent_getChannel(event)] = 0;
+					MidiFileEvent_delete(event);
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) == 6)
+				{
+					if (MidiFileEvent_isControlChangeEvent(next_event)
+						&& (MidiFileControlChangeEvent_getChannel(next_event) == MidiFileControlChangeEvent_getChannel(event))
+						&& (MidiFileControlChangeEvent_getNumber(next_event) == 38))
+					{
+						MidiFileEvent_t new_event;
+
+						values[MidiFileControlChangeEvent_getChannel(event)] = (MidiFileControlChangeEvent_getValue(event) << 7) | MidiFileControlChangeEvent_getValue(next_event);
+
+						if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+						{
+							new_event = MidiFileTrack_createNrpnEvent(
+								track,
+								MidiFileEvent_getTick(next_event),
+								MidiFileControlChangeEvent_getChannel(event),
+								numbers[MidiFileControlChangeEvent_getChannel(event)],
+								values[MidiFileControlChangeEvent_getChannel(event)]);
+						}
+						else
+						{
+							new_event = MidiFileTrack_createRpnEvent(
+								track,
+								MidiFileEvent_getTick(next_event),
+								MidiFileControlChangeEvent_getChannel(event),
+								numbers[MidiFileControlChangeEvent_getChannel(event)],
+								values[MidiFileControlChangeEvent_getChannel(event)]);
+						}
+
+						MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+						MidiFileEvent_setNextEvent(next_event, new_event);
+						MidiFileEvent_delete(event);
+						MidiFileEvent_delete(next_event);
+						next_event = MidiFileEvent_getNextEventInTrack(new_event);
+					}
+					else
+					{
+						MidiFileEvent_t new_event;
+
+						values[MidiFileControlChangeEvent_getChannel(event)] = (MidiFileControlChangeEvent_getValue(event) << 7) | (values[MidiFileControlChangeEvent_getChannel(event)] & 0x7F);
+
+						if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+						{
+							new_event = MidiFileTrack_createNrpnEvent(
+								track,
+								MidiFileEvent_getTick(event),
+								MidiFileControlChangeEvent_getChannel(event),
+								numbers[MidiFileControlChangeEvent_getChannel(event)],
+								values[MidiFileControlChangeEvent_getChannel(event)]);
+						}
+						else
+						{
+							new_event = MidiFileTrack_createRpnEvent(
+								track,
+								MidiFileEvent_getTick(event),
+								MidiFileControlChangeEvent_getChannel(event),
+								numbers[MidiFileControlChangeEvent_getChannel(event)],
+								values[MidiFileControlChangeEvent_getChannel(event)]);
+						}
+
+						MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+						MidiFileEvent_setNextEvent(event, new_event);
+						MidiFileEvent_delete(event);
+						next_event = MidiFileEvent_getNextEventInTrack(new_event);
+					}
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) == 38)
+				{
+					MidiFileEvent_t new_event;
+
+					values[MidiFileControlChangeEvent_getChannel(event)] = (values[MidiFileControlChangeEvent_getChannel(event)] & ~0x7F) | MidiFileControlChangeEvent_getValue(event);
+
+					if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+					{
+						new_event = MidiFileTrack_createNrpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+					else
+					{
+						new_event = MidiFileTrack_createRpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+
+					MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+					MidiFileEvent_setNextEvent(event, new_event);
+					MidiFileEvent_delete(event);
+					next_event = MidiFileEvent_getNextEventInTrack(new_event);
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) == 96)
+				{
+					MidiFileEvent_t new_event;
+
+					values[MidiFileControlChangeEvent_getChannel(event)]++;
+
+					if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+					{
+						new_event = MidiFileTrack_createNrpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+					else
+					{
+						new_event = MidiFileTrack_createRpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+
+					MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+					MidiFileEvent_setNextEvent(event, new_event);
+					MidiFileEvent_delete(event);
+					next_event = MidiFileEvent_getNextEventInTrack(new_event);
+				}
+				else if (MidiFileControlChangeEvent_getNumber(event) == 97)
+				{
+					MidiFileEvent_t new_event;
+
+					values[MidiFileControlChangeEvent_getChannel(event)]--;
+
+					if (is_nrpn[MidiFileControlChangeEvent_getChannel(event)])
+					{
+						new_event = MidiFileTrack_createNrpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+					else
+					{
+						new_event = MidiFileTrack_createRpnEvent(
+							track,
+							MidiFileEvent_getTick(event),
+							MidiFileControlChangeEvent_getChannel(event),
+							numbers[MidiFileControlChangeEvent_getChannel(event)],
+							values[MidiFileControlChangeEvent_getChannel(event)]);
+					}
+
+					MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
+					MidiFileEvent_setNextEvent(event, new_event);
+					MidiFileEvent_delete(event);
+					next_event = MidiFileEvent_getNextEventInTrack(new_event);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int MidiFile_convertRpnAndNrpnEventsToStandardEvents(MidiFile_t midi_file)
+{
+	MidiFileEvent_t event;
+
+	if (midi_file == NULL) return -1;
+
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
+	{
+		if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_RPN)
+		{
+			MidiFileEvent_t msb_number_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileRpnEvent_getChannel(event),
+				101,
+				(MidiFileRpnEvent_getNumber(event) >> 7) & 0x7F);
+
+			MidiFileEvent_t lsb_number_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileRpnEvent_getChannel(event),
+				100,
+				MidiFileRpnEvent_getNumber(event) & 0x7F);
+
+			MidiFileEvent_t msb_value_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileRpnEvent_getChannel(event),
+				6,
+				(MidiFileRpnEvent_getValue(event) >> 7) & 0x7F);
+
+			MidiFileEvent_t lsb_value_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileRpnEvent_getChannel(event),
+				38,
+				MidiFileRpnEvent_getValue(event) & 0x7F);
+
+			MidiFileEvent_setSelected(msb_number_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(lsb_number_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(msb_value_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(lsb_value_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setNextEvent(event, msb_number_event);
+			MidiFileEvent_setNextEvent(msb_number_event, lsb_number_event);
+			MidiFileEvent_setNextEvent(lsb_number_event, msb_value_event);
+			MidiFileEvent_setNextEvent(msb_value_event, lsb_value_event);
+			MidiFileEvent_delete(event);
+			event = lsb_value_event;
+		}
+		else if (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_NRPN)
+		{
+			MidiFileEvent_t msb_number_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileNrpnEvent_getChannel(event),
+				99,
+				(MidiFileNrpnEvent_getNumber(event) >> 7) & 0x7F);
+
+			MidiFileEvent_t lsb_number_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileNrpnEvent_getChannel(event),
+				98,
+				MidiFileNrpnEvent_getNumber(event) & 0x7F);
+
+			MidiFileEvent_t msb_value_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileNrpnEvent_getChannel(event),
+				6,
+				(MidiFileNrpnEvent_getValue(event) >> 7) & 0x7F);
+
+			MidiFileEvent_t lsb_value_event = MidiFileTrack_createControlChangeEvent(
+				MidiFileEvent_getTrack(event),
+				MidiFileEvent_getTick(event),
+				MidiFileNrpnEvent_getChannel(event),
+				38,
+				MidiFileNrpnEvent_getValue(event) & 0x7F);
+
+			MidiFileEvent_setSelected(msb_number_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(lsb_number_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(msb_value_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setSelected(lsb_value_event, MidiFileEvent_isSelected(event));
+			MidiFileEvent_setNextEvent(event, msb_number_event);
+			MidiFileEvent_setNextEvent(msb_number_event, lsb_number_event);
+			MidiFileEvent_setNextEvent(lsb_number_event, msb_value_event);
+			MidiFileEvent_setNextEvent(msb_value_event, lsb_value_event);
+			MidiFileEvent_delete(event);
+			event = lsb_value_event;
+		}
+	}
+
+	return 0;
+}
+
 float MidiFile_getBeatFromTick(MidiFile_t midi_file, long tick)
 {
 	switch (MidiFile_getDivisionType(midi_file))
@@ -2386,6 +2905,88 @@ MidiFileEvent_t MidiFileTrack_createMetaEvent(MidiFileTrack_t track, long tick, 
 	return new_event;
 }
 
+MidiFileEvent_t MidiFileTrack_createNoteEvent(MidiFileTrack_t track, long tick, long duration_ticks, int channel, int note, int velocity, int end_velocity)
+{
+	MidiFileEvent_t new_event;
+
+	if (track == NULL) return NULL;
+
+	new_event = (MidiFileEvent_t)(malloc(sizeof(struct MidiFileEvent)));
+	new_event->track = track;
+	new_event->tick = tick;
+	new_event->type = MIDI_FILE_EVENT_TYPE_NOTE;
+	new_event->u.note.duration_ticks = duration_ticks;
+	new_event->u.note.channel = channel;
+	new_event->u.note.note = note;
+	new_event->u.note.velocity = velocity;
+	new_event->u.note.end_velocity = end_velocity;
+	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
+	add_event(new_event);
+
+	return new_event;
+}
+
+MidiFileEvent_t MidiFileTrack_createFineControlChangeEvent(MidiFileTrack_t track, long tick, int channel, int number, int value)
+{
+	MidiFileEvent_t new_event;
+
+	if (track == NULL) return NULL;
+
+	new_event = (MidiFileEvent_t)(malloc(sizeof(struct MidiFileEvent)));
+	new_event->track = track;
+	new_event->tick = tick;
+	new_event->type = MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE;
+	new_event->u.fine_control_change.channel = channel;
+	new_event->u.fine_control_change.number = number;
+	new_event->u.fine_control_change.value = value;
+	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
+	add_event(new_event);
+
+	return new_event;
+}
+
+MidiFileEvent_t MidiFileTrack_createRpnEvent(MidiFileTrack_t track, long tick, int channel, int number, int value)
+{
+	MidiFileEvent_t new_event;
+
+	if (track == NULL) return NULL;
+
+	new_event = (MidiFileEvent_t)(malloc(sizeof(struct MidiFileEvent)));
+	new_event->track = track;
+	new_event->tick = tick;
+	new_event->type = MIDI_FILE_EVENT_TYPE_RPN;
+	new_event->u.rpn.channel = channel;
+	new_event->u.rpn.number = number;
+	new_event->u.rpn.value = value;
+	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
+	add_event(new_event);
+
+	return new_event;
+}
+
+MidiFileEvent_t MidiFileTrack_createNrpnEvent(MidiFileTrack_t track, long tick, int channel, int number, int value)
+{
+	MidiFileEvent_t new_event;
+
+	if (track == NULL) return NULL;
+
+	new_event = (MidiFileEvent_t)(malloc(sizeof(struct MidiFileEvent)));
+	new_event->track = track;
+	new_event->tick = tick;
+	new_event->type = MIDI_FILE_EVENT_TYPE_NRPN;
+	new_event->u.nrpn.channel = channel;
+	new_event->u.nrpn.number = number;
+	new_event->u.nrpn.value = value;
+	new_event->should_be_visited = 0;
+	new_event->is_selected = 0;
+	add_event(new_event);
+
+	return new_event;
+}
+
 MidiFileEvent_t MidiFileTrack_createNoteStartAndEndEvents(MidiFileTrack_t track, long start_tick, long end_tick, int channel, int note, int start_velocity, int end_velocity)
 {
 	MidiFileEvent_t start_event = MidiFileTrack_createNoteOnEvent(track, start_tick, channel, note, start_velocity);
@@ -2775,6 +3376,7 @@ int MidiFileEvent_isNoteEvent(MidiFileEvent_t event)
 	{
 		case MIDI_FILE_EVENT_TYPE_NOTE_ON:
 		case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+		case MIDI_FILE_EVENT_TYPE_NOTE:
 		{
 			return 1;
 		}
@@ -2797,7 +3399,36 @@ int MidiFileEvent_isNoteEndEvent(MidiFileEvent_t event)
 
 int MidiFileEvent_isPressureEvent(MidiFileEvent_t event)
 {
-	return ((MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_KEY_PRESSURE) || (MidiFileEvent_getType(event) == MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE));
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
+		case MIDI_FILE_EVENT_TYPE_CHANNEL_PRESSURE:
+		{
+			return 1;
+		}
+		default:
+		{
+			return 0;
+		}
+	}
+}
+
+int MidiFileEvent_isControlChangeEvent(MidiFileEvent_t event)
+{
+	switch (MidiFileEvent_getType(event))
+	{
+		case MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE:
+		case MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE:
+		case MIDI_FILE_EVENT_TYPE_RPN:
+		case MIDI_FILE_EVENT_TYPE_NRPN:
+		{
+			return 1;
+		}
+		default:
+		{
+			return 0;
+		}
+	}
 }
 
 int MidiFileEvent_isTextEvent(MidiFileEvent_t event)
@@ -3145,6 +3776,188 @@ int MidiFileMetaEvent_setData(MidiFileEvent_t event, int data_length, unsigned c
 	event->u.meta.data_buffer = malloc(data_length + 1);
 	memcpy(event->u.meta.data_buffer, data_buffer, data_length);
 	event->u.meta.data_buffer[data_length] = '\0';
+	return 0;
+}
+
+long MidiFileNoteEvent_getDurationTicks(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	return event->u.note.duration_ticks;
+}
+
+int MidiFileNoteEvent_setDurationTicks(MidiFileEvent_t event, long duration_ticks)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	event->u.note.duration_ticks = duration_ticks;
+	return 0;
+}
+
+int MidiFileNoteEvent_getChannel(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	return event->u.note.channel;
+}
+
+int MidiFileNoteEvent_setChannel(MidiFileEvent_t event, int channel)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	event->u.note.channel = channel;
+	return 0;
+}
+
+int MidiFileNoteEvent_getNote(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	return event->u.note.note;
+}
+
+int MidiFileNoteEvent_setNote(MidiFileEvent_t event, int note)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	event->u.note.note = note;
+	return 0;
+}
+
+int MidiFileNoteEvent_getVelocity(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	return event->u.note.velocity;
+}
+
+int MidiFileNoteEvent_setVelocity(MidiFileEvent_t event, int velocity)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	event->u.note.velocity = velocity;
+	return 0;
+}
+
+int MidiFileNoteEvent_getEndVelocity(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	return event->u.note.end_velocity;
+}
+
+int MidiFileNoteEvent_setEndVelocity(MidiFileEvent_t event, int end_velocity)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_NOTE)) return -1;
+	event->u.note.end_velocity = end_velocity;
+	return 0;
+}
+
+int MidiFileFineControlChangeEvent_getChannel(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	return event->u.fine_control_change.channel;
+}
+
+int MidiFileFineControlChangeEvent_setChannel(MidiFileEvent_t event, int channel)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	event->u.fine_control_change.channel = channel;
+	return 0;
+}
+
+int MidiFileFineControlChangeEvent_getNumber(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	return event->u.fine_control_change.number;
+}
+
+int MidiFileFineControlChangeEvent_setNumber(MidiFileEvent_t event, int number)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	event->u.fine_control_change.number = number;
+	return 0;
+}
+
+int MidiFileFineControlChangeEvent_getValue(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	return event->u.fine_control_change.value;
+}
+
+int MidiFileFineControlChangeEvent_setValue(MidiFileEvent_t event, int value)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE)) return -1;
+	event->u.fine_control_change.value = value;
+	return 0;
+}
+
+int MidiFileRpnEvent_getChannel(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.rpn.channel;
+}
+
+int MidiFileRpnEvent_setChannel(MidiFileEvent_t event, int channel)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.rpn.channel = channel;
+	return 0;
+}
+
+int MidiFileRpnEvent_getNumber(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.rpn.number;
+}
+
+int MidiFileRpnEvent_setNumber(MidiFileEvent_t event, int number)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.rpn.number = number;
+	return 0;
+}
+
+int MidiFileRpnEvent_getValue(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.rpn.value;
+}
+
+int MidiFileRpnEvent_setValue(MidiFileEvent_t event, int value)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.rpn.value = value;
+	return 0;
+}
+
+int MidiFileNrpnEvent_getChannel(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.nrpn.channel;
+}
+
+int MidiFileNrpnEvent_setChannel(MidiFileEvent_t event, int channel)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.nrpn.channel = channel;
+	return 0;
+}
+
+int MidiFileNrpnEvent_getNumber(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.nrpn.number;
+}
+
+int MidiFileNrpnEvent_setNumber(MidiFileEvent_t event, int number)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.nrpn.number = number;
+	return 0;
+}
+
+int MidiFileNrpnEvent_getValue(MidiFileEvent_t event)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	return event->u.nrpn.value;
+}
+
+int MidiFileNrpnEvent_setValue(MidiFileEvent_t event, int value)
+{
+	if ((event == NULL) || (event->type != MIDI_FILE_EVENT_TYPE_RPN)) return -1;
+	event->u.nrpn.value = value;
 	return 0;
 }
 
