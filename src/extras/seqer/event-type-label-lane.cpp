@@ -17,15 +17,7 @@ void EventTypeLabelLane::populateLabels()
 	{
 		QString label_text;
 
-		if (MidiFileEvent_isNoteStartEvent(midi_event))
-		{
-			label_text = tr("Note");
-		}
-		else if (MidiFileEvent_isNoteEndEvent(midi_event) && (MidiFileNoteEndEvent_getNoteStartEvent(midi_event) == NULL))
-		{
-			label_text = tr("Off");
-		}
-		else if (MidiFileEvent_isTextEvent(midi_event))
+		if (MidiFileEvent_isTextEvent(midi_event))
 		{
 			label_text = tr("Text");
 		}
@@ -53,6 +45,16 @@ void EventTypeLabelLane::populateLabels()
 		{
 			switch (MidiFileEvent_getType(midi_event))
 			{
+				case MIDI_FILE_EVENT_TYPE_NOTE_OFF:
+				{
+					label_text = tr("Note");
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_NOTE_ON:
+				{
+					label_text = tr("Note");
+					break;
+				}
 				case MIDI_FILE_EVENT_TYPE_KEY_PRESSURE:
 				{
 					label_text = tr("Pressure");
@@ -86,6 +88,26 @@ void EventTypeLabelLane::populateLabels()
 				case MIDI_FILE_EVENT_TYPE_META:
 				{
 					label_text = tr("Meta");
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_NOTE:
+				{
+					label_text = tr("Note");
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE:
+				{
+					label_text = tr("Control");
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_RPN:
+				{
+					label_text = tr("Control");
+					break;
+				}
+				case MIDI_FILE_EVENT_TYPE_NRPN:
+				{
+					label_text = tr("Control");
 					break;
 				}
 				default:

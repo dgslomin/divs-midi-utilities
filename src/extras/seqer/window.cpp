@@ -134,6 +134,7 @@ void Window::open(QString filename)
 		return;
 	}
 
+	MidiFile_convertStandardEventsToNoteEvents(new_midi_file);
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);

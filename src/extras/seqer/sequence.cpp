@@ -29,31 +29,32 @@ void Sequence::removeWindow(Window* window)
 bool Sequence::save()
 {
 	if (this->filename.isEmpty()) return false;
+	MidiFile_convertNoteEventsToStandardEvents(this->midi_file);
+	bool successful = (MidiFile_save(this->midi_file, this->filename.toUtf8().data()) == 0);
+	MidiFile_convertStandardEventsToNoteEvents(this->midi_file);
 
-	if (MidiFile_save(this->midi_file, this->filename.toUtf8().data()) == 0)
+	if (successful)
 	{
 		this->is_modified = false;
 		emit updated();
-		return true;
 	}
-	else
-	{
-		return false;
-	}
+
+	return successful;
 }
 
 bool Sequence::saveAs(QString filename)
 {
-	if (MidiFile_save(this->midi_file, filename.toUtf8().data()) == 0)
+	MidiFile_convertNoteEventsToStandardEvents(this->midi_file);
+	bool successful = (MidiFile_save(this->midi_file, filename.toUtf8().data()) == 0);
+	MidiFile_convertStandardEventsToNoteEvents(this->midi_file);
+
+	if (successful)
 	{
 		this->filename = filename;
 		this->is_modified = false;
 		emit updated();
-		return true;
 	}
-	else
-	{
-		return false;
-	}
+
+	return successful;
 }
 

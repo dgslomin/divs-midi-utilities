@@ -1442,6 +1442,7 @@ int MidiFile_convertStandardEventsToNoteEvents(MidiFile_t midi_file)
 			MidiFileEvent_setSelected(new_event, MidiFileEvent_isSelected(event));
 			MidiFileEvent_setNextEvent(event, new_event);
 			MidiFileEvent_delete(event);
+			MidiFileEvent_delete(end_event);
 			event = new_event;
 		}
 	}
