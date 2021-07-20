@@ -18,7 +18,6 @@ public class Event
 	public native long getTick();
 	public native void setTick(long tick);
 	public native int getType();
-	public native boolean isNoteEvent();
 	public native boolean isNoteStartEvent();
 	public native boolean isNoteEndEvent();
 	public native boolean isTempoEvent();

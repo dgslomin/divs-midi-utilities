@@ -1213,20 +1213,6 @@ static PyObject *CMidiFileEvent_getType(PyObject *self, PyObject *args)
 	return type_pyobject;
 }
 
-static PyObject *CMidiFileEvent_isNoteEvent(PyObject *self, PyObject *args)
-{
-	PyObject *event_pyobject;
-	MidiFileEvent_t event;
-	int res;
-	PyObject *res_pyobject;
-
-	if (!PyArg_ParseTuple(args, "O", &event_pyobject)) return NULL;
-	event = (MidiFileEvent_t)(PyLong_AsVoidPtr(event_pyobject));
-	res = MidiFileEvent_isNoteEvent(event);
-	res_pyobject = PyBool_FromLong(res);
-	return res_pyobject;
-}
-
 static PyObject *CMidiFileEvent_isNoteStartEvent(PyObject *self, PyObject *args)
 {
 	PyObject *event_pyobject;
@@ -2949,7 +2935,6 @@ static PyMethodDef CMidiFileMethods[] = {
 	{"MidiFileEvent_getTick", CMidiFileEvent_getTick, METH_VARARGS, ""},
 	{"MidiFileEvent_setTick", CMidiFileEvent_setTick, METH_VARARGS, ""},
 	{"MidiFileEvent_getType", CMidiFileEvent_getType, METH_VARARGS, ""},
-	{"MidiFileEvent_isNoteEvent", CMidiFileEvent_isNoteEvent, METH_VARARGS, ""},
 	{"MidiFileEvent_isNoteStartEvent", CMidiFileEvent_isNoteStartEvent, METH_VARARGS, ""},
 	{"MidiFileEvent_isNoteEndEvent", CMidiFileEvent_isNoteEndEvent, METH_VARARGS, ""},
 	{"MidiFileEvent_isTempoEvent", CMidiFileEvent_isTempoEvent, METH_VARARGS, ""},

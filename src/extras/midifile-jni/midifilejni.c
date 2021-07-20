@@ -687,12 +687,6 @@ static jint JNICALL Java_com_sreal_midifile_Event_getType(JNIEnv *env, jobject j
 	return MidiFileEvent_getType(event);
 }
 
-static jboolean JNICALL Java_com_sreal_midifile_Event_isNoteEvent(JNIEnv *env, jobject jobject_event)
-{
-	MidiFileEvent_t event = jobject_getPointer(env, jobject_event);
-	return MidiFileEvent_isNoteEvent(event);
-}
-
 static jboolean JNICALL Java_com_sreal_midifile_Event_isNoteStartEvent(JNIEnv *env, jobject jobject_event)
 {
 	MidiFileEvent_t event = jobject_getPointer(env, jobject_event);
@@ -1535,7 +1529,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 			{"getTick", "()J", Java_com_sreal_midifile_Event_getTick},
 			{"setTick", "(J)V", Java_com_sreal_midifile_Event_setTick},
 			{"getType", "()I", Java_com_sreal_midifile_Event_getType},
-			{"isNoteEvent", "()Z", Java_com_sreal_midifile_Event_isNoteEvent},
 			{"isNoteStartEvent", "()Z", Java_com_sreal_midifile_Event_isNoteStartEvent},
 			{"isNoteEndEvent", "()Z", Java_com_sreal_midifile_Event_isNoteEndEvent},
 			{"isTempoEvent", "()Z", Java_com_sreal_midifile_Event_isTempoEvent},

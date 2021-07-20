@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 				{
 					rtmidi_out_send_message(midi_out, (const unsigned char *)(MidiFileSysexEvent_getData(midi_file_event)), MidiFileSysexEvent_getDataLength(midi_file_event));
 				}
-				else if ((should_shutdown && !MidiFileEvent_isNoteStartEvent(midi_file_event)) || (!should_shutdown && (in_range || !MidiFileEvent_isNoteEvent(midi_file_event))))
+				else if ((should_shutdown && !MidiFileEvent_isNoteStartEvent(midi_file_event)) || (!should_shutdown && (in_range || ((MidiFileEvent_getType(midi_file_event) != MIDI_FILE_EVENT_TYPE_NOTE_ON) && (MidiFileEvent_getType(midi_file_event) != MIDI_FILE_EVENT_TYPE_NOTE_OFF)))))
 				{
 					unsigned long data = MidiFileVoiceEvent_getData(midi_file_event);
 					rtmidi_out_send_message(midi_out, (const unsigned char *)(&data), MidiFileVoiceEvent_getDataLength(midi_file_event));

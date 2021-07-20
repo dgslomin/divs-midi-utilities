@@ -397,7 +397,7 @@ int main(int argc, char **argv)
 
 					midiOutUnprepareHeader(midi_out, &midi_message_header, sizeof(midi_message_header));
 				}
-				else if ((should_shutdown && !MidiFileEvent_isNoteStartEvent(midi_file_event)) || (!should_shutdown && (in_range || !MidiFileEvent_isNoteEvent(midi_file_event))))
+				else if ((should_shutdown && !MidiFileEvent_isNoteStartEvent(midi_file_event)) || (!should_shutdown && (in_range || ((MidiFileEvent_getType(midi_file_event) != MIDI_FILE_EVENT_TYPE_NOTE_ON) && (MidiFileEvent_getType(midi_file_event) != MIDI_FILE_EVENT_TYPE_NOTE_OFF)))))
 				{
 					midiOutShortMsg(midi_out, (DWORD)(MidiFileVoiceEvent_getData(midi_file_event)));
 				}

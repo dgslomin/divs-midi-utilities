@@ -275,9 +275,6 @@ class Event:
 	def GetType(self):
 		return _raise_error_if_equal(CMidiFile.MidiFileEvent_getType(self._event), CMidiFile.EVENT_TYPE_INVALID)
 
-	def IsNoteEvent(self):
-		return CMidiFile.MidiFileEvent_isNoteEvent(self._event)
-
 	def IsNoteStartEvent(self):
 		return CMidiFile.MidiFileEvent_isNoteStartEvent(self._event)
 
