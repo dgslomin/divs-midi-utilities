@@ -17,52 +17,55 @@
  *     first track as a "conductor track" for meta events like tempo and
  *     meter changes.
  *
- * 3.  MidiFile_visitEvents() and MidiFileTrack_visitEvents() are specially
- *     designed so that you can add, delete, or change the tick of events
- *     (thereby modifying the sorting order) without upsetting the iterator.
- *     Note that this only protects the current event in the iterator; if
- *     you need to modify multiple events at once while iterating (such as a
- *     note start and end pairs), you are better off making a copy of the
- *     whole file rather than attempting to make the modifications in place.
- *     See MidiFile_newFromTemplate() and MidiFileTrack_copyEvent().
- *
- * 4.  Any data passed into these functions is memory-managed by the caller.
+ * 3.  Any data passed into these functions is memory-managed by the caller.
  *     Any data returned from these functions is memory-managed by the API.
  *     Don't forget to call MidiFile_free().
  *
- * 5.  This API is not thread-safe.
+ * 4.  This API is not thread-safe.
  *
- * 6.  You can navigate through events one track at a time, or through all
- *     tracks at once in an interwoven, time-sorted manner.
- *
- * 7.  Because a note on event with a velocity of zero is functionally
- *     equivalent to a note off event, you cannot simply look at the type of
- *     an event to see whether it signifies the start or the end of a note.
- *     To handle this problem, convenience wrappers are provided for pseudo
- *     "note start" and "note end" events.
- *
- * 8.  Convenience functions are provided for working with tempo, absolute
- *     time, musical time, and SMPTE time in files of format 1 or 0.
- *
- * 9.  Events other than sysex and meta (i.e., events which have a channel)
- *     are considered "voice events".  For interaction with other APIs, it
- *     is sometimes useful to pack their messages into 32 bit integers.
- *
- * 10. Key signatures are expressed as a negative number of flats or a
- *     positive number of sharps.
- *
- * 11. All numbers in this API are zero-based, to correspond with the actual
+ * 5.  All numbers in this API are zero-based, to correspond with the actual
  *     byte values of the MIDI protocol, rather than one-based, as they are
  *     commonly displayed to the user.  Channels range from 0 to 15, notes
  *     range from 0 to 127, etc.  The only exception is in the musical time
  *     functions.
  *
- * 12. An event can be "detached", which means that it is no longer part of
+ * 6.  You can navigate through events one track at a time, or through all
+ *     tracks at once in an interwoven, time-sorted manner.
+ *
+ * 7.  MidiFile_iterateEvents() and MidiFileTrack_iterateEvents() are specially
+ *     designed so that you can add, delete, or change the tick of the current
+ *     event (thereby modifying the sorting order) without upsetting the
+ *     iterator.  Keep calling them until they return null.
+ *
+ * 8.  Because a note on event with a velocity of zero is functionally
+ *     equivalent to a note off event, you cannot simply look at the type of
+ *     an event to see whether it signifies the start or the end of a note.
+ *     To handle this problem, convenience wrappers are provided for pseudo
+ *     "note start" and "note end" events.
+ *
+ * 9.  Alternatively, it's often useful to think of a note as a single event
+ *     with a duration rather than separate events for the start and end.
+ *     Use MidiFile_convertStandardEventsToNoteEvents() to switch to this
+ *     representation.  Similar conversions are provided for fine (14 bit)
+ *     control change events, RPN events, and NRPN events.  Don't forget
+ *     to convert back to standard events before saving.
+ *
+ * 10. Convenience functions are provided for working with tempo, absolute
+ *     time, musical time, and SMPTE time in files of format 1 or 0.
+ *
+ * 11. Events other than sysex and meta (i.e., events which have a channel)
+ *     are considered "voice events".  For interaction with other APIs, it
+ *     is sometimes useful to pack their messages into 32 bit integers.
+ *
+ * 12. Key signatures are expressed as a negative number of flats or a
+ *     positive number of sharps.
+ *
+ * 13. An event can be "detached", which means that it is no longer part of
  *     a track or the file, but retains the rest of its properties.  It can
  *     be reattached to the same or a different file by setting its track
  *     property, or explicitly deleted.
  *
- * 13. Events can be marked as "selected" but this is only meaningful in
+ * 14. Events can be marked as "selected" but this is only meaningful in
  *     memory; it is not persisted to disk.
  */
 
