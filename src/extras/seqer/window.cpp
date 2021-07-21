@@ -18,6 +18,7 @@
 #include "all-events-lane.h"
 #include "controller-lane.h"
 #include "inspector-sidebar.h"
+#include "marker-lane.h"
 #include "midifile.h"
 #include "note-lane.h"
 #include "tempo-lane.h"
@@ -52,6 +53,7 @@ Window::Window(Window* existing_window)
 	this->lane_splitter->addWidget(new VelocityLane(this));
 	this->lane_splitter->addWidget(new ControllerLane(this));
 	this->lane_splitter->addWidget(new TempoLane(this));
+	this->lane_splitter->addWidget(new MarkerLane(this));
 	this->lane_splitter->addWidget(new AllEventsLane(this));
 
 	this->sidebar_tab_widget = new QTabWidget();
