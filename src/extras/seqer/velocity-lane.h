@@ -1,20 +1,18 @@
-#ifndef CONTROLLER_LANE_INCLUDED
-#define CONTROLLER_LANE_INCLUDED
+#ifndef VELOCITY_LANE_INCLUDED
+#define VELOCITY_LANE_INCLUDED
 
-class ControllerLane;
+class VelocityLane;
 
 #include "numeric-value-lane.h"
 #include "midifile.h"
 #include "window.h"
 
-class ControllerLane: public NumericValueLane
+class VelocityLane: public NumericValueLane
 {
 	Q_OBJECT
 
 public:
-	int controller_number = 64;
-
-	ControllerLane(Window* window);
+	VelocityLane(Window* window);
 	void paintValueLines(QPainter* painter);
 	bool shouldIncludeEvent(MidiFileEvent_t midi_event);
 	MidiFileEvent_t addEvent(long tick, float value);

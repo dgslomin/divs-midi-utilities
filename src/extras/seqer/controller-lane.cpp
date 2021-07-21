@@ -12,10 +12,12 @@ ControllerLane::ControllerLane(Window* window): NumericValueLane(window)
 void ControllerLane::paintValueLines(QPainter* painter)
 {
 	painter->setPen(this->grid_line_pen);
-	int min_y = this->getYFromValue(0) + (this->handle_size / 2);
-	int max_y = this->getYFromValue(127) + (this->handle_size / 2);
-	painter->drawLine(0, min_y, this->width(), min_y);
-	painter->drawLine(0, max_y, this->width(), max_y);
+	int y0 = this->getYFromValue(0) + (this->handle_size / 2);
+	int y63 = this->getYFromValue(63) + (this->handle_size / 2);
+	int y127 = this->getYFromValue(127) + (this->handle_size / 2);
+	painter->drawLine(0, y0, this->width(), y0);
+	painter->drawLine(0, y63, this->width(), y63);
+	painter->drawLine(0, y127, this->width(), y127);
 }
 
 bool ControllerLane::shouldIncludeEvent(MidiFileEvent_t midi_event)
