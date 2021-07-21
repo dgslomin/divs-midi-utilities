@@ -74,10 +74,11 @@ Lane::Lane(Window* window)
 	this->selected_background_event_pen = QPen(settings.value("lane/selected-background-event-border-color", Colors::buttonShade(175, 80)).value<QColor>());
 	this->selected_background_event_brush = QBrush(settings.value("lane/selected-background-event-color", Colors::buttonShade(220, 100)).value<QColor>());
 	this->selected_background_event_text_pen = QPen(settings.value("lane/selected-background-event-text-color", Colors::textShade(175, 80)).value<QColor>());
+	this->connecting_line_pen = QPen(settings.value("lane/connecting-line-color", Colors::buttonShade(200, 80)).value<QColor>());
 	this->cursor_pen = QPen(settings.value("lane/cursor-color", Colors::buttonShade(0, 255)).value<QColor>());
 	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(255, 0)).value<QColor>());
 	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 255)).value<QColor>(), 1, Qt::DashLine);
-	this->time_line_pen = QPen(settings.value("lan/time-line-color", Colors::buttonShade(220, 60)).value<QColor>());
+	this->time_line_pen = QPen(settings.value("lane/time-line-color", Colors::buttonShade(220, 60)).value<QColor>());
 	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
 }
 

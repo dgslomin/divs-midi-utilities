@@ -23,6 +23,34 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
+	// connecting lines
+
+	painter->setPen(this->connecting_line_pen);
+	QPoint last_point;
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
+		{
+			QPoint point = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset).center();
+
+			if (!last_point.isNull())
+			{
+				painter->drawLine(last_point.x(), last_point.y(), point.x(), last_point.y());
+				painter->drawLine(point.x(), last_point.y(), point.x(), point.y());
+			}
+
+			last_point = point;
+		}
+	}
+
+	if (!last_point.isNull() && (last_point.x() < this->width()))
+	{
+		painter->drawLine(last_point.x(), last_point.y(), this->width(), last_point.y());
+	}
+
+	// handles
+
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
 		if (this->shouldIncludeEvent(midi_event))

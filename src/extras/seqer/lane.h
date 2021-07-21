@@ -51,6 +51,7 @@ public:
 	QPen selected_background_event_pen;
 	QBrush selected_background_event_brush;
 	QPen selected_background_event_text_pen;
+	QPen connecting_line_pen;
 	QPen cursor_pen;
 	QBrush cursor_brush;
 	QPen selection_rect_pen;

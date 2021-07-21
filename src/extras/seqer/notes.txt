@@ -7,7 +7,6 @@ prioritization of mouse and keyboard interaction.  It's built using Qt and
 RtMidi.
 
 TODO:
-easier to see rendering in numeric value lanes
 cursor follows focus
 move/add events in label lanes
 delete events
