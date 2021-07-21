@@ -17,6 +17,8 @@ class NumericValueLane: public Lane
 public:
 	float pixels_per_value = 1.0;
 	float scroll_y = 0.0;
+	bool draw_connecting_lines = false;
+	bool draw_height_lines = false;
 	int handle_size;
 
 	NumericValueLane(Window* window);

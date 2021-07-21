@@ -6,6 +6,7 @@
 
 ControllerLane::ControllerLane(Window* window): NumericValueLane(window)
 {
+	this->draw_connecting_lines = true;
 }
 
 bool ControllerLane::shouldIncludeEvent(MidiFileEvent_t midi_event)
