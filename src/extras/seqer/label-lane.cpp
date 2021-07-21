@@ -149,7 +149,7 @@ void LabelLane::layoutLabels(int selected_events_x_offset)
 	{
 		Label& label = this->labels[label_number];
 
-		if (label.preferred_x >= end_x + 2)
+		if (label.preferred_x >= end_x)
 		{
 			label.x = label.preferred_x;
 			label.row = 0;
@@ -164,7 +164,7 @@ void LabelLane::layoutLabels(int selected_events_x_offset)
 		}
 		else
 		{
-			label.x = end_x + 2;
+			label.x = end_x;
 			label.row = 0;
 			cluster_start = label_number;
 			end_x = label.x + label.width;
