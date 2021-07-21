@@ -1,6 +1,5 @@
 
-#include <QApplication>
-#include <QMessageBox>
+#include <QtWidgets>
 #include "window.h"
 
 int main(int argc, char** argv)

@@ -1,4 +1,5 @@
 
+#include <QtWidgets>
 #include "midifile.h"
 #include "numeric-value-lane.h"
 #include "velocity-lane.h"

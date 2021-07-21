@@ -1,20 +1,6 @@
 
 #include <set>
-#include <QAction>
-#include <QCloseEvent>
-#include <QFileDialog>
-#include <QGuiApplication>
-#include <QKeySequence>
-#include <QMainWindow>
-#include <QMenu>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QPaintEvent>
-#include <QSettings>
-#include <QSplitter>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QWindow>
+#include <QtWidgets>
 #include "all-events-lane.h"
 #include "controller-lane.h"
 #include "inspector-sidebar.h"

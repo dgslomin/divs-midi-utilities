@@ -3,10 +3,7 @@
 
 class TimeRuler;
 
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QWheelEvent>
-#include <QWidget>
+#include <QtWidgets>
 #include "window.h"
 
 class TimeRuler: public QWidget

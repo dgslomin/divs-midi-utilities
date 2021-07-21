@@ -1,5 +1,5 @@
 
-#include <QString>
+#include <QtWidgets>
 #include "all-events-lane.h"
 #include "label-lane.h"
 #include "midifile.h"

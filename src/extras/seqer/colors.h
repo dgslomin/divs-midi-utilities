@@ -3,7 +3,7 @@
 
 class Colors;
 
-#include <QColor>
+#include <QtWidgets>
 
 class Colors
 {

@@ -1,7 +1,5 @@
 
-#include <QColor>
-#include <QGuiApplication>
-#include <QPalette>
+#include <QtWidgets>
 #include "colors.h"
 
 QColor Colors::shade(QColor base_color, int light_theme_lightness, int dark_theme_lightness)

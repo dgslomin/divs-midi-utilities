@@ -1,11 +1,5 @@
 
-#include <QWidget>
-#include <QFormLayout>
-#include <QFrame>
-#include <QLineEdit>
-#include <QMargins>
-#include <QPalette>
-#include <QVBoxLayout>
+#include <QtWidgets>
 #include "inspector-sidebar.h"
 #include "window.h"
 

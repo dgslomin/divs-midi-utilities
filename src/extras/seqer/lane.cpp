@@ -1,15 +1,5 @@
 
-#include <QAction>
-#include <QBrush>
-#include <QColor>
-#include <QKeySequence>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QPainter>
-#include <QPen>
-#include <QPoint>
-#include <QSettings>
-#include <QWidget>
+#include <QtWidgets>
 #include "colors.h"
 #include "lane.h"
 #include "midifile.h"

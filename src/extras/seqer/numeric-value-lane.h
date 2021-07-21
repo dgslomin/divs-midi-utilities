@@ -3,10 +3,7 @@
 
 class NumericValueLane;
 
-#include <QPainter>
-#include <QPoint>
-#include <QPen>
-#include <QRect>
+#include <QtWidgets>
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"

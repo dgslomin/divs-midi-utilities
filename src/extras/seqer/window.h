@@ -3,11 +3,7 @@
 
 class Window;
 
-#include <QCloseEvent>
-#include <QMainWindow>
-#include <QPaintEvent>
-#include <QSplitter>
-#include <QTabWidget>
+#include <QtWidgets>
 #include "inspector-sidebar.h"
 #include "sequence.h"
 

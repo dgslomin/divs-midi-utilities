@@ -1,4 +1,5 @@
 
+#include <QtWidgets>
 #include "midifile.h"
 #include "sequence.h"
 #include "window.h"

@@ -1,13 +1,6 @@
 
 #include <algorithm>
-#include <QFont>
-#include <QFontMetrics>
-#include <QPainter>
-#include <QPoint>
-#include <QRect>
-#include <QSettings>
-#include <QString>
-#include <QVector>
+#include <QtWidgets>
 #include "label-lane.h"
 #include "lane.h"
 #include "midifile.h"

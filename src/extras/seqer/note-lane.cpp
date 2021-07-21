@@ -1,9 +1,5 @@
 
-#include <QColor>
-#include <QPainter>
-#include <QPoint>
-#include <QRect>
-#include <QSettings>
+#include <QtWidgets>
 #include "colors.h"
 #include "lane.h"
 #include "midifile.h"

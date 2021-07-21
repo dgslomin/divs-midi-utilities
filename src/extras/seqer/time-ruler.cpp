@@ -1,12 +1,5 @@
 
-#include <QFont>
-#include <QFontMetrics>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QPainter>
-#include <QSettings>
-#include <QString>
-#include <QWheelEvent>
+#include <QtWidgets>
 #include "colors.h"
 #include "midifile.h"
 #include "time-ruler.h"

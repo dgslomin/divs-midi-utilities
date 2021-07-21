@@ -3,8 +3,7 @@
 
 class Sequence;
 
-#include <QObject>
-#include <QString>
+#include <QtWidgets>
 #include "midifile.h"
 #include "window.h"
 

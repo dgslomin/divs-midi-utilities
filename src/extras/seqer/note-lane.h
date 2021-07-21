@@ -3,10 +3,7 @@
 
 class NoteLane;
 
-#include <QColor>
-#include <QPainter>
-#include <QPoint>
-#include <QRect>
+#include <QtWidgets>
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"

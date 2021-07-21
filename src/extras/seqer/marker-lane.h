@@ -3,6 +3,7 @@
 
 class MarkerLane;
 
+#include <QtWidgets>
 #include "label-lane.h"
 #include "midifile.h"
 #include "window.h"

@@ -3,6 +3,7 @@
 
 class TempoLane;
 
+#include <QtWidgets>
 #include "numeric-value-lane.h"
 #include "midifile.h"
 #include "window.h"

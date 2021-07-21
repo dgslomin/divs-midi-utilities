@@ -3,14 +3,7 @@
 
 class Lane;
 
-#include <QBrush>
-#include <QColor>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QPainter>
-#include <QPen>
-#include <QPoint>
-#include <QWidget>
+#include <QtWidgets>
 #include "midifile.h"
 #include "window.h"
 

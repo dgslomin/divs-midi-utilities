@@ -3,7 +3,7 @@
 
 class InspectorSidebar;
 
-#include <QWidget>
+#include <QtWidgets>
 #include "window.h"
 
 class InspectorSidebar: public QWidget

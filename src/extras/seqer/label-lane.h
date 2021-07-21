@@ -4,10 +4,7 @@
 class LabelLane;
 class Label;
 
-#include <QPainter>
-#include <QPoint>
-#include <QString>
-#include <QVector>
+#include <QtWidgets>
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"

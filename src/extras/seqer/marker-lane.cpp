@@ -1,5 +1,5 @@
 
-#include <QString>
+#include <QtWidgets>
 #include "marker-lane.h"
 #include "label-lane.h"
 #include "midifile.h"
