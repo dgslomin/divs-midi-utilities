@@ -32,13 +32,6 @@ public:
 	long getTickFromX(int x);
 	void scrollXBy(float offset);
 	void zoomXBy(float factor);
-	void createMenuBar();
-	void createFileMenu();
-	void createEditMenu();
-	void createViewMenu();
-	void createTransportMenu();
-	void createToolsMenu();
-	void createHelpMenu();
 
 public slots:
 	void newSequence();
