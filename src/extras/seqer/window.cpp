@@ -20,6 +20,7 @@
 #include "inspector-sidebar.h"
 #include "midifile.h"
 #include "note-lane.h"
+#include "tempo-lane.h"
 #include "time-ruler.h"
 #include "velocity-lane.h"
 #include "window.h"
@@ -50,6 +51,7 @@ Window::Window(Window* existing_window)
 	this->lane_splitter->addWidget(new NoteLane(this));
 	this->lane_splitter->addWidget(new VelocityLane(this));
 	this->lane_splitter->addWidget(new ControllerLane(this));
+	this->lane_splitter->addWidget(new TempoLane(this));
 	this->lane_splitter->addWidget(new AllEventsLane(this));
 
 	this->sidebar_tab_widget = new QTabWidget();
