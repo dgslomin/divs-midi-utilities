@@ -3,6 +3,7 @@
 
 class NoteLane;
 
+#include <QColor>
 #include <QPainter>
 #include <QPoint>
 #include <QRect>
@@ -18,6 +19,8 @@ public:
 	int velocity = 63;
 	float pixels_per_note;
 	float scroll_y;
+	QColor white_note_background_color;
+	QColor black_note_background_color;
 
 	NoteLane(Window* window);
 	void paintBackground(QPainter* painter);

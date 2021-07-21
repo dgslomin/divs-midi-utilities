@@ -9,6 +9,15 @@ ControllerLane::ControllerLane(Window* window): NumericValueLane(window)
 	this->draw_connecting_lines = true;
 }
 
+void ControllerLane::paintValueLines(QPainter* painter)
+{
+	painter->setPen(this->grid_line_pen);
+	int min_y = this->getYFromValue(0) + (this->handle_size / 2);
+	int max_y = this->getYFromValue(127) + (this->handle_size / 2);
+	painter->drawLine(0, min_y, this->width(), min_y);
+	painter->drawLine(0, max_y, this->width(), max_y);
+}
+
 bool ControllerLane::shouldIncludeEvent(MidiFileEvent_t midi_event)
 {
 	return (MidiFileEvent_getType(midi_event) == MIDI_FILE_EVENT_TYPE_CONTROL_CHANGE) && (MidiFileControlChangeEvent_getNumber(midi_event) == this->controller_number);

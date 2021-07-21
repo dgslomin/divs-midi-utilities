@@ -5,6 +5,7 @@ class NumericValueLane;
 
 #include <QPainter>
 #include <QPoint>
+#include <QPen>
 #include <QRect>
 #include "lane.h"
 #include "midifile.h"
@@ -20,6 +21,8 @@ public:
 	bool draw_connecting_lines = false;
 	bool draw_height_lines = false;
 	int handle_size;
+	QPen connecting_line_pen;
+	QPen height_line_pen;
 
 	NumericValueLane(Window* window);
 	void paintBackground(QPainter* painter);
@@ -34,6 +37,7 @@ public:
 	QRect getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
 	int getYFromValue(float value);
 	float getValueFromY(int y);
+	virtual void paintValueLines(QPainter* painter) = 0;
 	virtual bool shouldIncludeEvent(MidiFileEvent_t midi_event) = 0;
 	virtual MidiFileEvent_t addEvent(long tick, float value) = 0;
 	virtual float getEventValue(MidiFileEvent_t midi_event) = 0;

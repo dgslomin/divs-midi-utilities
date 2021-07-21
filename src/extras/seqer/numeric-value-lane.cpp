@@ -1,8 +1,11 @@
 
+#include <QColor>
 #include <QPainter>
+#include <QPen>
 #include <QPoint>
 #include <QRect>
 #include <QSettings>
+#include "colors.h"
 #include "midifile.h"
 #include "numeric-value-lane.h"
 #include "window.h"
@@ -11,6 +14,8 @@ NumericValueLane::NumericValueLane(Window* window): Lane(window)
 {
 	QSettings settings;
 	this->handle_size = settings.value("numeric-value-lane/handle-size", 6).toInt();
+	this->connecting_line_pen = QPen(settings.value("numeric-value-lane/connecting-line-color", Colors::buttonShade(200, 80)).value<QColor>());
+	this->height_line_pen = QPen(settings.value("numeric-value-lane/height-line-color", Colors::buttonShade(200, 80)).value<QColor>());
 }
 
 void NumericValueLane::paintBackground(QPainter* painter)
@@ -20,6 +25,8 @@ void NumericValueLane::paintBackground(QPainter* painter)
 
 void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
+	this->paintValueLines(painter);
+
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
@@ -52,7 +59,7 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 
 	if (this->draw_height_lines)
 	{
-		painter->setPen(this->connecting_line_pen);
+		painter->setPen(this->height_line_pen);
 		int zero_y = this->getYFromValue(0) + this->handle_size;
 
 		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))

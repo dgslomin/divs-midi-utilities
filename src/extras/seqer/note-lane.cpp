@@ -1,8 +1,10 @@
 
+#include <QColor>
 #include <QPainter>
 #include <QPoint>
 #include <QRect>
 #include <QSettings>
+#include "colors.h"
 #include "lane.h"
 #include "midifile.h"
 #include "note-lane.h"
@@ -13,6 +15,8 @@ NoteLane::NoteLane(Window* window): Lane(window)
 	QSettings settings;
 	this->pixels_per_note = settings.value("note-lane/pixels-per-note", 6).toInt();
 	this->scroll_y = settings.value("note-lane/scroll-y", 0).toInt();
+	this->white_note_background_color = settings.value("note-lane/white-note-background-color", Colors::buttonShade(255, 0)).value<QColor>();
+	this->black_note_background_color = settings.value("note-lane/black-note-background-color", Colors::buttonShade(230, 50)).value<QColor>();
 }
 
 void NoteLane::paintBackground(QPainter* painter)
