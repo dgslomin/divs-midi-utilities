@@ -15,6 +15,7 @@ class LabelLane: public Lane
 
 public:
 	QVector<Label> labels;
+	int row_height;
 
 	LabelLane(Window* window);
 	void paintBackground(QPainter* painter);
@@ -24,6 +25,7 @@ public:
 	void selectEventsInRect(int x, int y, int width, int height);
 	void scrollYBy(int offset);
 	void zoomYBy(float factor);
+	int getCursorGap();
 	void computeLabelWidths();
 	void layoutLabels(int selected_events_x_offset);
 

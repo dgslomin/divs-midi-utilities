@@ -126,28 +126,25 @@ void Menu::createViewMenu(Window* window)
 	window->addAction(zoom_in_time_action);
 	view_menu->addAction(zoom_in_time_action);
 	zoom_in_time_action->setShortcut(QKeySequence(QKeySequence::ZoomIn));
+	QObject::connect(zoom_in_time_action, SIGNAL(triggered()), window, SLOT(zoomInTime()));
 
 	QAction* zoom_out_time_action = new QAction(QObject::tr("Zoom &Out Time"));
 	window->addAction(zoom_out_time_action);
 	view_menu->addAction(zoom_out_time_action);
 	zoom_out_time_action->setShortcut(QKeySequence(QKeySequence::ZoomOut));
+	QObject::connect(zoom_out_time_action, SIGNAL(triggered()), window, SLOT(zoomOutTime()));
 
 	QAction* zoom_in_lane_action = new QAction(QObject::tr("Zoom &In Lane"));
 	window->addAction(zoom_in_lane_action);
 	view_menu->addAction(zoom_in_lane_action);
+	zoom_in_lane_action->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Plus));
+	QObject::connect(zoom_in_lane_action, SIGNAL(triggered()), window, SIGNAL(zoomInLane()));
 
 	QAction* zoom_out_lane_action = new QAction(QObject::tr("Zoom &Out Lane"));
 	window->addAction(zoom_out_lane_action);
 	view_menu->addAction(zoom_out_lane_action);
-
-	view_menu->addSeparator();
-
-	QAction* linear_time_action = new QAction(QObject::tr("&Linear Time"));
-	window->addAction(linear_time_action);
-	view_menu->addAction(linear_time_action);
-	linear_time_action->setCheckable(true);
-	linear_time_action->setChecked(window->use_linear_time);
-	QObject::connect(linear_time_action, SIGNAL(toggled(bool)), window, SLOT(setUseLinearTime(bool)));
+	zoom_out_lane_action->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Minus));
+	QObject::connect(zoom_out_lane_action, SIGNAL(triggered()), window, SIGNAL(zoomOutLane()));
 
 	view_menu->addSeparator();
 
@@ -168,6 +165,15 @@ void Menu::createViewMenu(Window* window)
 	QAction* move_lane_down_action = new QAction(QObject::tr("Move Lane &Down"));
 	window->addAction(move_lane_down_action);
 	view_menu->addAction(move_lane_down_action);
+
+	view_menu->addSeparator();
+
+	QAction* linear_time_action = new QAction(QObject::tr("&Linear Time"));
+	window->addAction(linear_time_action);
+	view_menu->addAction(linear_time_action);
+	linear_time_action->setCheckable(true);
+	linear_time_action->setChecked(window->use_linear_time);
+	QObject::connect(linear_time_action, SIGNAL(toggled(bool)), window, SLOT(setUseLinearTime(bool)));
 }
 
 void Menu::createTransportMenu(Window* window)
@@ -256,5 +262,6 @@ void Menu::createHelpMenu(Window* window)
 	QAction* about_seqer_action = new QAction(QObject::tr("&About Seqer"));
 	window->addAction(about_seqer_action);
 	help_menu->addAction(about_seqer_action);
+	QObject::connect(about_seqer_action, SIGNAL(triggered()), window, SLOT(aboutSeqer()));
 }
 

@@ -11,6 +11,8 @@ Lane::Lane(Window* window)
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	connect(window, SIGNAL(sequenceUpdated()), this, SLOT(sequenceUpdated()));
+	connect(window, SIGNAL(zoomInLane()), this, SLOT(zoomInIfHasFocus()));
+	connect(window, SIGNAL(zoomOutLane()), this, SLOT(zoomOutIfHasFocus()));
 
 	QAction* edit_event_action = new QAction(tr("Edit Event"));
 	this->addAction(edit_event_action);
@@ -125,10 +127,18 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);
-	painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->cursor_y);
-	painter.drawLine(this->window->cursor_x, cursor_y + 6, this->window->cursor_x, this->height());
-	painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
-	painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + 6, 4, 4);
+
+	if (this->hasFocus())
+	{
+		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->cursor_y);
+		painter.drawLine(this->window->cursor_x, cursor_y + this->getCursorGap(), this->window->cursor_x, this->height());
+		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
+		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + this->getCursorGap(), 4, 4);
+	}
+	else
+	{
+		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
+	}
 
 	this->sequence_updated = false;
 }
@@ -287,6 +297,16 @@ void Lane::sequenceUpdated()
 {
 	this->sequence_updated = true;
 	this->update();
+}
+
+void Lane::zoomInIfHasFocus()
+{
+	if (this->hasFocus()) this->zoomYBy(1.05);
+}
+
+void Lane::zoomOutIfHasFocus()
+{
+	if (this->hasFocus()) this->zoomYBy(1 / 1.05);
 }
 
 void Lane::editEvent()

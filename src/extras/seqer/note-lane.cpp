@@ -119,6 +119,11 @@ void NoteLane::zoomYBy(float factor)
 	this->update();
 }
 
+int NoteLane::getCursorGap()
+{
+	return this->pixels_per_note;
+}
+
 QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
 {
 	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));

@@ -263,10 +263,14 @@ void Window::selectNone()
 	emit this->sequence->updated();
 }
 
-void Window::setUseLinearTime(bool use_linear_time)
+void Window::zoomInTime()
 {
-	this->use_linear_time = use_linear_time;
-	this->update();
+	this->zoomXBy(1.05);
+}
+
+void Window::zoomOutTime()
+{
+	this->zoomXBy(1 / 1.05);
 }
 
 void Window::addLane()
@@ -275,6 +279,17 @@ void Window::addLane()
 
 void Window::removeLane()
 {
+}
+
+void Window::setUseLinearTime(bool use_linear_time)
+{
+	this->use_linear_time = use_linear_time;
+	this->update();
+}
+
+void Window::aboutSeqer()
+{
+	QMessageBox::information(this, tr("About"), tr("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license"));
 }
 
 void Window::focusInspector()

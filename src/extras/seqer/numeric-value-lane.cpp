@@ -152,6 +152,11 @@ void NumericValueLane::zoomYBy(float factor)
 	this->update();
 }
 
+int NumericValueLane::getCursorGap()
+{
+	return this->handle_size;
+}
+
 QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
 {
 	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));

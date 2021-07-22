@@ -45,13 +45,18 @@ public slots:
 	void deleteSelected();
 	void selectAll();
 	void selectNone();
-	void setUseLinearTime(bool use_linear_time);
+	void zoomInTime();
+	void zoomOutTime();
 	void addLane();
 	void removeLane();
+	void setUseLinearTime(bool use_linear_time);
+	void aboutSeqer();
 	void focusInspector();
 
 signals:
 	void sequenceUpdated();
+	void zoomInLane();
+	void zoomOutLane();
 };
 
 #endif

@@ -66,9 +66,12 @@ public:
 	virtual void selectEventsInRect(int x, int y, int width, int height) = 0;
 	virtual void scrollYBy(int offset) = 0;
 	virtual void zoomYBy(float factor) = 0;
+	virtual int getCursorGap() = 0;
 
 public slots:
 	void sequenceUpdated();
+	void zoomInIfHasFocus();
+	void zoomOutIfHasFocus();
 	void editEvent();
 	void selectEvent();
 	void cursorLeft();

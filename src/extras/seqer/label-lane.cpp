@@ -14,6 +14,8 @@ LabelLane::LabelLane(Window* window): Lane(window)
 	QFont font = this->font();
 	font.setPointSizeF(font.pointSizeF() * font_scaling_factor);
 	this->setFont(font);
+
+	this->row_height = this->fontMetrics().lineSpacing() + 4;
 }
 
 void LabelLane::paintBackground(QPainter* painter)
@@ -34,7 +36,6 @@ void LabelLane::paintEvents(QPainter* painter, int selected_events_x_offset, int
 	this->layoutLabels(selected_events_x_offset);
 
 	QFontMetrics font_metrics = this->fontMetrics();
-	int row_height = font_metrics.lineSpacing() + 4;
 	int baseline = font_metrics.leading() + font_metrics.ascent();
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
@@ -46,22 +47,20 @@ void LabelLane::paintEvents(QPainter* painter, int selected_events_x_offset, int
 
 		painter->setPen(is_background ? (is_selected ? this->selected_background_event_pen : this->unselected_background_event_pen) : (is_selected ? this->selected_event_pen : this->unselected_event_pen));
 		painter->setBrush(is_background ? (is_selected ? this->selected_background_event_brush : this->unselected_background_event_brush) : (is_selected ? this->selected_event_brush : this->unselected_event_brush));
-		painter->drawRect(label.x, label.row * row_height, label.width, row_height);
+		painter->drawRect(label.x, label.row * this->row_height, label.width, this->row_height);
 
 		painter->setPen(is_background ? (is_selected ? this->selected_background_event_text_pen : this->unselected_background_event_text_pen) : (is_selected ? this->selected_event_text_pen : this->unselected_event_text_pen));
 		painter->setBrush(Qt::NoBrush);
-		painter->drawText(label.x + 2, label.row * row_height + baseline + 2, label.text);
+		painter->drawText(label.x + 2, label.row * this->row_height + baseline + 2, label.text);
 	}
 }
 
 MidiFileEvent_t LabelLane::getEventFromXY(int x, int y)
 {
-	int row_height = this->fontMetrics().lineSpacing() + 4;
-
 	for (int label_number = this->labels.size() - 1; label_number >= 0; label_number--)
 	{
 		Label& label = this->labels[label_number];
-		QRect rect(label.x, label.row * row_height, label.width, row_height);
+		QRect rect(label.x, label.row * this->row_height, label.width, this->row_height);
 		if (rect.contains(x, y, false)) return label.midi_event;
 	}
 
@@ -70,12 +69,10 @@ MidiFileEvent_t LabelLane::getEventFromXY(int x, int y)
 
 QPoint LabelLane::getPointFromEvent(MidiFileEvent_t midi_event)
 {
-	int row_height = this->fontMetrics().lineSpacing() + 4;
-
 	for (int label_number = this->labels.size() - 1; label_number >= 0; label_number--)
 	{
 		Label& label = this->labels[label_number];
-		if (label.midi_event == midi_event) return QPoint(label.x, label.row * row_height);
+		if (label.midi_event == midi_event) return QPoint(label.x, label.row * this->row_height);
 	}
 
 	return QPoint();
@@ -84,12 +81,11 @@ QPoint LabelLane::getPointFromEvent(MidiFileEvent_t midi_event)
 void LabelLane::selectEventsInRect(int x, int y, int width, int height)
 {
 	QRect bounds(x, y, width, height);
-	int row_height = this->fontMetrics().lineSpacing() + 4;
 
 	for (int label_number = 0; label_number < this->labels.size(); label_number++)
 	{
 		Label& label = this->labels[label_number];
-		QRect rect(label.x, label.row * row_height, label.width, row_height);
+		QRect rect(label.x, label.row * this->row_height, label.width, this->row_height);
 		if (rect.intersects(bounds)) MidiFileEvent_setSelected(label.midi_event, 1);
 	}
 }
@@ -106,6 +102,11 @@ void LabelLane::zoomYBy(float factor)
 	Q_UNUSED(factor)
 }
 
+int LabelLane::getCursorGap()
+{
+	return this->row_height;
+}
+
 void LabelLane::computeLabelWidths()
 {
 	QFontMetrics font_metrics = this->fontMetrics();
@@ -119,8 +120,7 @@ void LabelLane::computeLabelWidths()
 
 void LabelLane::layoutLabels(int selected_events_x_offset)
 {
-	int row_height = this->fontMetrics().lineSpacing() + 4;
-	int number_of_rows = this->height() / row_height;
+	int number_of_rows = this->height() / this->row_height;
 	int cluster_start = 0;
 	int end_x = INT_MIN;
 

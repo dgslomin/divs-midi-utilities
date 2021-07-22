@@ -29,6 +29,7 @@ public:
 	void selectEventsInRect(int x, int y, int width, int height);
 	void scrollYBy(int offset);
 	void zoomYBy(float factor);
+	int getCursorGap();
 	QRect getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
 	int getYFromNote(int note);
 	int getNoteFromY(int y);

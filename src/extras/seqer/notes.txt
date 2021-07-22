@@ -8,8 +8,6 @@ RtMidi.
 
 TODO:
 middle drag scroll/zoom
-cursor follows focus
-move/add events in label lanes
 note start/middle/end drag
 inspector
 add/remove/reorder lanes
@@ -17,6 +15,7 @@ fix "is modified" logic
 tracks and channels side panels
 lane groups
 undo stack
+clipboard operations
 keyboard navigation and tweaking
 preferences
 playback
