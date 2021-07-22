@@ -10,7 +10,6 @@ TODO:
 middle drag scroll/zoom
 cursor follows focus
 move/add events in label lanes
-delete events
 note start/middle/end drag
 inspector
 add/remove/reorder lanes

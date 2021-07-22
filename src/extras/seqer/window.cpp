@@ -233,6 +233,16 @@ void Window::quit()
 	}
 }
 
+void Window::deleteSelected()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFile_iterateEvents(this->sequence->midi_file))
+	{
+		if (MidiFileEvent_isSelected(midi_event)) MidiFileEvent_delete(midi_event);
+	}
+
+	emit this->sequence->updated();
+}
+
 void Window::selectAll()
 {
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))

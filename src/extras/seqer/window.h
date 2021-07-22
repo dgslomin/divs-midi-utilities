@@ -42,6 +42,7 @@ public slots:
 	void saveAs();
 	void saveAs(QString filename);
 	void quit();
+	void deleteSelected();
 	void selectAll();
 	void selectNone();
 	void setUseLinearTime(bool use_linear_time);

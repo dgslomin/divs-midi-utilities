@@ -97,6 +97,7 @@ void Menu::createEditMenu(Window* window)
 	window->addAction(delete_action);
 	edit_menu->addAction(delete_action);
 	delete_action->setShortcut(QKeySequence(QKeySequence::Delete));
+	QObject::connect(delete_action, SIGNAL(triggered()), window, SLOT(deleteSelected()));
 
 	edit_menu->addSeparator();
 
