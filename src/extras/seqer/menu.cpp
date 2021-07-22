@@ -141,6 +141,15 @@ void Menu::createViewMenu(Window* window)
 
 	view_menu->addSeparator();
 
+	QAction* linear_time_action = new QAction(QObject::tr("&Linear Time"));
+	window->addAction(linear_time_action);
+	view_menu->addAction(linear_time_action);
+	linear_time_action->setCheckable(true);
+	linear_time_action->setChecked(window->use_linear_time);
+	QObject::connect(linear_time_action, SIGNAL(toggled(bool)), window, SLOT(setUseLinearTime(bool)));
+
+	view_menu->addSeparator();
+
 	QAction* add_lane_action = new QAction(QObject::tr("&Add Lane"));
 	window->addAction(add_lane_action);
 	view_menu->addAction(add_lane_action);

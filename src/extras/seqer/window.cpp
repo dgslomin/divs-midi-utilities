@@ -17,7 +17,6 @@ Window::Window(Window* existing_window)
 {
 	this->sequence = (existing_window == NULL) ? new Sequence() : existing_window->sequence;
 	this->sequence->addWindow(this);
-	Menu::createMenuBar(this);
 	this->statusBar();
 
 	this->sidebar_splitter = new QSplitter(Qt::Horizontal);
@@ -65,6 +64,8 @@ Window::Window(Window* existing_window)
 	this->use_linear_time = settings.value("window/use-linear-time", false).toBool();
 	this->pixels_per_beat = settings.value("window/pixels-per-beat", 40.0).toFloat();
 	this->pixels_per_second = settings.value("window/pixels-per-second", 40.0).toFloat();
+
+	Menu::createMenuBar(this);
 }
 
 Window::~Window()
@@ -80,6 +81,7 @@ void Window::closeEvent(QCloseEvent* event)
 	settings.setValue("window/lane-splitter-state", this->lane_splitter->saveState());
 	settings.setValue("window/sidebar-splitter-state", this->sidebar_splitter->saveState());
 	settings.setValue("window/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
+	settings.setValue("window/use-linear-time", this->use_linear_time);
 	QMainWindow::closeEvent(event);
 }
 
@@ -249,6 +251,12 @@ void Window::selectNone()
 	}
 
 	emit this->sequence->updated();
+}
+
+void Window::setUseLinearTime(bool use_linear_time)
+{
+	this->use_linear_time = use_linear_time;
+	this->update();
 }
 
 void Window::addLane()

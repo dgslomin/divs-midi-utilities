@@ -81,37 +81,19 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	// time lines
 
-	painter.setPen(this->grid_line_pen);
-	painter.setBrush(Qt::NoBrush);
-	long min_tick = this->window->getTickFromX(0);
-	long max_tick = this->window->getTickFromX(this->width());
-
-	if (this->window->use_linear_time)
+	if (this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, 1)) - this->window->getXFromTick(0) > 8)
 	{
-		if (this->window->pixels_per_second >= 8.0)
-		{
-			int min_time = std::max((int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
-			int max_time = (int)(MidiFile_getTimeFromTick(this->window->sequence->midi_file, max_tick)) + 1;
+		painter.setPen(this->grid_line_pen);
+		painter.setBrush(Qt::NoBrush);
+		long min_tick = this->window->getTickFromX(0);
+		long max_tick = this->window->getTickFromX(this->width());
+		int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
+		int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
 
-			for (int time = min_time; time < max_time; time++)
-			{
-				int x = this->window->getXFromTick(MidiFile_getTickFromTime(this->window->sequence->midi_file, time));
-				painter.drawLine(x, 0, x, this->height());
-			}
-		}
-	}
-	else
-	{
-		if (this->window->pixels_per_beat >= 8.0)
+		for (int beat = min_beat; beat < max_beat; beat++)
 		{
-			int min_beat = std::max((int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, min_tick)) - 1, 0);
-			int max_beat = (int)(MidiFile_getBeatFromTick(this->window->sequence->midi_file, max_tick)) + 1;
-
-			for (int beat = min_beat; beat < max_beat; beat++)
-			{
-				int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
-				painter.drawLine(x, 0, x, this->height());
-			}
+			int x = this->window->getXFromTick(MidiFile_getTickFromBeat(this->window->sequence->midi_file, beat));
+			painter.drawLine(x, 0, x, this->height());
 		}
 	}
 

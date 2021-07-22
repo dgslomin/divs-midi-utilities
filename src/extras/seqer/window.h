@@ -44,6 +44,7 @@ public slots:
 	void quit();
 	void selectAll();
 	void selectNone();
+	void setUseLinearTime(bool use_linear_time);
 	void addLane();
 	void removeLane();
 	void focusInspector();
