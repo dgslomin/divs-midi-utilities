@@ -10,13 +10,13 @@ TODO:
 middle drag scroll/zoom
 note start/middle/end drag
 inspector
+keyboard navigation and tweaking
 add/remove/reorder lanes
 fix "is modified" logic
 tracks and channels side panels
 lane groups
 undo stack
 clipboard operations
-keyboard navigation and tweaking
 preferences
 playback
 recording

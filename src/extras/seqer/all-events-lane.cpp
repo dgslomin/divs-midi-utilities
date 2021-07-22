@@ -131,8 +131,12 @@ MidiFileEvent_t AllEventsLane::addEventAtXY(int x, int y)
 
 void AllEventsLane::moveEventsByXY(int x_offset, int y_offset)
 {
-	// TODO
-	Q_UNUSED(x_offset)
 	Q_UNUSED(y_offset)
+	if (x_offset == 0) return;
+
+	for (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file))
+	{
+		if (MidiFileEvent_isSelected(midi_event)) MidiFileEvent_setTick(midi_event, this->window->getTickFromX(this->window->getXFromTick(MidiFileEvent_getTick(midi_event)) + x_offset));
+	}
 }
 

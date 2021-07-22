@@ -185,11 +185,6 @@ void Menu::createTransportMenu(Window* window)
 	transport_menu->addAction(play_action);
 	play_action->setShortcut(QKeySequence(Qt::Key_Space));
 
-	QAction* stop_action = new QAction(QObject::tr("&Stop"));
-	window->addAction(stop_action);
-	transport_menu->addAction(stop_action);
-	stop_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Space));
-
 	QAction* record_action = new QAction(QObject::tr("&Record"));
 	window->addAction(record_action);
 	transport_menu->addAction(record_action);
@@ -197,13 +192,17 @@ void Menu::createTransportMenu(Window* window)
 
 	transport_menu->addSeparator();
 
-	QAction* set_playback_position_action = new QAction(QObject::tr("Set Playback Position"));
-	window->addAction(set_playback_position_action);
-	transport_menu->addAction(set_playback_position_action);
+	QAction* set_play_position_action = new QAction(QObject::tr("Set Play Position"));
+	window->addAction(set_play_position_action);
+	transport_menu->addAction(set_play_position_action);
 
-	QAction* go_to_playback_position_action = new QAction(QObject::tr("Go to Playback Position"));
-	window->addAction(go_to_playback_position_action);
-	transport_menu->addAction(go_to_playback_position_action);
+	QAction* go_to_play_position_action = new QAction(QObject::tr("Go to Play Position"));
+	window->addAction(go_to_play_position_action);
+	transport_menu->addAction(go_to_play_position_action);
+
+	QAction* go_to_stop_position_action = new QAction(QObject::tr("Go to Stop Position"));
+	window->addAction(go_to_stop_position_action);
+	transport_menu->addAction(go_to_stop_position_action);
 
 	transport_menu->addSeparator();
 
