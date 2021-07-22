@@ -29,10 +29,7 @@ void Sequence::removeWindow(Window* window)
 
 bool Sequence::save()
 {
-	if (this->filename.isEmpty()) return false;
-	MidiFile_convertNoteEventsToStandardEvents(this->midi_file);
-	bool successful = (MidiFile_save(this->midi_file, this->filename.toUtf8().data()) == 0);
-	MidiFile_convertStandardEventsToNoteEvents(this->midi_file);
+	bool successful = Sequence::saveMidiFile(this->midi_file, this->filename);
 
 	if (successful)
 	{
@@ -45,9 +42,7 @@ bool Sequence::save()
 
 bool Sequence::saveAs(QString filename)
 {
-	MidiFile_convertNoteEventsToStandardEvents(this->midi_file);
-	bool successful = (MidiFile_save(this->midi_file, filename.toUtf8().data()) == 0);
-	MidiFile_convertStandardEventsToNoteEvents(this->midi_file);
+	bool successful = Sequence::saveMidiFile(this->midi_file, filename);
 
 	if (successful)
 	{
@@ -57,5 +52,108 @@ bool Sequence::saveAs(QString filename)
 	}
 
 	return successful;
+}
+
+MidiFile_t Sequence::loadMidiFile(QString filename)
+{
+	if (filename.isEmpty()) return NULL;
+	MidiFile_t midi_file = MidiFile_load(filename.toUtf8().data());
+	if (midi_file != NULL) Sequence::deserializeMidiFile(midi_file);
+	return midi_file;
+}
+
+MidiFile_t Sequence::loadMidiFileFromBuffer(QByteArray buffer)
+{
+	MidiFile_t midi_file = MidiFile_loadFromBuffer((unsigned char *)(buffer.data()));
+	if (midi_file != NULL) Sequence::deserializeMidiFile(midi_file);
+	return midi_file;
+}
+
+bool Sequence::saveMidiFile(MidiFile_t midi_file, QString filename)
+{
+	if (filename.isEmpty()) return false;
+	Sequence::serializeMidiFile(midi_file);
+	bool successful = (MidiFile_save(midi_file, filename.toUtf8().data()) == 0);
+	Sequence::deserializeMidiFile(midi_file);
+	return successful;
+}
+
+QByteArray Sequence::saveMidiFileToBuffer(MidiFile_t midi_file)
+{
+	QByteArray buffer;
+	Sequence::serializeMidiFile(midi_file);
+	buffer.resize(MidiFile_getFileSize(midi_file));
+	MidiFile_saveToBuffer(midi_file, (unsigned char *)(buffer.data()));
+	Sequence::deserializeMidiFile(midi_file);
+	return buffer;
+}
+
+void Sequence::serializeMidiFile(MidiFile_t midi_file)
+{
+	MidiFile_convertNoteEventsToStandardEvents(midi_file);
+}
+
+void Sequence::deserializeMidiFile(MidiFile_t midi_file)
+{
+	MidiFile_convertStandardEventsToNoteEvents(midi_file);
+}
+
+void Sequence::midiFileSelectAll(MidiFile_t midi_file)
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 1);
+	}
+}
+
+void Sequence::midiFileSelectNone(MidiFile_t midi_file)
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		MidiFileEvent_setSelected(midi_event, 0);
+	}
+}
+
+bool Sequence::midiFileHasSelection(MidiFile_t midi_file)
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isSelected(midi_event)) return true;
+	}
+
+	return false;
+}
+
+bool Sequence::midiFileHasMultipleSelectedTracks(MidiFile_t midi_file)
+{
+	int number_of_selected_tracks = 0; // excluding the conductor track
+
+	for (MidiFileTrack_t track = MidiFileTrack_getNextTrack(MidiFile_getFirstTrack(midi_file)); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		for (MidiFileEvent_t midi_event = MidiFileTrack_getFirstEvent(track); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInTrack(midi_event))
+		{
+			if (MidiFileEvent_isSelected(midi_event))
+			{
+				number_of_selected_tracks++;
+				if (number_of_selected_tracks > 1) return true;
+				break;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Sequence::midiFileHasMultiplePopulatedTracks(MidiFile_t midi_file)
+{
+	int number_of_populated_tracks = 0; // excluding the conductor track
+
+	for (MidiFileTrack_t track = MidiFileTrack_getNextTrack(MidiFile_getFirstTrack(midi_file)); track != NULL; track = MidiFileTrack_getNextTrack(track))
+	{
+		if (MidiFileTrack_getFirstEvent(track) != NULL) number_of_populated_tracks++;
+		if (number_of_populated_tracks > 1) return true;
+	}
+
+	return false;
 }
 

@@ -23,6 +23,17 @@ public:
 	void removeWindow(Window* window);
 	bool save();
 	bool saveAs(QString filename);
+	static MidiFile_t loadMidiFile(QString filename);
+	static MidiFile_t loadMidiFileFromBuffer(QByteArray buffer);
+	static bool saveMidiFile(MidiFile_t midi_file, QString filename);
+	static QByteArray saveMidiFileToBuffer(MidiFile_t midi_file);
+	static void serializeMidiFile(MidiFile_t midi_file);
+	static void deserializeMidiFile(MidiFile_t midi_file);
+	static void midiFileSelectAll(MidiFile_t midi_file);
+	static void midiFileSelectNone(MidiFile_t midi_file);
+	static bool midiFileHasSelection(MidiFile_t midi_file);
+	static bool midiFileHasMultipleSelectedTracks(MidiFile_t midi_file);
+	static bool midiFileHasMultiplePopulatedTracks(MidiFile_t midi_file);
 
 signals:
 	void updated();

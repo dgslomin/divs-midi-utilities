@@ -42,7 +42,7 @@ public slots:
 	void saveAs();
 	void saveAs(QString filename);
 	void quit();
-	void deleteSelected();
+	void delete_();
 	void selectAll();
 	void selectNone();
 	void zoomInTime();
@@ -55,6 +55,9 @@ public slots:
 
 signals:
 	void sequenceUpdated();
+	void cut();
+	void copy_();
+	void paste();
 	void zoomInLane();
 	void zoomOutLane();
 };

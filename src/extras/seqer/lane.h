@@ -70,8 +70,11 @@ public:
 
 public slots:
 	void sequenceUpdated();
-	void zoomInIfHasFocus();
-	void zoomOutIfHasFocus();
+	void cut();
+	void copy_();
+	void paste();
+	void zoomIn();
+	void zoomOut();
 	void editEvent();
 	void selectEvent();
 	void cursorLeft();

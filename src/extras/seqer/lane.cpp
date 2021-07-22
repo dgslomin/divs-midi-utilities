@@ -11,8 +11,11 @@ Lane::Lane(Window* window)
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	connect(window, SIGNAL(sequenceUpdated()), this, SLOT(sequenceUpdated()));
-	connect(window, SIGNAL(zoomInLane()), this, SLOT(zoomInIfHasFocus()));
-	connect(window, SIGNAL(zoomOutLane()), this, SLOT(zoomOutIfHasFocus()));
+	connect(window, SIGNAL(cut()), this, SLOT(cut()));
+	connect(window, SIGNAL(copy_()), this, SLOT(copy_()));
+	connect(window, SIGNAL(paste()), this, SLOT(paste()));
+	connect(window, SIGNAL(zoomInLane()), this, SLOT(zoomIn()));
+	connect(window, SIGNAL(zoomOutLane()), this, SLOT(zoomOut()));
 
 	QAction* edit_event_action = new QAction(tr("Edit Event"));
 	this->addAction(edit_event_action);
@@ -299,14 +302,79 @@ void Lane::sequenceUpdated()
 	this->update();
 }
 
-void Lane::zoomInIfHasFocus()
+void Lane::cut()
 {
-	if (this->hasFocus()) this->zoomYBy(1.05);
+	if (!this->hasFocus()) return;
+	this->copy_();
+	this->window->delete_();
 }
 
-void Lane::zoomOutIfHasFocus()
+void Lane::copy_()
 {
-	if (this->hasFocus()) this->zoomYBy(1 / 1.05);
+	if (!this->hasFocus()) return;
+
+	MidiFile_t clipboard_midi_file = MidiFile_newFromTemplate(this->window->sequence->midi_file);
+	bool has_multiple_selected_tracks = Sequence::midiFileHasMultipleSelectedTracks(this->window->sequence->midi_file);
+	long first_selected_event_tick = -1;
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isSelected(midi_event))
+		{
+			int track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
+			if ((track_number > 1) && !has_multiple_selected_tracks) track_number = 1;
+			MidiFileEvent_t clipboard_midi_event = MidiFileTrack_copyEvent(MidiFile_getTrackByNumber(clipboard_midi_file, track_number, 1), midi_event);
+			if (first_selected_event_tick < 0) first_selected_event_tick = MidiFileEvent_getTick(midi_event);
+			MidiFileEvent_setTick(clipboard_midi_event, MidiFileEvent_getTick(midi_event) - first_selected_event_tick);
+			MidiFileEvent_setSelected(clipboard_midi_event, 0);
+		}
+	}
+
+	if (first_selected_event_tick >= 0)
+	{
+		QMimeData* mime_data = new QMimeData();
+		mime_data->setData("audio/midi", Sequence::saveMidiFileToBuffer(clipboard_midi_file));
+		QGuiApplication::clipboard()->setMimeData(mime_data);
+	}
+
+	MidiFile_free(clipboard_midi_file);
+}
+
+void Lane::paste()
+{
+	if (!this->hasFocus()) return;
+
+	const QMimeData* mime_data = QGuiApplication::clipboard()->mimeData();
+	if ((mime_data == NULL) || !mime_data->hasFormat("audio/midi")) return;
+	MidiFile_t clipboard_midi_file = Sequence::loadMidiFileFromBuffer(mime_data->data("audio/midi"));
+	if (clipboard_midi_file == NULL) return;
+	this->window->selectNone();
+	bool has_multiple_populated_tracks = Sequence::midiFileHasMultiplePopulatedTracks(clipboard_midi_file);
+	long cursor_tick = this->window->getTickFromX(this->window->cursor_x);
+
+	for (MidiFileEvent_t clipboard_midi_event = MidiFile_getFirstEvent(clipboard_midi_file); clipboard_midi_event != NULL; clipboard_midi_event = MidiFileEvent_getNextEventInFile(clipboard_midi_event))
+	{
+		int track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(clipboard_midi_event));
+		if ((track_number > 1) && !has_multiple_populated_tracks) track_number = this->track_number;
+		MidiFileEvent_t midi_event = MidiFileTrack_copyEvent(MidiFile_getTrackByNumber(this->window->sequence->midi_file, track_number, 1), clipboard_midi_event);
+		MidiFileEvent_setTick(midi_event, MidiFileEvent_getTick(clipboard_midi_event) + cursor_tick);
+		MidiFileEvent_setSelected(midi_event, 1);
+	}
+
+	MidiFile_free(clipboard_midi_file);
+	emit this->window->sequence->updated();
+}
+
+void Lane::zoomIn()
+{
+	if (!this->hasFocus()) return;
+	this->zoomYBy(1.05);
+}
+
+void Lane::zoomOut()
+{
+	if (!this->hasFocus()) return;
+	this->zoomYBy(1 / 1.05);
 }
 
 void Lane::editEvent()

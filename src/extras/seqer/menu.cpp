@@ -82,22 +82,25 @@ void Menu::createEditMenu(Window* window)
 	window->addAction(cut_action);
 	edit_menu->addAction(cut_action);
 	cut_action->setShortcut(QKeySequence(QKeySequence::Cut));
+	QObject::connect(cut_action, SIGNAL(triggered()), window, SIGNAL(cut()));
 
 	QAction* copy_action = new QAction(QObject::tr("&Copy"));
 	window->addAction(copy_action);
 	edit_menu->addAction(copy_action);
 	copy_action->setShortcut(QKeySequence(QKeySequence::Copy));
+	QObject::connect(copy_action, SIGNAL(triggered()), window, SIGNAL(copy_()));
 
 	QAction* paste_action = new QAction(QObject::tr("&Paste"));
 	window->addAction(paste_action);
 	edit_menu->addAction(paste_action);
 	paste_action->setShortcut(QKeySequence(QKeySequence::Paste));
+	QObject::connect(paste_action, SIGNAL(triggered()), window, SIGNAL(paste()));
 
 	QAction* delete_action = new QAction(QObject::tr("&Delete"));
 	window->addAction(delete_action);
 	edit_menu->addAction(delete_action);
 	delete_action->setShortcut(QKeySequence(QKeySequence::Delete));
-	QObject::connect(delete_action, SIGNAL(triggered()), window, SLOT(deleteSelected()));
+	QObject::connect(delete_action, SIGNAL(triggered()), window, SLOT(delete_()));
 
 	edit_menu->addSeparator();
 

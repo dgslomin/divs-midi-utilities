@@ -315,7 +315,7 @@ static size_t MidiFileIO_read(MidiFileIO_t io, size_t length, unsigned char *buf
 			}
 			else
 			{
-				memcpy(buffer, io->u.buffer.buffer, length);
+				memcpy(buffer, io->u.buffer.buffer + io->u.buffer.offset, length);
 			}
 
 			io->u.buffer.offset += length;
@@ -338,7 +338,7 @@ static size_t MidiFileIO_write(MidiFileIO_t io, size_t length, unsigned char *bu
 		}
 		case MIDI_FILE_IO_TYPE_BUFFER:
 		{
-			if (io->u.buffer.buffer != NULL) memcpy(io->u.buffer.buffer, buffer, length);
+			if (io->u.buffer.buffer != NULL) memcpy(io->u.buffer.buffer + io->u.buffer.offset, buffer, length);
 			io->u.buffer.offset += length;
 			return length;
 		}
@@ -3233,6 +3233,26 @@ MidiFileEvent_t MidiFileTrack_copyEvent(MidiFileTrack_t track, MidiFileEvent_t e
 		case MIDI_FILE_EVENT_TYPE_META:
 		{
 			new_event = MidiFileTrack_createMetaEvent(track, MidiFileEvent_getTick(event), MidiFileMetaEvent_getNumber(event), MidiFileMetaEvent_getDataLength(event), MidiFileMetaEvent_getData(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_NOTE:
+		{
+			new_event = MidiFileTrack_createNoteEvent(track, MidiFileEvent_getTick(event), MidiFileNoteEvent_getDurationTicks(event), MidiFileNoteEvent_getChannel(event), MidiFileNoteEvent_getNote(event), MidiFileNoteEvent_getVelocity(event), MidiFileNoteEvent_getEndVelocity(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_FINE_CONTROL_CHANGE:
+		{
+			new_event = MidiFileTrack_createFineControlChangeEvent(track, MidiFileEvent_getTick(event), MidiFileFineControlChangeEvent_getChannel(event), MidiFileFineControlChangeEvent_getCoarseNumber(event), MidiFileFineControlChangeEvent_getValue(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_RPN:
+		{
+			new_event = MidiFileTrack_createRpnEvent(track, MidiFileEvent_getTick(event), MidiFileRpnEvent_getChannel(event), MidiFileRpnEvent_getNumber(event), MidiFileRpnEvent_getValue(event));
+			break;
+		}
+		case MIDI_FILE_EVENT_TYPE_NRPN:
+		{
+			new_event = MidiFileTrack_createNrpnEvent(track, MidiFileEvent_getTick(event), MidiFileNrpnEvent_getChannel(event), MidiFileNrpnEvent_getNumber(event), MidiFileNrpnEvent_getValue(event));
 			break;
 		}
 		default:

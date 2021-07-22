@@ -123,7 +123,7 @@ void Window::open()
 
 void Window::open(QString filename)
 {
-	MidiFile_t new_midi_file = MidiFile_load(filename.toUtf8().data());
+	MidiFile_t new_midi_file = Sequence::loadMidiFile(filename);
 
 	if (new_midi_file == NULL)
 	{
@@ -131,7 +131,6 @@ void Window::open(QString filename)
 		return;
 	}
 
-	MidiFile_convertStandardEventsToNoteEvents(new_midi_file);
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
@@ -233,7 +232,7 @@ void Window::quit()
 	}
 }
 
-void Window::deleteSelected()
+void Window::delete_()
 {
 	for (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFile_iterateEvents(this->sequence->midi_file))
 	{
@@ -245,21 +244,13 @@ void Window::deleteSelected()
 
 void Window::selectAll()
 {
-	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
-	{
-		MidiFileEvent_setSelected(midi_event, 1);
-	}
-
+	Sequence::midiFileSelectAll(this->sequence->midi_file);
 	emit this->sequence->updated();
 }
 
 void Window::selectNone()
 {
-	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
-	{
-		MidiFileEvent_setSelected(midi_event, 0);
-	}
-
+	Sequence::midiFileSelectNone(this->sequence->midi_file);
 	emit this->sequence->updated();
 }
 

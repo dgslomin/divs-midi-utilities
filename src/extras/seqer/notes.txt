@@ -16,7 +16,6 @@ fix "is modified" logic
 tracks and channels side panels
 lane groups
 undo stack
-clipboard operations
 preferences
 playback
 recording
