@@ -10,7 +10,7 @@ Lane::Lane(Window* window)
 	this->window = window;
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	connect(window, SIGNAL(sequenceUpdated(bool)), this, SLOT(sequenceUpdated(bool)));
+	connect(window, SIGNAL(sequenceUpdated()), this, SLOT(sequenceUpdated()));
 	connect(window, SIGNAL(cut()), this, SLOT(cut()));
 	connect(window, SIGNAL(copy_()), this, SLOT(copy_()));
 	connect(window, SIGNAL(paste()), this, SLOT(paste()));
@@ -212,7 +212,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 			}
 		}
 
-		emit this->window->sequence->updated(create_undo_command);
+		this->window->sequence->update(create_undo_command);
 	}
 }
 
@@ -264,7 +264,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
 		this->mouse_drag_x_allowed = false;
 		this->mouse_drag_y_allowed = false;
-		emit this->window->sequence->updated(create_undo_command);
+		this->window->sequence->update(create_undo_command);
 	}
 }
 
@@ -300,9 +300,8 @@ void Lane::wheelEvent(QWheelEvent* event)
 	this->window->update();
 }
 
-void Lane::sequenceUpdated(bool create_undo_command)
+void Lane::sequenceUpdated()
 {
-	Q_UNUSED(create_undo_command)
 	this->sequence_updated = true;
 	this->update();
 }
@@ -367,7 +366,7 @@ void Lane::paste()
 	}
 
 	MidiFile_free(clipboard_midi_file);
-	emit this->window->sequence->updated(true);
+	this->window->sequence->update(true);
 }
 
 void Lane::zoomIn()
@@ -391,7 +390,7 @@ void Lane::editEvent()
 		this->window->selectNone();
 		cursor_midi_event = this->addEventAtXY(this->window->cursor_x, this->cursor_y);
 		MidiFileEvent_setSelected(cursor_midi_event, 1);
-		emit this->window->sequence->updated(true);
+		this->window->sequence->update(true);
 	}
 	else
 	{
@@ -404,7 +403,7 @@ void Lane::editEvent()
 			this->window->selectNone();
 			MidiFileEvent_setSelected(cursor_midi_event, 1);
 			this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(cursor_midi_event));
-			emit this->window->sequence->updated(false);
+			this->window->sequence->update(false);
 		}
 	}
 }
@@ -416,7 +415,7 @@ void Lane::selectEvent()
 	if (cursor_midi_event != NULL)
 	{
 		MidiFileEvent_setSelected(cursor_midi_event, !MidiFileEvent_isSelected(cursor_midi_event));
-		emit this->window->sequence->updated(false);
+		this->window->sequence->update(false);
 	}
 }
 

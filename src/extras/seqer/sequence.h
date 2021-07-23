@@ -23,6 +23,7 @@ public:
 	~Sequence();
 	void addWindow(Window* window);
 	void removeWindow(Window* window);
+	void update(bool create_undo_command);
 	bool save();
 	bool saveAs(QString filename);
 	static MidiFile_t loadMidiFile(QString filename);
@@ -38,7 +39,7 @@ public:
 	static bool midiFileHasMultiplePopulatedTracks(MidiFile_t midi_file);
 
 signals:
-	void updated(bool create_undo_command);
+	void updated();
 };
 
 #endif

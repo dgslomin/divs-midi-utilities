@@ -17,9 +17,7 @@ public:
 
 	UndoStack(Sequence* sequence);
 	~UndoStack();
-
-public slots:
-	void sequenceUpdated(bool create_undo_command);
+	void createUndoCommand();
 };
 
 class UndoCommand: public QUndoCommand

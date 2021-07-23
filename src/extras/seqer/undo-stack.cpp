@@ -7,16 +7,14 @@ UndoStack::UndoStack(Sequence* sequence): QUndoStack()
 {
 	this->sequence = sequence;
 	this->current_snapshot = Sequence::saveMidiFileToBuffer(sequence->midi_file);
-	connect(sequence, SIGNAL(updated(bool)), this, SLOT(sequenceUpdated(bool)));
 }
 
 UndoStack::~UndoStack()
 {
 }
 
-void UndoStack::sequenceUpdated(bool create_undo_command)
+void UndoStack::createUndoCommand()
 {
-	if (!create_undo_command) return;
 	this->push(new UndoCommand(this));
 }
 
@@ -34,7 +32,7 @@ void UndoCommand::undo()
 	{
 		this->undo_stack->sequence->midi_file = Sequence::loadMidiFileFromBuffer(this->undo_snapshot);
 		this->undo_stack->current_snapshot = this->undo_snapshot;
-		emit this->undo_stack->sequence->updated(false);
+		this->undo_stack->sequence->update(false);
 	}
 }
 
@@ -46,7 +44,7 @@ void UndoCommand::redo()
 	{
 		this->undo_stack->sequence->midi_file = Sequence::loadMidiFileFromBuffer(this->redo_snapshot);
 		this->undo_stack->current_snapshot = this->redo_snapshot;
-		emit this->undo_stack->sequence->updated(false);
+		this->undo_stack->sequence->update(false);
 	}
 }
 

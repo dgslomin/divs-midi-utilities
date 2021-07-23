@@ -1,5 +1,4 @@
 
-#include <set>
 #include <QtWidgets>
 #include "all-events-lane.h"
 #include "controller-lane.h"
@@ -13,8 +12,11 @@
 #include "velocity-lane.h"
 #include "window.h"
 
+QVector<Window*> Window::windows;
+
 Window::Window(Window* existing_window)
 {
+	Window::windows.append(this);
 	this->sequence = (existing_window == NULL) ? new Sequence() : existing_window->sequence;
 	this->sequence->addWindow(this);
 	this->statusBar();
@@ -71,10 +73,17 @@ Window::Window(Window* existing_window)
 Window::~Window()
 {
 	this->sequence->removeWindow(this);
+	Window::windows.removeOne(this);
 }
 
 void Window::closeEvent(QCloseEvent* event)
 {
+	if (Window::confirm_on_close && this->sequence->is_modified && (this->sequence->number_of_windows == 1) && !this->save(true, false, ""))
+	{
+		event->ignore();
+		return;
+	}
+
 	QSettings settings;
 	settings.setValue("window/window-geometry", this->saveGeometry());
 	settings.setValue("window/window-state", this->saveState());
@@ -82,27 +91,15 @@ void Window::closeEvent(QCloseEvent* event)
 	settings.setValue("window/sidebar-splitter-state", this->sidebar_splitter->saveState());
 	settings.setValue("window/sidebar-tab-index", this->sidebar_tab_widget->currentIndex());
 	settings.setValue("window/use-linear-time", this->use_linear_time);
-	QMainWindow::closeEvent(event);
-}
-
-void Window::paintEvent(QPaintEvent* event)
-{
-	this->setWindowModified(this->sequence->is_modified);
-	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("Untitled") : this->sequence->filename));
-	QMainWindow::paintEvent(event);
 }
 
 void Window::newSequence()
 {
-	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1))
-	{
-		if (!this->save(true, false, "")) return;
-	}
-
+	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1) && !this->save(true, false, "")) return;
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
-	emit this->sequence->updated(false);
+	this->sequence->update(false);
 }
 
 void Window::newWindow()
@@ -112,11 +109,7 @@ void Window::newWindow()
 
 void Window::open()
 {
-	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1))
-	{
-		if (!this->save(true, false, "")) return;
-	}
-
+	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1) && !this->save(true, false, "")) return;
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), QSettings().value("window/directory", "").toString(), tr("MIDI Files (*.mid)"));
 	if (!filename.isEmpty()) this->open(filename);
 }
@@ -137,7 +130,7 @@ void Window::open(QString filename)
 	this->sequence->filename = filename;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	emit this->sequence->updated(false);
+	this->sequence->update(false);
 	QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 }
 
@@ -208,28 +201,28 @@ bool Window::save(bool ask_first, bool save_as, QString filename)
 
 void Window::quit()
 {
-	std::set<Sequence*> sequences;
-	bool is_modified = false;
+	bool other_sequences_are_modified = false;
 
-	for (QWindow* top_level_window: QGuiApplication::topLevelWindows())
+	for (Window* window: Window::windows)
 	{
-		Window* window = qobject_cast<Window*>(top_level_window);
-
-		if (window != NULL)
+		if ((window->sequence != this->sequence) && (window->sequence->is_modified))
 		{
-			sequences.insert(window->sequence);
-			if (window->sequence->is_modified) is_modified = true;
+			other_sequences_are_modified = true;
+			break;
 		}
 	}
 
-	if (sequences.size() == 1)
+	if (other_sequences_are_modified)
 	{
-		if (!is_modified || this->save(true, false, "")) QGuiApplication::quit();
+		if (QMessageBox::question(this, tr("Quit"), tr("Really quit without saving changes?"), QMessageBox::Ok | QMessageBox::Cancel) != QMessageBox::Ok) return;
 	}
 	else
 	{
-		if (!is_modified || QMessageBox::question(this, tr("Quit"), tr("Really quit without saving changes?"), QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok) QGuiApplication::quit();
+		if (this->sequence->is_modified && !this->save(true, false, "")) return;
 	}
+
+	Window::confirm_on_close = false;
+	QGuiApplication::quit();
 }
 
 void Window::undo()
@@ -249,19 +242,19 @@ void Window::delete_()
 		if (MidiFileEvent_isSelected(midi_event)) MidiFileEvent_delete(midi_event);
 	}
 
-	emit this->sequence->updated(true);
+	this->sequence->update(true);
 }
 
 void Window::selectAll()
 {
 	Sequence::midiFileSelectAll(this->sequence->midi_file);
-	emit this->sequence->updated(false);
+	this->sequence->update(false);
 }
 
 void Window::selectNone()
 {
 	Sequence::midiFileSelectNone(this->sequence->midi_file);
-	emit this->sequence->updated(false);
+	this->sequence->update(false);
 }
 
 void Window::zoomInTime()
@@ -291,6 +284,13 @@ void Window::setUseLinearTime(bool use_linear_time)
 void Window::aboutSeqer()
 {
 	QMessageBox::information(this, tr("About"), tr("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license"));
+}
+
+void Window::underlyingSequenceUpdated()
+{
+	this->setWindowModified(this->sequence->is_modified);
+	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("Untitled") : this->sequence->filename));
+	emit sequenceUpdated();
 }
 
 void Window::focusInspector()

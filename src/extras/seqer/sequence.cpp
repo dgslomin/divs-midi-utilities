@@ -20,14 +20,25 @@ Sequence::~Sequence()
 void Sequence::addWindow(Window* window)
 {
 	this->number_of_windows++;
-	connect(this, SIGNAL(updated(bool)), window, SIGNAL(sequenceUpdated(bool)));
+	connect(this, SIGNAL(updated()), window, SLOT(underlyingSequenceUpdated()));
 }
 
 void Sequence::removeWindow(Window* window)
 {
-	disconnect(this, SIGNAL(updated(bool)), window, SIGNAL(sequenceUpdated(bool)));
+	disconnect(this, SIGNAL(updated()), window, SLOT(underlyingSequenceUpdated()));
 	this->number_of_windows--;
 	if (this->number_of_windows == 0) delete this;
+}
+
+void Sequence::update(bool create_undo_command)
+{
+	if (create_undo_command)
+	{
+		this->is_modified = true;
+		this->undo_stack->createUndoCommand();
+	}
+
+	emit updated();
 }
 
 bool Sequence::save()
@@ -37,7 +48,7 @@ bool Sequence::save()
 	if (successful)
 	{
 		this->is_modified = false;
-		emit updated(false);
+		this->update(false);
 	}
 
 	return successful;
@@ -51,7 +62,7 @@ bool Sequence::saveAs(QString filename)
 	{
 		this->filename = filename;
 		this->is_modified = false;
-		emit updated(false);
+		this->update(false);
 	}
 
 	return successful;
