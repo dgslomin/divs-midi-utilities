@@ -42,6 +42,8 @@ public slots:
 	void saveAs();
 	void saveAs(QString filename);
 	void quit();
+	void undo();
+	void redo();
 	void delete_();
 	void selectAll();
 	void selectNone();
@@ -54,7 +56,7 @@ public slots:
 	void focusInspector();
 
 signals:
-	void sequenceUpdated();
+	void sequenceUpdated(bool create_undo_command);
 	void cut();
 	void copy_();
 	void paste();

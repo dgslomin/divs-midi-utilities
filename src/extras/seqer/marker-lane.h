@@ -10,6 +10,8 @@ class MarkerLane;
 
 class MarkerLane: public LabelLane
 {
+	Q_OBJECT
+
 public:
 	MarkerLane(Window* window);
 	void populateLabels();

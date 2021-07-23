@@ -7,15 +7,14 @@ prioritization of mouse and keyboard interaction.  It's built using Qt and
 RtMidi.
 
 TODO:
+fix "is modified" logic
 middle drag scroll/zoom
 note start/middle/end drag
 inspector
 keyboard navigation and tweaking
 add/remove/reorder lanes
-fix "is modified" logic
 tracks and channels side panels
 lane groups
-undo stack
 preferences
 playback
 recording

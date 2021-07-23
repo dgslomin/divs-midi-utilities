@@ -102,7 +102,7 @@ void Window::newSequence()
 	this->sequence->removeWindow(this);
 	this->sequence = new Sequence();
 	this->sequence->addWindow(this);
-	emit this->sequence->updated();
+	emit this->sequence->updated(false);
 }
 
 void Window::newWindow()
@@ -137,7 +137,7 @@ void Window::open(QString filename)
 	this->sequence->filename = filename;
 	MidiFile_free(this->sequence->midi_file);
 	this->sequence->midi_file = new_midi_file;
-	emit this->sequence->updated();
+	emit this->sequence->updated(false);
 	QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 }
 
@@ -232,6 +232,16 @@ void Window::quit()
 	}
 }
 
+void Window::undo()
+{
+	this->sequence->undo_stack->undo();
+}
+
+void Window::redo()
+{
+	this->sequence->undo_stack->redo();
+}
+
 void Window::delete_()
 {
 	for (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFile_iterateEvents(this->sequence->midi_file))
@@ -239,19 +249,19 @@ void Window::delete_()
 		if (MidiFileEvent_isSelected(midi_event)) MidiFileEvent_delete(midi_event);
 	}
 
-	emit this->sequence->updated();
+	emit this->sequence->updated(true);
 }
 
 void Window::selectAll()
 {
 	Sequence::midiFileSelectAll(this->sequence->midi_file);
-	emit this->sequence->updated();
+	emit this->sequence->updated(false);
 }
 
 void Window::selectNone()
 {
 	Sequence::midiFileSelectNone(this->sequence->midi_file);
-	emit this->sequence->updated();
+	emit this->sequence->updated(false);
 }
 
 void Window::zoomInTime()

@@ -69,7 +69,7 @@ public:
 	virtual int getCursorGap() = 0;
 
 public slots:
-	void sequenceUpdated();
+	void sequenceUpdated(bool create_undo_command);
 	void cut();
 	void copy_();
 	void paste();

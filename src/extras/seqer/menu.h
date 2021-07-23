@@ -6,8 +6,10 @@ class Menu;
 #include <QtWidgets>
 #include "window.h"
 
-class Menu
+class Menu: public QObject
 {
+	Q_OBJECT
+
 public:
 	static void createMenuBar(Window* window);
 

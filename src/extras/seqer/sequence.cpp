@@ -3,26 +3,29 @@
 #include "midifile.h"
 #include "sequence.h"
 #include "window.h"
+#include "undo-stack.h"
 
 Sequence::Sequence()
 {
 	this->midi_file = MidiFile_newFromTemplate(NULL);
+	this->undo_stack = new UndoStack(this);
 }
 
 Sequence::~Sequence()
 {
+	delete this->undo_stack;
 	MidiFile_free(this->midi_file);
 }
 
 void Sequence::addWindow(Window* window)
 {
 	this->number_of_windows++;
-	connect(this, SIGNAL(updated()), window, SIGNAL(sequenceUpdated()));
+	connect(this, SIGNAL(updated(bool)), window, SIGNAL(sequenceUpdated(bool)));
 }
 
 void Sequence::removeWindow(Window* window)
 {
-	disconnect(this, SIGNAL(updated()), window, SIGNAL(sequenceUpdated()));
+	disconnect(this, SIGNAL(updated(bool)), window, SIGNAL(sequenceUpdated(bool)));
 	this->number_of_windows--;
 	if (this->number_of_windows == 0) delete this;
 }
@@ -34,7 +37,7 @@ bool Sequence::save()
 	if (successful)
 	{
 		this->is_modified = false;
-		emit updated();
+		emit updated(false);
 	}
 
 	return successful;
@@ -48,7 +51,7 @@ bool Sequence::saveAs(QString filename)
 	{
 		this->filename = filename;
 		this->is_modified = false;
-		emit updated();
+		emit updated(false);
 	}
 
 	return successful;

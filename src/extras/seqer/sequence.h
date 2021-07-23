@@ -5,17 +5,19 @@ class Sequence;
 
 #include <QtWidgets>
 #include "midifile.h"
+#include "undo-stack.h"
 #include "window.h"
 
-class Sequence: QObject
+class Sequence: public QObject
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	int number_of_windows = 0;
 	QString filename = "";
-	MidiFile_t midi_file = NULL;
 	bool is_modified = false;
+	MidiFile_t midi_file;
+	UndoStack* undo_stack;
 
 	Sequence();
 	~Sequence();
@@ -36,7 +38,7 @@ public:
 	static bool midiFileHasMultiplePopulatedTracks(MidiFile_t midi_file);
 
 signals:
-	void updated();
+	void updated(bool create_undo_command);
 };
 
 #endif

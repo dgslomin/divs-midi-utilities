@@ -10,6 +10,8 @@ class AllEventsLane;
 
 class AllEventsLane: public LabelLane
 {
+	Q_OBJECT
+
 public:
 	AllEventsLane(Window* window);
 	void populateLabels();
