@@ -1,6 +1,7 @@
 
 #include <QtWidgets>
 #include "inspector-sidebar.h"
+#include "separator.h"
 #include "window.h"
 
 InspectorSidebar::InspectorSidebar(Window* window)
@@ -23,11 +24,7 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	QLineEdit* lane_controller_line_edit = new QLineEdit();
 	lane_layout->addRow(tr("Controller"), lane_controller_line_edit);
 
-	QFrame* separator = new QFrame();
-	outer_layout->addWidget(separator);
-	separator->setFrameShape(QFrame::HLine);
-	separator->setLineWidth(0);
-	separator->setForegroundRole(QPalette::Mid);
+	outer_layout->addWidget(new Separator(Qt::Horizontal));
 
 	QWidget* event_panel = new QWidget();
 	outer_layout->addWidget(event_panel, 1);

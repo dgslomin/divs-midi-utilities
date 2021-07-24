@@ -23,7 +23,7 @@ class SplitterHandle: public QSplitterHandle
 	Q_OBJECT
 
 public:
-	QColor color;
+	QPen pen;
 
 	SplitterHandle(Qt::Orientation orientation, QSplitter* parent);
 
