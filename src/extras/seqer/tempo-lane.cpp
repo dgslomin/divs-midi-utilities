@@ -7,7 +7,6 @@
 
 TempoLane::TempoLane(Window* window): NumericValueLane(window)
 {
-	this->draw_connecting_lines = true;
 	this->track_number = 0;
 }
 

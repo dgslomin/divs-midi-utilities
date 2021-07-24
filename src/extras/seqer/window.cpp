@@ -261,12 +261,12 @@ void Window::selectNone()
 
 void Window::zoomInTime()
 {
-	this->zoomXBy(1.05);
+	this->zoomXBy(1.05f);
 }
 
 void Window::zoomOutTime()
 {
-	this->zoomXBy(1 / 1.05);
+	this->zoomXBy(1 / 1.05f);
 }
 
 void Window::addLane()

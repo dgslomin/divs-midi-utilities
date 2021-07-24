@@ -10,7 +10,6 @@ NumericValueLane::NumericValueLane(Window* window): Lane(window)
 	QSettings settings;
 	this->handle_size = settings.value("numeric-value-lane/handle-size", 6).toInt();
 	this->connecting_line_pen = QPen(settings.value("numeric-value-lane/connecting-line-color", Colors::buttonShade(200, 80)).value<QColor>());
-	this->height_line_pen = QPen(settings.value("numeric-value-lane/height-line-color", Colors::buttonShade(200, 80)).value<QColor>());
 }
 
 void NumericValueLane::paintBackground(QPainter* painter)
@@ -23,7 +22,22 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
-	if (this->draw_connecting_lines)
+	if (this->draw_as_boxes)
+	{
+		int zero_y = this->getYFromValue(0) + this->handle_size;
+
+		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+		{
+			if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
+			{
+				QRect rect = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
+				painter->setPen(this->connecting_line_pen);
+				painter->setBrush(this->unselected_event_brush);
+				painter->drawRect(rect.x(), zero_y, rect.width(), rect.y() - zero_y);
+			}
+		}
+	}
+	else
 	{
 		painter->setPen(this->connecting_line_pen);
 		QPoint last_point;
@@ -47,21 +61,6 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 		if (!last_point.isNull() && (last_point.x() < this->width()))
 		{
 			painter->drawLine(last_point.x(), last_point.y(), this->width(), last_point.y());
-		}
-	}
-
-	if (this->draw_height_lines)
-	{
-		painter->setPen(this->height_line_pen);
-		int zero_y = this->getYFromValue(0) + this->handle_size;
-
-		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
-		{
-			if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
-			{
-				QRect rect = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
-				painter->drawLine(rect.x() + this->handle_size / 2, zero_y, rect.x() + this->handle_size / 2, rect.y());
-			}
 		}
 	}
 

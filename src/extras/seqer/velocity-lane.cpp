@@ -7,7 +7,7 @@
 
 VelocityLane::VelocityLane(Window* window): NumericValueLane(window)
 {
-	this->draw_height_lines = true;
+	this->draw_as_boxes = true;
 }
 
 bool VelocityLane::shouldIncludeEvent(MidiFileEvent_t midi_event)

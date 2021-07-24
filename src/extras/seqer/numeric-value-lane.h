@@ -15,11 +15,9 @@ class NumericValueLane: public Lane
 public:
 	float pixels_per_value = 1.0;
 	float scroll_y = 0.0;
-	bool draw_connecting_lines = false;
-	bool draw_height_lines = false;
+	bool draw_as_boxes = false;
 	int handle_size;
 	QPen connecting_line_pen;
-	QPen height_line_pen;
 
 	NumericValueLane(Window* window);
 	void paintBackground(QPainter* painter);
