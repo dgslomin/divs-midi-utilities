@@ -25,7 +25,7 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	QLineEdit* lane_controller_line_edit = new QLineEdit();
 	lane_layout->addRow(tr("Controller"), lane_controller_line_edit);
 
-	outer_layout->addWidget(new Separator(Qt::Horizontal, Colors::relativeButtonShade(-60, 60)));
+	outer_layout->addWidget(new Separator(Qt::Horizontal, QGuiApplication::palette().color(QPalette::Mid)));
 
 	QWidget* event_panel = new QWidget();
 	outer_layout->addWidget(event_panel, 1);
