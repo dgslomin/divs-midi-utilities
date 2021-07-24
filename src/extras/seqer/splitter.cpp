@@ -5,9 +5,9 @@
 #include "colors.h"
 #include "splitter.h"
 
-Splitter::Splitter(Qt::Orientation orientation, QColor color, QWidget* parent): QSplitter(orientation, parent)
+Splitter::Splitter(Qt::Orientation orientation, QWidget* parent): QSplitter(orientation, parent)
 {
-	this->pen = QPen(color);
+	this->pen = QPen(Colors::buttonShade(220, 70));
 }
 
 QSplitterHandle* Splitter::createHandle()

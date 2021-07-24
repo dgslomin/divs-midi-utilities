@@ -13,7 +13,7 @@ class Splitter: public QSplitter
 public:
 	QPen pen;
 
-	Splitter(Qt::Orientation orientation, QColor color, QWidget* parent = nullptr);
+	Splitter(Qt::Orientation orientation, QWidget* parent = nullptr);
 
 protected:
 	QSplitterHandle* createHandle();
