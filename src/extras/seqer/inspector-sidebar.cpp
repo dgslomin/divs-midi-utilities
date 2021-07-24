@@ -1,5 +1,6 @@
 
 #include <QtWidgets>
+#include "colors.h"
 #include "inspector-sidebar.h"
 #include "separator.h"
 #include "window.h"
@@ -24,7 +25,7 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	QLineEdit* lane_controller_line_edit = new QLineEdit();
 	lane_layout->addRow(tr("Controller"), lane_controller_line_edit);
 
-	outer_layout->addWidget(new Separator(Qt::Horizontal));
+	outer_layout->addWidget(new Separator(Qt::Horizontal, Colors::buttonShade(180, 110)));
 
 	QWidget* event_panel = new QWidget();
 	outer_layout->addWidget(event_panel, 1);

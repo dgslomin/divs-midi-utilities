@@ -13,7 +13,7 @@ public:
 	QPen pen;
 	Qt::Orientation orientation;
 
-	Separator(Qt::Orientation orientation, QWidget* parent = nullptr);
+	Separator(Qt::Orientation orientation, QColor color, QWidget* parent = nullptr);
 
 protected:
 	void paintEvent(QPaintEvent* event);

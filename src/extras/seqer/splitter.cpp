@@ -5,22 +5,19 @@
 #include "colors.h"
 #include "splitter.h"
 
-Splitter::Splitter(Qt::Orientation orientation, QWidget* parent): QSplitter(orientation, parent)
+Splitter::Splitter(Qt::Orientation orientation, QColor color, QWidget* parent): QSplitter(orientation, parent)
 {
-}
-
-Splitter::Splitter(QWidget *parent): QSplitter(parent)
-{
+	this->pen = QPen(color);
 }
 
 QSplitterHandle* Splitter::createHandle()
 {
-	return new SplitterHandle(this->orientation(), this);
+	return new SplitterHandle(this->orientation(), this->pen, this);
 }
 
-SplitterHandle::SplitterHandle(Qt::Orientation orientation, QSplitter* parent): QSplitterHandle(orientation, parent)
+SplitterHandle::SplitterHandle(Qt::Orientation orientation, QPen pen, QSplitter* parent): QSplitterHandle(orientation, parent)
 {
-	this->pen = QPen(Colors::buttonShade(220, 70));
+	this->pen = pen;
 }
 
 void SplitterHandle::paintEvent(QPaintEvent* event)

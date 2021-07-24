@@ -11,8 +11,9 @@ class Splitter: public QSplitter
 	Q_OBJECT
 
 public:
-	Splitter(Qt::Orientation orientation, QWidget* parent = nullptr);
-	Splitter(QWidget* parent = nullptr);
+	QPen pen;
+
+	Splitter(Qt::Orientation orientation, QColor color, QWidget* parent = nullptr);
 
 protected:
 	QSplitterHandle* createHandle();
@@ -25,7 +26,7 @@ class SplitterHandle: public QSplitterHandle
 public:
 	QPen pen;
 
-	SplitterHandle(Qt::Orientation orientation, QSplitter* parent);
+	SplitterHandle(Qt::Orientation orientation, QPen pen, QSplitter* parent);
 
 protected:
 	void paintEvent(QPaintEvent* event);

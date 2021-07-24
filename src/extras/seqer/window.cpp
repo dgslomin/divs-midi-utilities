@@ -2,6 +2,7 @@
 #include <QtWidgets>
 #include "all-events-lane.h"
 #include "controller-lane.h"
+#include "colors.h"
 #include "inspector-sidebar.h"
 #include "marker-lane.h"
 #include "menu.h"
@@ -22,7 +23,7 @@ Window::Window(Window* existing_window)
 	this->sequence->addWindow(this);
 	this->statusBar();
 
-	this->sidebar_splitter = new Splitter(Qt::Horizontal);
+	this->sidebar_splitter = new Splitter(Qt::Horizontal, Colors::buttonShade(200, 90));
 	this->setCentralWidget(sidebar_splitter);
 	this->sidebar_splitter->setChildrenCollapsible(false);
 
@@ -34,7 +35,7 @@ Window::Window(Window* existing_window)
 
 	lane_vbox_layout->addWidget(new TimeRuler(this));
 
-	this->lane_splitter = new Splitter(Qt::Vertical);
+	this->lane_splitter = new Splitter(Qt::Vertical, Colors::buttonShade(220, 70));
 	lane_vbox_layout->addWidget(this->lane_splitter);
 	this->lane_splitter->setChildrenCollapsible(false);
 

@@ -5,10 +5,10 @@
 #include "colors.h"
 #include "separator.h"
 
-Separator::Separator(Qt::Orientation orientation, QWidget* parent): QWidget(parent)
+Separator::Separator(Qt::Orientation orientation, QColor color, QWidget* parent): QWidget(parent)
 {
 	this->orientation = orientation;
-	this->pen = QPen(Colors::buttonShade(220, 70));
+	this->pen = QPen(color);
 	this->setMinimumSize(1, 1);
 }
 
