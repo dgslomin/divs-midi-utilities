@@ -35,7 +35,6 @@ public:
 	QRect getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset);
 	int getYFromValue(float value);
 	float getValueFromY(int y);
-	virtual void paintValueLines(QPainter* painter) = 0;
 	virtual bool shouldIncludeEvent(MidiFileEvent_t midi_event) = 0;
 	virtual MidiFileEvent_t addEvent(long tick, float value) = 0;
 	virtual float getEventValue(MidiFileEvent_t midi_event) = 0;

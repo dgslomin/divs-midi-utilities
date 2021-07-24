@@ -14,7 +14,6 @@ class VelocityLane: public NumericValueLane
 
 public:
 	VelocityLane(Window* window);
-	void paintValueLines(QPainter* painter);
 	bool shouldIncludeEvent(MidiFileEvent_t midi_event);
 	MidiFileEvent_t addEvent(long tick, float value);
 	float getEventValue(MidiFileEvent_t midi_event);

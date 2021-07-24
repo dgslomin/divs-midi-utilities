@@ -11,18 +11,6 @@ TempoLane::TempoLane(Window* window): NumericValueLane(window)
 	this->track_number = 0;
 }
 
-void TempoLane::paintValueLines(QPainter* painter)
-{
-	painter->setPen(this->grid_line_pen);
-
-	for (float tempo = 0; ; tempo += 60)
-	{
-		int y = this->getYFromValue(tempo) + (this->handle_size / 2);
-		if (y < 0) break;
-		painter->drawLine(0, y, this->width(), y);
-	}
-}
-
 bool TempoLane::shouldIncludeEvent(MidiFileEvent_t midi_event)
 {
 	return MidiFileEvent_isTempoEvent(midi_event);

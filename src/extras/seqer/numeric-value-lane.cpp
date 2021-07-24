@@ -20,8 +20,6 @@ void NumericValueLane::paintBackground(QPainter* painter)
 
 void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
-	this->paintValueLines(painter);
-
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
@@ -61,8 +59,8 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 		{
 			if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
 			{
-				QPoint point = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset).center();
-				painter->drawLine(point.x(), zero_y, point.x(), point.y());
+				QRect rect = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
+				painter->drawLine(rect.x() + this->handle_size / 2, zero_y, rect.x() + this->handle_size / 2, rect.y());
 			}
 		}
 	}
