@@ -7,6 +7,7 @@
 #include "menu.h"
 #include "midifile.h"
 #include "note-lane.h"
+#include "splitter.h"
 #include "tempo-lane.h"
 #include "time-ruler.h"
 #include "velocity-lane.h"
@@ -21,7 +22,7 @@ Window::Window(Window* existing_window)
 	this->sequence->addWindow(this);
 	this->statusBar();
 
-	this->sidebar_splitter = new QSplitter(Qt::Horizontal);
+	this->sidebar_splitter = new Splitter(Qt::Horizontal);
 	this->setCentralWidget(sidebar_splitter);
 	this->sidebar_splitter->setChildrenCollapsible(false);
 
@@ -33,7 +34,7 @@ Window::Window(Window* existing_window)
 
 	lane_vbox_layout->addWidget(new TimeRuler(this));
 
-	this->lane_splitter = new QSplitter(Qt::Vertical);
+	this->lane_splitter = new Splitter(Qt::Vertical);
 	lane_vbox_layout->addWidget(this->lane_splitter);
 	this->lane_splitter->setChildrenCollapsible(false);
 
