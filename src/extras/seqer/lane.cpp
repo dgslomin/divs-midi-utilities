@@ -133,8 +133,7 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	if (this->hasFocus())
 	{
-		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->cursor_y);
-		painter.drawLine(this->window->cursor_x, cursor_y + this->getCursorGap(), this->window->cursor_x, this->height());
+		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
 		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
 		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + this->getCursorGap(), 4, 4);
 	}

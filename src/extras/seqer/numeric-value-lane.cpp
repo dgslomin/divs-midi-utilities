@@ -22,22 +22,7 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
-	if (this->draw_as_boxes)
-	{
-		int zero_y = this->getYFromValue(0) + this->handle_size;
-
-		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
-		{
-			if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
-			{
-				QRect rect = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset);
-				painter->setPen(this->connecting_line_pen);
-				painter->setBrush(this->unselected_event_brush);
-				painter->drawRect(rect.x(), zero_y, rect.width(), rect.y() - zero_y);
-			}
-		}
-	}
-	else
+	if (!this->draw_as_boxes)
 	{
 		painter->setPen(this->connecting_line_pen);
 		QPoint last_point;
@@ -151,7 +136,7 @@ void NumericValueLane::zoomYBy(float factor)
 
 int NumericValueLane::getCursorGap()
 {
-	return this->handle_size;
+	return this->draw_as_boxes ? 0 : this->handle_size;
 }
 
 QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
@@ -165,16 +150,16 @@ QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selecte
 		y += selected_events_y_offset;
 	}
 
-	return QRect(x, y, this->handle_size, this->handle_size);
+	return QRect(x, y, this->handle_size, this->draw_as_boxes ? this->getYFromValue(0) - y : this->handle_size);
 }
 
 int NumericValueLane::getYFromValue(float value)
 {
-	return this->height() - this->handle_size - (int)(value * this->pixels_per_value) + this->scroll_y;
+	return this->height() - (this->draw_as_boxes ? 0 : this->handle_size) - (int)(value * this->pixels_per_value) + this->scroll_y;
 }
 
 float NumericValueLane::getValueFromY(int y)
 {
-	return (float)(this->height() - this->handle_size - y + this->scroll_y) / this->pixels_per_value;
+	return (float)(this->height() - (this->draw_as_boxes ? 0 : this->handle_size) - y + this->scroll_y) / this->pixels_per_value;
 }
 
