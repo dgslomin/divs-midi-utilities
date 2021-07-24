@@ -23,7 +23,7 @@ Window::Window(Window* existing_window)
 	this->sequence->addWindow(this);
 	this->statusBar();
 
-	this->sidebar_splitter = new Splitter(Qt::Horizontal, QGuiApplication::palette().color(QPalette::Mid));
+	this->sidebar_splitter = new Splitter(Qt::Horizontal, Colors::relativeButtonShade(0.85));
 	this->setCentralWidget(sidebar_splitter);
 	this->sidebar_splitter->setChildrenCollapsible(false);
 
