@@ -2,51 +2,48 @@
 #include <QtWidgets>
 #include "colors.h"
 #include "midifile.h"
-#include "numeric-value-lane.h"
+#include "continuous-value-lane.h"
 #include "window.h"
 
-NumericValueLane::NumericValueLane(Window* window): Lane(window)
+ContinuousValueLane::ContinuousValueLane(Window* window): Lane(window)
 {
 	QSettings settings;
-	this->handle_size = settings.value("numeric-value-lane/handle-size", 6).toInt();
-	this->connecting_line_pen = QPen(settings.value("numeric-value-lane/connecting-line-color", Colors::buttonShade(200, 80)).value<QColor>());
+	this->handle_size = settings.value("continuous-value-lane/handle-size", 6).toInt();
+	this->connecting_line_pen = QPen(settings.value("continuous-value-lane/connecting-line-color", Colors::buttonShade(200, 80)).value<QColor>());
 }
 
-void NumericValueLane::paintBackground(QPainter* painter)
+void ContinuousValueLane::paintBackground(QPainter* painter)
 {
 	painter->fillRect(0, 0, this->width(), this->height(), this->background_color);
 }
 
-void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
+void ContinuousValueLane::paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset)
 {
 	QRect bounds(0, 0, this->width(), this->height());
 	MidiFileTrack_t current_track = MidiFile_getTrackByNumber(this->window->sequence->midi_file, this->track_number, 0);
 
-	if (!this->draw_as_boxes)
+	painter->setPen(this->connecting_line_pen);
+	QPoint last_point;
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
-		painter->setPen(this->connecting_line_pen);
-		QPoint last_point;
-
-		for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+		if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
 		{
-			if (this->shouldIncludeEvent(midi_event) && (MidiFileEvent_getTrack(midi_event) == current_track))
+			QPoint point = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset).center();
+
+			if (!last_point.isNull())
 			{
-				QPoint point = this->getRectFromEvent(midi_event, selected_events_x_offset, selected_events_y_offset).center();
-
-				if (!last_point.isNull())
-				{
-					painter->drawLine(last_point.x(), last_point.y(), point.x(), last_point.y());
-					painter->drawLine(point.x(), last_point.y(), point.x(), point.y());
-				}
-
-				last_point = point;
+				painter->drawLine(last_point.x(), last_point.y(), point.x(), last_point.y());
+				painter->drawLine(point.x(), last_point.y(), point.x(), point.y());
 			}
-		}
 
-		if (!last_point.isNull() && (last_point.x() < this->width()))
-		{
-			painter->drawLine(last_point.x(), last_point.y(), this->width(), last_point.y());
+			last_point = point;
 		}
+	}
+
+	if (!last_point.isNull() && (last_point.x() < this->width()))
+	{
+		painter->drawLine(last_point.x(), last_point.y(), this->width(), last_point.y());
 	}
 
 	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
@@ -67,7 +64,7 @@ void NumericValueLane::paintEvents(QPainter* painter, int selected_events_x_offs
 	}
 }
 
-MidiFileEvent_t NumericValueLane::getEventFromXY(int x, int y)
+MidiFileEvent_t ContinuousValueLane::getEventFromXY(int x, int y)
 {
 	for (MidiFileEvent_t midi_event = MidiFile_getLastEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
 	{
@@ -81,19 +78,19 @@ MidiFileEvent_t NumericValueLane::getEventFromXY(int x, int y)
 	return NULL;
 }
 
-QPoint NumericValueLane::getPointFromEvent(MidiFileEvent_t midi_event)
+QPoint ContinuousValueLane::getPointFromEvent(MidiFileEvent_t midi_event)
 {
 	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
 	int y = this->getYFromValue(this->getEventValue(midi_event));
 	return QPoint(x, y);
 }
 
-MidiFileEvent_t NumericValueLane::addEventAtXY(int x, int y)
+MidiFileEvent_t ContinuousValueLane::addEventAtXY(int x, int y)
 {
 	return this->addEvent(this->window->getTickFromX(x), this->getValueFromY(y));
 }
 
-void NumericValueLane::moveEventsByXY(int x_offset, int y_offset)
+void ContinuousValueLane::moveEventsByXY(int x_offset, int y_offset)
 {
 	for (MidiFileEvent_t midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFile_iterateEvents(this->window->sequence->midi_file))
 	{
@@ -105,7 +102,7 @@ void NumericValueLane::moveEventsByXY(int x_offset, int y_offset)
 	}
 }
 
-void NumericValueLane::selectEventsInRect(int x, int y, int width, int height)
+void ContinuousValueLane::selectEventsInRect(int x, int y, int width, int height)
 {
 	QRect bounds(x, y, width, height);
 
@@ -119,14 +116,14 @@ void NumericValueLane::selectEventsInRect(int x, int y, int width, int height)
 	}
 }
 
-void NumericValueLane::scrollYBy(int offset)
+void ContinuousValueLane::scrollYBy(int offset)
 {
 	this->scroll_y += offset;
 	this->cursor_y += offset;
 	this->update();
 }
 
-void NumericValueLane::zoomYBy(float factor)
+void ContinuousValueLane::zoomYBy(float factor)
 {
 	float cursor_value = this->getValueFromY(this->cursor_y);
 	this->pixels_per_value *= factor;
@@ -134,12 +131,12 @@ void NumericValueLane::zoomYBy(float factor)
 	this->update();
 }
 
-int NumericValueLane::getCursorGap()
+int ContinuousValueLane::getCursorGap()
 {
-	return this->draw_as_boxes ? 0 : this->handle_size;
+	return this->handle_size;
 }
 
-QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
+QRect ContinuousValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events_x_offset, int selected_events_y_offset)
 {
 	int x = this->window->getXFromTick(MidiFileEvent_getTick(midi_event));
 	int y = this->getYFromValue(this->getEventValue(midi_event));
@@ -150,16 +147,16 @@ QRect NumericValueLane::getRectFromEvent(MidiFileEvent_t midi_event, int selecte
 		y += selected_events_y_offset;
 	}
 
-	return QRect(x, y, this->handle_size, this->draw_as_boxes ? this->getYFromValue(0) - y : this->handle_size);
+	return QRect(x, y, this->handle_size, this->handle_size);
 }
 
-int NumericValueLane::getYFromValue(float value)
+int ContinuousValueLane::getYFromValue(float value)
 {
-	return this->height() - (this->draw_as_boxes ? 0 : this->handle_size) - (int)(value * this->pixels_per_value) + this->scroll_y;
+	return this->height() - this->handle_size - (int)(value * this->pixels_per_value) + this->scroll_y;
 }
 
-float NumericValueLane::getValueFromY(int y)
+float ContinuousValueLane::getValueFromY(int y)
 {
-	return (float)(this->height() - (this->draw_as_boxes ? 0 : this->handle_size) - y + this->scroll_y) / this->pixels_per_value;
+	return (float)(this->height() - this->handle_size - y + this->scroll_y) / this->pixels_per_value;
 }
 

@@ -2,10 +2,10 @@
 #include <QtWidgets>
 #include "controller-lane.h"
 #include "midifile.h"
-#include "numeric-value-lane.h"
+#include "continuous-value-lane.h"
 #include "window.h"
 
-ControllerLane::ControllerLane(Window* window): NumericValueLane(window)
+ControllerLane::ControllerLane(Window* window): ContinuousValueLane(window)
 {
 }
 

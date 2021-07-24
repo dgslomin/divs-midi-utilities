@@ -4,11 +4,11 @@
 class TempoLane;
 
 #include <QtWidgets>
-#include "numeric-value-lane.h"
+#include "continuous-value-lane.h"
 #include "midifile.h"
 #include "window.h"
 
-class TempoLane: public NumericValueLane
+class TempoLane: public ContinuousValueLane
 {
 	Q_OBJECT
 

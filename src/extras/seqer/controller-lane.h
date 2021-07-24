@@ -4,11 +4,11 @@
 class ControllerLane;
 
 #include <QtWidgets>
-#include "numeric-value-lane.h"
+#include "continuous-value-lane.h"
 #include "midifile.h"
 #include "window.h"
 
-class ControllerLane: public NumericValueLane
+class ControllerLane: public ContinuousValueLane
 {
 	Q_OBJECT
 

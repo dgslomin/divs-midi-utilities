@@ -2,10 +2,10 @@
 #include <QtWidgets>
 #include "tempo-lane.h"
 #include "midifile.h"
-#include "numeric-value-lane.h"
+#include "continuous-value-lane.h"
 #include "window.h"
 
-TempoLane::TempoLane(Window* window): NumericValueLane(window)
+TempoLane::TempoLane(Window* window): ContinuousValueLane(window)
 {
 	this->track_number = 0;
 }

@@ -1,25 +1,24 @@
-#ifndef NUMERIC_VALUE_LANE_INCLUDED
-#define NUMERIC_VALUE_LANE_INCLUDED
+#ifndef CONTINUOUS_VALUE_LANE_INCLUDED
+#define CONTINUOUS_VALUE_LANE_INCLUDED
 
-class NumericValueLane;
+class ContinuousValueLane;
 
 #include <QtWidgets>
 #include "lane.h"
 #include "midifile.h"
 #include "window.h"
 
-class NumericValueLane: public Lane
+class ContinuousValueLane: public Lane
 {
 	Q_OBJECT
 
 public:
 	float pixels_per_value = 1.0;
 	float scroll_y = 0.0;
-	bool draw_as_boxes = false;
 	int handle_size;
 	QPen connecting_line_pen;
 
-	NumericValueLane(Window* window);
+	ContinuousValueLane(Window* window);
 	void paintBackground(QPainter* painter);
 	void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset);
 	MidiFileEvent_t getEventFromXY(int x, int y);
