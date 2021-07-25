@@ -19,7 +19,7 @@ QVector<Window*> Window::windows;
 Window::Window(Window* existing_window)
 {
 	Window::windows.append(this);
-	this->sequence = (existing_window == NULL) ? new Sequence() : existing_window->sequence;
+	this->sequence = (existing_window == NULL) ? new Sequence(MidiFile_newFromTemplate(NULL)) : existing_window->sequence;
 	this->sequence->addWindow(this);
 	this->statusBar();
 
@@ -99,7 +99,7 @@ void Window::newSequence()
 {
 	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1) && !this->save(true, false, "")) return;
 	this->sequence->removeWindow(this);
-	this->sequence = new Sequence();
+	this->sequence = new Sequence(MidiFile_newFromTemplate(NULL));
 	this->sequence->addWindow(this);
 	this->sequence->update(false);
 }
@@ -127,11 +127,9 @@ void Window::open(QString filename)
 	}
 
 	this->sequence->removeWindow(this);
-	this->sequence = new Sequence();
+	this->sequence = new Sequence(new_midi_file);
 	this->sequence->addWindow(this);
 	this->sequence->filename = filename;
-	MidiFile_free(this->sequence->midi_file);
-	this->sequence->midi_file = new_midi_file;
 	this->sequence->update(false);
 	QSettings().setValue("window/directory", QFileInfo(filename).absolutePath());
 }

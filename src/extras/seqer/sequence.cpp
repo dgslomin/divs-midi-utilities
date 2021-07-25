@@ -5,9 +5,9 @@
 #include "window.h"
 #include "undo-stack.h"
 
-Sequence::Sequence()
+Sequence::Sequence(MidiFile_t midi_file)
 {
-	this->midi_file = MidiFile_newFromTemplate(NULL);
+	this->midi_file = midi_file;
 	this->undo_stack = new UndoStack(this);
 }
 

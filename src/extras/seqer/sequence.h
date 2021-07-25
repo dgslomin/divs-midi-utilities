@@ -19,7 +19,7 @@ public:
 	MidiFile_t midi_file;
 	UndoStack* undo_stack;
 
-	Sequence();
+	Sequence(MidiFile_t midi_file);
 	~Sequence();
 	void addWindow(Window* window);
 	void removeWindow(Window* window);
