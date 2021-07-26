@@ -71,7 +71,7 @@ bool Sequence::saveAs(QString filename)
 MidiFile_t Sequence::loadMidiFile(QString filename)
 {
 	if (filename.isEmpty()) return NULL;
-	MidiFile_t midi_file = MidiFile_load(filename.toUtf8().data());
+	MidiFile_t midi_file = MidiFile_load((char *)(filename.toStdString().c_str()));
 	if (midi_file != NULL) Sequence::deserializeMidiFile(midi_file);
 	return midi_file;
 }
@@ -87,7 +87,7 @@ bool Sequence::saveMidiFile(MidiFile_t midi_file, QString filename)
 {
 	if (filename.isEmpty()) return false;
 	Sequence::serializeMidiFile(midi_file);
-	bool successful = (MidiFile_save(midi_file, filename.toUtf8().data()) == 0);
+	bool successful = (MidiFile_save(midi_file, filename.toStdString().c_str()) == 0);
 	Sequence::deserializeMidiFile(midi_file);
 	return successful;
 }
