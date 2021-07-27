@@ -1,11 +1,12 @@
 
 #include <QtWidgets>
-#include "controller-lane.h"
-#include "midifile.h"
 #include "continuous-value-lane.h"
+#include "controller-lane.h"
+#include "lane.h"
+#include "midifile.h"
 #include "window.h"
 
-ControllerLane::ControllerLane(Window* window): ContinuousValueLane(window)
+ControllerLane::ControllerLane(Window* window): ContinuousValueLane(window, Lane::CONTROLLER_LANE_TYPE)
 {
 }
 

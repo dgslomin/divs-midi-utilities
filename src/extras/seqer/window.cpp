@@ -1,8 +1,8 @@
 
 #include <QtWidgets>
 #include "all-events-lane.h"
-#include "controller-lane.h"
 #include "colors.h"
+#include "controller-lane.h"
 #include "inspector-sidebar.h"
 #include "marker-lane.h"
 #include "menu.h"

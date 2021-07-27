@@ -2,10 +2,11 @@
 #include <QtWidgets>
 #include "all-events-lane.h"
 #include "label-lane.h"
+#include "lane.h"
 #include "midifile.h"
 #include "window.h"
 
-AllEventsLane::AllEventsLane(Window* window): LabelLane(window)
+AllEventsLane::AllEventsLane(Window* window): LabelLane(window, Lane::ALL_EVENTS_LANE_TYPE)
 {
 }
 

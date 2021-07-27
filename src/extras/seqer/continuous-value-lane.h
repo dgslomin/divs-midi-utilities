@@ -18,7 +18,7 @@ public:
 	int handle_size;
 	QPen connecting_line_pen;
 
-	ContinuousValueLane(Window* window);
+	ContinuousValueLane(Window* window, QString type);
 	void paintBackground(QPainter* painter);
 	void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset);
 	MidiFileEvent_t getEventFromXY(int x, int y);

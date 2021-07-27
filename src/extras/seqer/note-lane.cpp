@@ -6,7 +6,7 @@
 #include "note-lane.h"
 #include "window.h"
 
-NoteLane::NoteLane(Window* window): Lane(window)
+NoteLane::NoteLane(Window* window): Lane(window, Lane::NOTE_LANE_TYPE)
 {
 	QSettings settings;
 	this->pixels_per_note = settings.value("note-lane/pixels-per-note", 6).toInt();

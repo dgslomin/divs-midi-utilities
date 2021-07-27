@@ -1,12 +1,26 @@
 
 #include <QtWidgets>
+#include "all-events-lane.h"
 #include "colors.h"
+#include "controller-lane.h"
 #include "lane.h"
 #include "midifile.h"
+#include "note-lane.h"
+#include "marker-lane.h"
+#include "tempo-lane.h"
+#include "velocity-lane.h"
 #include "window.h"
 
-Lane::Lane(Window* window)
+const QString Lane::NOTE_LANE_TYPE = "note-lane";
+const QString Lane::VELOCITY_LANE_TYPE = "velocity-lane";
+const QString Lane::CONTROLLER_LANE_TYPE = "controller-lane";
+const QString Lane::TEMPO_LANE_TYPE = "tempo-lane";
+const QString Lane::MARKER_LANE_TYPE = "marker-lane";
+const QString Lane::ALL_EVENTS_LANE_TYPE = "all-events-lane";
+
+Lane::Lane(Window* window, QString type)
 {
+	this->type = type;
 	this->window = window;
 	this->setFocusPolicy(Qt::StrongFocus);
 
@@ -440,5 +454,16 @@ void Lane::cursorDown()
 {
 	this->cursor_y++;
 	this->update();
+}
+
+Lane* Lane::newLane(Window* window, QString type)
+{
+	if (type == Lane::NOTE_LANE_TYPE) return new NoteLane(window);
+	if (type == Lane::VELOCITY_LANE_TYPE) return new VelocityLane(window);
+	if (type == Lane::CONTROLLER_LANE_TYPE) return new ControllerLane(window);
+	if (type == Lane::TEMPO_LANE_TYPE) return new TempoLane(window);
+	if (type == Lane::MARKER_LANE_TYPE) return new MarkerLane(window);
+	if (type == Lane::ALL_EVENTS_LANE_TYPE) return new AllEventsLane(window);
+	return NULL;
 }
 

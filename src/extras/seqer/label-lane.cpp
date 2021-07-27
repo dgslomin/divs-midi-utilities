@@ -6,7 +6,7 @@
 #include "midifile.h"
 #include "window.h"
 
-LabelLane::LabelLane(Window* window): Lane(window)
+LabelLane::LabelLane(Window* window, QString type): Lane(window, type)
 {
 	QSettings settings;
 	float font_scaling_factor = settings.value("label-lane/font-scaling-factor", 0.8).toFloat();

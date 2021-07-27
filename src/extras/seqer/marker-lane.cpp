@@ -2,10 +2,11 @@
 #include <QtWidgets>
 #include "marker-lane.h"
 #include "label-lane.h"
+#include "lane.h"
 #include "midifile.h"
 #include "window.h"
 
-MarkerLane::MarkerLane(Window* window): LabelLane(window)
+MarkerLane::MarkerLane(Window* window): LabelLane(window, Lane::MARKER_LANE_TYPE)
 {
 }
 

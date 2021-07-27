@@ -19,6 +19,14 @@ class Lane: public QWidget
 	Q_OBJECT
 
 public:
+	static const QString NOTE_LANE_TYPE;
+	static const QString VELOCITY_LANE_TYPE;
+	static const QString CONTROLLER_LANE_TYPE;
+	static const QString TEMPO_LANE_TYPE;
+	static const QString MARKER_LANE_TYPE;
+	static const QString ALL_EVENTS_LANE_TYPE;
+
+	QString type;
 	Window* window;
 	bool sequence_updated = true;
 	int track_number = 1;
@@ -50,7 +58,7 @@ public:
 	QPen grid_line_pen;
 	int mouse_drag_threshold;
 
-	Lane(Window* window);
+	Lane(Window* window, QString type);
 	void paintEvent(QPaintEvent* event);
 	void mousePressEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
@@ -67,6 +75,8 @@ public:
 	virtual void scrollYBy(int offset) = 0;
 	virtual void zoomYBy(float factor) = 0;
 	virtual int getCursorGap() = 0;
+
+	static Lane* newLane(Window* window, QString type);
 
 public slots:
 	void sequenceUpdated();

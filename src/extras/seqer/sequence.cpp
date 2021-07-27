@@ -2,8 +2,8 @@
 #include <QtWidgets>
 #include "midifile.h"
 #include "sequence.h"
-#include "window.h"
 #include "undo-stack.h"
+#include "window.h"
 
 Sequence::Sequence(MidiFile_t midi_file)
 {

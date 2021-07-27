@@ -1,11 +1,12 @@
 
 #include <QtWidgets>
 #include "colors.h"
-#include "midifile.h"
 #include "continuous-value-lane.h"
+#include "lane.h"
+#include "midifile.h"
 #include "window.h"
 
-ContinuousValueLane::ContinuousValueLane(Window* window): Lane(window)
+ContinuousValueLane::ContinuousValueLane(Window* window, QString type): Lane(window, type)
 {
 	QSettings settings;
 	this->handle_size = settings.value("continuous-value-lane/handle-size", 6).toInt();

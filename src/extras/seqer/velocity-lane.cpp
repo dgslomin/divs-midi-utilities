@@ -1,11 +1,11 @@
 
 #include <QtWidgets>
-#include "midifile.h"
 #include "lane.h"
+#include "midifile.h"
 #include "velocity-lane.h"
 #include "window.h"
 
-VelocityLane::VelocityLane(Window* window): Lane(window)
+VelocityLane::VelocityLane(Window* window): Lane(window, Lane::VELOCITY_LANE_TYPE)
 {
 	QSettings settings;
 	this->box_width = settings.value("velocity-lane/box-width", 6).toInt();
