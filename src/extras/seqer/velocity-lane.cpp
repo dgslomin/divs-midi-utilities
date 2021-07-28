@@ -75,7 +75,7 @@ void VelocityLane::moveEventsByXY(int x_offset, int y_offset)
 		if ((MidiFileEvent_getType(midi_event) == MIDI_FILE_EVENT_TYPE_NOTE) && MidiFileEvent_isSelected(midi_event))
 		{
 			if (x_offset != 0) MidiFileEvent_setTick(midi_event, this->window->getTickFromX(this->window->getXFromTick(MidiFileEvent_getTick(midi_event)) + x_offset));
-			if (y_offset != 0) MidiFileNoteEvent_setVelocity(midi_event, (int)(this->getValueFromY(this->getYFromValue((MidiFileNoteEvent_getVelocity(midi_event) + y_offset)))));
+			if (y_offset != 0) MidiFileNoteEvent_setVelocity(midi_event, (int)(this->getValueFromY(this->getYFromValue(MidiFileNoteEvent_getVelocity(midi_event)) + y_offset)));
 		}
 	}
 }
