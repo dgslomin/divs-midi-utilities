@@ -81,6 +81,7 @@ public:
 	virtual void scrollYBy(int offset) = 0;
 	virtual void zoomYBy(float factor) = 0;
 	virtual int getCursorGap() = 0;
+	virtual void setDragOriginFromXY(int x, int y);
 
 	static Lane* newLane(Window* window, QString type);
 

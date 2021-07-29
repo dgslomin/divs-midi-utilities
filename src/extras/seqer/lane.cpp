@@ -194,6 +194,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 				{
 					this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
 					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
+					this->setDragOriginFromXY(this->mouse_down_x, this->mouse_down_y);
 				}
 			}
 			else
@@ -210,6 +211,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 					MidiFileEvent_setSelected(midi_event, 1);
 					this->track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(midi_event));
 					this->mouse_operation = LANE_MOUSE_OPERATION_DRAG_EVENTS;
+					this->setDragOriginFromXY(this->mouse_down_x, this->mouse_down_y);
 				}
 			}
 		}
@@ -376,6 +378,24 @@ void Lane::zoomOut()
 	this->zoomYBy(1 / 1.05);
 }
 
+void Lane::setDragOriginFromXY(int x, int y)
+{
+	Q_UNUSED(x)
+	Q_UNUSED(y)
+	// noop by default
+}
+
+Lane* Lane::newLane(Window* window, QString type)
+{
+	if (type == Lane::NOTE_LANE_TYPE) return new NoteLane(window);
+	if (type == Lane::VELOCITY_LANE_TYPE) return new VelocityLane(window);
+	if (type == Lane::CONTROLLER_LANE_TYPE) return new ControllerLane(window);
+	if (type == Lane::TEMPO_LANE_TYPE) return new TempoLane(window);
+	if (type == Lane::MARKER_LANE_TYPE) return new MarkerLane(window);
+	if (type == Lane::ALL_EVENTS_LANE_TYPE) return new AllEventsLane(window);
+	return NULL;
+}
+
 void Lane::editEvent()
 {
 	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
@@ -436,16 +456,5 @@ void Lane::cursorDown()
 {
 	this->cursor_y++;
 	this->update();
-}
-
-Lane* Lane::newLane(Window* window, QString type)
-{
-	if (type == Lane::NOTE_LANE_TYPE) return new NoteLane(window);
-	if (type == Lane::VELOCITY_LANE_TYPE) return new VelocityLane(window);
-	if (type == Lane::CONTROLLER_LANE_TYPE) return new ControllerLane(window);
-	if (type == Lane::TEMPO_LANE_TYPE) return new TempoLane(window);
-	if (type == Lane::MARKER_LANE_TYPE) return new MarkerLane(window);
-	if (type == Lane::ALL_EVENTS_LANE_TYPE) return new AllEventsLane(window);
-	return NULL;
 }
 

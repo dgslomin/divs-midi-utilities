@@ -7,7 +7,6 @@ prioritization of mouse and keyboard interaction.  It's built using Qt and
 RtMidi.
 
 TODO:
-note start/middle/end drag
 inspector
 keyboard navigation and tweaking
 tracks and channels side panels
