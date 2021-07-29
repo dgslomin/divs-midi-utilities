@@ -78,7 +78,7 @@ Lane::Lane(Window* window, QString type)
 	this->cursor_brush = QBrush(settings.value("lane/cursor-color", Colors::buttonShade(255, 0)).value<QColor>());
 	this->selection_rect_pen = QPen(settings.value("lane/selection-rect-color", Colors::buttonShade(0, 255)).value<QColor>(), 1, Qt::DashLine);
 	this->grid_line_pen = QPen(settings.value("lane/grid-line-color", Colors::buttonShade(230, 60)).value<QColor>());
-	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 8).toInt();
+	this->mouse_drag_threshold = settings.value("lane/mouse-drag-threshold", 12).toInt();
 }
 
 void Lane::paintEvent(QPaintEvent* event)

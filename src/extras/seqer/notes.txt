@@ -18,4 +18,6 @@ preferences including ports, colors, and keyboard shortcuts
 
 save lane state
 middle drag scroll/zoom
+bounds checking when setting midi event properties
+adjust zoom_y/scroll_y so that max possible value is never less than lane height
 
