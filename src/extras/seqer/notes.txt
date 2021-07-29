@@ -7,16 +7,16 @@ prioritization of mouse and keyboard interaction.  It's built using Qt and
 RtMidi.
 
 TODO:
-add/remove/reorder lanes
-middle drag scroll/zoom
 note start/middle/end drag
 inspector
 keyboard navigation and tweaking
 tracks and channels side panels
 lane groups
-preferences
+external utils
 playback
 recording
-external utils
-macros
+preferences including ports, colors, and keyboard shortcuts
+
+save lane state
+middle drag scroll/zoom
 

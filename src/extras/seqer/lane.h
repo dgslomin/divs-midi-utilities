@@ -64,6 +64,12 @@ public:
 	void mouseReleaseEvent(QMouseEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent* event);
+	void sequenceUpdated();
+	void cut();
+	void copy_();
+	void paste();
+	void zoomIn();
+	void zoomOut();
 
 	virtual void paintBackground(QPainter* painter) = 0;
 	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
@@ -79,12 +85,6 @@ public:
 	static Lane* newLane(Window* window, QString type);
 
 public slots:
-	void sequenceUpdated();
-	void cut();
-	void copy_();
-	void paste();
-	void zoomIn();
-	void zoomOut();
 	void editEvent();
 	void selectEvent();
 	void cursorLeft();

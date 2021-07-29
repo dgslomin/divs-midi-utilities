@@ -5,6 +5,7 @@ class Window;
 
 #include <QtWidgets>
 #include "inspector-sidebar.h"
+#include "lane.h"
 #include "sequence.h"
 
 class Window: public QMainWindow
@@ -13,7 +14,8 @@ class Window: public QMainWindow
 
 public:
 	static QVector<Window*> windows;
-	bool confirm_on_close = true;
+	static bool confirm_on_close;
+
 	int cursor_x = 0;
 	float scroll_x = 0;
 	Sequence* sequence;
@@ -33,6 +35,7 @@ public:
 	long getTickFromX(int x);
 	void scrollXBy(float offset);
 	void zoomXBy(float factor);
+	Lane* getFocusedLane();
 
 public slots:
 	void newSequence();
@@ -45,25 +48,29 @@ public slots:
 	void quit();
 	void undo();
 	void redo();
+	void cut();
+	void copy_();
+	void paste();
 	void delete_();
 	void selectAll();
 	void selectNone();
 	void zoomInTime();
 	void zoomOutTime();
-	void addLane();
-	void removeLane();
-	void setUseLinearTime(bool use_linear_time);
-	void aboutSeqer();
-	void underlyingSequenceUpdated();
-	void focusInspector();
-
-signals:
-	void sequenceUpdated();
-	void cut();
-	void copy_();
-	void paste();
 	void zoomInLane();
 	void zoomOutLane();
+	void addNoteLane();
+	void addVelocityLane();
+	void addControllerLane();
+	void addTempoLane();
+	void addMarkerLane();
+	void addAllEventsLane();
+	void removeLane();
+	void moveLaneUp();
+	void moveLaneDown();
+	void setUseLinearTime(bool use_linear_time);
+	void aboutSeqer();
+	void sequenceUpdated();
+	void focusInspector();
 };
 
 #endif

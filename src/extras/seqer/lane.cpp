@@ -24,13 +24,6 @@ Lane::Lane(Window* window, QString type)
 	this->window = window;
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	connect(window, SIGNAL(sequenceUpdated()), this, SLOT(sequenceUpdated()));
-	connect(window, SIGNAL(cut()), this, SLOT(cut()));
-	connect(window, SIGNAL(copy_()), this, SLOT(copy_()));
-	connect(window, SIGNAL(paste()), this, SLOT(paste()));
-	connect(window, SIGNAL(zoomInLane()), this, SLOT(zoomIn()));
-	connect(window, SIGNAL(zoomOutLane()), this, SLOT(zoomOut()));
-
 	QAction* edit_event_action = new QAction(tr("Edit Event"));
 	this->addAction(edit_event_action);
 	edit_event_action->setShortcut(QKeySequence(Qt::Key_Return));
@@ -144,16 +137,12 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);
+	painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
 
 	if (this->hasFocus())
 	{
-		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
 		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
 		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + this->getCursorGap(), 4, 4);
-	}
-	else
-	{
-		painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
 	}
 
 	this->sequence_updated = false;
@@ -321,15 +310,12 @@ void Lane::sequenceUpdated()
 
 void Lane::cut()
 {
-	if (!this->hasFocus()) return;
 	this->copy_();
 	this->window->delete_();
 }
 
 void Lane::copy_()
 {
-	if (!this->hasFocus()) return;
-
 	MidiFile_t clipboard_midi_file = MidiFile_newFromTemplate(this->window->sequence->midi_file);
 	bool has_multiple_selected_tracks = Sequence::midiFileHasMultipleSelectedTracks(this->window->sequence->midi_file);
 	long first_selected_event_tick = -1;
@@ -359,8 +345,6 @@ void Lane::copy_()
 
 void Lane::paste()
 {
-	if (!this->hasFocus()) return;
-
 	const QMimeData* mime_data = QGuiApplication::clipboard()->mimeData();
 	if ((mime_data == NULL) || !mime_data->hasFormat("audio/midi")) return;
 	MidiFile_t clipboard_midi_file = Sequence::loadMidiFileFromBuffer(mime_data->data("audio/midi"));
@@ -384,13 +368,11 @@ void Lane::paste()
 
 void Lane::zoomIn()
 {
-	if (!this->hasFocus()) return;
 	this->zoomYBy(1.05);
 }
 
 void Lane::zoomOut()
 {
-	if (!this->hasFocus()) return;
 	this->zoomYBy(1 / 1.05);
 }
 

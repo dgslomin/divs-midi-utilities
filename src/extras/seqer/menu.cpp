@@ -84,19 +84,19 @@ void Menu::createEditMenu(Window* window)
 	window->addAction(cut_action);
 	edit_menu->addAction(cut_action);
 	cut_action->setShortcut(QKeySequence(QKeySequence::Cut));
-	connect(cut_action, SIGNAL(triggered()), window, SIGNAL(cut()));
+	connect(cut_action, SIGNAL(triggered()), window, SLOT(cut()));
 
 	QAction* copy_action = new QAction(tr("&Copy"));
 	window->addAction(copy_action);
 	edit_menu->addAction(copy_action);
 	copy_action->setShortcut(QKeySequence(QKeySequence::Copy));
-	connect(copy_action, SIGNAL(triggered()), window, SIGNAL(copy_()));
+	connect(copy_action, SIGNAL(triggered()), window, SLOT(copy_()));
 
 	QAction* paste_action = new QAction(tr("&Paste"));
 	window->addAction(paste_action);
 	edit_menu->addAction(paste_action);
 	paste_action->setShortcut(QKeySequence(QKeySequence::Paste));
-	connect(paste_action, SIGNAL(triggered()), window, SIGNAL(paste()));
+	connect(paste_action, SIGNAL(triggered()), window, SLOT(paste()));
 
 	QAction* delete_action = new QAction(tr("&Delete"));
 	window->addAction(delete_action);
@@ -143,20 +143,47 @@ void Menu::createViewMenu(Window* window)
 	window->addAction(zoom_in_lane_action);
 	view_menu->addAction(zoom_in_lane_action);
 	zoom_in_lane_action->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Plus));
-	connect(zoom_in_lane_action, SIGNAL(triggered()), window, SIGNAL(zoomInLane()));
+	connect(zoom_in_lane_action, SIGNAL(triggered()), window, SLOT(zoomInLane()));
 
 	QAction* zoom_out_lane_action = new QAction(tr("Zoom &Out Lane"));
 	window->addAction(zoom_out_lane_action);
 	view_menu->addAction(zoom_out_lane_action);
 	zoom_out_lane_action->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Minus));
-	connect(zoom_out_lane_action, SIGNAL(triggered()), window, SIGNAL(zoomOutLane()));
+	connect(zoom_out_lane_action, SIGNAL(triggered()), window, SLOT(zoomOutLane()));
 
 	view_menu->addSeparator();
 
-	QAction* add_lane_action = new QAction(tr("&Add Lane"));
-	window->addAction(add_lane_action);
-	view_menu->addAction(add_lane_action);
-	connect(add_lane_action, SIGNAL(triggered()), window, SLOT(addLane()));
+	QMenu* add_lane_submenu = view_menu->addMenu(tr("&Add Lane"));
+
+	QAction* add_note_lane_action = new QAction(tr("&Note Lane"));
+	window->addAction(add_note_lane_action);
+	add_lane_submenu->addAction(add_note_lane_action);
+	connect(add_note_lane_action, SIGNAL(triggered()), window, SLOT(addNoteLane()));
+
+	QAction* add_velocity_lane_action = new QAction(tr("&Velocity Lane"));
+	window->addAction(add_velocity_lane_action);
+	add_lane_submenu->addAction(add_velocity_lane_action);
+	connect(add_velocity_lane_action, SIGNAL(triggered()), window, SLOT(addVelocityLane()));
+
+	QAction* add_controller_lane_action = new QAction(tr("&Controller Lane"));
+	window->addAction(add_controller_lane_action);
+	add_lane_submenu->addAction(add_controller_lane_action);
+	connect(add_controller_lane_action, SIGNAL(triggered()), window, SLOT(addControllerLane()));
+
+	QAction* add_tempo_lane_action = new QAction(tr("&Tempo Lane"));
+	window->addAction(add_tempo_lane_action);
+	add_lane_submenu->addAction(add_tempo_lane_action);
+	connect(add_tempo_lane_action, SIGNAL(triggered()), window, SLOT(addTempoLane()));
+
+	QAction* add_marker_lane_action = new QAction(tr("&Marker Lane"));
+	window->addAction(add_marker_lane_action);
+	add_lane_submenu->addAction(add_marker_lane_action);
+	connect(add_marker_lane_action, SIGNAL(triggered()), window, SLOT(addMarkerLane()));
+
+	QAction* add_all_events_lane_action = new QAction(tr("&All Events Lane"));
+	window->addAction(add_all_events_lane_action);
+	add_lane_submenu->addAction(add_all_events_lane_action);
+	connect(add_all_events_lane_action, SIGNAL(triggered()), window, SLOT(addAllEventsLane()));
 
 	QAction* remove_lane_action = new QAction(tr("&Remove Lane"));
 	window->addAction(remove_lane_action);
@@ -166,10 +193,12 @@ void Menu::createViewMenu(Window* window)
 	QAction* move_lane_up_action = new QAction(tr("Move Lane &Up"));
 	window->addAction(move_lane_up_action);
 	view_menu->addAction(move_lane_up_action);
+	connect(move_lane_up_action, SIGNAL(triggered()), window, SLOT(moveLaneUp()));
 
 	QAction* move_lane_down_action = new QAction(tr("Move Lane &Down"));
 	window->addAction(move_lane_down_action);
 	view_menu->addAction(move_lane_down_action);
+	connect(move_lane_down_action, SIGNAL(triggered()), window, SLOT(moveLaneDown()));
 
 	view_menu->addSeparator();
 
@@ -238,17 +267,6 @@ void Menu::createToolsMenu(Window* window)
 	window->addAction(external_utility_action);
 	tools_menu->addAction(external_utility_action);
 	external_utility_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_U));
-
-	tools_menu->addSeparator();
-
-	QAction* record_macro_action = new QAction(tr("&Record Macro..."));
-	window->addAction(record_macro_action);
-	tools_menu->addAction(record_macro_action);
-	record_macro_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R));
-
-	QAction* macros_action = new QAction(tr("&Macros..."));
-	window->addAction(macros_action);
-	tools_menu->addAction(macros_action);
 
 	tools_menu->addSeparator();
 

@@ -20,12 +20,12 @@ Sequence::~Sequence()
 void Sequence::addWindow(Window* window)
 {
 	this->number_of_windows++;
-	connect(this, SIGNAL(updated()), window, SLOT(underlyingSequenceUpdated()));
+	connect(this, SIGNAL(updated()), window, SLOT(sequenceUpdated()));
 }
 
 void Sequence::removeWindow(Window* window)
 {
-	disconnect(this, SIGNAL(updated()), window, SLOT(underlyingSequenceUpdated()));
+	disconnect(this, SIGNAL(updated()), window, SLOT(sequenceUpdated()));
 	this->number_of_windows--;
 	if (this->number_of_windows == 0) delete this;
 }
