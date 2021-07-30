@@ -36,6 +36,7 @@ public:
 	void scrollXBy(float offset);
 	void zoomXBy(float factor);
 	Lane* getFocusedLane();
+	void scrollCursorIntoView();
 
 public slots:
 	void newSequence();
@@ -68,6 +69,9 @@ public slots:
 	void moveLaneUp();
 	void moveLaneDown();
 	void setUseLinearTime(bool use_linear_time);
+	void nextMarker();
+	void previousMarker();
+	void goToMarker();
 	void aboutSeqer();
 	void sequenceUpdated();
 	void focusInspector();

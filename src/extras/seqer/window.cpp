@@ -203,6 +203,14 @@ Lane* Window::getFocusedLane()
 	return NULL;
 }
 
+void Window::scrollCursorIntoView()
+{
+	Lane* lane = this->getFocusedLane();
+	if (lane == NULL) return;
+	if (this->cursor_x < this->scroll_x) this->scroll_x = this->cursor_x;
+	if (this->cursor_x > this->scroll_x + lane->width()) this->scroll_x = this->cursor_x - lane->width();
+}
+
 void Window::newSequence()
 {
 	if (this->sequence->is_modified && (this->sequence->number_of_windows == 1) && !this->save(true, false, "")) return;
@@ -411,6 +419,70 @@ void Window::setUseLinearTime(bool use_linear_time)
 	this->update();
 }
 
+void Window::nextMarker()
+{
+	long cursor_tick = this->getTickFromX(this->cursor_x);
+
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEventForTick(this->sequence->midi_file, cursor_tick); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isMarkerEvent(midi_event))
+		{
+			long event_tick = MidiFileEvent_getTick(midi_event);
+
+			if (event_tick != cursor_tick)
+			{
+				this->cursor_x = this->getXFromTick(event_tick);
+				this->scrollCursorIntoView();
+				this->update();
+				break;
+			}
+		}
+	}
+}
+
+void Window::previousMarker()
+{
+	long cursor_tick = this->getTickFromX(this->cursor_x);
+
+	for (MidiFileEvent_t midi_event = MidiFile_getLastEventForTick(this->sequence->midi_file, cursor_tick); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
+	{
+		if (MidiFileEvent_isMarkerEvent(midi_event))
+		{
+			long event_tick = MidiFileEvent_getTick(midi_event);
+
+			if (event_tick != cursor_tick)
+			{
+				this->cursor_x = this->getXFromTick(event_tick);
+				this->scrollCursorIntoView();
+				this->update();
+				break;
+			}
+		}
+	}
+
+	this->cursor_x = this->getXFromTick(0);
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::goToMarker()
+{
+	QString marker = QInputDialog::getText(this, tr("Go to Marker"), tr("Marker name:"));
+	if (marker.isNull()) return;
+	long marker_tick = MidiFile_getTickFromMarker(this->sequence->midi_file, marker.toUtf8().data());
+
+	if (marker_tick < 0)
+	{
+		QMessageBox::warning(this, tr("Error"), tr("Cannot find the specified marker."));
+	}
+	else
+	{
+		this->cursor_x = this->getXFromTick(marker_tick);
+		this->scrollCursorIntoView();
+		this->update();
+	}
+}
+
 void Window::aboutSeqer()
 {
 	QMessageBox::information(this, tr("About"), tr("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license"));
@@ -419,7 +491,7 @@ void Window::aboutSeqer()
 void Window::sequenceUpdated()
 {
 	this->setWindowModified(this->sequence->is_modified);
-	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("Untitled") : this->sequence->filename));
+	this->setWindowTitle(QString("%1[*] - Seqer").arg(this->sequence->filename.isEmpty() ? tr("Untitled") : QFileInfo(this->sequence->filename).fileName()));
 
 	for (int lane_number = 0; lane_number < this->lane_splitter->count(); lane_number++)
 	{

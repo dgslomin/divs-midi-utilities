@@ -247,16 +247,19 @@ void Menu::createTransportMenu(Window* window)
 	window->addAction(next_marker_action);
 	transport_menu->addAction(next_marker_action);
 	next_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToNextWord));
+	connect(next_marker_action, SIGNAL(triggered()), window, SLOT(nextMarker()));
 
 	QAction* previous_marker_action = new QAction(tr("Pre&vious Marker"));
 	window->addAction(previous_marker_action);
 	transport_menu->addAction(previous_marker_action);
 	previous_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToPreviousWord));
+	connect(previous_marker_action, SIGNAL(triggered()), window, SLOT(previousMarker()));
 
 	QAction* go_to_marker_action = new QAction(tr("Go to &Marker..."));
 	window->addAction(go_to_marker_action);
 	transport_menu->addAction(go_to_marker_action);
 	go_to_marker_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M));
+	connect(go_to_marker_action, SIGNAL(triggered()), window, SLOT(goToMarker()));
 }
 
 void Menu::createToolsMenu(Window* window)

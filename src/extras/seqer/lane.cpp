@@ -370,12 +370,12 @@ void Lane::paste()
 
 void Lane::zoomIn()
 {
-	this->zoomYBy(1.05);
+	this->zoomYBy(1.05f);
 }
 
 void Lane::zoomOut()
 {
-	this->zoomYBy(1 / 1.05);
+	this->zoomYBy(1 / 1.05f);
 }
 
 void Lane::setDragOriginFromXY(int x, int y)
