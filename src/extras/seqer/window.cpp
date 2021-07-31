@@ -225,7 +225,7 @@ void Window::scrollXBy(float offset)
 
 void Window::zoomXBy(float factor)
 {
-	long scroll_tick = this->getTickFromX(0);
+	float cursor_x = this->getXFromTick(this->cursor_tick);
 
 	if (this->use_linear_time)
 	{
@@ -237,7 +237,7 @@ void Window::zoomXBy(float factor)
 	}
 
 	this->scroll_x = 0;
-	this->scroll_x = this->getXFromTick(scroll_tick);
+	this->scroll_x = qMax(this->getXFromTick(this->cursor_tick) - cursor_x, 0.0);
 	this->update();
 }
 
