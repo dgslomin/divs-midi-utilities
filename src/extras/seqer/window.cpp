@@ -52,7 +52,7 @@ Window::Window(Window* existing_window)
 	this->sidebar_tab_widget->setUsesScrollButtons(false);
 
 	this->inspector_sidebar = new InspectorSidebar(this);
-	this->sidebar_tab_widget->addTab(inspector_sidebar, tr("Inspector"));
+	this->sidebar_tab_widget->addTab(this->inspector_sidebar, tr("Inspector"));
 
 	this->sidebar_tab_widget->addTab(new QTextEdit("tracks placeholder"), tr("Tracks"));
 	this->sidebar_tab_widget->addTab(new QTextEdit("channels placeholder"), tr("Channels"));
@@ -547,6 +547,8 @@ void Window::sequenceUpdated()
 		Lane* lane = qobject_cast<Lane*>(this->lane_splitter->widget(lane_number));
 		if (lane != NULL) lane->sequenceUpdated();
 	}
+
+	this->inspector_sidebar->sequenceUpdated();
 }
 
 void Window::focusInspector()
