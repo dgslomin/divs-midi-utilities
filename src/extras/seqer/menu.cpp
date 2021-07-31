@@ -246,13 +246,21 @@ void Menu::createTransportMenu(Window* window)
 	QAction* next_marker_action = new QAction(tr("&Next Marker"));
 	window->addAction(next_marker_action);
 	transport_menu->addAction(next_marker_action);
-	next_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToNextWord));
+#ifdef Q_OS_MACOS
+	next_marker_action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right));
+#else
+	next_marker_action->setShortcut(QKeySequence(Qt::ALT | Qt::Key_Right));
+#endif
 	connect(next_marker_action, SIGNAL(triggered()), window, SLOT(nextMarker()));
 
 	QAction* previous_marker_action = new QAction(tr("Pre&vious Marker"));
 	window->addAction(previous_marker_action);
 	transport_menu->addAction(previous_marker_action);
-	previous_marker_action->setShortcut(QKeySequence(QKeySequence::MoveToPreviousWord));
+#ifdef Q_OS_MACOS
+	previous_marker_action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left));
+#else
+	previous_marker_action->setShortcut(QKeySequence(Qt::ALT | Qt::Key_Left));
+#endif
 	connect(previous_marker_action, SIGNAL(triggered()), window, SLOT(previousMarker()));
 
 	QAction* go_to_marker_action = new QAction(tr("Go to &Marker..."));

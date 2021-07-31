@@ -92,7 +92,7 @@ void TimeRuler::mousePressEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
-		this->window->cursor_x = event->pos().x();
+		this->window->cursor_tick = this->window->getTickFromX(event->pos().x());
 		this->window->update();
 	}
 }

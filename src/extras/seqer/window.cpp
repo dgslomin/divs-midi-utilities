@@ -68,6 +68,56 @@ Window::Window(Window* existing_window)
 	this->pixels_per_second = settings.value("window/pixels-per-second", 40.0).toFloat();
 
 	Menu::createMenuBar(this);
+
+	QAction* edit_event_action = new QAction(tr("Edit Event"));
+	this->addAction(edit_event_action);
+	edit_event_action->setShortcut(QKeySequence(Qt::Key_Return));
+	connect(edit_event_action, SIGNAL(triggered()), this, SLOT(editEvent()));
+
+	QAction* select_event_action = new QAction(tr("Select Event"));
+	this->addAction(select_event_action);
+	select_event_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Return));
+	connect(select_event_action, SIGNAL(triggered()), this, SLOT(selectEvent()));
+
+	QAction* cursor_left_fine_action = new QAction(tr("Cursor Left (Fine)"));
+	this->addAction(cursor_left_fine_action);
+	cursor_left_fine_action->setShortcut(QKeySequence(Qt::Key_Left));
+	connect(cursor_left_fine_action, SIGNAL(triggered()), this, SLOT(cursorLeftFine()));
+
+	QAction* cursor_right_fine_action = new QAction(tr("Cursor Right (Fine)"));
+	this->addAction(cursor_right_fine_action);
+	cursor_right_fine_action->setShortcut(QKeySequence(Qt::Key_Right));
+	connect(cursor_right_fine_action, SIGNAL(triggered()), this, SLOT(cursorRightFine()));
+
+	QAction* cursor_left_coarse_action = new QAction(tr("Cursor Left (Coarse)"));
+	this->addAction(cursor_left_coarse_action);
+	cursor_left_coarse_action->setShortcut(QKeySequence(QKeySequence::MoveToPreviousWord));
+	connect(cursor_left_coarse_action, SIGNAL(triggered()), this, SLOT(cursorLeftCoarse()));
+
+	QAction* cursor_right_coarse_action = new QAction(tr("Cursor Right (Coarse)"));
+	this->addAction(cursor_right_coarse_action);
+	cursor_right_coarse_action->setShortcut(QKeySequence(QKeySequence::MoveToNextWord));
+	connect(cursor_right_coarse_action, SIGNAL(triggered()), this, SLOT(cursorRightCoarse()));
+
+	QAction* cursor_up_action = new QAction(tr("Cursor Up"));
+	this->addAction(cursor_up_action);
+	cursor_up_action->setShortcut(QKeySequence(Qt::Key_Up));
+	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorUp()));
+
+	QAction* cursor_down_action = new QAction(tr("Cursor Down"));
+	this->addAction(cursor_down_action);
+	cursor_down_action->setShortcut(QKeySequence(Qt::Key_Down));
+	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
+
+	QAction* cursor_home_action = new QAction(tr("Cursor Home"));
+	this->addAction(cursor_home_action);
+	cursor_home_action->setShortcut(QKeySequence(Qt::Key_Home));
+	connect(cursor_home_action, SIGNAL(triggered()), this, SLOT(cursorHome()));
+
+	QAction* cursor_end_action = new QAction(tr("Cursor End"));
+	this->addAction(cursor_end_action);
+	cursor_end_action->setShortcut(QKeySequence(Qt::Key_End));
+	connect(cursor_end_action, SIGNAL(triggered()), this, SLOT(cursorEnd()));
 }
 
 Window::~Window()
@@ -143,19 +193,19 @@ bool Window::save(bool ask_first, bool save_as, QString filename)
 	return false;
 }
 
-int Window::getXFromTick(long tick)
+float Window::getXFromTick(long tick)
 {
 	if (this->use_linear_time)
 	{
-		return (int)(MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second - this->scroll_x);
+		return MidiFile_getTimeFromTick(this->sequence->midi_file, tick) * this->pixels_per_second - this->scroll_x;
 	}
 	else
 	{
-		return (int)(MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat - this->scroll_x);
+		return MidiFile_getBeatFromTick(this->sequence->midi_file, tick) * this->pixels_per_beat - this->scroll_x;
 	}
 }
 
-long Window::getTickFromX(int x)
+long Window::getTickFromX(float x)
 {
 	if (this->use_linear_time)
 	{
@@ -169,16 +219,12 @@ long Window::getTickFromX(int x)
 
 void Window::scrollXBy(float offset)
 {
-	float old_scroll_x = this->scroll_x;
-	this->scroll_x = std::max(old_scroll_x - offset, 0.0f);
-	this->cursor_x += (int)(old_scroll_x - this->scroll_x);
+	this->scroll_x = qMax(this->scroll_x - offset, 0.0f);
 	this->update();
 }
 
 void Window::zoomXBy(float factor)
 {
-	long cursor_tick = this->getTickFromX(this->cursor_x);
-
 	if (this->use_linear_time)
 	{
 		this->pixels_per_second *= factor;
@@ -188,7 +234,6 @@ void Window::zoomXBy(float factor)
 		this->pixels_per_beat *= factor;
 	}
 
-	this->cursor_x = this->getXFromTick(cursor_tick);
 	this->update();
 }
 
@@ -205,10 +250,14 @@ Lane* Window::getFocusedLane()
 
 void Window::scrollCursorIntoView()
 {
-	Lane* lane = this->getFocusedLane();
-	if (lane == NULL) return;
-	if (this->cursor_x < this->scroll_x) this->scroll_x = this->cursor_x;
-	if (this->cursor_x > this->scroll_x + lane->width()) this->scroll_x = this->cursor_x - lane->width();
+	float cursor_x = this->getXFromTick(this->cursor_tick);
+	int width = this->lane_splitter->width();
+
+	if ((cursor_x < 0.0) || (cursor_x >= width))
+	{
+		this->scroll_x = qMax(scroll_x + cursor_x - (width / 10.0), 0.0);
+		this->update();
+	}
 }
 
 void Window::newSequence()
@@ -421,48 +470,44 @@ void Window::setUseLinearTime(bool use_linear_time)
 
 void Window::nextMarker()
 {
-	long cursor_tick = this->getTickFromX(this->cursor_x);
-
-	for (MidiFileEvent_t midi_event = MidiFile_getFirstEventForTick(this->sequence->midi_file, cursor_tick); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
 	{
 		if (MidiFileEvent_isMarkerEvent(midi_event))
 		{
 			long event_tick = MidiFileEvent_getTick(midi_event);
 
-			if (event_tick != cursor_tick)
+			if (event_tick > this->cursor_tick)
 			{
-				this->cursor_x = this->getXFromTick(event_tick);
+				this->cursor_tick = event_tick;
 				this->scrollCursorIntoView();
 				this->update();
-				break;
+				return;
 			}
 		}
 	}
+
+	this->cursorEnd();
 }
 
 void Window::previousMarker()
 {
-	long cursor_tick = this->getTickFromX(this->cursor_x);
-
-	for (MidiFileEvent_t midi_event = MidiFile_getLastEventForTick(this->sequence->midi_file, cursor_tick); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
+	for (MidiFileEvent_t midi_event = MidiFile_getLastEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
 	{
 		if (MidiFileEvent_isMarkerEvent(midi_event))
 		{
 			long event_tick = MidiFileEvent_getTick(midi_event);
 
-			if (event_tick != cursor_tick)
+			if (event_tick < this->cursor_tick)
 			{
-				this->cursor_x = this->getXFromTick(event_tick);
+				this->cursor_tick = event_tick;
 				this->scrollCursorIntoView();
 				this->update();
-				break;
+				return;
 			}
 		}
 	}
 
-	this->cursor_x = this->getXFromTick(0);
-	this->scrollCursorIntoView();
-	this->update();
+	this->cursorHome();
 }
 
 void Window::goToMarker()
@@ -477,7 +522,7 @@ void Window::goToMarker()
 	}
 	else
 	{
-		this->cursor_x = this->getXFromTick(marker_tick);
+		this->cursor_tick = marker_tick;
 		this->scrollCursorIntoView();
 		this->update();
 	}
@@ -503,5 +548,84 @@ void Window::sequenceUpdated()
 void Window::focusInspector()
 {
 	this->inspector_sidebar->setFocus(Qt::OtherFocusReason);
+}
+
+void Window::editEvent()
+{
+	Lane* lane = getFocusedLane();
+	if (lane != NULL) lane->editEvent();
+}
+
+void Window::selectEvent()
+{
+	Lane* lane = getFocusedLane();
+	if (lane != NULL) lane->selectEvent();
+}
+
+void Window::cursorUp()
+{
+	Lane* lane = getFocusedLane();
+	if (lane != NULL) lane->cursorUp();
+}
+
+void Window::cursorDown()
+{
+	Lane* lane = getFocusedLane();
+	if (lane != NULL) lane->cursorDown();
+}
+
+void Window::cursorLeftFine()
+{
+	this->cursor_tick = this->getTickFromX(qMax(this->getXFromTick(this->cursor_tick) - 1, 0.0));
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::cursorRightFine()
+{
+	this->cursor_tick = this->getTickFromX(this->getXFromTick(this->cursor_tick) + 1);
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::cursorLeftCoarse()
+{
+	this->cursor_tick = MidiFile_getTickFromBeat(this->sequence->midi_file, qMax(qCeil(MidiFile_getBeatFromTick(this->sequence->midi_file, this->cursor_tick)) - 1, 0));
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::cursorRightCoarse()
+{
+	this->cursor_tick = MidiFile_getTickFromBeat(this->sequence->midi_file, qFloor(MidiFile_getBeatFromTick(this->sequence->midi_file, this->cursor_tick)) + 1);
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::cursorHome()
+{
+	this->cursor_tick = 0;
+	this->scrollCursorIntoView();
+	this->update();
+}
+
+void Window::cursorEnd()
+{
+	for (MidiFileEvent_t midi_event = MidiFile_getFirstEvent(this->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getNextEventInFile(midi_event))
+	{
+		if (MidiFileEvent_getType(midi_event) == MIDI_FILE_EVENT_TYPE_NOTE)
+		{
+			long end_tick = MidiFileEvent_getTick(midi_event) + MidiFileNoteEvent_getDurationTicks(midi_event);
+			if (end_tick > this->cursor_tick) this->cursor_tick = end_tick;
+		}
+		else
+		{
+			long tick = MidiFileEvent_getTick(midi_event);
+			if (tick > this->cursor_tick) this->cursor_tick = tick;
+		}
+	}
+
+	this->scrollCursorIntoView();
+	this->update();
 }
 

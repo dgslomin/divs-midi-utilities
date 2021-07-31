@@ -7,8 +7,7 @@ prioritization of mouse and keyboard interaction.  It's built using Qt and
 RtMidi.
 
 TODO:
-inspector
-keyboard navigation and tweaking
+inspector and property tweaking from the keyboard
 tracks and channels side panels
 lane groups
 external utils
@@ -20,4 +19,5 @@ save lane state
 middle drag scroll/zoom
 bounds checking when setting midi event properties
 adjust zoom_y/scroll_y so that max possible value is never less than lane height
+snap cursor_y
 

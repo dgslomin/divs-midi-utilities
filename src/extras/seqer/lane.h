@@ -70,6 +70,10 @@ public:
 	void paste();
 	void zoomIn();
 	void zoomOut();
+	void editEvent();
+	void selectEvent();
+	void cursorUp();
+	void cursorDown();
 
 	virtual void paintBackground(QPainter* painter) = 0;
 	virtual void paintEvents(QPainter* painter, int selected_events_x_offset, int selected_events_y_offset) = 0;
@@ -84,14 +88,6 @@ public:
 	virtual void setDragOriginFromXY(int x, int y);
 
 	static Lane* newLane(Window* window, QString type);
-
-public slots:
-	void editEvent();
-	void selectEvent();
-	void cursorLeft();
-	void cursorRight();
-	void cursorUp();
-	void cursorDown();
 };
 
 #endif

@@ -16,7 +16,7 @@ public:
 	static QVector<Window*> windows;
 	static bool confirm_on_close;
 
-	int cursor_x = 0;
+	long cursor_tick = 0;
 	float scroll_x = 0;
 	Sequence* sequence;
 	QSplitter* sidebar_splitter;
@@ -31,8 +31,8 @@ public:
 	~Window();
 	void closeEvent(QCloseEvent* event);
 	bool save(bool ask_first, bool save_as, QString filename);
-	int getXFromTick(long tick);
-	long getTickFromX(int x);
+	float getXFromTick(long tick);
+	long getTickFromX(float x);
 	void scrollXBy(float offset);
 	void zoomXBy(float factor);
 	Lane* getFocusedLane();
@@ -75,6 +75,16 @@ public slots:
 	void aboutSeqer();
 	void sequenceUpdated();
 	void focusInspector();
+	void editEvent();
+	void selectEvent();
+	void cursorUp();
+	void cursorDown();
+	void cursorLeftFine();
+	void cursorRightFine();
+	void cursorLeftCoarse();
+	void cursorRightCoarse();
+	void cursorHome();
+	void cursorEnd();
 };
 
 #endif

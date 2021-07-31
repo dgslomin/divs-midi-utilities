@@ -24,42 +24,6 @@ Lane::Lane(Window* window, QString type)
 	this->window = window;
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	QAction* edit_event_action = new QAction(tr("Edit Event"));
-	this->addAction(edit_event_action);
-	edit_event_action->setShortcut(QKeySequence(Qt::Key_Return));
-	edit_event_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(edit_event_action, SIGNAL(triggered()), this, SLOT(editEvent()));
-
-	QAction* select_event_action = new QAction(tr("Select Event"));
-	this->addAction(select_event_action);
-	select_event_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Return));
-	select_event_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(select_event_action, SIGNAL(triggered()), this, SLOT(selectEvent()));
-
-	QAction* cursor_left_action = new QAction(tr("Cursor Left"));
-	this->addAction(cursor_left_action);
-	cursor_left_action->setShortcut(QKeySequence(Qt::Key_Left));
-	cursor_left_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(cursor_left_action, SIGNAL(triggered()), this, SLOT(cursorLeft()));
-
-	QAction* cursor_right_action = new QAction(tr("Cursor Right"));
-	this->addAction(cursor_right_action);
-	cursor_right_action->setShortcut(QKeySequence(Qt::Key_Right));
-	cursor_right_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(cursor_right_action, SIGNAL(triggered()), this, SLOT(cursorRight()));
-
-	QAction* cursor_up_action = new QAction(tr("Cursor Up"));
-	this->addAction(cursor_up_action);
-	cursor_up_action->setShortcut(QKeySequence(Qt::Key_Up));
-	cursor_up_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(cursor_up_action, SIGNAL(triggered()), this, SLOT(cursorUp()));
-
-	QAction* cursor_down_action = new QAction(tr("Cursor Down"));
-	this->addAction(cursor_down_action);
-	cursor_down_action->setShortcut(QKeySequence(Qt::Key_Down));
-	cursor_down_action->setShortcutContext(Qt::WidgetShortcut);
-	connect(cursor_down_action, SIGNAL(triggered()), this, SLOT(cursorDown()));
-
 	QSettings settings;
 	this->background_color = settings.value("lane/background-color", Colors::buttonShade(255, 0)).value<QColor>();
 	this->unselected_event_pen = QPen(settings.value("lane/unselected-event-border-color", Colors::buttonShade(0, 180)).value<QColor>());
@@ -135,14 +99,15 @@ void Lane::paintEvent(QPaintEvent* event)
 
 	// cursor
 
+	int cursor_x = this->window->getXFromTick(this->window->cursor_tick);
 	painter.setPen(this->cursor_pen);
 	painter.setBrush(this->cursor_brush);
-	painter.drawLine(this->window->cursor_x, 0, this->window->cursor_x, this->height());
+	painter.drawLine(cursor_x, 0, cursor_x, this->height());
 
 	if (this->hasFocus())
 	{
-		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y - 4, 4, 4);
-		painter.drawEllipse(this->window->cursor_x - 2, this->cursor_y + this->getCursorGap(), 4, 4);
+		painter.drawEllipse(cursor_x - 2, this->cursor_y - 4, 4, 4);
+		painter.drawEllipse(cursor_x - 2, this->cursor_y + this->getCursorGap(), 4, 4);
 	}
 
 	this->sequence_updated = false;
@@ -150,6 +115,8 @@ void Lane::paintEvent(QPaintEvent* event)
 
 void Lane::mousePressEvent(QMouseEvent* event)
 {
+	int cursor_x = this->window->getXFromTick(this->window->cursor_tick);
+
 	if (event->button() == Qt::LeftButton)
 	{
 		this->mouse_operation = LANE_MOUSE_OPERATION_NONE;
@@ -172,7 +139,7 @@ void Lane::mousePressEvent(QMouseEvent* event)
 			{
 				this->window->selectNone();
 
-				if ((this->mouse_down_x == this->window->cursor_x) && (this->mouse_down_y == this->cursor_y))
+				if ((this->mouse_down_x == cursor_x) && (this->mouse_down_y == this->cursor_y))
 				{
 					midi_event = this->addEventAtXY(this->mouse_down_x, this->mouse_down_y);
 					MidiFileEvent_setSelected(midi_event, 1);
@@ -241,13 +208,13 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 			{
 				QPoint midi_event_position = this->getPointFromEvent(this->getEventFromXY(this->mouse_down_x, this->mouse_down_y));
 
-				if ((this->window->cursor_x == midi_event_position.x()) && (this->cursor_y == midi_event_position.y()))
+				if ((this->window->getXFromTick(this->window->cursor_tick) == midi_event_position.x()) && (this->cursor_y == midi_event_position.y()))
 				{
 					this->window->focusInspector();
 				}
 				else
 				{
-					this->window->cursor_x = midi_event_position.x();
+					this->window->cursor_tick = this->window->getTickFromX(midi_event_position.x());
 					this->cursor_y = midi_event_position.y();
 				}
 			}
@@ -256,7 +223,7 @@ void Lane::mouseReleaseEvent(QMouseEvent* event)
 		{
 			if ((mouse_up_x == this->mouse_down_x) && (mouse_up_y == this->mouse_down_y))
 			{
-				this->window->cursor_x = mouse_up_x;
+				this->window->cursor_tick = this->window->getTickFromX(mouse_up_x);
 				this->cursor_y = mouse_up_y;
 			}
 			else
@@ -353,14 +320,13 @@ void Lane::paste()
 	if (clipboard_midi_file == NULL) return;
 	this->window->selectNone();
 	bool has_multiple_populated_tracks = Sequence::midiFileHasMultiplePopulatedTracks(clipboard_midi_file);
-	long cursor_tick = this->window->getTickFromX(this->window->cursor_x);
 
 	for (MidiFileEvent_t clipboard_midi_event = MidiFile_getFirstEvent(clipboard_midi_file); clipboard_midi_event != NULL; clipboard_midi_event = MidiFileEvent_getNextEventInFile(clipboard_midi_event))
 	{
 		int track_number = MidiFileTrack_getNumber(MidiFileEvent_getTrack(clipboard_midi_event));
 		if ((track_number > 1) && !has_multiple_populated_tracks) track_number = this->track_number;
 		MidiFileEvent_t midi_event = MidiFileTrack_copyEvent(MidiFile_getTrackByNumber(this->window->sequence->midi_file, track_number, 1), clipboard_midi_event);
-		MidiFileEvent_setTick(midi_event, MidiFileEvent_getTick(clipboard_midi_event) + cursor_tick);
+		MidiFileEvent_setTick(midi_event, MidiFileEvent_getTick(clipboard_midi_event) + this->window->cursor_tick);
 		MidiFileEvent_setSelected(midi_event, 1);
 	}
 
@@ -398,12 +364,13 @@ Lane* Lane::newLane(Window* window, QString type)
 
 void Lane::editEvent()
 {
-	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
+	int cursor_x = this->window->getXFromTick(this->window->cursor_tick);
+	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(cursor_x, this->cursor_y);
 
 	if (cursor_midi_event == NULL)
 	{
 		this->window->selectNone();
-		cursor_midi_event = this->addEventAtXY(this->window->cursor_x, this->cursor_y);
+		cursor_midi_event = this->addEventAtXY(cursor_x, this->cursor_y);
 		MidiFileEvent_setSelected(cursor_midi_event, 1);
 		this->window->sequence->update(true);
 	}
@@ -425,25 +392,13 @@ void Lane::editEvent()
 
 void Lane::selectEvent()
 {
-	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->cursor_x, this->cursor_y);
+	MidiFileEvent_t cursor_midi_event = this->getEventFromXY(this->window->getXFromTick(this->window->cursor_tick), this->cursor_y);
 
 	if (cursor_midi_event != NULL)
 	{
 		MidiFileEvent_setSelected(cursor_midi_event, !MidiFileEvent_isSelected(cursor_midi_event));
 		this->window->sequence->update(false);
 	}
-}
-
-void Lane::cursorLeft()
-{
-	this->window->cursor_x--;
-	this->window->update();
-}
-
-void Lane::cursorRight()
-{
-	this->window->cursor_x++;
-	this->window->update();
 }
 
 void Lane::cursorUp()
