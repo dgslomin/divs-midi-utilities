@@ -2586,10 +2586,9 @@ int MidiFile_getTickFromHourMinuteSecondFrameString(MidiFile_t midi_file, char *
 
 long MidiFile_getTickFromMarker(MidiFile_t midi_file, char *marker)
 {
-	MidiFileTrack_t conductor_track = MidiFile_getFirstTrack(midi_file);
 	MidiFileEvent_t event;
 
-	for (event = MidiFileTrack_getFirstEvent(conductor_track); event != NULL; event = MidiFileEvent_getNextEventInTrack(event))
+	for (event = MidiFile_getFirstEvent(midi_file); event != NULL; event = MidiFileEvent_getNextEventInFile(event))
 	{
 		if (MidiFileEvent_isMarkerEvent(event) && (strcmp(MidiFileMarkerEvent_getText(event), marker) == 0)) return MidiFileEvent_getTick(event);
 	}
