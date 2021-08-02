@@ -1,0 +1,83 @@
+
+WXCONFIG=wx-config
+CC=`$(WXCONFIG) --cc`
+EXTRA_CFLAGS=-g
+CFLAGS=`$(WXCONFIG) --cflags` $(EXTRA_CFLAGS)
+CXX=`$(WXCONFIG) --cxx`
+EXTRA_CXXFLAGS=-std=c++11 -g
+CXXFLAGS=`$(WXCONFIG) --cxxflags` $(EXTRA_CXXFLAGS)
+LD=`$(WXCONFIG) --ld`
+LIBS=`$(WXCONFIG) --libs std,aui`
+
+ifeq ("$(shell uname -s)", "Darwin")
+
+all: Seqer.app/Contents/MacOS/Seqer Seqer.app/Contents/Resources/seqer.html
+
+Seqer.app/Contents/MacOS/Seqer: seqer
+	-mkdir -p Seqer.app/Contents/MacOS
+	cp seqer Seqer.app/Contents/MacOS/Seqer
+	SetFile -t APPL Seqer.app/Contents/MacOS/Seqer
+
+Seqer.app/Contents/Resources/seqer.html: seqer.html
+	-mkdir -p Seqer.app/Contents/Resources
+	cp seqer.html Seqer.app/Contents/Resources/
+
+endif
+
+seqer: application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o
+	$(LD) seqer application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o $(LIBS)
+
+application.o: application.cpp application.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c application.cpp
+
+controller-lane.o: controller-lane.cpp controller-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c controller-lane.cpp
+
+event-type-label-lane.o: event-type-label-lane.cpp event-type-label-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c event-type-label-lane.cpp
+
+inspector-panel.o: inspector-panel.cpp inspector-panel.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c inspector-panel.cpp
+
+label.o: label.cpp label.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c label.cpp
+
+label-lane.o: label-lane.cpp label-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c label-lane.cpp
+
+lane.o: lane.cpp lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c lane.cpp
+
+marker-lane.o: marker-lane.cpp marker-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c marker-lane.cpp
+
+midifile.o: ../../../../midifile/midifile.c ../../../../midifile/midifile.h
+	$(CC) $(CFLAGS) -I../../../../midifile -c ../../../../midifile/midifile.c
+
+note-lane.o: note-lane.cpp note-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c note-lane.cpp
+
+numeric-value-lane.o: numeric-value-lane.cpp numeric-value-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c numeric-value-lane.cpp
+
+sequence.o: sequence.cpp sequence.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c sequence.cpp
+
+tempo-lane.o: tempo-lane.cpp tempo-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c tempo-lane.cpp
+
+time-ruler.o: time-ruler.cpp time-ruler.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c time-ruler.cpp
+
+velocity-lane.o: velocity-lane.cpp velocity-lane.h ../../../../midifile/midifile.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c velocity-lane.cpp
+
+window.o: window.cpp window.h ../../../../midifile/midifile.h seqer.xpm
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c window.cpp
+
+clean:
+	rm -f application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o
+
+reallyclean: clean
+	rm -f seqer Seqer.app/Contents/MacOS/Seqer
+

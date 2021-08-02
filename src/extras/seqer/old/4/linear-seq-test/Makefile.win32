@@ -1,5 +1,5 @@
 
-MIDI_UTILITIES_HOME=..\..\..
+MIDI_UTILITIES_HOME=..\..\..\..\..
 
 seq.exe: seq.obj midifile.obj
 	cl /nologo /Feseq.exe seq.obj midifile.obj

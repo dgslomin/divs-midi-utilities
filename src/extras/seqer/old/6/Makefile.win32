@@ -1,83 +1,91 @@
 
-WXDIR=c:\wxWidgets-3.1.3
+WXDIR=c:\wxWidgets-3.1.0
 WXLIBDIR=$(WXDIR)\lib\vc_lib
 WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
-WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxmsw31ud_aui.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
+WXLIBS=$(WXLIBDIR)\wxbase31ud.lib $(WXLIBDIR)\wxmsw31ud_core.lib $(WXLIBDIR)\wxmsw31ud_adv.lib $(WXLIBDIR)\wxpngd.lib $(WXLIBDIR)\wxzlibd.lib
 FLAGS=/Zi /EHsc /MDd
 
-seqer.exe: application.obj controller-lane.obj event-type-label-lane.obj inspector-panel.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res
-	cl /nologo $(FLAGS) /Feseqer.exe application.obj controller-lane.obj event-type-label-lane.obj inspector-panel.obj label.obj label-lane.obj lane.obj marker-lane.obj midifile.obj note-lane.obj numeric-value-lane.obj sequence.obj tempo-lane.obj time-ruler.obj velocity-lane.obj window.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
+seqer.exe: aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj music-math.obj note-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res
+	cl /nologo $(FLAGS) /Feseqer.exe aftertouch-event.obj color.obj control-change-event.obj key-signature-event.obj lyric-event.obj marker-event.obj midifile.obj music-math.obj note-event.obj pitch-bend-event.obj port-event.obj program-change-event.obj seqer.obj sequence-editor.obj system-exclusive-event.obj tempo-event.obj text-event.obj time-signature-event.obj seqer.res kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib $(WXLIBS)
 	mt /nologo /manifest seqer.exe.manifest /outputresource:seqer.exe;1
 	del seqer.exe.manifest
 
-application.obj: application.cpp application.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c application.cpp
+aftertouch-event.obj: aftertouch-event.cpp ..\..\..\..\midifile\midifile.h aftertouch-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c aftertouch-event.cpp
 
-controller-lane.obj: controller-lane.cpp controller-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c controller-lane.cpp
+color.obj: color.cpp
+	cl /nologo $(FLAGS) $(WXINCLUDES) /c color.cpp
 
-event-type-label-lane.obj: event-type-label-lane.cpp event-type-label-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c event-type-label-lane.cpp
+control-change-event.obj: control-change-event.cpp ..\..\..\..\midifile\midifile.h control-change-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c control-change-event.cpp
 
-inspector-panel.obj: inspector-panel.cpp inspector-panel.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c inspector-panel.cpp
+key-signature-event.obj: key-signature-event.cpp ..\..\..\..\midifile\midifile.h key-signature-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c key-signature-event.cpp
 
-label.obj: label.cpp label.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c label.cpp
+lyric-event.obj: lyric-event.cpp ..\..\..\..\midifile\midifile.h lyric-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lyric-event.cpp
 
-label-lane.obj: label-lane.cpp label-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c label-lane.cpp
-
-lane.obj: lane.cpp lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c lane.cpp
-
-marker-lane.obj: marker-lane.cpp marker-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c marker-lane.cpp
+marker-event.obj: marker-event.cpp ..\..\..\..\midifile\midifile.h marker-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c marker-event.cpp
 
 midifile.obj: ..\..\..\..\midifile\midifile.c ..\..\..\..\midifile\midifile.h
 	cl /nologo $(FLAGS) /I..\..\..\..\midifile /c ..\..\..\..\midifile\midifile.c
 
-note-lane.obj: note-lane.cpp note-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c note-lane.cpp
+music-math.obj: music-math.cpp ..\..\..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c music-math.cpp
 
-numeric-value-lane.obj: numeric-value-lane.cpp note-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c numeric-value-lane.cpp
+note-event.obj: note-event.cpp ..\..\..\..\midifile\midifile.h note-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c note-event.cpp
 
-sequence.obj: sequence.cpp sequence.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c sequence.cpp
+pitch-bend-event.obj: pitch-bend-event.cpp ..\..\..\..\midifile\midifile.h pitch-bend-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c pitch-bend-event.cpp
 
-tempo-lane.obj: tempo-lane.cpp tempo-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c tempo-lane.cpp
+port-event.obj: port-event.cpp ..\..\..\..\midifile/midifile.h port-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c port-event.cpp
 
-time-ruler.obj: time-ruler.cpp time-ruler.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c time-ruler.cpp
+program-change-event.obj: program-change-event.cpp ..\..\..\..\midifile\midifile.h program-change-event.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c program-change-event.cpp
 
-velocity-lane.obj: velocity-lane.cpp velocity-lane.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c velocity-lane.cpp
+seqer.obj: seqer.cpp ..\..\..\..\midifile\midifile.h music-math.h seqer.h sequence-editor.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c seqer.cpp
 
-window.obj: window.cpp window.h ..\..\..\..\midifile\midifile.h
-	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c window.cpp
+sequence-editor.obj: sequence-editor.cpp ..\..\..\..\midifile\midifile.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c sequence-editor.cpp
+
+system-exclusive-event.obj: system-exclusive-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h system-exclusive-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c system-exclusive-event.cpp
+
+tempo-event.obj: tempo-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h tempo-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c tempo-event.cpp
+
+text-event.obj: text-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h text-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c text-event.cpp
+
+time-signature-event.obj: time-signature-event.cpp ..\..\..\..\midifile\midifile.h sequence-editor.h time-signature-event.h
+	cl /nologo $(FLAGS) $(WXINCLUDES) /I..\..\..\..\midifile /c time-signature-event.cpp
 
 seqer.res: seqer.rc seqer.ico
 	rc /nologo $(WXINCLUDES) /r /fo seqer.res seqer.rc
 
 clean:
-	@if exist application.obj del application.obj
-	@if exist controller-lane.obj del controller-lane.obj
-	@if exist event-type-label-lane.obj del event-type-label-lane.obj
-	@if exist inspector-panel.obj del inspector-panel.obj
-	@if exist label.obj del label.obj
-	@if exist label-lane.obj del label-lane.obj
-	@if exist lane.obj del lane.obj
-	@if exist marker-lane.obj del marker-lane.obj
-	@if exist midifile.obj del midifile.obj
-	@if exist note-lane.obj del note-lane.obj
-	@if exist numeric-value-lane.obj del numeric-value-lane.obj
-	@if exist sequence.obj del sequence.obj
-	@if exist tempo-lane.obj del tempo-lane.obj
-	@if exist time-ruler.obj del time-ruler.obj
-	@if exist velocity-lane.obj del velocity-lane.obj
-	@if exist window.obj del window.obj
+    @if exist aftertouch-event.obj del aftertouch-event.obj
+    @if exist color.obj del color.obj
+    @if exist control-change-event.obj del control-change-event.obj
+    @if exist key-signature-event.obj del key-signature-event.obj
+    @if exist lyric-event.obj del lyric-event.obj
+    @if exist marker-event.obj del marker-event.obj
+    @if exist midifile.obj del midifile.obj
+    @if exist music-math.obj del music-math.obj
+    @if exist note-event.obj del note-event.obj
+    @if exist pitch-bend-event.obj del pitch-bend-event.obj
+    @if exist port-event.obj del port-event.obj
+    @if exist program-change-event.obj del program-change-event.obj
+    @if exist seqer.obj del seqer.obj
+    @if exist sequence-editor.obj del sequence-editor.obj
+    @if exist system-exclusive-event.obj del system-exclusive-event.obj
+    @if exist tempo-event.obj del tempo-event.obj
+    @if exist text-event.obj del text-event.obj
+    @if exist time-signature-event.obj del time-signature-event.obj
 	@if exist seqer.res del seqer.res
 	@if exist seqer.ilk del seqer.ilk
 	@if exist seqer.pdb del seqer.pdb

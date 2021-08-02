@@ -7,7 +7,7 @@ CXX=`$(WXCONFIG) --cxx`
 EXTRA_CXXFLAGS=-std=c++11 -g
 CXXFLAGS=`$(WXCONFIG) --cxxflags` $(EXTRA_CXXFLAGS)
 LD=`$(WXCONFIG) --ld`
-LIBS=`$(WXCONFIG) --libs std,aui`
+LIBS=`$(WXCONFIG) --libs`
 
 ifeq ("$(shell uname -s)", "Darwin")
 
@@ -24,59 +24,65 @@ Seqer.app/Contents/Resources/seqer.html: seqer.html
 
 endif
 
-seqer: application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o
-	$(LD) seqer application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o $(LIBS)
+seqer: aftertouch-event.o color.o control-change-event.o key-signature-event.o lyric-event.o marker-event.o midifile.o music-math.o note-event.o pitch-bend-event.o port-event.o program-change-event.o seqer.o sequence-editor.o system-exclusive-event.o tempo-event.o text-event.o time-signature-event.o
+	$(LD) seqer aftertouch-event.o color.o control-change-event.o key-signature-event.o lyric-event.o marker-event.o midifile.o music-math.o note-event.o pitch-bend-event.o port-event.o program-change-event.o seqer.o sequence-editor.o system-exclusive-event.o tempo-event.o text-event.o time-signature-event.o $(LIBS)
 
-application.o: application.cpp application.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c application.cpp
+aftertouch-event.o: aftertouch-event.cpp ../../../../midifile/midifile.h aftertouch-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c aftertouch-event.cpp
 
-controller-lane.o: controller-lane.cpp controller-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c controller-lane.cpp
+color.o: color.cpp
+	$(CXX) $(CXXFLAGS) -c color.cpp
 
-event-type-label-lane.o: event-type-label-lane.cpp event-type-label-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c event-type-label-lane.cpp
+control-change-event.o: control-change-event.cpp ../../../../midifile/midifile.h control-change-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c control-change-event.cpp
 
-inspector-panel.o: inspector-panel.cpp inspector-panel.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c inspector-panel.cpp
+key-signature-event.o: key-signature-event.cpp ../../../../midifile/midifile.h key-signature-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c key-signature-event.cpp
 
-label.o: label.cpp label.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c label.cpp
+lyric-event.o: lyric-event.cpp ../../../../midifile/midifile.h lyric-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c lyric-event.cpp
 
-label-lane.o: label-lane.cpp label-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c label-lane.cpp
-
-lane.o: lane.cpp lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c lane.cpp
-
-marker-lane.o: marker-lane.cpp marker-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c marker-lane.cpp
+marker-event.o: marker-event.cpp ../../../../midifile/midifile.h marker-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c marker-event.cpp
 
 midifile.o: ../../../../midifile/midifile.c ../../../../midifile/midifile.h
 	$(CC) $(CFLAGS) -I../../../../midifile -c ../../../../midifile/midifile.c
 
-note-lane.o: note-lane.cpp note-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c note-lane.cpp
+music-math.o: music-math.cpp ../../../../midifile/midifile.h music-math.h seqer.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c music-math.cpp
 
-numeric-value-lane.o: numeric-value-lane.cpp numeric-value-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c numeric-value-lane.cpp
+note-event.o: note-event.cpp ../../../../midifile/midifile.h note-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c note-event.cpp
 
-sequence.o: sequence.cpp sequence.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c sequence.cpp
+pitch-bend-event.o: pitch-bend-event.cpp ../../../../midifile/midifile.h pitch-bend-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c pitch-bend-event.cpp
 
-tempo-lane.o: tempo-lane.cpp tempo-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c tempo-lane.cpp
+port-event.o: port-event.cpp ../../../../midifile/midifile.h port-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c port-event.cpp
 
-time-ruler.o: time-ruler.cpp time-ruler.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c time-ruler.cpp
+program-change-event.o: program-change-event.cpp ../../../../midifile/midifile.h program-change-event.h sequence-editor.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c program-change-event.cpp
 
-velocity-lane.o: velocity-lane.cpp velocity-lane.h ../../../../midifile/midifile.h
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c velocity-lane.cpp
+seqer.o: seqer.cpp ../../../../midifile/midifile.h music-math.h seqer.h sequence-editor.h seqer.xpm
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c seqer.cpp
 
-window.o: window.cpp window.h ../../../../midifile/midifile.h seqer.xpm
-	$(CXX) $(CXXFLAGS) -I../../../../midifile -c window.cpp
+sequence-editor.o: sequence-editor.cpp ../../../../midifile/midifile.h aftertouch-event.h control-change-event.h color.h key-signature-event.h lyric-event.h marker-event.h music-math.h note-event.h pitch-bend-event.h port-event.h program-change-event.h seqer.h sequence-editor.h system-exclusive-event.h tempo-event.h text-event.h time-signature-event.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c sequence-editor.cpp
+
+system-exclusive-event.o: system-exclusive-event.cpp ../../../../midifile/midifile.h sequence-editor.h system-exclusive-event.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c system-exclusive-event.cpp
+
+tempo-event.o: tempo-event.cpp ../../../../midifile/midifile.h sequence-editor.h tempo-event.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c tempo-event.cpp
+
+text-event.o: text-event.cpp ../../../../midifile/midifile.h sequence-editor.h text-event.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c text-event.cpp
+
+time-signature-event.o: time-signature-event.cpp ../../../../midifile/midifile.h sequence-editor.h time-signature-event.h
+	$(CXX) $(CXXFLAGS) -I../../../../midifile -c time-signature-event.cpp
 
 clean:
-	rm -f application.o controller-lane.o event-type-label-lane.o inspector-panel.o label.o label-lane.o lane.o marker-lane.o midifile.o note-lane.o numeric-value-lane.o sequence.o tempo-lane.o time-ruler.o velocity-lane.o window.o
+	rm -f aftertouch-event.o color.o control-change-event.o key-signature-event.o lyric-event.o marker-event.o midifile.o music-math.o note-event.o pitch-bend-event.o port-event.o program-change-event.o seqer.o sequence-editor.o system-exclusive-event.o tempo-event.o text-event.o time-signature-event.o
 
 reallyclean: clean
 	rm -f seqer Seqer.app/Contents/MacOS/Seqer

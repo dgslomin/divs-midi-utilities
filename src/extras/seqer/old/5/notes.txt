@@ -1,97 +1,15 @@
 
-Current plans for the sequencer project ("Seqer"), as of 2013-02-13:
+Current plans for the sequencer project ("Seqer"), as of 2012-01-07:
 
-This generation of Seqer is centered around a single megawidget, which combines aspects of an event list and a piano roll.  The event list portion is traditional in its columns, but its rows are worth discussion.
+An interface centered around an event list view which is heavily influenced by the interface of a spreadsheet.  This is intended to be suitable as the primary or sole editing interface, instead of a last ditch alternative to a piano roll.  Its description may seem superficially similar to a tracker, but this is a design for a linear sequencer with no notion of patterns or enforced quantization.
 
-There is one row for each event.  Rows are grouped into "steps" of a configurable time unit.  Events don't have to occur at the start of a step.  If no event occurs during a particular step, an empty row is displayed.  If more than one event occurs during a step, additional rows are displayed, stretching the vertical axis out of its normal, linear scale.
+Each cell in the spreadsheet-like grid corresponds to a single event.  The cell display indicates the type of the event and the key parts of the data inside it.  When a cell is focussed, a properties editor outside the grid (much like the formula editor in a spreadsheet) allows the user to see and edit all aspects of the event data.
 
-A vertical piano roll functions as an additional, graphical column in the table, with time mapped into a vertical position by interpolating between the vertical positions where successive steps start (ignoring individual rows).
+The event properties editor should not gain keyboard focus automatically when the cell is clicked upon.  Instead, the cell itself gains the focus, and responds to shortcut entry mechanisms.  For instance, a/b/c/d/e/f/g adds a note event and sets its note number to the corresponding pitch.  The octave of that pitch, the velocity, and the duration would be based on those of the most recently focussed event.  The accidental of the pitch would be based on the current key signature.  Ctrl+left/ctrl+right would decrement/increment pitch by semitone, and ctrl+down/ctrl+up would decrement/increment pitch by octave.  If a controller event was focussed, ctrl+left/ctrl+right would decrement/increment value by one, and ctrl+down/ctrl+up would decrement/increment value by 16.
 
+Columns correspond to track, but do not have any effect on playback or formatting; they are solely a way for the user to group events as he sees fit.  In particular, tracks/columns do not imply routing to output ports; output port is an editable property of each event, just like channel.  This can be stored in standards compliant MIDI files by repeating the "port" meta event within a track as needed.  Mute/solo and selected/unselected can be represented in a similar manner and saved (if desired) using "vendor" meta events in the file.
 
+Rows correspond to time, increasing non-linearly downward.  Time is grouped into "steps", where each step is a specified (fractional) number of beats or seconds.  Each step will take up at least one row, even if no event occurs in it.  If there is more than one event in a column which occurs in the same step, the step will take up extra rows.  Events within the step are sorted into rows by time order.  When the user creates a new event (through the qwerty keyboard or mouse), it will be quantized, by default, to the start of the step.
 
-
-
-
-
-TODO:
-	selection/clipboard infrastructure
-	save preferences
-	event grid
-		remaining insert/delete/edit operations
-		mouse support for navigate/select
-	piano roll
-		mouse support for select
-	realtime MIDI infrastructure
-		mapping from port name strings (arbitrarily user-selectable) to actual output ports
-		no arming of tracks; record should always target the current track
-		MIDI sync master
-		MIDI sync slave (much harder)
-	macros
-		Current plan (of many possible approaches):
-		Macros would be based solely around record and playback of other commands.
-		There would be 36 available macro slots, one for each letter and number.
-		A vi-like record command which would take the slot identifier as an argument (no popup dialog when the record command is invoked from a keyboard shortcut).  Invoking the record command again would finish the recording.
-		Pressing alt+shift+(slot) [ctrl+shift+(slot) on Mac] would invoke the macro.  Since this type of keyboard binding supports hold-down-to-repeat, there's no need for a vi-like "." command or user-controllable mapping of arbitrary keystrokes.
-		Open question: should macros persist in the application's saved state?
-	external tool infrastructure
-		There should be a command for running the current sequence through an external program whose command line can be specified in a popup (with substitution parameters for input/output temp filenames).  An option would control whether this is uni- or bidirectional.  If bidirectional, the sequence would be replaced by the output of the tool, but Seqer would attempt to apply the same view settings and cursor location as had been in effect before the tool was invoked.
-		This would be a quick way to get tempo mapping, etc. into Seqer, as well as supporting user scripting.  Would be particularly nice in combination with macros.
-	non-realtime MIDI input
-		step-time recording = add at current grid step and don't automatically move on to the next step
-		also support MMC for remote control of the transport
-
-
-
-
-
-
-
-What should the columns be?
-
-cakewalk: track, hmsf time, mbt time, channel, type, note, velocity, duration
-cubase: type, time, end time, duration, note, velocity, release velocity, channel, comment
-logic: time, type, channel, note, velocity, duration
-dp: time, note, velocity, release velocity, duration
-reaper: index, time, duration, channel, type, note, velocity
-seqer: type, time, track, channel, note, velocity, duration, release velocity
-
-
-
-
-
-
-
-Step size and zoom:
-
-   Amount: [6				  ]
-
-	 Mode: (x) Steps per measure
-		   ( ) Measures per step
-		   ( ) Seconds per step
-
-		   [Ok] [Cancel]
-
-
-In "steps per measure" mode, zoom in and out moves through a series of zoom levels which consists of the factors of the numerator of the current time signature, followed by powers of two times that numerator (e.g., for 12/8 it would be 1, 2, 3, 4, 6, 12, 24, 48, 96...).  The dialog lets the user type in a non-series number to achieve tuplets.  Zoom in or out from a tuplet goes to the next nearest series number.
-
-Measures in other time signatures than the current are assigned the nearest zoom level in their respective series (determined by comparing duration in quarter notes, and rounding to the finer zoom level when ambiguous).  The other time signatures always get a series value even when the current time signature has been assigned a non-series tuplet.
-
-In "measures per step" mode, zoom in and out moves through powers of two.
-
-One measure per step is not exactly the same as one step per measure, since the latter is affected by time signature (e.g., setting the zoom to one step per measure when the current measure is in 3/8 results in two steps per measure for other sections of the song in 6/8).  Zooming out from one step per measure results in two measures per step.  Zooming in from one measure per step results in the second value in the current measure's "steps per measure" series.  This allows the user to get to both one measure per step and one step per measure solely by zooming in and out, by overshooting and coming back.
-
-In "seconds per step" mode, zoom in and out moves through factors of two just like "measures per step" mode.  However, fractional (positive floating point) amounts are supported, so there is no need for a separate "steps per second" mode (and no complex logic for transitioning between them).
-
-
-
-
-
-
-
-
-Piano roll formatting:
-
-data to express: current, selected, track, velocity
-available primitives: fill color, fill shade, border color, border shade, border thickness
-preferences: avoid color, avoid high difference in shade between fill and border
+Note that steps have no effect on the data itself, only its display.  They are meant to balance the goals of having a visual overview of where events are clustered in time, ease of entry, support for simultaneous events, and infinitessimal resolution.  Toggling between beat-based steps and second-based steps will be useful when meter-casting.
 

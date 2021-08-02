@@ -1,0 +1,193 @@
+
+Current plans for the sequencer project ("Seqer") as of 2019-11-21:
+
+This generation of Seqer is based around a linear piano roll window.
+
+The piano roll consists of a configurable list of horizontal lanes, all of which are tied to the same time ruler (configurable for linearity in musical time versus wall-clock time but displaying both).  There are different types of lanes for notes, numeric values, and labels.  Note lanes are obvious, and numeric value lanes are used for velocity, controllers, pitch bend, aftertouch, and tempo.
+
+Label lanes are used for lyrics, markers, text events, time signatures, key signatures, and the event type names of any events in the file (this last case takes the place of a traditional event list view).  They consist of short strings in boxes whose left edges align with a particular time on the time ruler, but are shoved out of a single horizontal row if they would overlap other label boxes.  The order of events strictly follows the order they occur in the file.
+
+Each lane has a vertical value ruler on the left appropriate to the lane type (empty but still displayed for label lanes).  This is divided into three areas:  a small area at the top can be dragged to change the order of the lanes, a small area at the bottom can be dragged to zoom the lane, and the large area in the middle can be dragged to scroll the lane.  The time ruler works similarly for the horizontal direction:  a small area at the right can be dragged to zoom the window, and the rest can be dragged to scroll the window.  The drag operations for scroll and zoom capture and hide the mouse, and continue movement based on a timer when the mouse hits the edge of the screen (using wxWindow::WarpPointer()).  A context menu on the lane rulers provides controls to add a lane after the current, remove the lane, change the lane type, and toggle the start of a new lane group (which shares track and channel settings as well as which note to use for a key pressure lane).
+
+There is a side panel with different tabs.  The event tab allows you to see and edit all the properties of the currently selected event(s), which removes the need to expose all properties directly in the lanes.  The tracks tab shows the list of tracks in the file, with controls for mute, solo, arm, show/hide, which track to use for new events, rename, add, remove, and reorder.  The channels tab shows the standard list of 16 channels with controls for show/hide and which channel to use for new events; the same channel choices are used for all tracks.
+
+There is an editing caret in the current lane, where new events will be inserted.  You can use the keyboard to navigate it in the cardinal directions (by pixel, by quantization granularity, by octave, to the next/previous marker, etc) or to the nearest displayed event in that direction, whichever is closer.  You can also move the caret by clicking with the mouse.  If you navigate to an event via either input device, the selection is replaced with that event.  If you hold shift while doing so, that event is added to the selection.  You can also drag-select with the mouse if you start in an empty space.  Dragging an event moves it; events in note lanes differentiate between the horizontal effects of dragging on the middle of the box (start and end time), left edge (start time), and right edge (end time).  There are also keyboard controls for incrementing or decrementing (by pixel, by quantization granularity, by octave, etc) properties of the currently selected event.
+
+The playback caret is not the same as the editing caret but can be set from it.  There's an operation to insert time (for all tracks) at the editing caret.  There's also an operation to start selecting a time range (with subsequent navigation) rather than a set of events, which can be used for deleting, copying, and pasting across all events in all tracks whether or not they are visible.
+
+The editing caret (time only), playback caret, selected events, and selected time range are all stored as data inside the MIDI file not ephemerally in the view.  This allows the undo stack to be a simple list of file snapshots, as well as supporting external helper utilities.
+
+
+
+click on empty spot with shift:  set cursor
+click on empty spot with cursor:  clear selection, add event, select it
+click on empty spot:  clear selection, set cursor
+click on event with shift:  toggle event selection
+click on selected event with cursor:  edit selected events
+click on selected event:  set cursor
+click on event:  clear selection, select event, set cursor
+drag from empty spot with shift:  select events dragged over
+drag from empty spot with cursor:  clear selection, add event, select it, move it, set cursor
+drag from empty spot:  clear selection, select events dragged over
+drag from event:  move selected events, set cursor
+enter key when selection is not empty:  edit selected events
+enter key on empty spot:  add event, select it
+enter key on event:  select event, edit it
+space key on empty spot:  clear selection
+space key on event with shift:  toggle event selection
+space key on event:  clear selection, select event
+
+on mouse down:
+	capture mouse
+	mouse_down = true
+	mouse_down_x = mouse.x
+	mouse_down_y = mouse.y
+	mouse_down_event = NULL
+	mouse_down_event_is_new = false
+	mouse_drag_horizontal_allowed = false
+	mouse_drag_vertical_allowed = false
+
+	for each event:
+		if event intersects point(mouse.x, mouse.y):
+			mouse_down_event = event
+			break
+
+	if mouse_down_event == NULL:
+		if shift is not pressed:
+			for each event:
+				event.is_selected = false
+
+			if mouse.x == cursor_x and mouse.y == cursor_y:
+				add event at point(mouse.x, mouse.y)
+				event.is_selected = true
+				mouse_down_event = event
+				mouse_down_event_is_new = true
+
+on mouse up:
+	if mouse_down_event == NULL:
+		if mouse.x == mouse_down_x and mouse.y == mouse_down_y:
+			cursor_x = mouse.x
+			cursor_y = mouse.y
+		else:
+			for each event:
+				if event intersects rect(mouse_down_x, mouse_down_y, mouse.x, mouse.y):
+					event.is_selected = true
+
+	else:
+		if (mouse_drag_horizontal_allowed and mouse.x != mouse_down_x) or (mouse_drag_vertical_allowed and mouse.y != mouse_down_y):
+			for each event:
+				if event.is_selected:
+					target_x = event.x
+					target_y = event.y
+
+					if mouse_drag_horizontal_allowed:
+						target_x += mouse_drag_x - mouse_down_x
+
+					if mouse_drag_vertical_allowed:
+						target_y += mouse_drag_y - mouse_down_y
+
+					move event to point(target_x, target_y)
+
+		else:
+			if shift is not pressed and (not mouse_down_event_is_new) and (mouse.x == cursor.x and mouse.y == cursor.y):
+				open property editor
+
+		cursor_x = mouse.x
+		cursor_y = mouse.y
+
+	mouse_down = false
+	release mouse
+
+on mouse motion:
+	if mouse_down:
+		mouse_drag_x = mouse.x
+		mouse_drag_y = mouse.y
+
+		if abs(mouse_drag_x - mouse_down_x) > mouse_drag_threshold:
+			mouse_drag_horizontal_allowed = true
+
+		if abs(mouse_drag_y - mouse_down_y) > mouse_drag_threshold:
+			mouse_drag_vertical_allowed = true
+
+		repaint
+
+on paint:
+	should_paint_selection_rect = mouse_down and mouse_down_event == NULL:
+
+	if should_paint_selection_rect:
+		paint selection rect(mouse_down_x, mouse_down_y, mouse_drag_x, mouse_drag_y)
+
+	for each event:
+		target_x = event.x
+		target_y = event.y
+
+		if event.is_selected and not should_paint_selection_rect:
+			if mouse_drag_horizontal_allowed:
+				target_x += mouse_drag_x - mouse_down_x
+
+			if mouse_drag_vertical_allowed:
+				target_y += mouse_drag_y - mouse_down_y
+
+		paint event at point(target_x, target_y)
+
+on enter key:
+	selection_is_empty = true
+
+	for each event:
+		if event.is_selected:
+			selection_is_empty = false
+			break
+
+	if selection_is_empty:
+		cursor_event = NULL
+
+		for each event:
+			if event intersects point(cursor_x, cursor_y):
+				cursor_event = event
+				break
+
+		if cursor_event == NULL:
+			add event at point(cursor_x, cursor_y)
+			event.is_selected = true
+		else:
+			cursor_event.is_selected = true
+			open property editor
+
+	else:
+		open property editor
+
+on space key:
+	cursor_event = NULL
+
+	for each event:
+		if event intersects point(cursor_x, cursor_y):
+			cursor_event = event
+			break
+
+	if cursor_event == NULL:
+		for each event:
+			event.is_selected = false
+
+	else:
+		if shift is pressed:
+			toggle cursor_event.is_selected
+		else:
+			for each event:
+				event.is_selected = false
+
+			cursor_event.is_selected = true
+
+
+
+
+TODO:
+lanes in the window
+lane rulers
+note start/middle/end drag
+side panels
+undo stack
+keyboard navigation and tweaking
+preferences
+playback
+recording
+
