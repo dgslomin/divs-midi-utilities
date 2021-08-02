@@ -38,8 +38,14 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	this->event_type_line_edit = new QLineEdit();
 	event_layout->addRow(tr("Event Type"), this->event_type_line_edit);
 
-	this->event_time_line_edit = new QLineEdit();
-	event_layout->addRow(tr("Time"), this->event_time_line_edit);
+	this->time_line_edit = new QLineEdit();
+	event_layout->addRow(tr("Time"), this->time_line_edit);
+
+	this->duration_line_edit = new QLineEdit();
+	event_layout->addRow(tr("Duration"), this->duration_line_edit);
+
+	this->end_time_line_edit = new QLineEdit();
+	event_layout->addRow(tr("End Time"), this->end_time_line_edit);
 }
 
 void InspectorSidebar::paintEvent(QPaintEvent* event)
@@ -72,7 +78,7 @@ void InspectorSidebar::sequenceUpdated()
 	if (first_selected_event == NULL)
 	{
 		this->event_type_line_edit->setText("");
-		this->event_time_line_edit->setText("");
+		this->time_line_edit->setText("");
 	}
 	else
 	{
@@ -156,7 +162,7 @@ void InspectorSidebar::sequenceUpdated()
 			}
 		}
 
-		this->event_time_line_edit->setText(MidiFile_getMeasureBeatStringFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(first_selected_event)));
+		this->time_line_edit->setText(MidiFile_getMeasureBeatStringFromTick(this->window->sequence->midi_file, MidiFileEvent_getTick(first_selected_event)));
 	}
 }
 

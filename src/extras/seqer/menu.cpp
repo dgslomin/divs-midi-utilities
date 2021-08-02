@@ -43,7 +43,7 @@ void Menu::createFileMenu(Window* window)
 
 	QAction* save_as_action = new QAction(tr("Save &As..."));
 	window->addAction(save_as_action);
-	save_as_action->setShortcut(QKeySequence(QKeySequence::SaveAs));
+	save_as_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
 	file_menu->addAction(save_as_action);
 	connect(save_as_action, SIGNAL(triggered()), window, SLOT(saveAs()));
 
@@ -202,6 +202,41 @@ void Menu::createViewMenu(Window* window)
 
 	view_menu->addSeparator();
 
+	QActionGroup* time_format_action_group = new QActionGroup(window);
+
+	QAction* show_measures_beats_action = new QAction(tr("Measures : &Beats"), time_format_action_group);
+	window->addAction(show_measures_beats_action);
+	view_menu->addAction(show_measures_beats_action);
+	show_measures_beats_action->setCheckable(true);
+	show_measures_beats_action->setChecked(true);
+
+	QAction* show_hours_minutes_seconds_action = new QAction(tr("Hours : Minutes : &Seconds"), time_format_action_group);
+	window->addAction(show_hours_minutes_seconds_action);
+	view_menu->addAction(show_hours_minutes_seconds_action);
+	show_hours_minutes_seconds_action->setCheckable(true);
+
+	QAction* show_ticks_action = new QAction(tr("&Ticks"), time_format_action_group);
+	window->addAction(show_ticks_action);
+	view_menu->addAction(show_ticks_action);
+	show_ticks_action->setCheckable(true);
+
+	view_menu->addSeparator();
+
+	QActionGroup* duration_vs_end_time_action_group = new QActionGroup(window);
+
+	QAction* show_duration_action = new QAction(tr("Duratio&n"), duration_vs_end_time_action_group);
+	window->addAction(show_duration_action);
+	view_menu->addAction(show_duration_action);
+	show_duration_action->setCheckable(true);
+	show_duration_action->setChecked(true);
+
+	QAction* show_end_time_action = new QAction(tr("&End Time"), duration_vs_end_time_action_group);
+	window->addAction(show_end_time_action);
+	view_menu->addAction(show_end_time_action);
+	show_end_time_action->setCheckable(true);
+
+	view_menu->addSeparator();
+
 	QAction* linear_time_action = new QAction(tr("&Linear Time"));
 	window->addAction(linear_time_action);
 	view_menu->addAction(linear_time_action);
@@ -226,17 +261,17 @@ void Menu::createTransportMenu(Window* window)
 
 	transport_menu->addSeparator();
 
-	QAction* set_play_position_action = new QAction(tr("Set Play Position"));
+	QAction* set_play_position_action = new QAction(tr("&Set Play Position"));
 	window->addAction(set_play_position_action);
 	transport_menu->addAction(set_play_position_action);
 	set_play_position_action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Backslash));
 
-	QAction* go_to_play_position_action = new QAction(tr("Go to Play Position"));
+	QAction* go_to_play_position_action = new QAction(tr("&Go to Play Position"));
 	window->addAction(go_to_play_position_action);
 	transport_menu->addAction(go_to_play_position_action);
 	go_to_play_position_action->setShortcut(QKeySequence(Qt::Key_Backslash));
 
-	QAction* go_to_stop_position_action = new QAction(tr("Go to Stop Position"));
+	QAction* go_to_stop_position_action = new QAction(tr("&Go to Stop Position"));
 	window->addAction(go_to_stop_position_action);
 	transport_menu->addAction(go_to_stop_position_action);
 	go_to_stop_position_action->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Backslash));

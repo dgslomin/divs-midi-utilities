@@ -534,7 +534,7 @@ void Window::goToMarker()
 
 void Window::aboutSeqer()
 {
-	QMessageBox::information(this, tr("About"), tr("Seqer\na MIDI sequencer by Div Slomin\nprovided under terms of the BSD license"));
+	QMessageBox::about(this, tr("About"), tr("<h3>Seqer</h3>a MIDI sequencer by Div Slomin<br>provided under terms of the BSD license"));
 }
 
 void Window::sequenceUpdated()
