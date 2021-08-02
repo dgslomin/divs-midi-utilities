@@ -41,9 +41,6 @@ InspectorSidebar::InspectorSidebar(Window* window)
 	this->time_line_edit = new QLineEdit();
 	event_layout->addRow(tr("Time"), this->time_line_edit);
 
-	this->duration_line_edit = new QLineEdit();
-	event_layout->addRow(tr("Duration"), this->duration_line_edit);
-
 	this->end_time_line_edit = new QLineEdit();
 	event_layout->addRow(tr("End Time"), this->end_time_line_edit);
 }

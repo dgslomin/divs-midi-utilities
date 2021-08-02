@@ -16,7 +16,6 @@ public:
 	QLineEdit* lane_controller_line_edit;
 	QLineEdit* event_type_line_edit;
 	QLineEdit* time_line_edit;
-	QLineEdit* duration_line_edit;
 	QLineEdit* end_time_line_edit;
 
 	InspectorSidebar(Window* window);

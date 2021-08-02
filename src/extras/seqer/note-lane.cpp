@@ -73,7 +73,7 @@ QPoint NoteLane::getPointFromEvent(MidiFileEvent_t midi_event)
 
 MidiFileEvent_t NoteLane::addEventAtXY(int x, int y)
 {
-	this->drag_origin = NOTE_LANE_DRAG_ORIGIN_MIDDLE;
+	this->dragging_from_end = false;
 	int start_tick = this->window->getTickFromX(x);
 	int duration_ticks = MidiFile_getTickFromBeat(this->window->sequence->midi_file, MidiFile_getBeatFromTick(this->window->sequence->midi_file, start_tick) + 1) - start_tick;
 	int note = this->getNoteFromY(y);
@@ -88,37 +88,18 @@ void NoteLane::moveEventsByXY(int x_offset, int y_offset)
 		{
 			if (x_offset != 0)
 			{
-				switch (this->drag_origin)
+				if (this->dragging_from_end)
 				{
-					case NOTE_LANE_DRAG_ORIGIN_START:
-					{
-						long start_tick = MidiFileEvent_getTick(midi_event);
-						long duration_ticks = MidiFileNoteEvent_getDurationTicks(midi_event);
-						long new_start_tick = this->window->getTickFromX(this->window->getXFromTick(start_tick) + x_offset);
-						long new_duration_ticks = duration_ticks - (new_start_tick - start_tick); 
-						MidiFileEvent_setTick(midi_event, new_start_tick);
-						MidiFileNoteEvent_setDurationTicks(midi_event, new_duration_ticks);
-						break;
-					}
-					case NOTE_LANE_DRAG_ORIGIN_MIDDLE:
-					{
-						long start_tick = MidiFileEvent_getTick(midi_event);
-						long new_start_tick = this->window->getTickFromX(this->window->getXFromTick(start_tick) + x_offset);
-						MidiFileEvent_setTick(midi_event, new_start_tick);
-						break;
-					}
-					case NOTE_LANE_DRAG_ORIGIN_END:
-					{
-						long start_tick = MidiFileEvent_getTick(midi_event);
-						long duration_ticks = MidiFileNoteEvent_getDurationTicks(midi_event);
-						long new_duration_ticks = this->window->getTickFromX(this->window->getXFromTick(start_tick + duration_ticks) + x_offset) - start_tick;
-						MidiFileNoteEvent_setDurationTicks(midi_event, new_duration_ticks);
-						break;
-					}
-					default:
-					{
-						break;
-					}
+					long start_tick = MidiFileEvent_getTick(midi_event);
+					long duration_ticks = MidiFileNoteEvent_getDurationTicks(midi_event);
+					long new_duration_ticks = this->window->getTickFromX(this->window->getXFromTick(start_tick + duration_ticks) + x_offset) - start_tick;
+					MidiFileNoteEvent_setDurationTicks(midi_event, new_duration_ticks);
+				}
+				else
+				{
+					long start_tick = MidiFileEvent_getTick(midi_event);
+					long new_start_tick = this->window->getTickFromX(this->window->getXFromTick(start_tick) + x_offset);
+					MidiFileEvent_setTick(midi_event, new_start_tick);
 				}
 			}
 
@@ -163,8 +144,6 @@ int NoteLane::getCursorGap()
 
 void NoteLane::setDragOriginFromXY(int x, int y)
 {
-	this->drag_origin = NOTE_LANE_DRAG_ORIGIN_NONE;
-
 	for (MidiFileEvent_t midi_event = MidiFile_getLastEvent(this->window->sequence->midi_file); midi_event != NULL; midi_event = MidiFileEvent_getPreviousEventInFile(midi_event))
 	{
 		if (MidiFileEvent_getType(midi_event) == MIDI_FILE_EVENT_TYPE_NOTE)
@@ -173,19 +152,7 @@ void NoteLane::setDragOriginFromXY(int x, int y)
 
 			if (rect.contains(x, y, false))
 			{
-				if ((rect.width() > this->handle_size * 3) && (x - rect.x() < this->handle_size))
-				{
-					this->drag_origin = NOTE_LANE_DRAG_ORIGIN_START;
-				}
-				else if ((rect.width() > this->handle_size * 2) && (x - rect.x() < rect.width() - this->handle_size))
-				{
-					this->drag_origin = NOTE_LANE_DRAG_ORIGIN_MIDDLE;
-				}
-				else
-				{
-					this->drag_origin = NOTE_LANE_DRAG_ORIGIN_END;
-				}
-
+				this->dragging_from_end = ((rect.width() < this->handle_size * 2) || (x - rect.x() >= rect.width() - this->handle_size));
 				break;
 			}
 		}
@@ -200,28 +167,13 @@ QRect NoteLane::getRectFromEvent(MidiFileEvent_t midi_event, int selected_events
 
 	if (MidiFileEvent_isSelected(midi_event))
 	{
-		switch (this->drag_origin)
+		if (this->dragging_from_end)
 		{
-			case NOTE_LANE_DRAG_ORIGIN_START:
-			{
-				x += selected_events_x_offset;
-				width -= selected_events_x_offset;
-				break;
-			}
-			case NOTE_LANE_DRAG_ORIGIN_MIDDLE:
-			{
-				x += selected_events_x_offset;
-				break;
-			}
-			case NOTE_LANE_DRAG_ORIGIN_END:
-			{
-				width += selected_events_x_offset;
-				break;
-			}
-			default:
-			{
-				break;
-			}
+			width += selected_events_x_offset;
+		}
+		else
+		{
+			x += selected_events_x_offset;
 		}
 
 		y += selected_events_y_offset;

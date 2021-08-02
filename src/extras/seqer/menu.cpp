@@ -202,40 +202,24 @@ void Menu::createViewMenu(Window* window)
 
 	view_menu->addSeparator();
 
+	QMenu* time_format_submenu = view_menu->addMenu(tr("Time &Format"));
 	QActionGroup* time_format_action_group = new QActionGroup(window);
 
-	QAction* show_measures_beats_action = new QAction(tr("Measures : &Beats"), time_format_action_group);
-	window->addAction(show_measures_beats_action);
-	view_menu->addAction(show_measures_beats_action);
-	show_measures_beats_action->setCheckable(true);
-	show_measures_beats_action->setChecked(true);
+	QAction* time_format_measures_beats_action = new QAction(tr("&Measures : Beats"), time_format_action_group);
+	window->addAction(time_format_measures_beats_action);
+	time_format_submenu->addAction(time_format_measures_beats_action);
+	time_format_measures_beats_action->setCheckable(true);
+	time_format_measures_beats_action->setChecked(true);
 
-	QAction* show_hours_minutes_seconds_action = new QAction(tr("Hours : Minutes : &Seconds"), time_format_action_group);
-	window->addAction(show_hours_minutes_seconds_action);
-	view_menu->addAction(show_hours_minutes_seconds_action);
-	show_hours_minutes_seconds_action->setCheckable(true);
+	QAction* time_format_hours_minutes_seconds_action = new QAction(tr("&Hours : Minutes : Seconds"), time_format_action_group);
+	window->addAction(time_format_hours_minutes_seconds_action);
+	time_format_submenu->addAction(time_format_hours_minutes_seconds_action);
+	time_format_hours_minutes_seconds_action->setCheckable(true);
 
-	QAction* show_ticks_action = new QAction(tr("&Ticks"), time_format_action_group);
-	window->addAction(show_ticks_action);
-	view_menu->addAction(show_ticks_action);
-	show_ticks_action->setCheckable(true);
-
-	view_menu->addSeparator();
-
-	QActionGroup* duration_vs_end_time_action_group = new QActionGroup(window);
-
-	QAction* show_duration_action = new QAction(tr("Duratio&n"), duration_vs_end_time_action_group);
-	window->addAction(show_duration_action);
-	view_menu->addAction(show_duration_action);
-	show_duration_action->setCheckable(true);
-	show_duration_action->setChecked(true);
-
-	QAction* show_end_time_action = new QAction(tr("&End Time"), duration_vs_end_time_action_group);
-	window->addAction(show_end_time_action);
-	view_menu->addAction(show_end_time_action);
-	show_end_time_action->setCheckable(true);
-
-	view_menu->addSeparator();
+	QAction* time_format_ticks_action = new QAction(tr("&Ticks"), time_format_action_group);
+	window->addAction(time_format_ticks_action);
+	time_format_submenu->addAction(time_format_ticks_action);
+	time_format_ticks_action->setCheckable(true);
 
 	QAction* linear_time_action = new QAction(tr("&Linear Time"));
 	window->addAction(linear_time_action);

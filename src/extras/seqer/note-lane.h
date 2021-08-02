@@ -8,21 +8,13 @@ class NoteLane;
 #include "midifile.h"
 #include "window.h"
 
-enum NoteLaneDragOrigin
-{
-	NOTE_LANE_DRAG_ORIGIN_NONE,
-	NOTE_LANE_DRAG_ORIGIN_START,
-	NOTE_LANE_DRAG_ORIGIN_MIDDLE,
-	NOTE_LANE_DRAG_ORIGIN_END
-};
-
 class NoteLane: public Lane
 {
 	Q_OBJECT
 
 public:
 	int velocity = 63;
-	NoteLaneDragOrigin drag_origin = NOTE_LANE_DRAG_ORIGIN_NONE;
+	bool dragging_from_end = false;
 	float pixels_per_note;
 	float scroll_y;
 	QColor white_note_background_color;
