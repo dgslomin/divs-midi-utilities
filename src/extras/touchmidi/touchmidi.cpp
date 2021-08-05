@@ -34,8 +34,6 @@ void TouchPanel::paintEvent(QPaintEvent* event)
 
 void TouchPanel::touchEvent(QTouchEvent* event)
 {
-	Q_UNUSED(event)
-
 	for (int touch_point_number = 0; touch_point_number < event->touchPoints().size(); touch_point_number++)
 	{
 		QTouchEvent::TouchPoint touch_point = event->touchPoints()[touch_point_number];
@@ -86,7 +84,20 @@ int main(int argc, char** argv)
 	application.setApplicationName("TouchMIDI");
 
 	QMainWindow* window = new QMainWindow();
-	window->setCentralWidget(new TouchPanel());
+	QWidget* panel = new QWidget();
+	window->setCentralWidget(panel);
+	QVBoxLayout* layout = new QVBoxLayout(panel);
+
+	TouchPanel* upper = new TouchPanel();
+	layout->addWidget(upper, 1);
+	upper->setAutoFillBackground(true);
+	upper->setBackgroundRole(QPalette::Button);
+
+	TouchPanel* lower = new TouchPanel();
+	layout->addWidget(lower, 1);
+	lower->setAutoFillBackground(true);
+	lower->setBackgroundRole(QPalette::Dark);
+
 	window->show();
 
 	return application.exec();
