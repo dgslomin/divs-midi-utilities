@@ -1,5 +1,7 @@
 
 #include <QtWidgets>
+#include <rtmidi_c.h>
+#include "midiutil-rtmidi.h"
 #include "touchmidi.h"
 
 TouchWidget::TouchWidget()
@@ -32,6 +34,8 @@ void TouchWidget::touchEvent(QTouchEvent* event)
 
 PianoWidget::PianoWidget(): TouchWidget()
 {
+	// skip channel 0 since it's the zone leader
+	for (int channel = 1; channel < 16; channel++) this->available_channels.append(channel);
 }
 
 void PianoWidget::paintEvent(QPaintEvent* event)
@@ -64,32 +68,27 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 
 void PianoWidget::touchEvent(QTouchEvent* event)
 {
-	for (int touch_point_number = 0; touch_point_number < event->touchPoints().size(); touch_point_number++)
+	for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
 	{
-		QTouchEvent::TouchPoint touch_point = event->touchPoints()[touch_point_number];
-		QPointF start_pos = touch_point.startPos();
-		int note = this->getNoteForXY(start_pos.x(), start_pos.y());
-		if (note < 0) continue;
-
 		switch (touch_point.state())
 		{
 			case Qt::TouchPointPressed:
 			{
-				qDebug("finger %d note %d on", touch_point_number, note);
+				QPointF pos = touch_point.pos();
+				int note = this->getNoteForXY(pos.x(), pos.y());
+				if (note < 0) continue;
+				this->noteOn(touch_point.id(), note);
 				break;
 			}
 			case Qt::TouchPointMoved:
 			{
-				QPointF pos = touch_point.pos();
-				int bend = this->getBendForXOffset(pos.x() - start_pos.x());
-				qDebug("finger %d bend %d", touch_point_number, bend);
+				int amount = this->getBendAmountForXOffset(touch_point.pos().x() - touch_point.startPos().x());
+				this->bend(touch_point.id(), amount);
 				break;
 			}
 			case Qt::TouchPointReleased:
 			{
-				QPointF start_pos = touch_point.startPos();
-				int note = this->getNoteForXY(start_pos.x(), start_pos.y());
-				qDebug("finger %d note %d off", touch_point_number, note);
+				this->noteOff(touch_point.id());
 				break;
 			}
 			default:
@@ -130,14 +129,58 @@ int PianoWidget::getNoteForXY(int x, int y)
 	return 0;
 }
 
-int PianoWidget::getBendForXOffset(int x_offset)
+int PianoWidget::getBendAmountForXOffset(int x_offset)
 {
 	int full_number_of_notes = 128;
 	float note_width = (float)(this->full_width) / full_number_of_notes;
 	float note_offset = x_offset / note_width;
 	int full_bend_range = 2 << 14;
 	int full_bend_range_notes = 96;
-	return (int)(note_offset * full_bend_range / full_bend_range_notes);
+	return (int)(note_offset * full_bend_range / full_bend_range_notes) + (2 << 13);
+}
+
+void PianoWidget::noteOn(int finger_id, int note)
+{
+	// This is an MPE channel allocation algorithm that forces a single note per
+	// channel and kicks out the oldest note if there's no channel available for
+	// a new note.
+
+	int channel;
+
+	if (this->available_channels.empty())
+	{
+		channel = this->busy_channels.takeFirst();
+		this->finger_id_to_channel.remove(this->channel_to_finger_id[channel]);
+		qDebug("noteOff(channel: %d, note: %d)", channel, this->channel_to_note[channel]);
+	}
+	else
+	{
+		channel = this->available_channels.takeFirst();
+	}
+
+	this->busy_channels.append(channel);
+	this->finger_id_to_channel.insert(finger_id, channel);
+	this->channel_to_finger_id[channel] = finger_id;
+	this->channel_to_note[channel] = note;
+	qDebug("noteOn(channel: %d, note: %d)", channel, note);
+}
+
+void PianoWidget::bend(int finger_id, int amount)
+{
+	int channel = this->finger_id_to_channel.value(finger_id, -1);
+	if (channel < 0) return;
+	qDebug("bend(channel: %d, amount: %d)", channel, amount);
+}
+
+void PianoWidget::noteOff(int finger_id)
+{
+	int channel = this->finger_id_to_channel.value(finger_id, -1);
+	if (channel < 0) return;
+	int note = this->channel_to_note[channel];
+	this->finger_id_to_channel.remove(finger_id);
+	this->busy_channels.removeOne(channel);
+	this->available_channels.append(channel);
+	qDebug("noteOff(channel: %d, note: %d)", channel, note);
 }
 
 int main(int argc, char** argv)
