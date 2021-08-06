@@ -20,6 +20,7 @@ public:
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 	int getNoteForXY(int x, int y);
+	int getBendForXOffset(int x_offset);
 
 	int full_width = INT_MIN;
 	int pan = INT_MAX;

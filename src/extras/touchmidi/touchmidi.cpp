@@ -67,40 +67,36 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 	for (int touch_point_number = 0; touch_point_number < event->touchPoints().size(); touch_point_number++)
 	{
 		QTouchEvent::TouchPoint touch_point = event->touchPoints()[touch_point_number];
-		QString state;
+		QPointF start_pos = touch_point.startPos();
+		int note = this->getNoteForXY(start_pos.x(), start_pos.y());
+		if (note < 0) continue;
 
 		switch (touch_point.state())
 		{
 			case Qt::TouchPointPressed:
 			{
-				state = "Pressed";
+				qDebug("finger %d note %d on", touch_point_number, note);
 				break;
 			}
 			case Qt::TouchPointMoved:
 			{
-				state = "Moved";
-				break;
-			}
-			case Qt::TouchPointStationary:
-			{
-				state = "Stationary";
+				QPointF pos = touch_point.pos();
+				int bend = this->getBendForXOffset(pos.x() - start_pos.x());
+				qDebug("finger %d bend %d", touch_point_number, bend);
 				break;
 			}
 			case Qt::TouchPointReleased:
 			{
-				state = "Released";
+				QPointF start_pos = touch_point.startPos();
+				int note = this->getNoteForXY(start_pos.x(), start_pos.y());
+				qDebug("finger %d note %d off", touch_point_number, note);
 				break;
 			}
 			default:
 			{
-				state = "???";
 				break;
 			}
 		}
-
-		QPointF start_pos = touch_point.startPos();
-		QPointF pos = touch_point.pos();
-		qDebug("touch %d: start(%f, %f), current(%f, %f) -> %s", touch_point_number, start_pos.x(), start_pos.y(), pos.x(), pos.y(), state.toStdString().c_str());
 	}
 }
 
@@ -132,6 +128,16 @@ int PianoWidget::getNoteForXY(int x, int y)
 	}
 
 	return 0;
+}
+
+int PianoWidget::getBendForXOffset(int x_offset)
+{
+	int full_number_of_notes = 128;
+	float note_width = (float)(this->full_width) / full_number_of_notes;
+	float note_offset = x_offset / note_width;
+	int full_bend_range = 2 << 14;
+	int full_bend_range_notes = 96;
+	return (int)(note_offset * full_bend_range / full_bend_range_notes);
 }
 
 int main(int argc, char** argv)
