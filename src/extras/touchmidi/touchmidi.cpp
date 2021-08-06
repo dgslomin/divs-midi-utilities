@@ -1,8 +1,112 @@
 
 #include <QtWidgets>
 #include <rtmidi_c.h>
+#include "midiutil-common.h"
 #include "midiutil-rtmidi.h"
 #include "touchmidi.h"
+
+static MidiOut* midi_out;
+
+MidiOut* MidiOut::open(QString port_name)
+{
+	RtMidiOutPtr underlying_midi_out;
+	if ((underlying_midi_out = rtmidi_open_out_port((char *)("touchmidi"), (char *)(port_name.toStdString().c_str()), (char *)("touchmidi"))) == NULL) return NULL;
+	return new MidiOut(underlying_midi_out);
+}
+
+MidiOut::MidiOut(RtMidiOutPtr underlying_midi_out)
+{
+	this->underlying_midi_out = underlying_midi_out;
+
+	// skip channel 0 since it's the zone leader
+	for (int channel = 1; channel < 16; channel++) this->available_channels.append(channel);
+}
+
+MidiOut::~MidiOut()
+{
+	rtmidi_close_port(this->underlying_midi_out);
+}
+
+void MidiOut::noteOff(int channel, int note, int velocity)
+{
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF];
+	MidiUtilMessage_setNoteOff(message, channel, note, velocity);
+	rtmidi_out_send_message(this->underlying_midi_out, message, MIDI_UTIL_MESSAGE_SIZE_NOTE_OFF);
+}
+
+void MidiOut::noteOn(int channel, int note, int velocity)
+{
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_NOTE_ON];
+	MidiUtilMessage_setNoteOn(message, channel, note, velocity);
+	rtmidi_out_send_message(this->underlying_midi_out, message, MIDI_UTIL_MESSAGE_SIZE_NOTE_ON);
+}
+
+void MidiOut::controlChange(int channel, int number, int value)
+{
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE];
+	MidiUtilMessage_setControlChange(message, channel, number, value);
+	rtmidi_out_send_message(this->underlying_midi_out, message, MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE);
+}
+
+void MidiOut::pitchWheel(int channel, int amount)
+{
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL];
+	MidiUtilMessage_setPitchWheel(message, channel, amount);
+	rtmidi_out_send_message(this->underlying_midi_out, message, MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL);
+}
+
+void MidiOut::mpeNoteOff(int finger_id)
+{
+	int channel = this->finger_id_to_channel.value(finger_id, -1);
+	if (channel < 0) return;
+	int note = this->channel_to_note[channel];
+	this->finger_id_to_channel.remove(finger_id);
+	this->busy_channels.removeOne(channel);
+	this->available_channels.append(channel);
+	this->noteOff(channel, note, 0);
+}
+
+/**
+ * This is an MPE channel allocation algorithm that forces a single note per
+ * channel and kicks out the oldest note if there's no channel available for
+ * a new note.
+ */
+void MidiOut::mpeNoteOn(int finger_id, int note)
+{
+	int channel;
+
+	if (this->available_channels.empty())
+	{
+		channel = this->busy_channels.takeFirst();
+		this->finger_id_to_channel.remove(this->channel_to_finger_id[channel]);
+		this->noteOff(channel, this->channel_to_note[channel], 0);
+	}
+	else
+	{
+		channel = this->available_channels.takeFirst();
+	}
+
+	this->busy_channels.append(channel);
+	this->finger_id_to_channel.insert(finger_id, channel);
+	this->channel_to_finger_id[channel] = finger_id;
+	this->channel_to_note[channel] = note;
+
+	// reset pitch wheel value and range
+	this->pitchWheel(channel, 2 << 13);
+	this->controlChange(channel, 101, 0);
+	this->controlChange(channel, 100, 0);
+	this->controlChange(channel, 6, 48);
+	this->controlChange(channel, 38, 0);
+
+	this->noteOn(channel, note, 127);
+}
+
+void MidiOut::mpePitchWheel(int finger_id, int amount)
+{
+	int channel = this->finger_id_to_channel.value(finger_id, -1);
+	if (channel < 0) return;
+	this->pitchWheel(channel, amount);
+}
 
 TouchWidget::TouchWidget()
 {
@@ -34,8 +138,6 @@ void TouchWidget::touchEvent(QTouchEvent* event)
 
 PianoWidget::PianoWidget(): TouchWidget()
 {
-	// skip channel 0 since it's the zone leader
-	for (int channel = 1; channel < 16; channel++) this->available_channels.append(channel);
 }
 
 void PianoWidget::paintEvent(QPaintEvent* event)
@@ -77,18 +179,18 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 				QPointF pos = touch_point.pos();
 				int note = this->getNoteForXY(pos.x(), pos.y());
 				if (note < 0) continue;
-				this->noteOn(touch_point.id(), note);
+				midi_out->mpeNoteOn(touch_point.id(), note);
 				break;
 			}
 			case Qt::TouchPointMoved:
 			{
-				int amount = this->getBendAmountForXOffset(touch_point.pos().x() - touch_point.startPos().x());
-				this->bend(touch_point.id(), amount);
+				int amount = this->getPitchWheelAmountForXOffset(touch_point.pos().x() - touch_point.startPos().x());
+				midi_out->mpePitchWheel(touch_point.id(), amount);
 				break;
 			}
 			case Qt::TouchPointReleased:
 			{
-				this->noteOff(touch_point.id());
+				midi_out->mpeNoteOff(touch_point.id());
 				break;
 			}
 			default:
@@ -129,58 +231,14 @@ int PianoWidget::getNoteForXY(int x, int y)
 	return 0;
 }
 
-int PianoWidget::getBendAmountForXOffset(int x_offset)
+int PianoWidget::getPitchWheelAmountForXOffset(int x_offset)
 {
 	int full_number_of_notes = 128;
 	float note_width = (float)(this->full_width) / full_number_of_notes;
 	float note_offset = x_offset / note_width;
-	int full_bend_range = 2 << 14;
-	int full_bend_range_notes = 96;
-	return (int)(note_offset * full_bend_range / full_bend_range_notes) + (2 << 13);
-}
-
-void PianoWidget::noteOn(int finger_id, int note)
-{
-	// This is an MPE channel allocation algorithm that forces a single note per
-	// channel and kicks out the oldest note if there's no channel available for
-	// a new note.
-
-	int channel;
-
-	if (this->available_channels.empty())
-	{
-		channel = this->busy_channels.takeFirst();
-		this->finger_id_to_channel.remove(this->channel_to_finger_id[channel]);
-		qDebug("noteOff(channel: %d, note: %d)", channel, this->channel_to_note[channel]);
-	}
-	else
-	{
-		channel = this->available_channels.takeFirst();
-	}
-
-	this->busy_channels.append(channel);
-	this->finger_id_to_channel.insert(finger_id, channel);
-	this->channel_to_finger_id[channel] = finger_id;
-	this->channel_to_note[channel] = note;
-	qDebug("noteOn(channel: %d, note: %d)", channel, note);
-}
-
-void PianoWidget::bend(int finger_id, int amount)
-{
-	int channel = this->finger_id_to_channel.value(finger_id, -1);
-	if (channel < 0) return;
-	qDebug("bend(channel: %d, amount: %d)", channel, amount);
-}
-
-void PianoWidget::noteOff(int finger_id)
-{
-	int channel = this->finger_id_to_channel.value(finger_id, -1);
-	if (channel < 0) return;
-	int note = this->channel_to_note[channel];
-	this->finger_id_to_channel.remove(finger_id);
-	this->busy_channels.removeOne(channel);
-	this->available_channels.append(channel);
-	qDebug("noteOff(channel: %d, note: %d)", channel, note);
+	int full_pitch_wheel_range = 2 << 14;
+	int full_pitch_wheel_range_notes = 96;
+	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (2 << 13);
 }
 
 int main(int argc, char** argv)
@@ -191,6 +249,14 @@ int main(int argc, char** argv)
 	application.setOrganizationName("Sreal");
 	application.setOrganizationDomain("sreal.com");
 	application.setApplicationName("TouchMIDI");
+
+	midi_out = MidiOut::open(argv[1]);
+
+	if (midi_out == NULL)
+	{
+		QMessageBox::warning(NULL, application.tr("Error"), application.tr("Cannot open the specified MIDI output port."));
+		return 0;
+	}
 
 	QMainWindow* window = new QMainWindow();
 	QWidget* panel = new QWidget();
