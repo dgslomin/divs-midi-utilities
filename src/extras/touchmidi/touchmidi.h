@@ -51,7 +51,7 @@ public:
 	int getNoteForXY(int x, int y);
 	int getPitchWheelAmountForXOffset(int x_offset);
 
-	int full_width = INT_MIN;
-	int pan = INT_MAX;
+	int full_width = 1920 * 4;
+	int pan = 1920 * 2;
 };
 

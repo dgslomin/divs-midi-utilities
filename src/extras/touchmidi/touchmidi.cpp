@@ -91,7 +91,7 @@ void MidiOut::mpeNoteOn(int finger_id, int note)
 	this->channel_to_note[channel] = note;
 
 	// reset pitch wheel value and range
-	this->pitchWheel(channel, 2 << 13);
+	this->pitchWheel(channel, 1 << 13);
 	this->controlChange(channel, 101, 0);
 	this->controlChange(channel, 100, 0);
 	this->controlChange(channel, 6, 48);
@@ -205,7 +205,7 @@ int PianoWidget::getNoteForXY(int x, int y)
 	int number_of_naturals_per_octave = 7;
 	int number_of_notes_per_octave = 12;
 	int natural_note[] = { 0, 2, 4, 5, 7, 9, 11 };
-	int sharp_note[] = { 1, 3, -1, 6, 8, 9, -1 };
+	int sharp_note[] = { 1, 3, -1, 6, 8, 10, -1 };
 	int full_number_of_naturals = 75;
 	float natural_width = (float)(this->full_width) / full_number_of_naturals;
 
@@ -235,9 +235,9 @@ int PianoWidget::getPitchWheelAmountForXOffset(int x_offset)
 	int full_number_of_notes = 128;
 	float note_width = (float)(this->full_width) / full_number_of_notes;
 	float note_offset = x_offset / note_width;
-	int full_pitch_wheel_range = 2 << 14;
+	int full_pitch_wheel_range = 1 << 14;
 	int full_pitch_wheel_range_notes = 96;
-	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (2 << 13);
+	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (1 << 13);
 }
 
 int main(int argc, char** argv)
@@ -266,13 +266,9 @@ int main(int argc, char** argv)
 	QWidget* panel = new QWidget();
 	window->setCentralWidget(panel);
 	QVBoxLayout* layout = new QVBoxLayout(panel);
-
-	PianoWidget* upper = new PianoWidget();
-	layout->addWidget(upper, 1);
-
-	PianoWidget* lower = new PianoWidget();
-	layout->addWidget(lower, 1);
-
+	layout->addWidget(new PianoWidget(), 1);
+	layout->addWidget(new PianoWidget(), 1);
+	layout->addWidget(new PianoWidget(), 1);
 	window->resize(640, 480);
 	window->show();
 
