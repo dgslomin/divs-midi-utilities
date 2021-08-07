@@ -19,7 +19,7 @@ MidiOut::MidiOut(RtMidiOutPtr underlying_midi_out)
 	this->underlying_midi_out = underlying_midi_out;
 
 	// skip channel 0 since it's the zone leader
-	for (int channel = 1; channel < 16; channel++) this->available_channels.append(channel);
+	for (int channel = 1; channel < 16; channel++) this->idle_channels.append(channel);
 }
 
 MidiOut::~MidiOut()
@@ -62,20 +62,19 @@ void MidiOut::mpeNoteOff(int finger_id)
 	int note = this->channel_to_note[channel];
 	this->finger_id_to_channel.remove(finger_id);
 	this->busy_channels.removeOne(channel);
-	this->available_channels.append(channel);
+	this->idle_channels.append(channel);
 	this->noteOff(channel, note, 0);
 }
 
 /**
  * This is an MPE channel allocation algorithm that forces a single note per
- * channel and kicks out the oldest note if there's no channel available for
- * a new note.
+ * channel with newest priority.
  */
 void MidiOut::mpeNoteOn(int finger_id, int note)
 {
 	int channel;
 
-	if (this->available_channels.empty())
+	if (this->idle_channels.empty())
 	{
 		channel = this->busy_channels.takeFirst();
 		this->finger_id_to_channel.remove(this->channel_to_finger_id[channel]);
@@ -83,7 +82,7 @@ void MidiOut::mpeNoteOn(int finger_id, int note)
 	}
 	else
 	{
-		channel = this->available_channels.takeFirst();
+		channel = this->idle_channels.takeFirst();
 	}
 
 	this->busy_channels.append(channel);
@@ -243,7 +242,12 @@ int PianoWidget::getPitchWheelAmountForXOffset(int x_offset)
 
 int main(int argc, char** argv)
 {
-	QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
+	QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
+	QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
+	QGestureRecognizer::unregisterRecognizer(Qt::TapAndHoldGesture);
+	QGestureRecognizer::unregisterRecognizer(Qt::PanGesture);
+	QGestureRecognizer::unregisterRecognizer(Qt::PinchGesture);
+	QGestureRecognizer::unregisterRecognizer(Qt::SwipeGesture);
 
 	QApplication application(argc, argv);
 	application.setOrganizationName("Sreal");

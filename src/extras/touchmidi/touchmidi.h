@@ -23,8 +23,8 @@ public:
 	void mpePitchWheel(int finger_id, int amount);
 
 	RtMidiOutPtr underlying_midi_out;
-	QVector<int> available_channels = QVector<int>(16);
-	QVector<int> busy_channels = QVector<int>(16);
+	QVector<int> idle_channels;
+	QVector<int> busy_channels;
 	QHash<int, int> finger_id_to_channel;
 	int channel_to_finger_id[16];
 	int channel_to_note[16];
