@@ -49,7 +49,9 @@ public:
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 	int getNoteForXY(int x, int y);
-	int getPitchWheelAmountForXOffset(int x_offset);
+	int getPitchWheelAmountForXY(int start_x, int start_y, int x, int y);
+	int getNaturalNoteForX(int x, int* x_offset_p, float* note_offset_p);
+	int getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p);
 
 	int full_width = 1920 * 4;
 	int pan = 1920 * 2;
