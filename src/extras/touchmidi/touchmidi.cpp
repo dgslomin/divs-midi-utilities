@@ -184,7 +184,7 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 			{
 				QPointF pos = touch_point.pos();
 				int note = this->getNoteForXY(pos.x(), pos.y());
-				if (note >= 0) midi_out->mpeNoteOn(touch_point.id(), note);
+				midi_out->mpeNoteOn(touch_point.id(), note);
 				break;
 			}
 			case Qt::TouchPointMoved:
