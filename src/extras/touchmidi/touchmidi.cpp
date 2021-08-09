@@ -184,7 +184,7 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 			{
 				QPointF pos = touch_point.pos();
 				int note = this->getNoteForXY(pos.x(), pos.y());
-				midi_out->mpeNoteOn(touch_point.id(), note);
+				if (note >= 0) midi_out->mpeNoteOn(touch_point.id(), note);
 				break;
 			}
 			case Qt::TouchPointMoved:
@@ -210,7 +210,16 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 
 int PianoWidget::getNoteForXY(int x, int y)
 {
-	return (int)((y > this->height() / 2) ? this->getNaturalNoteForX(x, NULL, NULL) : this->getAccidentalNoteForX(x, NULL, NULL));
+	if (y > this->height() / 2)
+	{
+		return this->getNaturalNoteForX(x, NULL, NULL);
+	}
+	else
+	{
+		bool is_accidental = false;
+		int note = this->getAccidentalNoteForX(x, NULL, NULL, &is_accidental);
+		return is_accidental ? note : -1;
+	}
 }
 
 int PianoWidget::getPitchWheelAmountForXY(int start_x, int start_y, int x, int y)
@@ -230,8 +239,8 @@ int PianoWidget::getPitchWheelAmountForXY(int start_x, int start_y, int x, int y
 	}
 	else
 	{
-		start_note = this->getAccidentalNoteForX(start_x, &start_x_offset, NULL);
-		new_note = this->getAccidentalNoteForX(x - start_x_offset, NULL, &new_note_offset);
+		start_note = this->getAccidentalNoteForX(start_x, &start_x_offset, NULL, NULL);
+		new_note = this->getAccidentalNoteForX(x - start_x_offset, NULL, &new_note_offset, NULL);
 	}
 
 	float note_offset = new_note + new_note_offset - start_note;
@@ -253,19 +262,22 @@ int PianoWidget::getNaturalNoteForX(int x, int* x_offset_p, float* note_offset_p
 	int whole_note_in_octave = natural_notes[whole_natural_number_in_octave];
 	int next_whole_note_in_octave = natural_notes[whole_natural_number_in_octave + 1];
 	float natural_number_fraction = natural_number - whole_natural_number;
-	if (x_offset_p != NULL) *x_offset_p = (int)(whole_natural_number * natural_width) - (x + this->pan);
+	if (x_offset_p != NULL) *x_offset_p = (x + this->pan) - (int)(whole_natural_number * natural_width);
 	if (note_offset_p != NULL) *note_offset_p = (next_whole_note_in_octave - whole_note_in_octave) * natural_number_fraction;
 	return octave_start_note + whole_note_in_octave;
 }
 
-int PianoWidget::getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p)
+int PianoWidget::getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p, bool* is_accidental_p)
 {
 	int full_number_of_notes = 128;
+	int number_of_notes_per_octave = 12;
+	bool note_is_accidental[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 	float accidental_width = (float)(this->full_width) / full_number_of_notes;
 	float note = (x + this->pan) / accidental_width;
 	int whole_note = (int)(note);
-	if (x_offset_p != NULL) *x_offset_p = (int)(whole_note * accidental_width) - (x + this->pan);
+	if (x_offset_p != NULL) *x_offset_p = (x + this->pan) - (int)(whole_note * accidental_width);
 	if (note_offset_p != NULL) *note_offset_p = note - whole_note;
+	if (is_accidental_p != NULL) *is_accidental_p = note_is_accidental[whole_note % number_of_notes_per_octave];
 	return whole_note;
 }
 
