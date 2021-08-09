@@ -212,11 +212,11 @@ int PianoWidget::getNote(int x, int y)
 {
 	if (y > this->height() / 2)
 	{
-		return this->getNaturalNote(x, NULL, NULL);
+		return (int)(this->getNaturalNote((int)(this->getNaturalNumber(x))));
 	}
 	else
 	{
-		return this->getAccidentalNote(x, NULL, NULL);
+		return (int)(this->getAccidentalNote((int)(this->getAccidentalNumber(x))));
 	}
 }
 
@@ -225,16 +225,40 @@ int PianoWidget::getPitchWheelAmount(int start_x, int start_y, int x, int y)
 	int full_pitch_wheel_range = 1 << 14;
 	int full_pitch_wheel_range_notes = 96;
 	int note_height = this->height() / 2;
-	float natural_note_offset = this->getNaturalNoteOffset(start_x, x);
-	float accidental_note_offset = this->getAccidentalNoteOffset(start_x, x);
+	float natural_note_offset;
+	float accidental_note_offset;
 	float accidental_fraction;
 
 	if (start_y > note_height)
 	{
+		float start_natural_number = this->getNaturalNumber(start_x);
+		float start_natural_note = this->getNaturalNote((int)(start_natural_number));
+		float natural_number = this->getNaturalNumber(x);
+		float natural_note = this->getNaturalNote(natural_number - (start_natural_number - (int)(start_natural_number)));
+		natural_note_offset = natural_note - start_natural_note;
+
+		float start_accidental_number = this->getAccidentalNumber(start_x);
+		float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
+		float accidental_number = this->getAccidentalNumber(x);
+		float accidental_note = this->getAccidentalNote(accidental_number - 0.5);
+		accidental_note_offset = accidental_note - start_accidental_note;
+
 		accidental_fraction = (float)(qMin(qMax(start_y - y, 0), note_height)) / note_height;
 	}
 	else
 	{
+		float start_natural_number = this->getNaturalNumber(start_x);
+		float start_natural_note = this->getNaturalNote((int)(start_natural_number));
+		float natural_number = this->getNaturalNumber(x);
+		float natural_note = this->getNaturalNote(natural_number - 0.5);
+		natural_note_offset = natural_note - start_natural_note;
+
+		float start_accidental_number = this->getAccidentalNumber(start_x);
+		float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
+		float accidental_number = this->getAccidentalNumber(x);
+		float accidental_note = this->getAccidentalNote(accidental_number - (start_accidental_number - (int)(start_accidental_number)));
+		accidental_note_offset = accidental_note - start_accidental_note;
+
 		accidental_fraction = 1.0 - ((float)(qMin(qMax(y - start_y, 0), note_height)) / note_height);
 	}
 
@@ -242,53 +266,38 @@ int PianoWidget::getPitchWheelAmount(int start_x, int start_y, int x, int y)
 	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (1 << 13);
 }
 
-int PianoWidget::getNaturalNote(int x, int* x_offset_p, float* note_offset_p)
+float PianoWidget::getNaturalNumber(int x)
 {
 	int full_number_of_notes = 128;
 	int number_of_notes_per_octave = 12;
 	int number_of_naturals_per_octave = 7;
-	int natural_notes[] = { 0, 2, 4, 5, 7, 9, 11, 12 };
 	float accidental_width = (float)(this->full_width) / full_number_of_notes;
 	float natural_width = accidental_width * number_of_notes_per_octave / number_of_naturals_per_octave;
-	float natural_number = (x + this->pan) / natural_width;
-	int whole_natural_number = (int)(natural_number);
-	int octave_start_note = whole_natural_number / number_of_naturals_per_octave * number_of_notes_per_octave;
-	int whole_natural_number_in_octave = whole_natural_number % number_of_naturals_per_octave;
-	int whole_note_in_octave = natural_notes[whole_natural_number_in_octave];
-	int next_whole_note_in_octave = natural_notes[whole_natural_number_in_octave + 1];
-	float natural_number_fraction = natural_number - whole_natural_number;
-	if (x_offset_p != NULL) *x_offset_p = (x + this->pan) - (int)(whole_natural_number * natural_width);
-	if (note_offset_p != NULL) *note_offset_p = (next_whole_note_in_octave - whole_note_in_octave) * natural_number_fraction;
-	return octave_start_note + whole_note_in_octave;
+	return (x + this->pan) / natural_width;
 }
 
-int PianoWidget::getAccidentalNote(int x, int* x_offset_p, float* note_offset_p)
+float PianoWidget::getAccidentalNumber(int x)
 {
 	int full_number_of_notes = 128;
 	float accidental_width = (float)(this->full_width) / full_number_of_notes;
-	float note = (x + this->pan) / accidental_width;
-	int whole_note = (int)(note);
-	if (x_offset_p != NULL) *x_offset_p = (x + this->pan) - (int)(whole_note * accidental_width);
-	if (note_offset_p != NULL) *note_offset_p = note - whole_note;
-	return whole_note;
+	return (x + this->pan) / accidental_width;
 }
 
-float PianoWidget::getNaturalNoteOffset(int start_x, int x)
+float PianoWidget::getNaturalNote(float natural_number)
 {
-	int start_x_offset = 0;
-	float new_note_offset = 0;
-	int start_note = this->getNaturalNote(start_x, &start_x_offset, NULL);
-	int new_note = this->getNaturalNote(x - start_x_offset, NULL, &new_note_offset);
-	return new_note + new_note_offset - start_note;
+	int number_of_notes_per_octave = 12;
+	int number_of_naturals_per_octave = 7;
+	int natural_notes[] = { 0, 2, 4, 5, 7, 9, 11, 12 };
+	int octave_start_note = (int)(natural_number) / number_of_naturals_per_octave * number_of_notes_per_octave;
+	int natural_number_in_octave = (int)(natural_number) % number_of_naturals_per_octave;
+	int note_in_octave = natural_notes[natural_number_in_octave];
+	int next_note_in_octave = natural_notes[natural_number_in_octave + 1];
+	return octave_start_note + note_in_octave + ((next_note_in_octave - note_in_octave) * (natural_number - (int)(natural_number)));
 }
 
-float PianoWidget::getAccidentalNoteOffset(int start_x, int x)
+float PianoWidget::getAccidentalNote(float accidental_number)
 {
-	int start_x_offset = 0;
-	float new_note_offset = 0;
-	int start_note = this->getAccidentalNote(start_x, &start_x_offset, NULL);
-	int new_note = this->getAccidentalNote(x - start_x_offset, NULL, &new_note_offset);
-	return new_note + new_note_offset - start_note;
+	return accidental_number; // might get fancier later
 }
 
 int main(int argc, char** argv)

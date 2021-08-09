@@ -50,10 +50,10 @@ public:
 	void touchEvent(QTouchEvent* event);
 	int getNote(int x, int y);
 	int getPitchWheelAmount(int start_x, int start_y, int x, int y);
-	int getNaturalNote(int x, int* x_offset_p, float* note_offset_p);
-	int getAccidentalNote(int x, int* x_offset_p, float* note_offset_p);
-	float getNaturalNoteOffset(int start_x, int x);
-	float getAccidentalNoteOffset(int start_x, int x);
+	float getNaturalNumber(int x);
+	float getAccidentalNumber(int x);
+	float getNaturalNote(float natural_number);
+	float getAccidentalNote(float accidental_number);
 
 	int full_width = 1920 * 4;
 	int pan = 1920 * 2;
