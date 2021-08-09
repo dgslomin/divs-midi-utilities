@@ -174,6 +174,8 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 
 void PianoWidget::touchEvent(QTouchEvent* event)
 {
+	event->accept();
+
 	for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
 	{
 		switch (touch_point.state())
@@ -291,12 +293,8 @@ float PianoWidget::getAccidentalNoteOffset(int start_x, int x)
 
 int main(int argc, char** argv)
 {
+	// qt bug workaround: otherwise some touch events get diverted for gesture recognition even with gestures disabled
 	QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
-	QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
-	QGestureRecognizer::unregisterRecognizer(Qt::TapAndHoldGesture);
-	QGestureRecognizer::unregisterRecognizer(Qt::PanGesture);
-	QGestureRecognizer::unregisterRecognizer(Qt::PinchGesture);
-	QGestureRecognizer::unregisterRecognizer(Qt::SwipeGesture);
 
 	QApplication application(argc, argv);
 	application.setOrganizationName("Sreal");
