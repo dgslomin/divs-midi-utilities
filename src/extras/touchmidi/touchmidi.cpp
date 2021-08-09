@@ -237,27 +237,23 @@ int PianoWidget::getPitchWheelAmount(int start_x, int start_y, int x, int y)
 		float natural_note = this->getNaturalNote(natural_number - (start_natural_number - (int)(start_natural_number)));
 		natural_note_offset = natural_note - start_natural_note;
 
-		float start_accidental_number = this->getAccidentalNumber(start_x);
-		float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
 		float accidental_number = this->getAccidentalNumber(x);
 		float accidental_note = this->getAccidentalNote(accidental_number - 0.5);
-		accidental_note_offset = accidental_note - start_accidental_note;
+		accidental_note_offset = accidental_note - start_natural_note;
 
 		accidental_fraction = (float)(qMin(qMax(start_y - y, 0), note_height)) / note_height;
 	}
 	else
 	{
-		float start_natural_number = this->getNaturalNumber(start_x);
-		float start_natural_note = this->getNaturalNote((int)(start_natural_number));
-		float natural_number = this->getNaturalNumber(x);
-		float natural_note = this->getNaturalNote(natural_number - 0.5);
-		natural_note_offset = natural_note - start_natural_note;
-
 		float start_accidental_number = this->getAccidentalNumber(start_x);
 		float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
 		float accidental_number = this->getAccidentalNumber(x);
 		float accidental_note = this->getAccidentalNote(accidental_number - (start_accidental_number - (int)(start_accidental_number)));
 		accidental_note_offset = accidental_note - start_accidental_note;
+
+		float natural_number = this->getNaturalNumber(x);
+		float natural_note = this->getNaturalNote(natural_number - 0.5);
+		natural_note_offset = natural_note - start_accidental_note;
 
 		accidental_fraction = 1.0 - ((float)(qMin(qMax(y - start_y, 0), note_height)) / note_height);
 	}
