@@ -216,9 +216,7 @@ int PianoWidget::getNoteForXY(int x, int y)
 	}
 	else
 	{
-		bool is_accidental = false;
-		int note = this->getAccidentalNoteForX(x, NULL, NULL, &is_accidental);
-		return is_accidental ? note : -1;
+		return this->getAccidentalNoteForX(x, NULL, NULL);
 	}
 }
 
@@ -239,8 +237,8 @@ int PianoWidget::getPitchWheelAmountForXY(int start_x, int start_y, int x, int y
 	}
 	else
 	{
-		start_note = this->getAccidentalNoteForX(start_x, &start_x_offset, NULL, NULL);
-		new_note = this->getAccidentalNoteForX(x - start_x_offset, NULL, &new_note_offset, NULL);
+		start_note = this->getAccidentalNoteForX(start_x, &start_x_offset, NULL);
+		new_note = this->getAccidentalNoteForX(x - start_x_offset, NULL, &new_note_offset);
 	}
 
 	float note_offset = new_note + new_note_offset - start_note;
@@ -267,17 +265,14 @@ int PianoWidget::getNaturalNoteForX(int x, int* x_offset_p, float* note_offset_p
 	return octave_start_note + whole_note_in_octave;
 }
 
-int PianoWidget::getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p, bool* is_accidental_p)
+int PianoWidget::getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p)
 {
 	int full_number_of_notes = 128;
-	int number_of_notes_per_octave = 12;
-	bool note_is_accidental[] = { false, true, false, true, false, false, true, false, true, false, true, false };
 	float accidental_width = (float)(this->full_width) / full_number_of_notes;
 	float note = (x + this->pan) / accidental_width;
 	int whole_note = (int)(note);
 	if (x_offset_p != NULL) *x_offset_p = (x + this->pan) - (int)(whole_note * accidental_width);
 	if (note_offset_p != NULL) *note_offset_p = note - whole_note;
-	if (is_accidental_p != NULL) *is_accidental_p = note_is_accidental[whole_note % number_of_notes_per_octave];
 	return whole_note;
 }
 

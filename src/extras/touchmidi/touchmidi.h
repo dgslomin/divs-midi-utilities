@@ -51,7 +51,7 @@ public:
 	int getNoteForXY(int x, int y);
 	int getPitchWheelAmountForXY(int start_x, int start_y, int x, int y);
 	int getNaturalNoteForX(int x, int* x_offset_p, float* note_offset_p);
-	int getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p, bool* is_accidental_p);
+	int getAccidentalNoteForX(int x, int* x_offset_p, float* note_offset_p);
 
 	int full_width = 1920 * 4;
 	int pan = 1920 * 2;
