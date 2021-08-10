@@ -2,7 +2,9 @@
 class MidiOut;
 class TouchWidget;
 class PianoWidget;
+class SlidersWidget;
 class ShiftButton;
+class LatchButton;
 class Window;
 
 #include <QtWidgets>
@@ -66,11 +68,23 @@ public:
 
 public slots:
 	void setAdjustRange(bool adjust_range);
+	void setGlide(bool glide);
 
 public:
 	int full_width;
 	int pan;
 	bool adjust_range = false;
+	bool glide = false;
+};
+
+class SlidersWidget: public TouchWidget
+{
+	Q_OBJECT
+
+public:
+	SlidersWidget(Window* window);
+	void paintEvent(QPaintEvent* event);
+	void touchEvent(QTouchEvent* event);
 };
 
 class ShiftButton: public TouchWidget
@@ -79,6 +93,21 @@ class ShiftButton: public TouchWidget
 
 public:
 	ShiftButton(Window* window);
+	void paintEvent(QPaintEvent* event);
+	void touchEvent(QTouchEvent* event);
+
+	bool is_pressed = false;
+
+signals:
+	void stateChanged(bool is_pressed);
+};
+
+class LatchButton: public TouchWidget
+{
+	Q_OBJECT
+
+public:
+	LatchButton(Window* window);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 

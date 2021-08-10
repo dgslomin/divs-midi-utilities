@@ -257,40 +257,52 @@ int PianoWidget::getPitchWheelAmount(int start_x, int start_y, int x, int y)
 	int full_pitch_wheel_range = 1 << 14;
 	int full_pitch_wheel_range_notes = 96;
 	int note_height = this->height() / 2;
-	float natural_note_offset;
-	float accidental_note_offset;
-	float accidental_fraction;
+	float note_offset;
 
-	if (start_y > note_height)
+	if (this->glide)
 	{
-		float start_natural_number = this->getNaturalNumber(start_x);
-		float start_natural_note = this->getNaturalNote((int)(start_natural_number));
-		float natural_number = this->getNaturalNumber(x);
-		float natural_note = this->getNaturalNote(natural_number - (start_natural_number - (int)(start_natural_number)));
-		natural_note_offset = natural_note - start_natural_note;
+		float natural_note_offset;
+		float accidental_note_offset;
+		float accidental_fraction;
 
-		float accidental_number = this->getAccidentalNumber(x);
-		float accidental_note = this->getAccidentalNote(accidental_number - 0.5);
-		accidental_note_offset = accidental_note - start_natural_note;
+		if (start_y > note_height)
+		{
+			float start_natural_number = this->getNaturalNumber(start_x);
+			float start_natural_note = this->getNaturalNote((int)(start_natural_number));
+			float natural_number = this->getNaturalNumber(x);
+			float natural_note = this->getNaturalNote(natural_number - (start_natural_number - (int)(start_natural_number)));
+			natural_note_offset = natural_note - start_natural_note;
 
-		accidental_fraction = (float)(qMin(qMax(start_y - y, 0), note_height)) / note_height;
+			float accidental_number = this->getAccidentalNumber(x);
+			float accidental_note = this->getAccidentalNote(accidental_number - 0.5);
+			accidental_note_offset = accidental_note - start_natural_note;
+
+			accidental_fraction = (float)(qMin(qMax(start_y - y, 0), note_height)) / note_height;
+		}
+		else
+		{
+			float start_accidental_number = this->getAccidentalNumber(start_x);
+			float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
+			float accidental_number = this->getAccidentalNumber(x);
+			float accidental_note = this->getAccidentalNote(accidental_number - (start_accidental_number - (int)(start_accidental_number)));
+			accidental_note_offset = accidental_note - start_accidental_note;
+
+			float natural_number = this->getNaturalNumber(x);
+			float natural_note = this->getNaturalNote(natural_number - 0.5);
+			natural_note_offset = natural_note - start_accidental_note;
+
+			accidental_fraction = 1.0 - ((float)(qMin(qMax(y - start_y, 0), note_height)) / note_height);
+		}
+
+		note_offset = (accidental_note_offset - natural_note_offset) * accidental_fraction + natural_note_offset;
 	}
 	else
 	{
-		float start_accidental_number = this->getAccidentalNumber(start_x);
-		float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
-		float accidental_number = this->getAccidentalNumber(x);
-		float accidental_note = this->getAccidentalNote(accidental_number - (start_accidental_number - (int)(start_accidental_number)));
-		accidental_note_offset = accidental_note - start_accidental_note;
-
-		float natural_number = this->getNaturalNumber(x);
-		float natural_note = this->getNaturalNote(natural_number - 0.5);
-		natural_note_offset = natural_note - start_accidental_note;
-
-		accidental_fraction = 1.0 - ((float)(qMin(qMax(y - start_y, 0), note_height)) / note_height);
+		float start_note = (start_y > note_height) ? this->getNaturalNote((int)(this->getNaturalNumber(start_x))) : this->getAccidentalNote((int)(this->getAccidentalNumber(start_x)));
+		float note = (y > note_height) ? this->getNaturalNote((int)(this->getNaturalNumber(x))) : this->getAccidentalNote((int)(this->getAccidentalNumber(x)));
+		note_offset = note - start_note;
 	}
 
-	float note_offset = (accidental_note_offset - natural_note_offset) * accidental_fraction + natural_note_offset;
 	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (1 << 13);
 }
 
@@ -334,6 +346,11 @@ void PianoWidget::setAdjustRange(bool adjust_range)
 	this->window->midi_out->mpeAllNotesOff();
 }
 
+void PianoWidget::setGlide(bool glide)
+{
+	this->glide = glide;
+}
+
 ShiftButton::ShiftButton(Window* window): TouchWidget(window)
 {
 }
@@ -357,6 +374,28 @@ void ShiftButton::touchEvent(QTouchEvent* event)
 	}
 }
 
+LatchButton::LatchButton(Window* window): TouchWidget(window)
+{
+}
+
+void LatchButton::paintEvent(QPaintEvent* event)
+{
+	Q_UNUSED(event)
+	QPainter painter(this);
+	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+}
+
+void LatchButton::touchEvent(QTouchEvent* event)
+{
+	event->accept();
+
+	if (event->touchPointStates() == Qt::TouchPointPressed)
+	{
+		this->is_pressed = !(this->is_pressed);
+		emit this->stateChanged(this->is_pressed);
+	}
+}
+
 Window::Window(MidiOut* midi_out)
 {
 	this->midi_out = midi_out;
@@ -366,9 +405,17 @@ Window::Window(MidiOut* midi_out)
 	QVBoxLayout* layout = new QVBoxLayout(panel);
 	layout->setContentsMargins(0, 0, 0, 0);
 
+	QWidget* top_row_panel = new QWidget();
+	layout->addWidget(top_row_panel, 1);
+	QHBoxLayout* top_row_layout = new QHBoxLayout(top_row_panel);
+	top_row_layout->setContentsMargins(0, 0, 0, 0);
+	top_row_layout->setSpacing(0);
+
 	ShiftButton* range_button = new ShiftButton(this);
-	range_button->setMinimumSize(80, 60);
-	layout->addWidget(range_button, 1);
+	top_row_layout->addWidget(range_button, 1);
+
+	LatchButton* glide_button = new LatchButton(this);
+	top_row_layout->addWidget(glide_button, 1);
 
 	this->upper_keyboard = new PianoWidget(this);
 	layout->addWidget(this->upper_keyboard, 1);
@@ -380,6 +427,8 @@ Window::Window(MidiOut* midi_out)
 
 	this->connect(range_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setAdjustRange(bool)));
 	this->connect(range_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setAdjustRange(bool)));
+	this->connect(glide_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setGlide(bool)));
+	this->connect(glide_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setGlide(bool)));
 
 	QAction* toggle_fullscreen_action = new QAction(tr("Fullscreen"));
 	this->addAction(toggle_fullscreen_action);
