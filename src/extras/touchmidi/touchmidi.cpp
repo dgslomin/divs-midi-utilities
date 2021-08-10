@@ -5,8 +5,6 @@
 #include "midiutil-rtmidi.h"
 #include "touchmidi.h"
 
-static MidiOut* midi_out;
-
 MidiOut* MidiOut::open(QString port_name)
 {
 	RtMidiOutPtr underlying_midi_out;
@@ -107,8 +105,14 @@ void MidiOut::mpePitchWheel(int finger_id, int amount)
 	this->pitchWheel(channel, amount);
 }
 
-TouchWidget::TouchWidget()
+void MidiOut::mpeAllNotesOff()
 {
+	for (int finger_id: this->finger_id_to_channel.keys()) this->mpeNoteOff(finger_id);
+}
+
+TouchWidget::TouchWidget(Window* window)
+{
+	this->window = window;
 	this->setAttribute(Qt::WA_AcceptTouchEvents, true);
 }
 
@@ -135,7 +139,7 @@ void TouchWidget::touchEvent(QTouchEvent* event)
 	Q_UNUSED(event)
 }
 
-PianoWidget::PianoWidget(): TouchWidget()
+PianoWidget::PianoWidget(Window* window): TouchWidget(window)
 {
 }
 
@@ -144,7 +148,7 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 	Q_UNUSED(event)
 
 	this->full_width = qMax(this->full_width, this->width());
-	this->pan = qMin(this->pan, this->full_width - this->width());
+	this->pan = qMax(qMin(this->pan, this->full_width - this->width()), 0);
 
 	QPainter painter(this);
 	painter.fillRect(0, 0, this->width(), this->height(), Qt::white);
@@ -176,33 +180,61 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 {
 	event->accept();
 
-	for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
+	if (this->adjust_range)
 	{
-		switch (touch_point.state())
+		switch (event->touchPoints().size())
 		{
-			case Qt::TouchPointPressed:
+			case 1:
 			{
-				QPointF pos = touch_point.pos();
-				int note = this->getNote(pos.x(), pos.y());
-				midi_out->mpeNoteOn(touch_point.id(), note);
+				const QTouchEvent::TouchPoint& touch_point = event->touchPoints()[0];
+				this->pan -= touch_point.pos().x() - touch_point.lastPos().x();
+				this->update();
 				break;
 			}
-			case Qt::TouchPointMoved:
+			case 2:
 			{
-				QPointF start_pos = touch_point.startPos();
-				QPointF pos = touch_point.pos();
-				int amount = this->getPitchWheelAmount(start_pos.x(), start_pos.y(), pos.x(), pos.y());
-				midi_out->mpePitchWheel(touch_point.id(), amount);
-				break;
-			}
-			case Qt::TouchPointReleased:
-			{
-				midi_out->mpeNoteOff(touch_point.id());
+				const QTouchEvent::TouchPoint& touch_point_1 = event->touchPoints()[0];
+				const QTouchEvent::TouchPoint& touch_point_2 = event->touchPoints()[1];
+				this->full_width += (qAbs(touch_point_1.pos().x() - touch_point_2.pos().x()) - qAbs(touch_point_1.lastPos().x() - touch_point_2.lastPos().x()));
+				this->update();
 				break;
 			}
 			default:
 			{
 				break;
+			}
+		}
+	}
+	else
+	{
+		for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
+		{
+			switch (touch_point.state())
+			{
+				case Qt::TouchPointPressed:
+				{
+					QPointF pos = touch_point.pos();
+					int note = this->getNote(pos.x(), pos.y());
+					this->window->midi_out->mpeNoteOn(touch_point.id(), note);
+					break;
+				}
+				case Qt::TouchPointMoved:
+				{
+					QPointF start_pos = touch_point.startPos();
+					QPointF pos = touch_point.pos();
+					int amount = this->getPitchWheelAmount(start_pos.x(), start_pos.y(), pos.x(), pos.y());
+					this->window->midi_out->mpePitchWheel(touch_point.id(), amount);
+					break;
+				}
+				case Qt::TouchPointReleased:
+				{
+					this->window->midi_out->mpeNoteOff(touch_point.id());
+					break;
+				}
+				default:
+				{
+					break;
+				}
 			}
 		}
 	}
@@ -296,6 +328,97 @@ float PianoWidget::getAccidentalNote(float accidental_number)
 	return accidental_number; // might get fancier later
 }
 
+void PianoWidget::setAdjustRange(bool adjust_range)
+{
+	this->adjust_range = adjust_range;
+	this->window->midi_out->mpeAllNotesOff();
+}
+
+ShiftButton::ShiftButton(Window* window): TouchWidget(window)
+{
+}
+
+void ShiftButton::paintEvent(QPaintEvent* event)
+{
+	Q_UNUSED(event)
+	QPainter painter(this);
+	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+}
+
+void ShiftButton::touchEvent(QTouchEvent* event)
+{
+	event->accept();
+	bool is_pressed = (event->touchPointStates() != Qt::TouchPointReleased);
+
+	if (is_pressed != this->is_pressed)
+	{
+		this->is_pressed = is_pressed;
+		emit this->stateChanged(is_pressed);
+	}
+}
+
+Window::Window(MidiOut* midi_out)
+{
+	this->midi_out = midi_out;
+
+	QWidget* panel = new QWidget();
+	this->setCentralWidget(panel);
+	QVBoxLayout* layout = new QVBoxLayout(panel);
+	layout->setContentsMargins(0, 0, 0, 0);
+
+	ShiftButton* range_button = new ShiftButton(this);
+	range_button->setMinimumSize(80, 60);
+	layout->addWidget(range_button, 1);
+
+	this->upper_keyboard = new PianoWidget(this);
+	layout->addWidget(this->upper_keyboard, 1);
+
+	this->lower_keyboard = new PianoWidget(this);
+	layout->addWidget(this->lower_keyboard, 1);
+
+	this->resize(640, 480);
+
+	this->connect(range_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setAdjustRange(bool)));
+	this->connect(range_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setAdjustRange(bool)));
+
+	QAction* toggle_fullscreen_action = new QAction(tr("Fullscreen"));
+	this->addAction(toggle_fullscreen_action);
+	toggle_fullscreen_action->setShortcut(QKeySequence(QKeySequence::FullScreen));
+	connect(toggle_fullscreen_action, SIGNAL(triggered()), this, SLOT(toggleFullscreen()));
+
+	QSettings settings;
+	this->restoreGeometry(settings.value("window-geometry").toByteArray());
+	this->restoreState(settings.value("window-state").toByteArray());
+	this->upper_keyboard->full_width = settings.value("upper-keyboard-full-width", INT_MIN).toInt();
+	this->upper_keyboard->pan = settings.value("upper-keyboard-pan", INT_MAX).toInt();
+	this->lower_keyboard->full_width = settings.value("lower-keyboard-full-width", INT_MIN).toInt();
+	this->lower_keyboard->pan = settings.value("lower-keyboard-pan", INT_MAX).toInt();
+}
+
+void Window::closeEvent(QCloseEvent* event)
+{
+	Q_UNUSED(event)
+	QSettings settings;
+	settings.setValue("window-geometry", this->saveGeometry());
+	settings.setValue("window-state", this->saveState());
+	settings.setValue("upper-keyboard-full-width", this->upper_keyboard->full_width);
+	settings.setValue("upper-keyboard-pan", this->upper_keyboard->pan);
+	settings.setValue("lower-keyboard-full-width", this->lower_keyboard->full_width);
+	settings.setValue("lower-keyboard-pan", this->lower_keyboard->pan);
+}
+
+void Window::toggleFullscreen()
+{
+	if (this->isFullScreen())
+	{
+		this->showNormal();
+	}
+	else
+	{
+		this->showFullScreen();
+	}
+}
+
 int main(int argc, char** argv)
 {
 	// qt bug workaround: otherwise some touch events get diverted for gesture recognition even with gestures disabled
@@ -306,7 +429,7 @@ int main(int argc, char** argv)
 	application.setOrganizationDomain("sreal.com");
 	application.setApplicationName("TouchMIDI");
 
-	midi_out = MidiOut::open(argv[1]);
+	MidiOut* midi_out = MidiOut::open(argv[1]);
 
 	if (midi_out == NULL)
 	{
@@ -314,16 +437,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	QMainWindow* window = new QMainWindow();
-	QWidget* panel = new QWidget();
-	window->setCentralWidget(panel);
-	QVBoxLayout* layout = new QVBoxLayout(panel);
-	layout->addWidget(new PianoWidget(), 1);
-	layout->addWidget(new PianoWidget(), 1);
-	layout->addWidget(new PianoWidget(), 1);
-	window->resize(640, 480);
-	window->show();
-
+	(new Window(midi_out))->show();
 	return application.exec();
 }
 

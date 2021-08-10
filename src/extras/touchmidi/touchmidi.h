@@ -1,4 +1,10 @@
 
+class MidiOut;
+class TouchWidget;
+class PianoWidget;
+class ShiftButton;
+class Window;
+
 #include <QtWidgets>
 #include <rtmidi_c.h>
 
@@ -21,6 +27,7 @@ public:
 	void mpeNoteOff(int finger_id);
 	void mpeNoteOn(int finger_id, int note);
 	void mpePitchWheel(int finger_id, int amount);
+	void mpeAllNotesOff();
 
 	RtMidiOutPtr underlying_midi_out;
 	QVector<int> idle_channels;
@@ -35,9 +42,11 @@ class TouchWidget: public QWidget
 	Q_OBJECT
 
 public:
-	TouchWidget();
+	TouchWidget(Window* window);
 	virtual bool event(QEvent* event);
 	virtual void touchEvent(QTouchEvent* event);
+
+	Window* window;
 };
 
 class PianoWidget: public TouchWidget
@@ -45,7 +54,7 @@ class PianoWidget: public TouchWidget
 	Q_OBJECT
 
 public:
-	PianoWidget();
+	PianoWidget(Window* window);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 	int getNote(int x, int y);
@@ -55,7 +64,44 @@ public:
 	float getNaturalNote(float natural_number);
 	float getAccidentalNote(float accidental_number);
 
-	int full_width = 1920 * 4;
-	int pan = 1920 * 2;
+public slots:
+	void setAdjustRange(bool adjust_range);
+
+public:
+	int full_width;
+	int pan;
+	bool adjust_range = false;
+};
+
+class ShiftButton: public TouchWidget
+{
+	Q_OBJECT
+
+public:
+	ShiftButton(Window* window);
+	void paintEvent(QPaintEvent* event);
+	void touchEvent(QTouchEvent* event);
+
+	bool is_pressed = false;
+
+signals:
+	void stateChanged(bool is_pressed);
+};
+
+class Window: public QMainWindow
+{
+	Q_OBJECT
+
+public:
+	Window(MidiOut* midi_out);
+	void closeEvent(QCloseEvent* event);
+
+public slots:
+	void toggleFullscreen();
+
+public:
+	MidiOut* midi_out;
+	PianoWidget* upper_keyboard;
+	PianoWidget* lower_keyboard;
 };
 
