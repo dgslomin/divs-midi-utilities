@@ -369,8 +369,9 @@ void PianoWidget::setGlide(bool glide)
 	this->window->midi_out->mpeAllNotesOff();
 }
 
-SliderWidget::SliderWidget(Window* window, int controller_number): TouchWidget(window)
+SliderWidget::SliderWidget(Window* window, QString label, int controller_number): TouchWidget(window)
 {
+	this->label = label;
 	this->controller_number = controller_number;
 }
 
@@ -390,7 +391,7 @@ void SliderWidget::paintEvent(QPaintEvent* event)
 
 	painter.setPen(Qt::white);
 	painter.setBrush(Qt::NoBrush);
-	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, QString::number(this->controller_number));
+	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void SliderWidget::touchEvent(QTouchEvent* event)
@@ -418,8 +419,9 @@ void SliderWidget::touchEvent(QTouchEvent* event)
 	}
 }
 
-ShiftButton::ShiftButton(Window* window): TouchWidget(window)
+ShiftButton::ShiftButton(Window* window, QString label): TouchWidget(window)
 {
+	this->label = label;
 }
 
 void ShiftButton::paintEvent(QPaintEvent* event)
@@ -447,8 +449,9 @@ void ShiftButton::touchEvent(QTouchEvent* event)
 	}
 }
 
-LatchButton::LatchButton(Window* window): TouchWidget(window)
+LatchButton::LatchButton(Window* window, QString label): TouchWidget(window)
 {
+	this->label = label;
 }
 
 void LatchButton::paintEvent(QPaintEvent* event)
@@ -493,22 +496,22 @@ Window::Window(MidiOut* midi_out)
 	top_row_layout->setContentsMargins(0, 0, 0, 0);
 	top_row_layout->setSpacing(0);
 
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 1), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 41), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 42), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 43), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 44), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 45), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 46), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 47), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 48), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "1", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "2", 1), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "3", 41), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "4", 42), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "5", 43), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "6", 44), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "7", 45), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "8", 46), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "9", 47), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "10", 48), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "11", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "12", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "13", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "14", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "15", 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, "16", 11), 1);
 
 	QWidget* buttons_panel = new QWidget();
 	top_row_layout->addWidget(buttons_panel, 1);
@@ -516,12 +519,10 @@ Window::Window(MidiOut* midi_out)
 	buttons_layout->setContentsMargins(0, 0, 0, 0);
 	buttons_layout->setSpacing(0);
 
-	ShiftButton* range_button = new ShiftButton(this);
-	range_button->label = "Range";
+	ShiftButton* range_button = new ShiftButton(this, "Range");
 	buttons_layout->addWidget(range_button, 1);
 
-	LatchButton* glide_button = new LatchButton(this);
-	glide_button->label = "Glide";
+	LatchButton* glide_button = new LatchButton(this, "Glide");
 	buttons_layout->addWidget(glide_button, 1);
 
 	this->upper_keyboard = new PianoWidget(this);

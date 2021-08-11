@@ -83,10 +83,11 @@ class SliderWidget: public TouchWidget
 	Q_OBJECT
 
 public:
-	SliderWidget(Window* window, int controller_number);
+	SliderWidget(Window* window, QString label, int controller_number);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 
+	QString label;
 	int controller_number;
 	float value = 0;
 };
@@ -96,12 +97,12 @@ class ShiftButton: public TouchWidget
 	Q_OBJECT
 
 public:
-	ShiftButton(Window* window);
+	ShiftButton(Window* window, QString label);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 
-	bool is_pressed = false;
 	QString label;
+	bool is_pressed = false;
 
 signals:
 	void stateChanged(bool is_pressed);
@@ -112,12 +113,12 @@ class LatchButton: public TouchWidget
 	Q_OBJECT
 
 public:
-	LatchButton(Window* window);
+	LatchButton(Window* window, QString label);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 
-	bool is_pressed = false;
 	QString label;
+	bool is_pressed = false;
 
 signals:
 	void stateChanged(bool is_pressed);
