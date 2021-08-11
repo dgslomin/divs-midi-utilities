@@ -351,6 +351,55 @@ void PianoWidget::setGlide(bool glide)
 	this->glide = glide;
 }
 
+SliderWidget::SliderWidget(Window* window, int controller_number): TouchWidget(window)
+{
+	this->controller_number = controller_number;
+}
+
+void SliderWidget::paintEvent(QPaintEvent* event)
+{
+	Q_UNUSED(event)
+	QPainter painter(this);
+	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+
+	painter.setPen(QColor(0, 0, 0, 60));
+	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+
+	painter.setPen(Qt::NoPen);
+	painter.setBrush(QColor(0, 0, 0, 20));
+	int rect_height = this->height() - 30;
+	painter.drawRect(15, 15 + (rect_height * (1.0 - this->value)), this->width() - 30, rect_height * this->value);
+
+	painter.setPen(Qt::white);
+	painter.setBrush(Qt::NoBrush);
+	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, QString::number(this->controller_number));
+}
+
+void SliderWidget::touchEvent(QTouchEvent* event)
+{
+	for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
+	{
+		switch (touch_point.state())
+		{
+			case Qt::TouchPointPressed:
+			case Qt::TouchPointMoved:
+			{
+				int zone_leader_channel = 0;
+				int max_controller_value = 127;
+				float value_offset = (touch_point.pos().y() - touch_point.lastPos().y()) / this->height();
+				this->value = qMin(qMax((this->value - value_offset), 0.0), 1.0);
+				this->window->midi_out->controlChange(zone_leader_channel, this->controller_number, (int)(max_controller_value * this->value));
+				this->update();
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+}
+
 ShiftButton::ShiftButton(Window* window): TouchWidget(window)
 {
 }
@@ -360,6 +409,12 @@ void ShiftButton::paintEvent(QPaintEvent* event)
 	Q_UNUSED(event)
 	QPainter painter(this);
 	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+
+	painter.setPen(QColor(0, 0, 0, 60));
+	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+
+	painter.setPen(Qt::white);
+	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void ShiftButton::touchEvent(QTouchEvent* event)
@@ -383,6 +438,14 @@ void LatchButton::paintEvent(QPaintEvent* event)
 	Q_UNUSED(event)
 	QPainter painter(this);
 	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+
+	painter.setPen(QColor(0, 0, 0, 60));
+	if (this->is_pressed) painter.setBrush(QColor(0, 0, 0, 20));
+	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+
+	painter.setPen(Qt::white);
+	painter.setBrush(Qt::NoBrush);
+	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void LatchButton::touchEvent(QTouchEvent* event)
@@ -393,6 +456,7 @@ void LatchButton::touchEvent(QTouchEvent* event)
 	{
 		this->is_pressed = !(this->is_pressed);
 		emit this->stateChanged(this->is_pressed);
+		this->update();
 	}
 }
 
@@ -411,11 +475,36 @@ Window::Window(MidiOut* midi_out)
 	top_row_layout->setContentsMargins(0, 0, 0, 0);
 	top_row_layout->setSpacing(0);
 
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 1), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 41), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 42), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 43), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 44), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 45), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 46), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 47), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 48), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+	top_row_layout->addWidget(new SliderWidget(this, 11), 1);
+
+	QWidget* buttons_panel = new QWidget();
+	top_row_layout->addWidget(buttons_panel, 1);
+	QVBoxLayout* buttons_layout = new QVBoxLayout(buttons_panel);
+	buttons_layout->setContentsMargins(0, 0, 0, 0);
+	buttons_layout->setSpacing(0);
+
 	ShiftButton* range_button = new ShiftButton(this);
-	top_row_layout->addWidget(range_button, 1);
+	range_button->label = "Range";
+	buttons_layout->addWidget(range_button, 1);
 
 	LatchButton* glide_button = new LatchButton(this);
-	top_row_layout->addWidget(glide_button, 1);
+	glide_button->label = "Glide";
+	buttons_layout->addWidget(glide_button, 1);
 
 	this->upper_keyboard = new PianoWidget(this);
 	layout->addWidget(this->upper_keyboard, 1);

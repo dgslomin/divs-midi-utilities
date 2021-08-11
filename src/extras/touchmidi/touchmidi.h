@@ -2,7 +2,7 @@
 class MidiOut;
 class TouchWidget;
 class PianoWidget;
-class SlidersWidget;
+class SliderWidget;
 class ShiftButton;
 class LatchButton;
 class Window;
@@ -77,14 +77,17 @@ public:
 	bool glide = false;
 };
 
-class SlidersWidget: public TouchWidget
+class SliderWidget: public TouchWidget
 {
 	Q_OBJECT
 
 public:
-	SlidersWidget(Window* window);
+	SliderWidget(Window* window, int controller_number);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
+
+	int controller_number;
+	float value = 0;
 };
 
 class ShiftButton: public TouchWidget
@@ -97,6 +100,7 @@ public:
 	void touchEvent(QTouchEvent* event);
 
 	bool is_pressed = false;
+	QString label;
 
 signals:
 	void stateChanged(bool is_pressed);
@@ -112,6 +116,7 @@ public:
 	void touchEvent(QTouchEvent* event);
 
 	bool is_pressed = false;
+	QString label;
 
 signals:
 	void stateChanged(bool is_pressed);
