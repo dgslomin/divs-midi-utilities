@@ -220,10 +220,27 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 				}
 				case Qt::TouchPointMoved:
 				{
-					QPointF start_pos = touch_point.startPos();
-					QPointF pos = touch_point.pos();
-					int amount = this->getPitchWheelAmount(start_pos.x(), start_pos.y(), pos.x(), pos.y());
-					this->window->midi_out->mpePitchWheel(touch_point.id(), amount);
+					if (this->glide || !this->glissando)
+					{
+						QPointF start_pos = touch_point.startPos();
+						QPointF pos = touch_point.pos();
+						int amount = this->getPitchWheelAmount(start_pos.x(), start_pos.y(), pos.x(), pos.y());
+						this->window->midi_out->mpePitchWheel(touch_point.id(), amount);
+					}
+					else
+					{
+						QPointF last_pos = touch_point.lastPos();
+						QPointF pos = touch_point.pos();
+						int last_note = this->getNote(last_pos.x(), last_pos.y());
+						int note = this->getNote(pos.x(), pos.y());
+
+						if (note != last_note)
+						{
+							this->window->midi_out->mpeNoteOff(touch_point.id());
+							this->window->midi_out->mpeNoteOn(touch_point.id(), note);
+						}
+					}
+
 					break;
 				}
 				case Qt::TouchPointReleased:
@@ -349,6 +366,7 @@ void PianoWidget::setAdjustRange(bool adjust_range)
 void PianoWidget::setGlide(bool glide)
 {
 	this->glide = glide;
+	this->window->midi_out->mpeAllNotesOff();
 }
 
 SliderWidget::SliderWidget(Window* window, int controller_number): TouchWidget(window)

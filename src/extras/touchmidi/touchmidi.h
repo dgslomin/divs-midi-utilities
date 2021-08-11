@@ -75,6 +75,7 @@ public:
 	int pan;
 	bool adjust_range = false;
 	bool glide = false;
+	bool glissando = true;
 };
 
 class SliderWidget: public TouchWidget
