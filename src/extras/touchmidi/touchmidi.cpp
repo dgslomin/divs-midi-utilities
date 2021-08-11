@@ -382,16 +382,15 @@ void SliderWidget::paintEvent(QPaintEvent* event)
 	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
 
 	painter.setPen(QColor(0, 0, 0, 60));
-	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
 	painter.setPen(Qt::NoPen);
 	painter.setBrush(QColor(0, 0, 0, 20));
-	int rect_height = this->height() - 30;
-	painter.drawRect(15, 15 + (rect_height * (1.0 - this->value)), this->width() - 30, rect_height * this->value);
+	painter.drawRect(0, this->height() * (1.0 - this->value), this->width(), this->height() * this->value);
 
-	painter.setPen(Qt::white);
+	painter.setPen(QColor(255, 255, 255, 180));
 	painter.setBrush(Qt::NoBrush);
-	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
+	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void SliderWidget::touchEvent(QTouchEvent* event)
@@ -431,10 +430,11 @@ void ShiftButton::paintEvent(QPaintEvent* event)
 	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
 
 	painter.setPen(QColor(0, 0, 0, 60));
-	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
-	painter.setPen(Qt::white);
-	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
+	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setBrush(Qt::NoBrush);
+	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void ShiftButton::touchEvent(QTouchEvent* event)
@@ -462,11 +462,11 @@ void LatchButton::paintEvent(QPaintEvent* event)
 
 	painter.setPen(QColor(0, 0, 0, 60));
 	if (this->is_pressed) painter.setBrush(QColor(0, 0, 0, 20));
-	painter.drawRect(15, 15, this->width() - 30, this->height() - 30);
+	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
-	painter.setPen(Qt::white);
+	painter.setPen(QColor(255, 255, 255, 180));
 	painter.setBrush(Qt::NoBrush);
-	painter.drawText(15, 15, this->width() - 30, this->height() - 45, Qt::AlignBottom | Qt::AlignHCenter, this->label);
+	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
 
 void LatchButton::touchEvent(QTouchEvent* event)
@@ -492,9 +492,11 @@ Window::Window(MidiOut* midi_out)
 
 	QWidget* top_row_panel = new QWidget();
 	layout->addWidget(top_row_panel, 1);
+	top_row_panel->setAutoFillBackground(true);
+	top_row_panel->setPalette(QPalette(Qt::red));
 	QHBoxLayout* top_row_layout = new QHBoxLayout(top_row_panel);
-	top_row_layout->setContentsMargins(0, 0, 0, 0);
-	top_row_layout->setSpacing(0);
+	top_row_layout->setContentsMargins(15, 15, 15, 15);
+	top_row_layout->setSpacing(15);
 
 	top_row_layout->addWidget(new SliderWidget(this, "1", 11), 1);
 	top_row_layout->addWidget(new SliderWidget(this, "2", 1), 1);
@@ -517,7 +519,7 @@ Window::Window(MidiOut* midi_out)
 	top_row_layout->addWidget(buttons_panel, 1);
 	QVBoxLayout* buttons_layout = new QVBoxLayout(buttons_panel);
 	buttons_layout->setContentsMargins(0, 0, 0, 0);
-	buttons_layout->setSpacing(0);
+	buttons_layout->setSpacing(15);
 
 	ShiftButton* range_button = new ShiftButton(this, "Range");
 	buttons_layout->addWidget(range_button, 1);
