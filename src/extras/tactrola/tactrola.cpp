@@ -3,12 +3,12 @@
 #include <rtmidi_c.h>
 #include "midiutil-common.h"
 #include "midiutil-rtmidi.h"
-#include "touchmidi.h"
+#include "tactrola.h"
 
 QVector<QString> MidiOut::getPortNames()
 {
 	QVector<QString> port_names;
-	RtMidiOutPtr underlying_midi_out = rtmidi_out_create(RTMIDI_API_UNSPECIFIED, "touchmidi");
+	RtMidiOutPtr underlying_midi_out = rtmidi_out_create(RTMIDI_API_UNSPECIFIED, "Tactrola");
 	int number_of_ports = rtmidi_get_port_count(underlying_midi_out);
 	for (int port_number = 0; port_number < number_of_ports; port_number++) port_names.append(rtmidi_get_port_name(underlying_midi_out, port_number));
 	rtmidi_close_port(underlying_midi_out);
@@ -18,7 +18,7 @@ QVector<QString> MidiOut::getPortNames()
 MidiOut* MidiOut::open(QString port_name)
 {
 	RtMidiOutPtr underlying_midi_out;
-	if ((underlying_midi_out = rtmidi_open_out_port((char *)("touchmidi"), (char *)(port_name.toStdString().c_str()), (char *)("touchmidi"))) == NULL) return NULL;
+	if ((underlying_midi_out = rtmidi_open_out_port((char *)("Tactrola"), (char *)(port_name.toStdString().c_str()), (char *)("Tactrola"))) == NULL) return NULL;
 	return new MidiOut(port_name, underlying_midi_out);
 }
 
@@ -830,7 +830,7 @@ int main(int argc, char** argv)
 	QApplication application(argc, argv);
 	application.setOrganizationName("Sreal");
 	application.setOrganizationDomain("sreal.com");
-	application.setApplicationName("TouchMIDI");
+	application.setApplicationName("Tactrola");
 	(new Window())->show();
 	return application.exec();
 }
