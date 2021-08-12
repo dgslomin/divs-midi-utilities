@@ -5,15 +5,26 @@
 #include "midiutil-rtmidi.h"
 #include "touchmidi.h"
 
+QVector<QString> MidiOut::getPortNames()
+{
+	QVector<QString> port_names;
+	RtMidiOutPtr underlying_midi_out = rtmidi_out_create(RTMIDI_API_UNSPECIFIED, "touchmidi");
+	int number_of_ports = rtmidi_get_port_count(underlying_midi_out);
+	for (int port_number = 0; port_number < number_of_ports; port_number++) port_names.append(rtmidi_get_port_name(underlying_midi_out, port_number));
+	rtmidi_close_port(underlying_midi_out);
+	return port_names;
+}
+
 MidiOut* MidiOut::open(QString port_name)
 {
 	RtMidiOutPtr underlying_midi_out;
 	if ((underlying_midi_out = rtmidi_open_out_port((char *)("touchmidi"), (char *)(port_name.toStdString().c_str()), (char *)("touchmidi"))) == NULL) return NULL;
-	return new MidiOut(underlying_midi_out);
+	return new MidiOut(port_name, underlying_midi_out);
 }
 
-MidiOut::MidiOut(RtMidiOutPtr underlying_midi_out)
+MidiOut::MidiOut(QString port_name, RtMidiOutPtr underlying_midi_out)
 {
+	this->port_name = port_name;
 	this->underlying_midi_out = underlying_midi_out;
 
 	// skip channel 0 since it's the zone leader
@@ -369,10 +380,9 @@ void PianoWidget::setGlide(bool glide)
 	this->window->midi_out->mpeAllNotesOff();
 }
 
-SliderWidget::SliderWidget(Window* window, QString label, int controller_number): TouchWidget(window)
+SliderWidget::SliderWidget(Window* window, QString label): TouchWidget(window)
 {
 	this->label = label;
-	this->controller_number = controller_number;
 }
 
 void SliderWidget::paintEvent(QPaintEvent* event)
@@ -406,7 +416,7 @@ void SliderWidget::touchEvent(QTouchEvent* event)
 				int max_controller_value = 127;
 				float value_offset = (touch_point.pos().y() - touch_point.lastPos().y()) / this->height();
 				this->value = qMin(qMax((this->value - value_offset), 0.0), 1.0);
-				this->window->midi_out->controlChange(zone_leader_channel, this->controller_number, (int)(max_controller_value * this->value));
+				if (this->controller_number >= 0) this->window->midi_out->controlChange(zone_leader_channel, this->controller_number, (int)(max_controller_value * this->value));
 				this->update();
 				break;
 			}
@@ -416,6 +426,41 @@ void SliderWidget::touchEvent(QTouchEvent* event)
 			}
 		}
 	}
+}
+
+void SliderWidget::setControllerNumber(int controller_number)
+{
+	if (this->controller_number != controller_number)
+	{
+		this->controller_number = controller_number;
+		this->value = 0;
+		this->update();
+	}
+}
+
+Button::Button(Window* window, QString label): TouchWidget(window)
+{
+	this->label = label;
+}
+
+void Button::paintEvent(QPaintEvent* event)
+{
+	Q_UNUSED(event)
+	QPainter painter(this);
+	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+
+	painter.setPen(QColor(0, 0, 0, 60));
+	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
+
+	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setBrush(Qt::NoBrush);
+	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
+}
+
+void Button::touchEvent(QTouchEvent* event)
+{
+	event->accept();
+	if (event->touchPointStates() == Qt::TouchPointPressed) emit this->triggered();
 }
 
 ShiftButton::ShiftButton(Window* window, QString label): TouchWidget(window)
@@ -481,10 +526,18 @@ void LatchButton::touchEvent(QTouchEvent* event)
 	}
 }
 
-Window::Window(MidiOut* midi_out)
+void LatchButton::setPressed(bool is_pressed)
 {
-	this->midi_out = midi_out;
+	if (is_pressed != this->is_pressed)
+	{
+		this->is_pressed = is_pressed;
+		emit this->stateChanged(is_pressed);
+		this->update();
+	}
+}
 
+Window::Window()
+{
 	QWidget* panel = new QWidget();
 	this->setCentralWidget(panel);
 	QVBoxLayout* layout = new QVBoxLayout(panel);
@@ -498,22 +551,12 @@ Window::Window(MidiOut* midi_out)
 	top_row_layout->setContentsMargins(15, 15, 15, 15);
 	top_row_layout->setSpacing(15);
 
-	top_row_layout->addWidget(new SliderWidget(this, "1", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "2", 1), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "3", 41), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "4", 42), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "5", 43), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "6", 44), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "7", 45), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "8", 46), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "9", 47), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "10", 48), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "11", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "12", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "13", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "14", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "15", 11), 1);
-	top_row_layout->addWidget(new SliderWidget(this, "16", 11), 1);
+	for (int slider_number = 0; slider_number < 16; slider_number++)
+	{
+		SliderWidget* slider = new SliderWidget(this, QString::number(slider_number + 1));
+		this->sliders[slider_number] = slider;
+		top_row_layout->addWidget(slider, 1);
+	}
 
 	QWidget* buttons_panel = new QWidget();
 	top_row_layout->addWidget(buttons_panel, 1);
@@ -521,11 +564,14 @@ Window::Window(MidiOut* midi_out)
 	buttons_layout->setContentsMargins(0, 0, 0, 0);
 	buttons_layout->setSpacing(15);
 
-	ShiftButton* range_button = new ShiftButton(this, "Range");
-	buttons_layout->addWidget(range_button, 1);
+	this->setup_button = new Button(this, "Setup");
+	buttons_layout->addWidget(this->setup_button, 1);
 
-	LatchButton* glide_button = new LatchButton(this, "Glide");
-	buttons_layout->addWidget(glide_button, 1);
+	this->range_button = new ShiftButton(this, "Range");
+	buttons_layout->addWidget(this->range_button, 1);
+
+	this->glide_button = new LatchButton(this, "Glide");
+	buttons_layout->addWidget(this->glide_button, 1);
 
 	this->upper_keyboard = new PianoWidget(this);
 	layout->addWidget(this->upper_keyboard, 1);
@@ -535,10 +581,11 @@ Window::Window(MidiOut* midi_out)
 
 	this->resize(640, 480);
 
-	this->connect(range_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setAdjustRange(bool)));
-	this->connect(range_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setAdjustRange(bool)));
-	this->connect(glide_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setGlide(bool)));
-	this->connect(glide_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setGlide(bool)));
+	this->connect(this->setup_button, SIGNAL(triggered()), this, SLOT(showSetupDialog()));
+	this->connect(this->range_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setAdjustRange(bool)));
+	this->connect(this->range_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setAdjustRange(bool)));
+	this->connect(this->glide_button, SIGNAL(stateChanged(bool)), this->upper_keyboard, SLOT(setGlide(bool)));
+	this->connect(this->glide_button, SIGNAL(stateChanged(bool)), this->lower_keyboard, SLOT(setGlide(bool)));
 
 	QAction* toggle_fullscreen_action = new QAction(tr("Fullscreen"));
 	this->addAction(toggle_fullscreen_action);
@@ -548,6 +595,16 @@ Window::Window(MidiOut* midi_out)
 	QSettings settings;
 	this->restoreGeometry(settings.value("window-geometry").toByteArray());
 	this->restoreState(settings.value("window-state").toByteArray());
+	this->setMidiOut(settings.value("midi-output-port-name", "").toString());
+
+	for (int slider_number = 0; slider_number < 16; slider_number++)
+	{
+		SliderWidget* slider = this->sliders[slider_number];
+		slider->controller_number = settings.value(QString("slider-%1-controller-number").arg(slider_number + 1), -1).toInt();
+		slider->value = settings.value(QString("slider-%1-value").arg(slider_number + 1), 0.0).toFloat();
+	}
+
+	this->glide_button->setPressed(settings.value("glide", false).toBool());
 	this->upper_keyboard->full_width = settings.value("upper-keyboard-full-width", INT_MIN).toInt();
 	this->upper_keyboard->pan = settings.value("upper-keyboard-pan", INT_MAX).toInt();
 	this->lower_keyboard->full_width = settings.value("lower-keyboard-full-width", INT_MIN).toInt();
@@ -560,10 +617,51 @@ void Window::closeEvent(QCloseEvent* event)
 	QSettings settings;
 	settings.setValue("window-geometry", this->saveGeometry());
 	settings.setValue("window-state", this->saveState());
+	settings.setValue("midi-output-port-name", this->midi_out->port_name);
+
+	for (int slider_number = 0; slider_number < 16; slider_number++)
+	{
+		SliderWidget* slider = this->sliders[slider_number];
+		settings.setValue(QString("slider-%1-controller-number").arg(slider_number + 1), slider->controller_number);
+		settings.setValue(QString("slider-%1-value").arg(slider_number + 1), slider->value);
+	}
+
+	settings.setValue("glide", this->glide_button->is_pressed);
 	settings.setValue("upper-keyboard-full-width", this->upper_keyboard->full_width);
 	settings.setValue("upper-keyboard-pan", this->upper_keyboard->pan);
 	settings.setValue("lower-keyboard-full-width", this->lower_keyboard->full_width);
 	settings.setValue("lower-keyboard-pan", this->lower_keyboard->pan);
+}
+
+void Window::setMidiOut(QString port_name)
+{
+	if (this->midi_out == NULL)
+	{
+		this->midi_out = MidiOut::open(port_name);
+	}
+	else
+	{
+		if (this->midi_out->port_name != port_name)
+		{
+			delete(this->midi_out);
+			this->midi_out = MidiOut::open(port_name);
+		}
+	}
+}
+
+void Window::showSetupDialog()
+{
+	SetupDialog setup_dialog(this);
+
+	if (setup_dialog.exec() == QDialog::Accepted)
+	{
+		this->setMidiOut(setup_dialog.midi_output_port_combo_box->currentText());
+
+		for (int slider_number = 0; slider_number < 16; slider_number++)
+		{
+			this->sliders[slider_number]->setControllerNumber(setup_dialog.slider_controller_number_combo_boxes[slider_number]->currentData().toInt());
+		}
+	}
 }
 
 void Window::toggleFullscreen()
@@ -578,6 +676,152 @@ void Window::toggleFullscreen()
 	}
 }
 
+SetupDialog::SetupDialog(Window* window)
+{
+	this->window = window;
+	this->setWindowTitle("Setup");
+
+	QVBoxLayout* layout = new QVBoxLayout(this);
+	layout->setSpacing(15);
+
+	QFormLayout* general_settings_layout = new QFormLayout();
+	layout->addLayout(general_settings_layout);
+
+	this->midi_output_port_combo_box = new QComboBox();
+	general_settings_layout->addRow("MIDI Output Port", this->midi_output_port_combo_box);
+
+	for (QString port_name: MidiOut::getPortNames())
+	{
+		this->midi_output_port_combo_box->addItem(port_name);
+		if ((this->window->midi_out != NULL) && (this->window->midi_out->port_name == port_name)) this->midi_output_port_combo_box->setCurrentIndex(this->midi_output_port_combo_box->count() - 1);
+	}
+
+	QGroupBox* slider_controllers_group_box = new QGroupBox("Slider Controllers");
+	layout->addWidget(slider_controllers_group_box);
+
+	QHBoxLayout* two_column_layout = new QHBoxLayout(slider_controllers_group_box);
+	QFormLayout* left_column_layout = new QFormLayout();
+	two_column_layout->addLayout(left_column_layout);
+	QFormLayout* right_column_layout = new QFormLayout();
+	two_column_layout->addLayout(right_column_layout);
+
+	for (int slider_number = 0; slider_number < 16; slider_number++)
+	{
+		QComboBox* controller_number_combo_box = new QComboBox();
+		((slider_number < 8) ? left_column_layout : right_column_layout)->addRow(QString::number(slider_number + 1), controller_number_combo_box);
+		controller_number_combo_box->addItem("None", -1);
+
+		for (int controller_number = 0; controller_number < 128; controller_number++)
+		{
+			QString label;
+
+			switch (controller_number)
+			{
+				case 1:
+				{
+					label = "Modulation wheel";
+					break;
+				}
+				case 2:
+				{
+					label = "Breath controller";
+					break;
+				}
+				case 5:
+				{
+					label = "Portamento time";
+					break;
+				}
+				case 7:
+				{
+					label = "Volume";
+					break;
+				}
+				case 8:
+				{
+					label = "Balance";
+					break;
+				}
+				case 9:
+				{
+					label = "Pan";
+					break;
+				}
+				case 11:
+				{
+					label = "Expression";
+					break;
+				}
+				case 64:
+				{
+					label = "Sustain pedal";
+					break;
+				}
+				case 65:
+				{
+					label = "Portamento switch";
+					break;
+				}
+				case 71:
+				{
+					label = "Resonance";
+					break;
+				}
+				case 72:
+				{
+					label = "Release";
+					break;
+				}
+				case 73:
+				{
+					label = "Attack";
+					break;
+				}
+				case 74:
+				{
+					label = "Cutoff";
+					break;
+				}
+				case 91:
+				{
+					label = "Reverb";
+					break;
+				}
+				case 92:
+				{
+					label = "Tremolo";
+					break;
+				}
+				case 93:
+				{
+					label = "Chorus";
+					break;
+				}
+				case 95:
+				{
+					label = "Phaser";
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			controller_number_combo_box->addItem(QString("%1%2").arg(controller_number + 1).arg(label.isEmpty() ? "" : QString(" - %1").arg(label)), controller_number);
+			if (this->window->sliders[slider_number]->controller_number == controller_number) controller_number_combo_box->setCurrentIndex(controller_number_combo_box->count() - 1);
+		}
+
+		this->slider_controller_number_combo_boxes[slider_number] = controller_number_combo_box;
+	}
+
+	QDialogButtonBox* dialog_button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	layout->addWidget(dialog_button_box);
+
+	connect(dialog_button_box, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(dialog_button_box, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
 int main(int argc, char** argv)
 {
 	// qt bug workaround: otherwise some touch events get diverted for gesture recognition even with gestures disabled
@@ -587,16 +831,7 @@ int main(int argc, char** argv)
 	application.setOrganizationName("Sreal");
 	application.setOrganizationDomain("sreal.com");
 	application.setApplicationName("TouchMIDI");
-
-	MidiOut* midi_out = MidiOut::open(argv[1]);
-
-	if (midi_out == NULL)
-	{
-		QMessageBox::warning(NULL, application.tr("Error"), application.tr("Cannot open the specified MIDI output port."));
-		return 0;
-	}
-
-	(new Window(midi_out))->show();
+	(new Window())->show();
 	return application.exec();
 }
 

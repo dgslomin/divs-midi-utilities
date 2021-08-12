@@ -3,9 +3,11 @@ class MidiOut;
 class TouchWidget;
 class PianoWidget;
 class SliderWidget;
+class Button;
 class ShiftButton;
 class LatchButton;
 class Window;
+class SetupDialog;
 
 #include <QtWidgets>
 #include <rtmidi_c.h>
@@ -15,10 +17,11 @@ class MidiOut: public QObject
 	Q_OBJECT
 
 public:
+	static QVector<QString> getPortNames();
 	static MidiOut* open(QString port_name);
 
 private:
-	MidiOut(RtMidiOutPtr underlying_midi_out);
+	MidiOut(QString port_name, RtMidiOutPtr underlying_midi_out);
 
 public:
 	~MidiOut();
@@ -31,6 +34,7 @@ public:
 	void mpePitchWheel(int finger_id, int amount);
 	void mpeAllNotesOff();
 
+	QString port_name;
 	RtMidiOutPtr underlying_midi_out;
 	QVector<int> idle_channels;
 	QVector<int> busy_channels;
@@ -83,13 +87,33 @@ class SliderWidget: public TouchWidget
 	Q_OBJECT
 
 public:
-	SliderWidget(Window* window, QString label, int controller_number);
+	SliderWidget(Window* window, QString label);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 
+public slots:
+	void setControllerNumber(int controller_number);
+
+public:
 	QString label;
-	int controller_number;
+	int controller_number = -1;
 	float value = 0;
+};
+
+class Button: public TouchWidget
+{
+	Q_OBJECT
+
+public:
+	Button(Window* window, QString label);
+	void paintEvent(QPaintEvent* event);
+	void touchEvent(QTouchEvent* event);
+
+signals:
+	void triggered();
+
+public:
+	QString label;
 };
 
 class ShiftButton: public TouchWidget
@@ -101,11 +125,12 @@ public:
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
 
-	QString label;
-	bool is_pressed = false;
-
 signals:
 	void stateChanged(bool is_pressed);
+
+public:
+	QString label;
+	bool is_pressed = false;
 };
 
 class LatchButton: public TouchWidget
@@ -116,12 +141,14 @@ public:
 	LatchButton(Window* window, QString label);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
-
-	QString label;
-	bool is_pressed = false;
+	void setPressed(bool is_pressed);
 
 signals:
 	void stateChanged(bool is_pressed);
+
+public:
+	QString label;
+	bool is_pressed = false;
 };
 
 class Window: public QMainWindow
@@ -129,15 +156,33 @@ class Window: public QMainWindow
 	Q_OBJECT
 
 public:
-	Window(MidiOut* midi_out);
+	Window();
 	void closeEvent(QCloseEvent* event);
+	void setMidiOut(QString port_name);
 
 public slots:
+	void showSetupDialog();
 	void toggleFullscreen();
 
 public:
-	MidiOut* midi_out;
+	MidiOut* midi_out = NULL;
+	SliderWidget* sliders[16];
+	Button* setup_button;
+	ShiftButton* range_button;
+	LatchButton* glide_button;
 	PianoWidget* upper_keyboard;
 	PianoWidget* lower_keyboard;
+};
+
+class SetupDialog: public QDialog
+{
+	Q_OBJECT
+
+public:
+	SetupDialog(Window* window);
+
+	Window* window;
+	QComboBox* midi_output_port_combo_box;
+	QComboBox* slider_controller_number_combo_boxes[16];
 };
 
