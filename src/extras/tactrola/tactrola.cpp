@@ -808,7 +808,7 @@ SetupDialog::SetupDialog(Window* window)
 				}
 			}
 
-			controller_number_combo_box->addItem(QString("%1%2").arg(controller_number + 1).arg(label.isEmpty() ? "" : QString(" - %1").arg(label)), controller_number);
+			controller_number_combo_box->addItem(QString("%1%2").arg(controller_number).arg(label.isEmpty() ? "" : QString(" - %1").arg(label)), controller_number);
 			if (this->window->sliders[slider_number]->controller_number == controller_number) controller_number_combo_box->setCurrentIndex(controller_number_combo_box->count() - 1);
 		}
 
