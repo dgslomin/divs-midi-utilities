@@ -415,7 +415,7 @@ void SliderWidget::touchEvent(QTouchEvent* event)
 				int zone_leader_channel = 0;
 				int max_controller_value = 127;
 				float value_offset = (touch_point.pos().y() - touch_point.lastPos().y()) / this->height();
-				this->value = qMin(qMax((this->value - value_offset), 0.0), 1.0);
+				this->value = qMin(qMax((this->value - value_offset), 0.0f), 1.0f);
 				if (this->controller_number >= 0) this->window->midi_out->controlChange(zone_leader_channel, this->controller_number, (int)(max_controller_value * this->value));
 				this->update();
 				break;
