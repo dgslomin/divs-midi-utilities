@@ -60,15 +60,34 @@ class PianoWidget: public TouchWidget
 	Q_OBJECT
 
 public:
+	class FingerState
+	{
+	public:
+		int x;
+		int y;
+		int start_y;
+		int start_note;
+		float note;
+		float auto_aim_amount;
+		QElapsedTimer settle_duration;
+	};
+
 	PianoWidget(Window* window);
 	void paintEvent(QPaintEvent* event);
 	void touchEvent(QTouchEvent* event);
-	int getNote(int x, int y);
-	int getPitchWheelAmount(int start_x, int start_y, int x, int y);
+	void timerEvent(QTimerEvent* event);
+	int getStartNote(int x, int y, float& auto_aim_amount);
+	float getGlideNote(int x, int y, int start_y, float auto_aim_amount);
+	float getSettleNote(int x, int y, int start_y, float& auto_aim_amount);
+	float getSettleAutoAimIncrement(float key_number);
+	bool isNatural(int y);
+	float getAccidentalFraction(int y, int start_y);
 	float getNaturalNumber(int x);
 	float getAccidentalNumber(int x);
 	float getNaturalNote(float natural_number);
 	float getAccidentalNote(float accidental_number);
+	float interpolate(float value1, float value2, float fraction);
+	int getPitchWheelAmount(float note_offset);
 
 public slots:
 	void setAdjustRange(bool adjust_range);
@@ -79,7 +98,7 @@ public:
 	int pan;
 	bool adjust_range = false;
 	bool glide = false;
-	bool glissando = true;
+	QHash<int, FingerState> finger_states;
 };
 
 class SliderWidget: public TouchWidget

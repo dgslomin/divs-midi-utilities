@@ -5,6 +5,10 @@
 #include "midiutil-rtmidi.h"
 #include "tactrola.h"
 
+#define SETTLE_TIMER_RESOLUTION_MSECS 5
+#define SETTLE_DELAY_MSECS 50
+#define SETTLE_RATE_MSECS_PER_KEY 250
+
 QVector<QString> MidiOut::getPortNames()
 {
 	QVector<QString> port_names;
@@ -152,6 +156,7 @@ void TouchWidget::touchEvent(QTouchEvent* event)
 
 PianoWidget::PianoWidget(Window* window): TouchWidget(window)
 {
+	this->startTimer(SETTLE_TIMER_RESOLUTION_MSECS);
 }
 
 void PianoWidget::paintEvent(QPaintEvent* event)
@@ -204,6 +209,7 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 			}
 			case 2:
 			{
+				// TODO: this works but behaves awkwardly
 				const QTouchEvent::TouchPoint& touch_point_1 = event->touchPoints()[0];
 				const QTouchEvent::TouchPoint& touch_point_2 = event->touchPoints()[1];
 				this->full_width += (qAbs(touch_point_1.pos().x() - touch_point_2.pos().x()) - qAbs(touch_point_1.lastPos().x() - touch_point_2.lastPos().x()));
@@ -220,43 +226,71 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 	{
 		for (const QTouchEvent::TouchPoint& touch_point: event->touchPoints())
 		{
+			int finger_id = touch_point.id();
+			QPointF pos = touch_point.pos();
+
 			switch (touch_point.state())
 			{
 				case Qt::TouchPointPressed:
 				{
-					QPointF pos = touch_point.pos();
-					int note = this->getNote(pos.x(), pos.y());
-					this->window->midi_out->mpeNoteOn(touch_point.id(), note);
+					float auto_aim_amount;
+					int note = this->getStartNote(pos.x(), pos.y(), auto_aim_amount);
+					this->window->midi_out->mpeNoteOn(finger_id, note);
+
+					PianoWidget::FingerState finger_state;
+					finger_state.x = pos.x();
+					finger_state.y = pos.y();
+					finger_state.start_y = pos.y();
+					finger_state.start_note = note;
+					finger_state.note = note;
+					finger_state.auto_aim_amount = auto_aim_amount;
+					finger_state.settle_duration.start();
+					this->finger_states.insert(finger_id, finger_state);
+
 					break;
 				}
 				case Qt::TouchPointMoved:
 				{
-					if (this->glide || !this->glissando)
+					PianoWidget::FingerState finger_state = this->finger_states.value(finger_id);
+
+					if (this->glide)
 					{
-						QPointF start_pos = touch_point.startPos();
-						QPointF pos = touch_point.pos();
-						int amount = this->getPitchWheelAmount(start_pos.x(), start_pos.y(), pos.x(), pos.y());
-						this->window->midi_out->mpePitchWheel(touch_point.id(), amount);
+						float note = this->getGlideNote(pos.x(), pos.y(), finger_state.start_y, finger_state.auto_aim_amount);
+
+						if (note != finger_state.note)
+						{
+							int amount = this->getPitchWheelAmount(note - finger_state.start_note);
+							this->window->midi_out->mpePitchWheel(finger_id, amount);
+							finger_state.note = note;
+						}
 					}
 					else
 					{
-						QPointF last_pos = touch_point.lastPos();
-						QPointF pos = touch_point.pos();
-						int last_note = this->getNote(last_pos.x(), last_pos.y());
-						int note = this->getNote(pos.x(), pos.y());
+						float auto_aim_amount;
+						int note = this->getStartNote(pos.x(), pos.y(), auto_aim_amount);
 
-						if (note != last_note)
+						if (note != finger_state.note)
 						{
-							this->window->midi_out->mpeNoteOff(touch_point.id());
-							this->window->midi_out->mpeNoteOn(touch_point.id(), note);
+							this->window->midi_out->mpeNoteOff(finger_id);
+							this->window->midi_out->mpeNoteOn(finger_id, note);
+							finger_state.start_note = note;
+							finger_state.note = note;
 						}
+
+						finger_state.start_y = pos.y();
+						finger_state.auto_aim_amount = auto_aim_amount;
 					}
 
+					finger_state.x = pos.x();
+					finger_state.y = pos.y();
+					finger_state.settle_duration.start();
+					this->finger_states.insert(finger_id, finger_state);
 					break;
 				}
 				case Qt::TouchPointReleased:
 				{
-					this->window->midi_out->mpeNoteOff(touch_point.id());
+					this->window->midi_out->mpeNoteOff(finger_id);
+					this->finger_states.remove(finger_id);
 					break;
 				}
 				default:
@@ -268,70 +302,113 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 	}
 }
 
-int PianoWidget::getNote(int x, int y)
+void PianoWidget::timerEvent(QTimerEvent* event)
 {
-	if (y > this->height() / 2)
+	Q_UNUSED(event)
+	if (!this->glide) return;
+
+	for (QHash<int, PianoWidget::FingerState>::iterator finger_state_iterator = this->finger_states.begin(); finger_state_iterator != this->finger_states.end(); finger_state_iterator++)
 	{
-		return (int)(this->getNaturalNote((int)(this->getNaturalNumber(x))));
-	}
-	else
-	{
-		return (int)(this->getAccidentalNote((int)(this->getAccidentalNumber(x))));
+		FingerState& finger_state = *finger_state_iterator;
+		qint64 settle_duration_msecs = finger_state.settle_duration.elapsed();
+
+		if (settle_duration_msecs > SETTLE_DELAY_MSECS)
+		{
+			float note = this->getSettleNote(finger_state.x, finger_state.y, finger_state.start_y, finger_state.auto_aim_amount);
+
+			if (note != finger_state.note)
+			{
+				int amount = this->getPitchWheelAmount(note - finger_state.start_note);
+				this->window->midi_out->mpePitchWheel(finger_state_iterator.key(), amount);
+				finger_state.note = note;
+			}
+		}
 	}
 }
 
-int PianoWidget::getPitchWheelAmount(int start_x, int start_y, int x, int y)
+/** When you first press your finger, the note is instantly auto-aimed to be squarely in tune. */
+int PianoWidget::getStartNote(int x, int y, float& auto_aim_amount)
 {
-	int full_pitch_wheel_range = 1 << 14;
-	int full_pitch_wheel_range_notes = 96;
-	int note_height = this->height() / 2;
-	float note_offset;
-
-	if (this->glide)
+	if (this->isNatural(y))
 	{
-		float natural_note_offset;
-		float accidental_note_offset;
-		float accidental_fraction;
-
-		if (start_y > note_height)
-		{
-			float start_natural_number = this->getNaturalNumber(start_x);
-			float start_natural_note = this->getNaturalNote((int)(start_natural_number));
-			float natural_number = this->getNaturalNumber(x);
-			float natural_note = this->getNaturalNote(natural_number - (start_natural_number - (int)(start_natural_number)));
-			natural_note_offset = natural_note - start_natural_note;
-
-			float accidental_number = this->getAccidentalNumber(x);
-			float accidental_note = this->getAccidentalNote(accidental_number - 0.5);
-			accidental_note_offset = accidental_note - start_natural_note;
-
-			accidental_fraction = (float)(qMin(qMax(start_y - y, 0), note_height)) / note_height;
-		}
-		else
-		{
-			float start_accidental_number = this->getAccidentalNumber(start_x);
-			float start_accidental_note = this->getAccidentalNote((int)(start_accidental_number));
-			float accidental_number = this->getAccidentalNumber(x);
-			float accidental_note = this->getAccidentalNote(accidental_number - (start_accidental_number - (int)(start_accidental_number)));
-			accidental_note_offset = accidental_note - start_accidental_note;
-
-			float natural_number = this->getNaturalNumber(x);
-			float natural_note = this->getNaturalNote(natural_number - 0.5);
-			natural_note_offset = natural_note - start_accidental_note;
-
-			accidental_fraction = 1.0 - ((float)(qMin(qMax(y - start_y, 0), note_height)) / note_height);
-		}
-
-		note_offset = (accidental_note_offset - natural_note_offset) * accidental_fraction + natural_note_offset;
+		float natural_number = this->getNaturalNumber(x);
+		int aimed_natural_number = (int)(natural_number);
+		auto_aim_amount = aimed_natural_number - natural_number;
+		return (int)(this->getNaturalNote(aimed_natural_number));
 	}
 	else
 	{
-		float start_note = (start_y > note_height) ? this->getNaturalNote((int)(this->getNaturalNumber(start_x))) : this->getAccidentalNote((int)(this->getAccidentalNumber(start_x)));
-		float note = (y > note_height) ? this->getNaturalNote((int)(this->getNaturalNumber(x))) : this->getAccidentalNote((int)(this->getAccidentalNumber(x)));
-		note_offset = note - start_note;
+		float accidental_number = this->getAccidentalNumber(x);
+		int aimed_accidental_number = (int)(accidental_number);
+		auto_aim_amount = aimed_accidental_number - accidental_number;
+		return (int)(this->getAccidentalNote(aimed_accidental_number));
 	}
+}
 
-	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (1 << 13);
+/** When you glide your finger between keys, you get the microtonal "in-between" notes. */
+float PianoWidget::getGlideNote(int x, int y, int start_y, float auto_aim_amount)
+{
+	float natural_number = this->getNaturalNumber(x) + auto_aim_amount;
+	float natural_note = this->getNaturalNote(natural_number);
+
+	float accidental_number = this->getAccidentalNumber(x) + auto_aim_amount;
+	float accidental_note = this->getAccidentalNote(accidental_number);
+
+	float accidental_fraction = this->getAccidentalFraction(y, start_y);
+	return this->interpolate(natural_note, accidental_note, accidental_fraction);
+}
+
+/** When you stop moving your finger, it auto-aims back into tune gradually. */
+float PianoWidget::getSettleNote(int x, int y, int start_y, float& auto_aim_amount)
+{
+	float natural_number = this->getNaturalNumber(x) + auto_aim_amount;
+	float natural_auto_aim_increment = this->getSettleAutoAimIncrement(natural_number);
+
+	float accidental_number = this->getAccidentalNumber(x) + auto_aim_amount;
+	float accidental_auto_aim_increment = this->getSettleAutoAimIncrement(accidental_number);
+
+	float accidental_fraction = this->getAccidentalFraction(y, start_y);
+	float auto_aim_increment = this->interpolate(natural_auto_aim_increment, accidental_auto_aim_increment, accidental_fraction);
+	auto_aim_amount += auto_aim_increment;
+
+	float natural_note = this->getNaturalNote(natural_number - auto_aim_increment);
+	float accidental_note = this->getAccidentalNote(accidental_number - auto_aim_increment);
+	return this->interpolate(natural_note, accidental_note, accidental_fraction);
+}
+
+float PianoWidget::getSettleAutoAimIncrement(float key_number)
+{
+	int aimed_key_number = qRound(key_number);
+	float full_auto_aim_increment = aimed_key_number - key_number;
+	float max_auto_aim_increment = (float)(SETTLE_TIMER_RESOLUTION_MSECS) / SETTLE_RATE_MSECS_PER_KEY;
+
+	if (full_auto_aim_increment > 0)
+	{
+		return qMin(full_auto_aim_increment, max_auto_aim_increment);
+	}
+	else
+	{
+		return qMax(full_auto_aim_increment, -max_auto_aim_increment);
+	}
+}
+
+bool PianoWidget::isNatural(int y)
+{
+	return (y > this->height() / 2);
+}
+
+float PianoWidget::getAccidentalFraction(int y, int start_y)
+{
+	int key_height = this->height() / 2;
+
+	if (this->isNatural(start_y))
+	{
+		return (float)(qMin(qMax(start_y - y, 0), key_height)) / key_height;
+	}
+	else
+	{
+		return 1.0 - ((float)(qMin(qMax(y - start_y, 0), key_height)) / key_height);
+	}
 }
 
 float PianoWidget::getNaturalNumber(int x)
@@ -360,12 +437,24 @@ float PianoWidget::getNaturalNote(float natural_number)
 	int natural_number_in_octave = (int)(natural_number) % number_of_naturals_per_octave;
 	int note_in_octave = natural_notes[natural_number_in_octave];
 	int next_note_in_octave = natural_notes[natural_number_in_octave + 1];
-	return octave_start_note + note_in_octave + ((next_note_in_octave - note_in_octave) * (natural_number - (int)(natural_number)));
+	return octave_start_note + this->interpolate(note_in_octave, next_note_in_octave, natural_number - (int)(natural_number));
 }
 
 float PianoWidget::getAccidentalNote(float accidental_number)
 {
-	return accidental_number; // might get fancier later
+	return accidental_number;
+}
+
+float PianoWidget::interpolate(float value1, float value2, float fraction)
+{
+	return value1 + ((value2 - value1) * fraction);
+}
+
+int PianoWidget::getPitchWheelAmount(float note_offset)
+{
+	int full_pitch_wheel_range = 1 << 14;
+	int full_pitch_wheel_range_notes = 96;
+	return (int)(note_offset * full_pitch_wheel_range / full_pitch_wheel_range_notes) + (1 << 13);
 }
 
 void PianoWidget::setAdjustRange(bool adjust_range)
@@ -377,7 +466,6 @@ void PianoWidget::setAdjustRange(bool adjust_range)
 void PianoWidget::setGlide(bool glide)
 {
 	this->glide = glide;
-	this->window->midi_out->mpeAllNotesOff();
 }
 
 SliderWidget::SliderWidget(Window* window, QString label): TouchWidget(window)
