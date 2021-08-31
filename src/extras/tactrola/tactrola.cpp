@@ -9,6 +9,30 @@
 #define SETTLE_DELAY_MSECS 50
 #define SETTLE_RATE_MSECS_PER_KEY 250
 
+#define RED_TOP
+
+#ifdef RED_TOP
+#define TOP_COLOR QColor(250, 60, 40)
+#define TOP_LINE_COLOR QColor(0, 0, 0, 60)
+#define TOP_FILL_COLOR QColor(0, 0, 0, 20)
+#define TOP_TEXT_COLOR QColor(255, 255, 255, 180)
+#else
+#define TOP_COLOR Qt::black
+#define TOP_LINE_COLOR QColor(255, 255, 255, 100)
+#define TOP_FILL_COLOR QColor(255, 255, 255, 60)
+#define TOP_TEXT_COLOR QColor(255, 255, 255, 180)
+#endif
+
+#ifdef INVERTED_KEYS
+#define BOTTOM_COLOR QColor(60, 60, 60)
+#define NATURAL_COLOR Qt::black
+#define ACCIDENTAL_COLOR Qt::white
+#else
+#define BOTTOM_COLOR QColor(230, 230, 230)
+#define NATURAL_COLOR Qt::white
+#define ACCIDENTAL_COLOR Qt::black
+#endif
+
 QVector<QString> MidiOut::getPortNames()
 {
 	QVector<QString> port_names;
@@ -167,7 +191,7 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 	this->pan = qMax(qMin(this->pan, this->full_width - this->width()), 0);
 
 	QPainter painter(this);
-	painter.fillRect(0, 0, this->width(), this->height(), Qt::white);
+	painter.fillRect(0, 0, this->width(), this->height(), NATURAL_COLOR);
 
 	int full_number_of_notes = 128;
 	int number_of_notes_per_octave = 12;
@@ -177,7 +201,7 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 	float natural_width = (float)(this->full_width) / full_number_of_naturals;
 	float accidental_width = natural_width * number_of_naturals_per_octave / number_of_notes_per_octave;
 
-	painter.setPen(Qt::black);
+	painter.setPen(ACCIDENTAL_COLOR);
 
 	for (int natural_number = 1; natural_number < full_number_of_naturals; natural_number++)
 	{
@@ -188,7 +212,7 @@ void PianoWidget::paintEvent(QPaintEvent* event)
 	for (int note_number = 0; note_number < full_number_of_notes; note_number++)
 	{
 		float x = note_number * accidental_width - this->pan;
-		if (note_is_accidental[note_number % number_of_notes_per_octave]) painter.fillRect(x, 0, accidental_width, this->height() / 2, Qt::black);
+		if (note_is_accidental[note_number % number_of_notes_per_octave]) painter.fillRect(x, 0, accidental_width, this->height() / 2, ACCIDENTAL_COLOR);
 	}
 }
 
@@ -477,16 +501,16 @@ void SliderWidget::paintEvent(QPaintEvent* event)
 {
 	Q_UNUSED(event)
 	QPainter painter(this);
-	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+	painter.fillRect(0, 0, this->width(), this->height(), TOP_COLOR);
 
-	painter.setPen(QColor(0, 0, 0, 60));
+	painter.setPen(TOP_LINE_COLOR);
 	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
 	painter.setPen(Qt::NoPen);
-	painter.setBrush(QColor(0, 0, 0, 20));
+	painter.setBrush(TOP_FILL_COLOR);
 	painter.drawRect(0, this->height() * (1.0 - this->value), this->width(), this->height() * this->value);
 
-	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setPen(TOP_TEXT_COLOR);
 	painter.setBrush(Qt::NoBrush);
 	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
@@ -535,12 +559,12 @@ void Button::paintEvent(QPaintEvent* event)
 {
 	Q_UNUSED(event)
 	QPainter painter(this);
-	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+	painter.fillRect(0, 0, this->width(), this->height(), TOP_COLOR);
 
-	painter.setPen(QColor(0, 0, 0, 60));
+	painter.setPen(TOP_LINE_COLOR);
 	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
-	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setPen(TOP_TEXT_COLOR);
 	painter.setBrush(Qt::NoBrush);
 	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
@@ -560,12 +584,12 @@ void ShiftButton::paintEvent(QPaintEvent* event)
 {
 	Q_UNUSED(event)
 	QPainter painter(this);
-	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+	painter.fillRect(0, 0, this->width(), this->height(), TOP_COLOR);
 
-	painter.setPen(QColor(0, 0, 0, 60));
+	painter.setPen(TOP_LINE_COLOR);
 	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
-	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setPen(TOP_TEXT_COLOR);
 	painter.setBrush(Qt::NoBrush);
 	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
@@ -591,13 +615,13 @@ void LatchButton::paintEvent(QPaintEvent* event)
 {
 	Q_UNUSED(event)
 	QPainter painter(this);
-	painter.fillRect(0, 0, this->width(), this->height(), Qt::red);
+	painter.fillRect(0, 0, this->width(), this->height(), TOP_COLOR);
 
-	painter.setPen(QColor(0, 0, 0, 60));
-	if (this->is_pressed) painter.setBrush(QColor(0, 0, 0, 20));
+	painter.setPen(TOP_LINE_COLOR);
+	if (this->is_pressed) painter.setBrush(TOP_FILL_COLOR);
 	painter.drawRect(0, 0, this->width() - 1, this->height() - 1);
 
-	painter.setPen(QColor(255, 255, 255, 180));
+	painter.setPen(TOP_TEXT_COLOR);
 	painter.setBrush(Qt::NoBrush);
 	painter.drawText(0, 0, this->width(), this->height() - 15, Qt::AlignBottom | Qt::AlignHCenter, this->label);
 }
@@ -628,13 +652,15 @@ Window::Window()
 {
 	QWidget* panel = new QWidget();
 	this->setCentralWidget(panel);
+	panel->setAutoFillBackground(true);
+	panel->setPalette(QPalette(BOTTOM_COLOR));
 	QVBoxLayout* layout = new QVBoxLayout(panel);
 	layout->setContentsMargins(0, 0, 0, 0);
 
 	QWidget* top_row_panel = new QWidget();
 	layout->addWidget(top_row_panel, 1);
 	top_row_panel->setAutoFillBackground(true);
-	top_row_panel->setPalette(QPalette(Qt::red));
+	top_row_panel->setPalette(QPalette(TOP_COLOR));
 	QHBoxLayout* top_row_layout = new QHBoxLayout(top_row_panel);
 	top_row_layout->setContentsMargins(15, 15, 15, 15);
 	top_row_layout->setSpacing(15);
