@@ -678,13 +678,13 @@ Window::Window()
 	buttons_layout->setContentsMargins(0, 0, 0, 0);
 	buttons_layout->setSpacing(15);
 
-	this->setup_button = new Button(this, "Setup");
+	this->setup_button = new Button(this, tr("Setup"));
 	buttons_layout->addWidget(this->setup_button, 1);
 
-	this->range_button = new ShiftButton(this, "Range");
+	this->range_button = new ShiftButton(this, tr("Range"));
 	buttons_layout->addWidget(this->range_button, 1);
 
-	this->glide_button = new LatchButton(this, "Glide");
+	this->glide_button = new LatchButton(this, tr("Glide"));
 	buttons_layout->addWidget(this->glide_button, 1);
 
 	this->upper_keyboard = new PianoWidget(this);
@@ -793,7 +793,7 @@ void Window::toggleFullscreen()
 SetupDialog::SetupDialog(Window* window)
 {
 	this->window = window;
-	this->setWindowTitle("Setup");
+	this->setWindowTitle(tr("Setup"));
 
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setSpacing(15);
@@ -802,7 +802,7 @@ SetupDialog::SetupDialog(Window* window)
 	layout->addLayout(general_settings_layout);
 
 	this->midi_output_port_combo_box = new QComboBox();
-	general_settings_layout->addRow("MIDI Output Port", this->midi_output_port_combo_box);
+	general_settings_layout->addRow(tr("MIDI Output Port"), this->midi_output_port_combo_box);
 
 	for (QString port_name: MidiOut::getPortNames())
 	{
@@ -810,7 +810,7 @@ SetupDialog::SetupDialog(Window* window)
 		if ((this->window->midi_out != NULL) && (this->window->midi_out->port_name == port_name)) this->midi_output_port_combo_box->setCurrentIndex(this->midi_output_port_combo_box->count() - 1);
 	}
 
-	QGroupBox* slider_controllers_group_box = new QGroupBox("Slider Controllers");
+	QGroupBox* slider_controllers_group_box = new QGroupBox(tr("Slider Controllers"));
 	layout->addWidget(slider_controllers_group_box);
 
 	QHBoxLayout* two_column_layout = new QHBoxLayout(slider_controllers_group_box);
@@ -823,7 +823,7 @@ SetupDialog::SetupDialog(Window* window)
 	{
 		QComboBox* controller_number_combo_box = new QComboBox();
 		((slider_number < 8) ? left_column_layout : right_column_layout)->addRow(QString::number(slider_number + 1), controller_number_combo_box);
-		controller_number_combo_box->addItem("None", -1);
+		controller_number_combo_box->addItem(tr("None"), -1);
 
 		for (int controller_number = 0; controller_number < 128; controller_number++)
 		{
@@ -833,87 +833,87 @@ SetupDialog::SetupDialog(Window* window)
 			{
 				case 1:
 				{
-					label = "Modulation wheel";
+					label = tr("Modulation wheel");
 					break;
 				}
 				case 2:
 				{
-					label = "Breath controller";
+					label = tr("Breath controller");
 					break;
 				}
 				case 5:
 				{
-					label = "Portamento time";
+					label = tr("Portamento time");
 					break;
 				}
 				case 7:
 				{
-					label = "Volume";
+					label = tr("Volume");
 					break;
 				}
 				case 8:
 				{
-					label = "Balance";
+					label = tr("Balance");
 					break;
 				}
 				case 9:
 				{
-					label = "Pan";
+					label = tr("Pan");
 					break;
 				}
 				case 11:
 				{
-					label = "Expression";
+					label = tr("Expression");
 					break;
 				}
 				case 64:
 				{
-					label = "Sustain pedal";
+					label = tr("Sustain pedal");
 					break;
 				}
 				case 65:
 				{
-					label = "Portamento switch";
+					label = tr("Portamento switch");
 					break;
 				}
 				case 71:
 				{
-					label = "Resonance";
+					label = tr("Resonance");
 					break;
 				}
 				case 72:
 				{
-					label = "Release";
+					label = tr("Release");
 					break;
 				}
 				case 73:
 				{
-					label = "Attack";
+					label = tr("Attack");
 					break;
 				}
 				case 74:
 				{
-					label = "Cutoff";
+					label = tr("Cutoff");
 					break;
 				}
 				case 91:
 				{
-					label = "Reverb";
+					label = tr("Reverb");
 					break;
 				}
 				case 92:
 				{
-					label = "Tremolo";
+					label = tr("Tremolo");
 					break;
 				}
 				case 93:
 				{
-					label = "Chorus";
+					label = tr("Chorus");
 					break;
 				}
 				case 95:
 				{
-					label = "Phaser";
+					label = tr("Phaser");
 					break;
 				}
 				default:
