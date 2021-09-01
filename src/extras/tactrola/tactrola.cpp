@@ -12,7 +12,7 @@
 #define RED_TOP
 
 #ifdef RED_TOP
-#define TOP_COLOR QColor(250, 60, 40)
+#define TOP_COLOR QColor(242, 33, 10)
 #define TOP_LINE_COLOR QColor(0, 0, 0, 60)
 #define TOP_FILL_COLOR QColor(0, 0, 0, 20)
 #define TOP_TEXT_COLOR QColor(255, 255, 255, 180)
