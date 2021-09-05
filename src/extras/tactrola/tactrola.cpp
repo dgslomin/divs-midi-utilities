@@ -125,7 +125,7 @@ void MidiOut::mpeNoteOn(int finger_id, int note)
 	this->busy_channels.append(channel);
 	this->finger_id_to_channel.insert(finger_id, channel);
 	this->channel_to_finger_id[channel] = finger_id;
-	this->channel_to_note[channel] = note;
+	this->channel_to_note[channel] = note + this->transpose;
 
 	// reset pitch wheel value and range
 	this->pitchWheel(channel, 1 << 13);
@@ -134,7 +134,7 @@ void MidiOut::mpeNoteOn(int finger_id, int note)
 	this->controlChange(channel, 6, 48);
 	this->controlChange(channel, 38, 0);
 
-	this->noteOn(channel, note, 127);
+	this->noteOn(channel, note + this->transpose, this->velocity);
 }
 
 void MidiOut::mpePitchWheel(int finger_id, int amount)
@@ -710,6 +710,8 @@ Window::Window()
 	this->restoreGeometry(settings.value("window-geometry").toByteArray());
 	this->restoreState(settings.value("window-state").toByteArray());
 	this->setMidiOut(settings.value("midi-output-port-name", "").toString());
+	this->midi_out->velocity = settings.value("velocity", 127).toInt();
+	this->midi_out->transpose = settings.value("transpose", 0).toInt();
 
 	for (int slider_number = 0; slider_number < 16; slider_number++)
 	{
@@ -732,6 +734,8 @@ void Window::closeEvent(QCloseEvent* event)
 	settings.setValue("window-geometry", this->saveGeometry());
 	settings.setValue("window-state", this->saveState());
 	settings.setValue("midi-output-port-name", this->midi_out->port_name);
+	settings.setValue("velocity", this->midi_out->velocity);
+	settings.setValue("transpose", this->midi_out->transpose);
 
 	for (int slider_number = 0; slider_number < 16; slider_number++)
 	{
@@ -770,6 +774,8 @@ void Window::showSetupDialog()
 	if (setup_dialog.exec() == QDialog::Accepted)
 	{
 		this->setMidiOut(setup_dialog.midi_output_port_combo_box->currentText());
+		this->midi_out->velocity = setup_dialog.velocity_spin_box->value();
+		this->midi_out->transpose = setup_dialog.transpose_spin_box->value();
 
 		for (int slider_number = 0; slider_number < 16; slider_number++)
 		{
@@ -809,6 +815,16 @@ SetupDialog::SetupDialog(Window* window)
 		this->midi_output_port_combo_box->addItem(port_name);
 		if ((this->window->midi_out != NULL) && (this->window->midi_out->port_name == port_name)) this->midi_output_port_combo_box->setCurrentIndex(this->midi_output_port_combo_box->count() - 1);
 	}
+
+	this->velocity_spin_box = new QSpinBox();
+	general_settings_layout->addRow(tr("Velocity"), this->velocity_spin_box);
+	this->velocity_spin_box->setRange(0, 127);
+	this->velocity_spin_box->setValue(this->window->midi_out->velocity);
+
+	this->transpose_spin_box = new QSpinBox();
+	general_settings_layout->addRow(tr("Transpose"), this->transpose_spin_box);
+	this->transpose_spin_box->setRange(-127, 127);
+	this->transpose_spin_box->setValue(this->window->midi_out->transpose);
 
 	QGroupBox* slider_controllers_group_box = new QGroupBox(tr("Slider Controllers"));
 	layout->addWidget(slider_controllers_group_box);

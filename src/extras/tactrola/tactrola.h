@@ -41,6 +41,8 @@ public:
 	QHash<int, int> finger_id_to_channel;
 	int channel_to_finger_id[16];
 	int channel_to_note[16];
+	int velocity;
+	int transpose;
 };
 
 class TouchWidget: public QWidget
@@ -202,6 +204,8 @@ public:
 
 	Window* window;
 	QComboBox* midi_output_port_combo_box;
+	QSpinBox* velocity_spin_box;
+	QSpinBox* transpose_spin_box;
 	QComboBox* slider_controller_number_combo_boxes[16];
 };
 
