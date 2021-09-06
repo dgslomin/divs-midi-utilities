@@ -33,6 +33,7 @@ all:
 	cd smf-length && nmake -f Makefile.win32 /nologo
 	cd smftoxml && nmake -f Makefile.win32 /nologo
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo
+	cd tactrola && nmake -f Makefile.win32 /nologo
 	cd tempo-map && nmake -f Makefile.win32 /nologo
 	cd xmltosmf && nmake -f Makefile.win32 /nologo
 
@@ -70,6 +71,7 @@ clean:
 	cd smf-length && nmake -f Makefile.win32 /nologo clean
 	cd smftoxml && nmake -f Makefile.win32 /nologo clean
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo clean
+	cd tactrola && nmake -f Makefile.win32 /nologo clean
 	cd tempo-map && nmake -f Makefile.win32 /nologo clean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo clean
 
@@ -107,6 +109,7 @@ reallyclean:
 	cd smf-length && nmake -f Makefile.win32 /nologo reallyclean
 	cd smftoxml && nmake -f Makefile.win32 /nologo reallyclean
 	cd smooth-tempo && nmake -f Makefile.win32 /nologo reallyclean
+	cd tactrola && nmake -f Makefile.win32 /nologo reallyclean
 	cd tempo-map && nmake -f Makefile.win32 /nologo reallyclean
 	cd xmltosmf && nmake -f Makefile.win32 /nologo reallyclean
 	@if exist ..\bin\libexpat.dll del ..\bin\libexpat.dll

@@ -1,0 +1,23 @@
+
+Greeting
+Teaser demo (brief cuts with no voiceover explanation)
+Equipment
+	Touchscreen computer with a desktop operating system (Lenovo Thinkpad Yoga)
+	Div's MIDI Utilities
+	MPE compatible synthesizer (Surge)
+	VST host (SAVIHost)
+	MIDI loopback driver (LoopMIDI)
+	External MIDI keyboard (Roland RD-700SX; optional)
+Setting up the software (only have to do this once)
+	Download and install
+	LoopMIDI (create ports)
+	SAVIHost (place next to Surge DLL and rename)
+	Controller mapping
+		Slider config in Tactrola (mod wheel, expression, then count up from 41)
+		MIDI learn in Surge (cutoff, resonance, fx send, vcf envelope influence, vcf envelope, vca envelope) 
+Hammond style (no glide, polyphonic, sliders for drawbars and Leslie)
+Ondes martinot style (glide, monophonic, single slider)
+	Tannerin (Good Vibrations; slider set to volume)
+	Horn (slider set to filter)
+Cinematic style (glide, polyphonic; sliders for envelopes, filter, and reverb)
+

@@ -1,0 +1,13 @@
+
+default:
+	test -d target || mkdir target
+	cd target && qmake ..
+	cd target && make
+	copy target/release/tactrola ../../bin
+
+clean:
+	rm -rf target
+
+reallyclean: clean
+	rm -f ../../bin/tactrola
+

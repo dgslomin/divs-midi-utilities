@@ -21,6 +21,8 @@ a { color: #FF6600 }
 
 <h2 id="news">News</h2>
 
+<p>2021-09-06 - Added <em>Tactrola</em>.  Starting to transition from <a href="https://www.wxwidgets.org/">wxWidgets</a> to <a href="http://www.qt.io/">Qt</a> for the GUI utilities.</p>
+
 <p>2021-04-05 - <em>tempo-map</em> now supports clicks that don't correspond to quarter notes.</p>
 
 <p>2021-01-28 - Major update!  All of the realtime utilities have been rewritten to use <a href="https://github.com/thestk/rtmidi">RtMidi</a> and where necessary <a href="https://www.wxwidgets.org/">wxWidgets</a>, thus allowing the whole suite to work on MacOS.  Some of the older, less-useful utilities have been retired to the "extras" directory; please contact me if you'd like me to revive support for any of them.  Also added several new utilities plus lots of new features, fixes, and cleanups.</p>
@@ -75,11 +77,17 @@ a { color: #FF6600 }
 
 <h3>brainstorm</h3>
 
-<p><em>brainstorm</em> functions as a dictation machine for MIDI.  It listens for incoming MIDI events and saves them to a new MIDI file every time you pause in your playing for a few seconds.  The filenames are generated automatically based on the current time, so it requires no interaction.  I find it useful for recording brainstorming sessions, hence the name, and use it more than all the other utilities put together.</p>
+<p><em>Brainstorm</em> functions as a dictation machine for MIDI.  It listens for incoming MIDI events and saves them to a new MIDI file every time you pause in your playing for a few seconds.  The filenames are generated automatically based on the current time, so it requires no interaction.  I find it useful for recording brainstorming sessions, hence the name, and use it more than all the other utilities put together.</p>
 
 <p>Usage: brainstorm --in &lt;port&gt; [ --prefix &lt;filename prefix&gt; ] [ --timeout &lt;seconds&gt; ] [ --confirmation &lt;command line&gt; ]</p>
 
 <p>The confirmation option allows you to specify a command to execute whenever a file is saved, so that you know your music is safe.  I use it to play a short audio file, in keeping with brainstorm's "interfaceless" design, but you can get fairly elaborate if you want.  The filename will be substituted for each <code>%s</code> in the command.</p>
+
+<h3>tactrola</h3>
+
+<div style="text-align: center"><img src="tactrola.png" alt="" style="width: 800px" /></div>
+
+<p><em>Tactrola</em> (as in "tactile controller") lets you use your computer's touchscreen as a MIDI Polyphonic Expression (MPE) controller.  It has a piano-style keyboard layout, but can be configured to let you glide your fingers smoothly between notes, with automatic aim assistance that makes sure you start and end each note in tune.  The range of the keyboards can be adjusted via drag and pinch.  Performance-oriented assignable sliders provide realtime control of up to sixteen additional aspects of the sound such as volume swell, vibrato, and filter cutoff.  Note that it really does require a touchscreen, not a mouse, and a desktop operating system, not iOS or Android.</p>
 
 <h3>qwertymidi and delta</h3>
 

@@ -36,6 +36,7 @@ endif
 	cd smf-length && make -f Makefile.unix
 	cd smftoxml && make -f Makefile.unix
 	cd smooth-tempo && make -f Makefile.unix
+	cd tactrola && make -f Makefile.unix
 	cd tempo-map && make -f Makefile.unix
 	cd xmltosmf && make -f Makefile.unix
 
@@ -76,6 +77,7 @@ endif
 	cd smf-length && make -f Makefile.unix clean
 	cd smftoxml && make -f Makefile.unix clean
 	cd smooth-tempo && make -f Makefile.unix clean
+	cd tactrola && make -f Makefile.unix clean
 	cd tempo-map && make -f Makefile.unix clean
 	cd xmltosmf && make -f Makefile.unix clean
 
@@ -116,6 +118,7 @@ endif
 	cd smf-length && make -f Makefile.unix reallyclean
 	cd smftoxml && make -f Makefile.unix reallyclean
 	cd smooth-tempo && make -f Makefile.unix reallyclean
+	cd tactrola && make -f Makefile.unix reallyclean
 	cd tempo-map && make -f Makefile.unix reallyclean
 	cd xmltosmf && make -f Makefile.unix reallyclean
 

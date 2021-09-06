@@ -1,0 +1,14 @@
+
+default:
+	@if not exist target mkdir target
+	cd target && qmake ..
+	cd target && nmake /nologo
+	copy target\release\tactrola.exe ..\..\bin
+	windeployqt ..\..\bin\tactrola.exe
+
+clean:
+	@if exist target rmdir /s /q target
+
+reallyclean: clean
+	@if exist ..\..\bin\tactrola.exe del ..\..\bin\tactrola.exe
+
