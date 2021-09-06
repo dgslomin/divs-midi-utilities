@@ -233,10 +233,15 @@ void PianoWidget::touchEvent(QTouchEvent* event)
 			}
 			case 2:
 			{
-				// TODO: this works but behaves awkwardly
 				const QTouchEvent::TouchPoint& touch_point_1 = event->touchPoints()[0];
 				const QTouchEvent::TouchPoint& touch_point_2 = event->touchPoints()[1];
-				this->full_width += (qAbs(touch_point_1.pos().x() - touch_point_2.pos().x()) - qAbs(touch_point_1.lastPos().x() - touch_point_2.lastPos().x()));
+				float x1 = touch_point_1.pos().x();
+				float x2 = touch_point_2.pos().x();
+				float last_x1 = touch_point_1.lastPos().x();
+				float last_x2 = touch_point_2.lastPos().x();
+				float scale_factor = qAbs(x2 - x1) / qAbs(last_x2 - last_x1);
+				this->full_width *= scale_factor;
+				this->pan = ((qMin(last_x1, last_x2) + this->pan) * scale_factor) - qMin(x1, x2);
 				this->update();
 				break;
 			}
