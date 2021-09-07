@@ -13,29 +13,29 @@ LDFLAGS=
 LIBS=$(shell wx-config --libs) -lasound -lpthread -lexpat -lstdc++
 endif
 
-../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
+../../../../bin/qwertymidi: qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../../../bin/qwertymidi qwertymidi.o midiutil-common.o midiutil-rtmidi.o midiutil-expat.o midiutil-wx.o RtMidi.o rtmidi_c.o $(LIBS)
 
 qwertymidi.o: qwertymidi.cpp
-	$(CXX) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c qwertymidi.cpp
+	$(CXX) $(CFLAGS) -I../../../midiutil -I../../../3rdparty/rtmidi -c qwertymidi.cpp
 
-midiutil-common.o: ../midiutil/midiutil-common.c
-	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-common.c
+midiutil-common.o: ../../../midiutil/midiutil-common.c
+	$(CC) $(CFLAGS) -I../../../midiutil -c ../../../midiutil/midiutil-common.c
 
-midiutil-rtmidi.o: ../midiutil/midiutil-rtmidi.c
-	$(CC) $(CFLAGS) -I../3rdparty/rtmidi -I../midiutil -c ../midiutil/midiutil-rtmidi.c
+midiutil-rtmidi.o: ../../../midiutil/midiutil-rtmidi.c
+	$(CC) $(CFLAGS) -I../../../3rdparty/rtmidi -I../../../midiutil -c ../../../midiutil/midiutil-rtmidi.c
 
-midiutil-expat.o: ../midiutil/midiutil-expat.c
-	$(CC) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-expat.c
+midiutil-expat.o: ../../../midiutil/midiutil-expat.c
+	$(CC) $(CFLAGS) -I../../../midiutil -c ../../../midiutil/midiutil-expat.c
 
-midiutil-wx.o: ../midiutil/midiutil-wx.cpp
-	$(CXX) $(CFLAGS) -I../midiutil -c ../midiutil/midiutil-wx.cpp
+midiutil-wx.o: ../../../midiutil/midiutil-wx.cpp
+	$(CXX) $(CFLAGS) -I../../../midiutil -c ../../../midiutil/midiutil-wx.cpp
 
-RtMidi.o: ../3rdparty/rtmidi/RtMidi.cpp
-	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/RtMidi.cpp
+RtMidi.o: ../../../3rdparty/rtmidi/RtMidi.cpp
+	$(CXX) $(CFLAGS) -I../../../3rdparty/rtmidi -c ../../../3rdparty/rtmidi/RtMidi.cpp
 
-rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
-	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/rtmidi_c.cpp
+rtmidi_c.o: ../../../3rdparty/rtmidi/rtmidi_c.cpp
+	$(CXX) $(CFLAGS) -I../../../3rdparty/rtmidi -c ../../../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
 	rm -f qwertymidi.o
@@ -47,5 +47,5 @@ clean:
 	rm -f rtmidi_c.o
 
 reallyclean: clean
-	rm -f ../../bin/qwertymidi
+	rm -f ../../../../bin/qwertymidi
 
