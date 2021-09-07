@@ -3,7 +3,7 @@ default:
 	test -d target || mkdir target
 	cd target && qmake ..
 	cd target && make
-	copy target/release/qwertymidi ../../bin
+	cp target/release/qwertymidi ../../bin
 
 clean:
 	rm -rf target

@@ -452,7 +452,7 @@ int main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (argv[i] == "--out")
+		if (strcmp(argv[i], "--out") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 
@@ -462,30 +462,30 @@ int main(int argc, char** argv)
 				startup_error = true;
 			}
 		}
-		else if (argv[i] == "--channel")
+		else if (strcmp(argv[i], "--channel") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			channel_number = QString(argv[i]).toInt();
 		}
-		else if (argv[i] == "--program")
+		else if (strcmp(argv[i], "--program") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			program_number = QString(argv[i]).toInt();
 		}
-		else if (argv[i] == "--velocity")
+		else if (strcmp(argv[i], "--velocity") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			velocity = QString(argv[i]).toInt();
 		}
-		else if (argv[i] == "--transpose")
+		else if (strcmp(argv[i], "--transpose") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
 			transposition = QString(argv[i]).toInt();
 		}
-		else if (argv[i] == "--map")
+		else if (strcmp(argv[i], "--map") == 0)
 		{
 			if (++i == argc) usage(argv[0]);
-			QFile map_file = QFile(argv[i]);
+			QFile map_file(argv[i]);
 
 			if (map_file.open(QIODevice::ReadOnly))
 			{
