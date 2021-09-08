@@ -399,6 +399,7 @@ void TextBox::keyPressEvent(QKeyEvent* event)
 	if (startup_error) return;
 	if (event->isAutoRepeat()) return;
 	int key_code = key_codes->getKeyCodeFromEvent(event);
+	if (key_code < 0) return;
 
 	if (!down[key_code])
 	{
@@ -416,6 +417,7 @@ void TextBox::keyReleaseEvent(QKeyEvent* event)
 	if (startup_error) return;
 	if (event->isAutoRepeat()) return;
 	int key_code = key_codes->getKeyCodeFromEvent(event);
+	if (key_code < 0) return;
 	int action = map[key_code][alt];
 	down[key_code] = 0;
 	do_key_up_action(key_code, action);

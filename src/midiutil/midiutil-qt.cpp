@@ -176,8 +176,8 @@ MidiUtilKeyCodes::MidiUtilKeyCodes()
 	this->add("semicolon", 41);
 	this->add("single-quote", 39);
 	this->add("enter", 36);
-	this->add("shift-left", 57);
-	this->add("shift", 57);
+	this->add("shift-left", 56);
+	this->add("shift", 56);
 	this->add("Z", 6);
 	this->add("X", 7);
 	this->add("C", 8);
@@ -199,8 +199,8 @@ MidiUtilKeyCodes::MidiUtilKeyCodes()
 	this->add("command-right", 54);
 	this->add("option-right", 61);
 	this->add("control-right", 62);
-	this->add("help", 0x72);
-	this->add("delete", 0x75);
+	this->add("insert", 114);
+	this->add("delete", 117);
 	this->add("home", 115);
 	this->add("end", 119);
 	this->add("page-up", 116);
@@ -378,6 +378,7 @@ int MidiUtilKeyCodes::getKeyCodeFromEvent(QKeyEvent* event)
 	native_code = event->nativeVirtualKey();
 #endif
 
+	qDebug("native_code = %d", native_code);
 	return this->native_code_to_key_code_map.value(native_code, -1);
 }
 
