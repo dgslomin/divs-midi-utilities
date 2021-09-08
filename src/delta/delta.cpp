@@ -1,65 +1,26 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wx/wx.h>
+#include <QtWidgets>
 #include <rtmidi_c.h>
-#include <expat.h>
 #include <midiutil-common.h>
 #include <midiutil-rtmidi.h>
-#include <midiutil-expat.h>
-#include <midiutil-wx.h>
+#include <midiutil-qt.h>
+#include "delta.h"
 
 #define ACTION_NOOP 10000
 #define ACTION_EXIT 10001
 
-static wxTextCtrl* text_box;
-static int startup_error = 0;
+static MidiUtilKeyCodes* key_codes = new MidiUtilKeyCodes();
+static Window* window;
+static TextBox* text_box;
+static bool startup_error = false;
 static RtMidiOutPtr midi_out = NULL;
 static int channel_number = 0;
 static int program_number = -1;
 static int velocity = 64;
-static int map[512];
-static int down[512];
+static int map[MIDI_UTIL_NUMBER_OF_KEY_CODES];
+static int down[MIDI_UTIL_NUMBER_OF_KEY_CODES];
 static int current_note = 63;
 static int current_key_code = -1;
-
-static void handle_xml_start_element(void *user_data, const XML_Char *name, const XML_Char **attributes)
-{
-	if (strcmp(name, "map") == 0)
-	{
-		int key = -1;
-		wxString action = wxEmptyString;
-
-		for (int i = 0; attributes[i] != NULL; i += 2)
-		{
-			if (strcmp(attributes[i], "key") == 0)
-			{
-				key = MidiUtil_getWxKeyCodeFromName(attributes[i + 1]);
-			}
-			else if (strcmp(attributes[i], "action") == 0)
-			{
-				action = attributes[i + 1];
-			}
-		}
-
-		if ((key >= 0) && (action != wxEmptyString))
-		{
-			if (action == "noop")
-			{
-				map[key] = ACTION_NOOP;
-			}
-			else if (action == "exit")
-			{
-				map[key] = ACTION_EXIT;
-			}
-			else
-			{
-				map[key] = wxAtoi(action);
-			}
-		}
-	}
-}
 
 static void send_note_on(int channel, int note, int velocity)
 {
@@ -91,13 +52,33 @@ static void send_program_change(int channel, int number)
 	}
 }
 
-static void handle_key_down(wxKeyEvent& event)
+static void usage(QString program_name)
 {
-	int key_code = event.GetKeyCode();
+	text_box->setText(QString("Usage:  %1 [ --out <port> ] [ --channel <n> ] [ --program <n> ] [ --velocity <n> ] [ --map <filename.xml> ]\n").arg(program_name));
+	startup_error = true;
+}
+
+void Window::closeEvent(QCloseEvent* event)
+{
+	Q_UNUSED(event)
+
+	if (midi_out != NULL)
+	{
+		send_note_off(channel_number, current_note);
+		rtmidi_close_port(midi_out);
+	}
+}
+
+void TextBox::keyPressEvent(QKeyEvent* event)
+{
+	if (startup_error) return;
+	if (event->isAutoRepeat()) return;
+	int key_code = key_codes->getKeyCodeFromEvent(event);
+	if (key_code < 0) return;
 
 	if (!down[key_code])
 	{
-		wxString key_name = MidiUtil_getNameFromWxKeyCode((wxKeyCode)(key_code));
+		QString key_name = key_codes->getNameFromKeyCode(key_code);
 		int action = map[key_code];
 		down[key_code] = 1;
 
@@ -105,12 +86,12 @@ static void handle_key_down(wxKeyEvent& event)
 		{
 			case ACTION_NOOP:
 			{
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"noop\" />", key_name));
+				this->setText(QString("<map key=\"%1\" action=\"noop\" />").arg(key_name));
 				break;
 			}
 			case ACTION_EXIT:
 			{
-				wxExit();
+				::window->close();
 				break;
 			}
 			default:
@@ -123,16 +104,19 @@ static void handle_key_down(wxKeyEvent& event)
 				current_key_code = key_code;
 
 				MidiUtil_setNoteNameFromNumber(action, note_name);
-				text_box->SetValue(wxString::Format("<map key=\"%s\" action=\"%d\" />", key_name, action));
+				this->setText(QString("<map key=\"%1\" action=\"%2\" />").arg(key_name).arg(action));
 				break;
 			}
 		}
 	}
 }
 
-static void handle_key_up(wxKeyEvent& event)
+void TextBox::keyReleaseEvent(QKeyEvent* event)
 {
-	int key_code = event.GetKeyCode();
+	if (startup_error) return;
+	if (event->isAutoRepeat()) return;
+	int key_code = key_codes->getKeyCodeFromEvent(event);
+	if (key_code < 0) return;
 	int action = map[key_code];
 	down[key_code] = 0;
 
@@ -151,107 +135,119 @@ static void handle_key_up(wxKeyEvent& event)
 	}
 }
 
-static void handle_kill_focus(wxFocusEvent& event)
+void TextBox::focusOutEvent(QFocusEvent* event)
 {
+	Q_UNUSED(event)
+	if (startup_error) return;
 	send_note_off(channel_number, current_note);
 }
 
-static void usage(wxString program_name)
+int main(int argc, char** argv)
 {
-	text_box->SetValue(wxString::Format("Usage:  %s [ --out <port> ] [ --channel <n> ] [ --program <n> ] [ --velocity <n> ] [ --map <filename.xml> ]\n", program_name));
-	startup_error = 1;
-}
+	QApplication application(argc, argv);
+	application.setOrganizationName("Sreal");
+	application.setOrganizationDomain("sreal.com");
+	application.setApplicationName("Qwertymidi");
 
-class Application: public wxApp
-{
-public:
-	bool OnInit();
-	int OnExit();
-};
+	window = new Window();
 
-bool Application::OnInit()
-{
-	int i;
-	wxFrame *window = new wxFrame(NULL, wxID_ANY, "Delta", wxDefaultPosition, wxSize(640, 480));
-	text_box = new wxTextCtrl(window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxBORDER_NONE);
+	text_box = new TextBox();
+	window->setCentralWidget(text_box);
+	text_box->setReadOnly(true);
+	text_box->setFrameStyle(QFrame::NoFrame);
 
-	for (i = 0; i < 512; i++)
+	window->resize(640, 480);
+	window->show();
+
+	for (int i = 0; i < MIDI_UTIL_NUMBER_OF_KEY_CODES; i++)
 	{
 		map[i] = ACTION_NOOP;
 		down[i] = 0;
 	}
 
-	for (i = 1; i < this->argc; i++)
+	for (int i = 1; i < argc; i++)
 	{
-		if (this->argv[i] == "--out")
+		if (strcmp(argv[i], "--out") == 0)
 		{
-			if (++i == this->argc) usage(this->argv[0]);
+			if (++i == argc) usage(argv[0]);
 
-			if ((midi_out = rtmidi_open_out_port((char *)("delta"), this->argv[i].char_str(), (char *)("delta"))) == NULL)
+			if ((midi_out = rtmidi_open_out_port((char *)("delta"), argv[i], (char *)("delta"))) == NULL)
 			{
-				text_box->SetValue(wxString::Format("Error:  Cannot open MIDI output port \"%s\".\n", this->argv[i]));
-				startup_error = 1;
+				text_box->setText(QString("Error:  Cannot open MIDI output port \"%1\".\n").arg(argv[i]));
+				startup_error = true;
 			}
 		}
-		else if (this->argv[i] == "--channel")
+		else if (strcmp(argv[i], "--channel") == 0)
 		{
-			if (++i == this->argc) usage(this->argv[0]);
-			channel_number = wxAtoi(this->argv[i]);
+			if (++i == argc) usage(argv[0]);
+			channel_number = QString(argv[i]).toInt();
 		}
-		else if (this->argv[i] == "--program")
+		else if (strcmp(argv[i], "--program") == 0)
 		{
-			if (++i == this->argc) usage(this->argv[0]);
-			program_number = wxAtoi(this->argv[i]);
+			if (++i == argc) usage(argv[0]);
+			program_number = QString(argv[i]).toInt();
 		}
-		else if (this->argv[i] == "--velocity")
+		else if (strcmp(argv[i], "--velocity") == 0)
 		{
-			if (++i == this->argc) usage(this->argv[0]);
-			velocity = wxAtoi(this->argv[i]);
+			if (++i == argc) usage(argv[0]);
+			velocity = QString(argv[i]).toInt();
 		}
-		else if (this->argv[i] == "--map")
+		else if (strcmp(argv[i], "--map") == 0)
 		{
-			XML_Parser xml_parser = XML_ParserCreate(NULL);
-			char error_message[1024];
-			if (++i == this->argc) usage(this->argv[0]);
-			XML_SetStartElementHandler(xml_parser, handle_xml_start_element);
+			if (++i == argc) usage(argv[0]);
+			QFile map_file(argv[i]);
 
-			if (XML_ParseFile(xml_parser, argv[i].char_str(), error_message, 1024) < 0)
+			if (map_file.open(QIODevice::ReadOnly))
 			{
-				text_box->SetValue(wxString::Format("Error:  %s\n", error_message));
-				startup_error = 1;
-			}
+				QXmlStreamReader map_xml_reader(&map_file);
 
-			XML_ParserFree(xml_parser);
+				while (!map_xml_reader.atEnd())
+				{
+					if ((map_xml_reader.readNext() == QXmlStreamReader::StartElement) && (map_xml_reader.name().toString() == "map"))
+					{
+						int key = key_codes->getKeyCodeFromName(map_xml_reader.attributes().value("key").toString());
+						QString action = map_xml_reader.attributes().value("action").toString();
+
+						if ((key >= 0) && (action != ""))
+						{
+							if (action == "noop")
+							{
+								map[key] = ACTION_NOOP;
+							}
+							else if (action == "exit")
+							{
+								map[key] = ACTION_EXIT;
+							}
+							else
+							{
+								map[key] = action.toInt();
+							}
+						}
+					}
+				}
+
+				if (map_xml_reader.hasError())
+				{
+					text_box->setText(QString("Error:  %s\n").arg(map_xml_reader.errorString()));
+					startup_error = true;
+				}
+
+				map_file.close();
+			}
+			else
+			{
+				text_box->setText(QString("Error:  Cannot open \"%1\"\n").arg(map_file.fileName()));
+				startup_error = true;
+			}
 		}
 		else
 		{
-			usage(this->argv[0]);
+			usage(argv[0]);
 		}
 	}
 
-	if (!startup_error)
-	{
-		if (program_number >= 0) send_program_change(channel_number, program_number);
-		text_box->Bind(wxEVT_KEY_DOWN, handle_key_down);
-		text_box->Bind(wxEVT_KEY_UP, handle_key_up);
-		text_box->Bind(wxEVT_KILL_FOCUS, handle_kill_focus);
-	}
+	if (!startup_error && (program_number >= 0)) send_program_change(channel_number, program_number);
 
-	this->SetTopWindow(window);
-	window->Show(true);
-	return true;
+	return application.exec();
 }
-
-int Application::OnExit()
-{
-	if (midi_out != NULL)
-	{
-		send_note_off(channel_number, current_note);
-		rtmidi_close_port(midi_out);
-	}
-
-	return 0;
-}
-
-wxIMPLEMENT_APP(Application);
 

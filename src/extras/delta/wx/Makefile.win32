@@ -6,14 +6,14 @@ WXINCLUDES=/I$(WXDIR)\include /I$(WXDIR)\lib\vc_lib\mswud
 WXLIBS=$(WXDIR)\lib\vc_lib\wxbase31ud.lib $(WXDIR)\lib\vc_lib\wxmsw31ud_core.lib $(WXDIR)\lib\vc_lib\wxmsw31ud_adv.lib $(WXDIR)\lib\vc_lib\wxbase31ud_xml.lib $(WXDIR)\lib\vc_lib\wxpngd.lib $(WXDIR)\lib\vc_lib\wxzlibd.lib $(WXDIR)\lib\vc_lib\wxexpatd.lib $(WXDIR)\lib\vc_lib\wxregexud.lib
 FLAGS=/Zi /EHsc /MDd
 
-default: qwertymidi.exe libexpat.dll
+default: delta.exe libexpat.dll
 
-qwertymidi.exe: qwertymidi.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-expat.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo $(FLAGS) /Feqwertymidi.exe qwertymidi.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-expat.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj ..\..\..\3rdparty\expat\libexpat.lib $(WXLIBS) winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib
-	mt /nologo /manifest qwertymidi.exe.manifest /outputresource:qwertymidi.exe;1
+delta.exe: delta.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-expat.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo $(FLAGS) /Fedelta.exe delta.obj midiutil-common.obj midiutil-rtmidi.obj midiutil-expat.obj midiutil-wx.obj RtMidi.obj rtmidi_c.obj ..\..\..\3rdparty\expat\libexpat.lib $(WXLIBS) winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib rpcrt4.lib wsock32.lib
+	mt /nologo /manifest delta.exe.manifest /outputresource:delta.exe;1
 
-qwertymidi.obj: qwertymidi.cpp
-	cl /nologo $(FLAGS) /I..\..\..\midiutil /I..\..\midiutil /I..\..\..\3rdparty\expat /I..\..\..\3rdparty\rtmidi $(WXINCLUDES) /c qwertymidi.cpp
+delta.obj: delta.cpp
+	cl /nologo $(FLAGS) /I..\..\..\3rdparty\expat /I..\..\..\midiutil /I..\..\midiutil /I..\..\..\3rdparty\rtmidi $(WXINCLUDES) /c delta.cpp
 
 midiutil-common.obj: ..\..\..\midiutil\midiutil-common.c
 	cl /nologo $(FLAGS) /I..\..\..\midiutil /c ..\..\..\midiutil\midiutil-common.c
@@ -37,19 +37,19 @@ libexpat.dll: ..\..\..\3rdparty\expat\libexpat.dll
 	copy ..\..\..\3rdparty\expat\libexpat.dll .
 
 clean:
-	@if exist qwertymidi.obj del qwertymidi.obj
+	@if exist delta.obj del delta.obj
 	@if exist midiutil-common.obj del midiutil-common.obj
 	@if exist midiutil-rtmidi.obj del midiutil-rtmidi.obj
 	@if exist midiutil-expat.obj del midiutil-expat.obj
 	@if exist midiutil-wx.obj del midiutil-wx.obj
 	@if exist RtMidi.obj del RtMidi.obj
 	@if exist rtmidi_c.obj del rtmidi_c.obj
-	@if exist qwertymidi.exe.manifest del qwertymidi.exe.manifest
-	@if exist qwertymidi.ilk del qwertymidi.ilk
-	@if exist qwertymidi.pdb del qwertymidi.pdb
+	@if exist delta.exe.manifest del delta.exe.manifest
+	@if exist delta.ilk del delta.ilk
+	@if exist delta.pdb del delta.pdb
 	@if exist vc140.pdb del vc140.pdb
 
 reallyclean: clean
-	@if exist qwertymidi.exe del qwertymidi.exe
+	@if exist delta.exe del delta.exe
 	@if exist libexpat.dll del libexpat.dll
 
