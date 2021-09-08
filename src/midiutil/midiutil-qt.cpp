@@ -378,7 +378,6 @@ int MidiUtilKeyCodes::getKeyCodeFromEvent(QKeyEvent* event)
 	native_code = event->nativeVirtualKey();
 #endif
 
-	qDebug("native_code = %d", native_code);
 	return this->native_code_to_key_code_map.value(native_code, -1);
 }
 
