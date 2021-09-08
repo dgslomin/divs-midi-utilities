@@ -1,13 +1,20 @@
 
+ifeq ("$(shell uname -s)", "Darwin")
+BINARY=qwertymidi.app
+else
+BINARY=qwertymidi
+endif
+
 default:
 	test -d target || mkdir target
 	cd target && qmake ..
 	cd target && make
-	cp target/release/qwertymidi ../../bin
+	rm -rf ../../bin/$(BINARY)
+	cp -r target/$(BINARY) ../../bin
 
 clean:
 	rm -rf target
 
 reallyclean: clean
-	rm -f ../../bin/qwertymidi
+	rm -rf ../../bin/$(BINARY)
 
