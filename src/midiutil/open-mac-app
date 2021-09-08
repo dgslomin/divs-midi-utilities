@@ -1,0 +1,2 @@
+#!/bin/bash
+open ${BASH_SOURCE[0]}.app --args "$@"

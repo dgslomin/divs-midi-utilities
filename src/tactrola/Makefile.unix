@@ -3,11 +3,21 @@ default:
 	test -d target || mkdir target
 	cd target && qmake ..
 	cd target && make
-	copy target/release/tactrola ../../bin
+ifeq ("$(shell uname -s)", "Darwin")
+	rm -rf ../../bin/tactrola.app ../../bin/tactrola
+	cp -r target/tactrola.app ../../bin
+	cp ../midiutil/open-mac-app ../../bin/tactrola
+else
+	cp target/tactrola ../../bin
+endif
 
 clean:
 	rm -rf target
 
 reallyclean: clean
+ifeq ("$(shell uname -s)", "Darwin")
+	rm -rf ../../bin/tactrola.app  ../../bin/tactrola
+else
 	rm -f ../../bin/tactrola
+endif
 

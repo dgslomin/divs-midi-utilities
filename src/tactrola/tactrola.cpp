@@ -715,8 +715,12 @@ Window::Window()
 	this->restoreGeometry(settings.value("window-geometry").toByteArray());
 	this->restoreState(settings.value("window-state").toByteArray());
 	this->setMidiOut(settings.value("midi-output-port-name", "").toString());
-	this->midi_out->velocity = settings.value("velocity", 127).toInt();
-	this->midi_out->transpose = settings.value("transpose", 0).toInt();
+
+	if (this->midi_out != NULL)
+	{
+		this->midi_out->velocity = settings.value("velocity", 127).toInt();
+		this->midi_out->transpose = settings.value("transpose", 0).toInt();
+	}
 
 	for (int slider_number = 0; slider_number < 16; slider_number++)
 	{
@@ -738,9 +742,13 @@ void Window::closeEvent(QCloseEvent* event)
 	QSettings settings;
 	settings.setValue("window-geometry", this->saveGeometry());
 	settings.setValue("window-state", this->saveState());
-	settings.setValue("midi-output-port-name", this->midi_out->port_name);
-	settings.setValue("velocity", this->midi_out->velocity);
-	settings.setValue("transpose", this->midi_out->transpose);
+
+	if (this->midi_out != NULL)
+	{
+		settings.setValue("midi-output-port-name", this->midi_out->port_name);
+		settings.setValue("velocity", this->midi_out->velocity);
+		settings.setValue("transpose", this->midi_out->transpose);
+	}
 
 	for (int slider_number = 0; slider_number < 16; slider_number++)
 	{

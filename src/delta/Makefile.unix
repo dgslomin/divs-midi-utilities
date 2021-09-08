@@ -1,20 +1,23 @@
 
-ifeq ("$(shell uname -s)", "Darwin")
-BINARY=delta.app
-else
-BINARY=delta
-endif
-
 default:
 	test -d target || mkdir target
 	cd target && qmake ..
 	cd target && make
-	rm -rf ../../bin/$(BINARY)
-	cp -r target/$(BINARY) ../../bin
+ifeq ("$(shell uname -s)", "Darwin")
+	rm -rf ../../bin/delta.app ../../bin/delta
+	cp -r target/delta.app ../../bin
+	cp ../midiutil/open-mac-app ../../bin/delta
+else
+	cp target/delta ../../bin
+endif
 
 clean:
 	rm -rf target
 
 reallyclean: clean
-	rm -rf ../../bin/$(BINARY)
+ifeq ("$(shell uname -s)", "Darwin")
+	rm -rf ../../bin/delta.app  ../../bin/delta
+else
+	rm -f ../../bin/delta
+endif
 
