@@ -21,7 +21,7 @@ a { color: #FF6600 }
 
 <h2 id="news">News</h2>
 
-<p>2021-09-06 - Added <em>Tactrola</em>.  Starting to transition from <a href="https://www.wxwidgets.org/">wxWidgets</a> to <a href="http://www.qt.io/">Qt</a> for the GUI utilities.</p>
+<p>2021-09-08 - Added <em>Tactrola</em>.  Switched to <a href="https://www.qt.io/">Qt widgets</a> for the GUI utilities.</p>
 
 <p>2021-04-05 - <em>tempo-map</em> now supports clicks that don't correspond to quarter notes.</p>
 
@@ -237,7 +237,7 @@ a { color: #FF6600 }
 
 <p>Most of the realtime utilities are designed to connect to existing MIDI ports.  That's fine if you want them to talk directly to hardware, but isn't sufficient if you want to use the output of one utility as the input of another.  Different platforms have different solutions to this problem.  On Linux or MacOS you can use <em>routemidi</em> to create virtual ports.  This isn't possible on Windows, but there you can use a MIDI loopback driver such as the free <a href="http://www.tobias-erichsen.de/">LoopMIDI</a>.  On Linux you can also use <em>alsamidicable</em> to reconfigure MIDI connections between programs which are already running.</p>
 
-<p>If you don't have a hardware synthesizer or virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use Timidity or Fluidsynth.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.</p>
+<p>If you don't have a hardware synthesizer or virtual instrument software, you'll probably want a simple fallback software synthesizer to turn MIDI messages into actual sound.  Windows comes with the Microsoft GS Wavetable Synth.  On Linux you can use <a href="http://timidity.sourceforge.net/">Timidity</a> or <a href="https://www.fluidsynth.org/">Fluidsynth</a>.  On MacOS you can use the free <a href="https://github.com/matlimatli/simplesynth">SimpleSynth</a>.  For a more powerful software synthesizer which is compatible with Tactrola's MPE output, try <a href="https://surge-synthesizer.github.io/">Surge</a>.</p>
 
 <h2 id="license">License</h2>
 
@@ -256,7 +256,7 @@ a { color: #FF6600 }
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
 <p>dgslomin (at) alumni (dot) princeton (dot) edu<br>
-last modified 2021-07-08</p>
+last modified 2021-09-08</p>
 
 </body>
 </html>
