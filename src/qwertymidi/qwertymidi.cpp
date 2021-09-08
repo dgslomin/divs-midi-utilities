@@ -28,9 +28,9 @@ static RtMidiOutPtr midi_out = NULL;
 static int channel_number = 0;
 static int program_number = -1;
 static int velocity = 64;
-static int map[512][2];
-static int down[512];
-static int down_transposition[512];
+static int map[MIDI_UTIL_NUMBER_OF_KEY_CODES][2];
+static int down[MIDI_UTIL_NUMBER_OF_KEY_CODES];
+static int down_transposition[MIDI_UTIL_NUMBER_OF_KEY_CODES];
 static int transposition = 0;
 static int alt = 0;
 
@@ -292,7 +292,7 @@ static void do_key_down_action(int key_code, int action)
 		{
 			int i;
 
-			for (i = 0; i < 512; i++)
+			for (i = 0; i < MIDI_UTIL_NUMBER_OF_KEY_CODES; i++)
 			{
 				if (down[i] && (map[i][0] != ACTION_ALT) && (map[i][alt] != map[i][1]))
 				{
@@ -356,7 +356,7 @@ static void do_key_up_action(int key_code, int action)
 		{
 			int i;
 
-			for (i = 0; i < 512; i++)
+			for (i = 0; i < MIDI_UTIL_NUMBER_OF_KEY_CODES; i++)
 			{
 				if (down[i] && (map[i][0] != ACTION_ALT) && (map[i][alt] != map[i][0]))
 				{
@@ -397,6 +397,7 @@ void Window::closeEvent(QCloseEvent* event)
 void TextBox::keyPressEvent(QKeyEvent* event)
 {
 	if (startup_error) return;
+	if (event->isAutoRepeat()) return;
 	int key_code = key_codes->getKeyCodeFromEvent(event);
 
 	if (!down[key_code])
@@ -413,6 +414,7 @@ void TextBox::keyPressEvent(QKeyEvent* event)
 void TextBox::keyReleaseEvent(QKeyEvent* event)
 {
 	if (startup_error) return;
+	if (event->isAutoRepeat()) return;
 	int key_code = key_codes->getKeyCodeFromEvent(event);
 	int action = map[key_code][alt];
 	down[key_code] = 0;
@@ -438,11 +440,12 @@ int main(int argc, char** argv)
 	text_box = new TextBox();
 	window->setCentralWidget(text_box);
 	text_box->setReadOnly(true);
+	text_box->setFrameStyle(QFrame::NoFrame);
 
 	window->resize(640, 480);
 	window->show();
 
-	for (int i = 0; i < 512; i++)
+	for (int i = 0; i < MIDI_UTIL_NUMBER_OF_KEY_CODES; i++)
 	{
 		map[i][0] = ACTION_NOOP;
 		map[i][1] = ACTION_NOOP;
