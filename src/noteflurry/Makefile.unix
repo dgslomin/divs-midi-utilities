@@ -13,11 +13,20 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../bin/noteflurry: noteflurry.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/noteflurry noteflurry.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../bin/noteflurry: noteflurry.o echo.o seq.o multiseq.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/noteflurry noteflurry.o echo.o seq.o multiseq.o midifile.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
 
 noteflurry.o: noteflurry.c
 	$(CC) $(CFLAGS) -I../midifile -I../midiutil -I../3rdparty/rtmidi -c noteflurry.c
+
+echo.o: echo.c
+	$(CC) $(CFLAGS) -I../midifile -I../midiutil -I../3rdparty/rtmidi -c echo.c
+
+seq.o: seq.c
+	$(CC) $(CFLAGS) -I../midifile -I../midiutil -I../3rdparty/rtmidi -c seq.c
+
+multiseq.o: multiseq.c
+	$(CC) $(CFLAGS) -I../midifile -I../midiutil -I../3rdparty/rtmidi -c multiseq.c
 
 midifile.o: ../midifile/midifile.c
 	$(CC) $(CFLAGS) -I../midifile -c ../midifile/midifile.c
@@ -39,6 +48,9 @@ rtmidi_c.o: ../3rdparty/rtmidi/rtmidi_c.cpp
 
 clean:
 	rm -f noteflurry.o
+	rm -f echo.o
+	rm -f seq.o
+	rm -f multiseq.o
 	rm -f midifile.o
 	rm -f midiutil-common.o
 	rm -f midiutil-system.o

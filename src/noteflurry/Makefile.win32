@@ -1,9 +1,18 @@
 
-..\..\bin\noteflurry.exe: noteflurry.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo /Fe..\..\bin\noteflurry.exe noteflurry.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
+..\..\bin\noteflurry.exe: noteflurry.obj echo.obj seq.obj multiseq.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\noteflurry.exe noteflurry.obj echo.obj seq.obj multiseq.obj midifile.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib
 
 noteflurry.obj: noteflurry.c
 	cl /nologo /I..\midifile /I..\midiutil /I..\3rdparty\rtmidi /c noteflurry.c
+
+echo.obj: echo.c
+	cl /nologo /I..\midifile /I..\midiutil /I..\3rdparty\rtmidi /c echo.c
+
+seq.obj: seq.c
+	cl /nologo /I..\midifile /I..\midiutil /I..\3rdparty\rtmidi /c seq.c
+
+multiseq.obj: multiseq.c
+	cl /nologo /I..\midifile /I..\midiutil /I..\3rdparty\rtmidi /c multiseq.c
 
 midifile.obj: ..\midifile\midifile.c
 	cl /nologo /I..\midifile /c ..\midifile\midifile.c
@@ -25,6 +34,9 @@ rtmidi_c.obj: ..\3rdparty\rtmidi\rtmidi_c.cpp
 
 clean:
 	@if exist noteflurry.obj del noteflurry.obj
+	@if exist echo.obj del echo.obj
+	@if exist seq.obj del seq.obj
+	@if exist multiseq.obj del multiseq.obj
 	@if exist midifile.obj del midifile.obj
 	@if exist midiutil-common.obj del midiutil-common.obj
 	@if exist midiutil-system.obj del midiutil-system.obj
