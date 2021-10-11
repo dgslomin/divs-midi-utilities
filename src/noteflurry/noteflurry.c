@@ -26,7 +26,9 @@ typedef enum
 	MODE_INVALID = -1,
 	MODE_ECHO,
 	MODE_SEQ,
-	MODE_MULTISEQ
+	MODE_MULTISEQ,
+	MODE_ARP,
+	MODE_MARIMBA
 }
 Mode_t;
 
@@ -88,6 +90,11 @@ static void handle_virtual_note_on(int channel, int note, int velocity)
 			multiseq_note_on(current_time_msecs, channel, note, velocity);
 			break;
 		}
+		case MODE_ARP:
+		{
+			arp_note_on(current_time_msecs, channel, note, velocity);
+			break;
+		}
 		default:
 		{
 			break;
@@ -116,6 +123,10 @@ static void handle_virtual_note_off(int channel, int note, int velocity)
 			multiseq_note_off(current_time_msecs, channel, note, velocity);
 			break;
 		}
+		case MODE_ARP:
+		{
+			arp_note_off(current_time_msecs, channel, note, velocity);
+			break;
 		default:
 		{
 			break;
@@ -253,6 +264,11 @@ static void player_thread_main(void *user_data)
 				multiseq_update_players(current_time_msecs);
 				break;
 			}
+			case MODE_ARP:
+			{
+				arp_update_players(current_time_msecs);
+				break;
+			}
 			default:
 			{
 				break;
@@ -282,6 +298,11 @@ static void handle_exit(void *user_data)
 			break;
 		}
 		case MODE_MULTISEQ:
+		{
+			multiseq_cleanup();
+			break;
+		}
+		case MODE_ARP:
 		{
 			multiseq_cleanup();
 			break;
@@ -348,6 +369,14 @@ int main(int argc, char **argv)
 		{
 			mode = MODE_MULTISEQ;
 		}
+		else if (strcmp(argv[i], "--arp") == 0)
+		{
+			mode = MODE_ARP;
+		}
+		else if (strcmp(argv[i], "--marimba") == 0)
+		{
+			mode = MODE_MARIMBA;
+		}
 		else if (strcmp(argv[i], "--note") == 0)
 		{
 			float beat;
@@ -399,6 +428,11 @@ int main(int argc, char **argv)
 		case MODE_MULTISEQ:
 		{
 			multiseq_init();
+			break;
+		}
+		case MODE_ARP:
+		{
+			arp_init();
 			break;
 		}
 		default:
