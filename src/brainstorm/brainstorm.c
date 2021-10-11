@@ -36,6 +36,11 @@ static void create_midi_file_for_first_event(void)
 	start_time_msecs = MidiUtil_getCurrentTimeMsecs();
 }
 
+static long get_current_tick(void)
+{
+	return MidiFile_getTickFromTime(midi_file, (float)(MidiUtil_getCurrentTimeMsecs() - start_time_msecs) / 1000.0);
+}
+
 static void handle_alarm(int cancelled, void *user_data)
 {
 	char current_time_string[16];
@@ -85,56 +90,54 @@ static void handle_alarm(int cancelled, void *user_data)
 
 static void handle_midi_message(double timestamp, const unsigned char *message, size_t message_size, void *user_data)
 {
-	long tick = MidiFile_getTickFromTime(midi_file, (float)(MidiUtil_getCurrentTimeMsecs() - start_time_msecs) / 1000.0);
-
 	switch (MidiUtilMessage_getType(message))
 	{
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_OFF:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createNoteOffEvent(track, tick, MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message), MidiUtilNoteOffMessage_getVelocity(message));
+			MidiFileTrack_createNoteOffEvent(track, get_current_tick(), MidiUtilNoteOffMessage_getChannel(message), MidiUtilNoteOffMessage_getNote(message), MidiUtilNoteOffMessage_getVelocity(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_NOTE_ON:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createNoteOnEvent(track, tick, MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), MidiUtilNoteOnMessage_getVelocity(message));
+			MidiFileTrack_createNoteOnEvent(track, get_current_tick(), MidiUtilNoteOnMessage_getChannel(message), MidiUtilNoteOnMessage_getNote(message), MidiUtilNoteOnMessage_getVelocity(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_KEY_PRESSURE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createKeyPressureEvent(track, tick, MidiUtilKeyPressureMessage_getChannel(message), MidiUtilKeyPressureMessage_getNote(message), MidiUtilKeyPressureMessage_getAmount(message));
+			MidiFileTrack_createKeyPressureEvent(track, get_current_tick(), MidiUtilKeyPressureMessage_getChannel(message), MidiUtilKeyPressureMessage_getNote(message), MidiUtilKeyPressureMessage_getAmount(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_CONTROL_CHANGE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createControlChangeEvent(track, tick, MidiUtilControlChangeMessage_getChannel(message), MidiUtilControlChangeMessage_getNumber(message), MidiUtilControlChangeMessage_getValue(message));
+			MidiFileTrack_createControlChangeEvent(track, get_current_tick(), MidiUtilControlChangeMessage_getChannel(message), MidiUtilControlChangeMessage_getNumber(message), MidiUtilControlChangeMessage_getValue(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_PROGRAM_CHANGE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createProgramChangeEvent(track, tick, MidiUtilProgramChangeMessage_getChannel(message), MidiUtilProgramChangeMessage_getNumber(message));
+			MidiFileTrack_createProgramChangeEvent(track, get_current_tick(), MidiUtilProgramChangeMessage_getChannel(message), MidiUtilProgramChangeMessage_getNumber(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_CHANNEL_PRESSURE:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createChannelPressureEvent(track, tick, MidiUtilChannelPressureMessage_getChannel(message), MidiUtilChannelPressureMessage_getAmount(message));
+			MidiFileTrack_createChannelPressureEvent(track, get_current_tick(), MidiUtilChannelPressureMessage_getChannel(message), MidiUtilChannelPressureMessage_getAmount(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
 		case MIDI_UTIL_MESSAGE_TYPE_PITCH_WHEEL:
 		{
 			create_midi_file_for_first_event();
-			MidiFileTrack_createPitchWheelEvent(track, tick, MidiUtilPitchWheelMessage_getChannel(message), MidiUtilPitchWheelMessage_getValue(message));
+			MidiFileTrack_createPitchWheelEvent(track, get_current_tick(), MidiUtilPitchWheelMessage_getChannel(message), MidiUtilPitchWheelMessage_getValue(message));
 			MidiUtilAlarm_set(alarm, timeout_msecs, handle_alarm, NULL);
 			break;
 		}
