@@ -16,7 +16,7 @@ static int channel_pressure_is_on = 0;
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage:  %s --in <port> --out <port> --out2 <port>\n", program_name);
+	fprintf(stderr, "Usage:  %s --in <port> --out <port> --second-out <port>\n", program_name);
 	exit(1);
 }
 
