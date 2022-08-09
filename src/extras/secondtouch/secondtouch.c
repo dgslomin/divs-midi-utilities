@@ -128,6 +128,7 @@ static void handle_exit(void *user_data)
 {
 	rtmidi_close_port(midi_in);
 	rtmidi_close_port(midi_out);
+	rtmidi_close_port(second_midi_out);
 }
 
 int main(int argc, char **argv)
