@@ -291,6 +291,10 @@ static void alarm_helper(void *user_data)
 				MidiUtilPointerArray_remove(alarm->user_data_array, 0);
 			}
 		}
+		else
+		{
+			MidiUtilLock_wait(alarm->lock, -1);
+		}
 
 		MidiUtilLock_unlock(alarm->lock);
 		if (callback != NULL) callback(0, user_data);
