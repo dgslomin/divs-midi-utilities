@@ -115,7 +115,7 @@ reallyclean:
 	@if exist ..\bin\libexpat.dll del ..\bin\libexpat.dll
 
 create-self-signing-certificate:
-	powershell -Command { New-SelfSignedCertificate -DnsName "sreal.com" -CertStoreLocation "cert:\LocalMachine\My" }
+	powershell -Command New-SelfSignedCertificate -DnsName "sreal.com" -CertStoreLocation "Cert:\CurrentUser\My" -Type CodeSigningCert -Subject "sreal.com"
 
 sign:
 	signtool sign /n sreal.com /fd SHA256 ..\bin\*.exe
