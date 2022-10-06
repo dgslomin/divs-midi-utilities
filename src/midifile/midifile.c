@@ -1029,6 +1029,7 @@ MidiFile_t MidiFile_load(char *filename)
 	io = MidiFileIO_newFromFile(in);
 	midi_file = load_midi_file(io);
 	MidiFileIO_free(io);
+	fclose(in);
 	return midi_file;
 }
 
@@ -1042,6 +1043,7 @@ int MidiFile_save(MidiFile_t midi_file, const char* filename)
 	io = MidiFileIO_newFromFile(out);
 	save_midi_file(midi_file, io);
 	MidiFileIO_free(io);
+	fclose(out);
 	return 0;
 }
 
