@@ -5,7 +5,7 @@
               companyWebsite="http://www.sreal.com/~div/midi-utilities/" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginProducesMidiOut,pluginWantsMidiIn"
               pluginManufacturerCode="Srea" pluginAUIsSandboxSafe="1" pluginVSTNumMidiInputs="1"
               pluginVSTNumMidiOutputs="1" pluginVST3Category="Fx,Instrument"
-              lv2Uri="tag:sreal.com,2022:RoboFlurry/20220926">
+              lv2Uri="tag:sreal.com,2022:RoboFlurry/20220926" pluginChannelConfigs="{0, 1}">
   <MAINGROUP id="QizSLs" name="RoboFlurry">
     <GROUP id="{470A58C7-05FF-5A32-C24C-2C5366FE391B}" name="Source">
       <FILE id="zqCPwd" name="PluginProcessor.cpp" compile="1" resource="0"

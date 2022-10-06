@@ -95,7 +95,6 @@ void RoboFlurryAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBl
 {
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
-	reset();
 }
 
 void RoboFlurryAudioProcessor::releaseResources()
@@ -233,7 +232,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				{
 					for (auto humanNote : humanNotes)
 					{
-						auto humanVelocity = humanNotes[humanNote];
+						auto humanVelocity = humanVelocities[humanNote];
 						auto outputNote = humanNote + robotNote - 60;
 						juce::uint8 outputVelocity = humanVelocity * robotVelocity / 128;
 
