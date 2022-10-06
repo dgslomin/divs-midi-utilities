@@ -95,6 +95,7 @@ void RoboFlurryAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBl
 {
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
+	reset();
 }
 
 void RoboFlurryAudioProcessor::releaseResources()
@@ -216,6 +217,10 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 						}
 					}
 				}
+				else if (mode == MODE_BYPASS)
+				{
+					processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, humanNote, humanVelocity), samplePosition);
+				}
 			}
 			else if (channel == robotChannel)
 			{
@@ -283,6 +288,10 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				}
 				else if (mode == MODE_PLUCK)
 				{
+				}
+				else if (mode == MODE_BYPASS)
+				{
+					processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, humanNote), samplePosition);
 				}
 			}
 			else if (channel == robotChannel)

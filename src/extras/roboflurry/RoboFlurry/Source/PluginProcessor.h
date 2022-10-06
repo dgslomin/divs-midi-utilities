@@ -58,18 +58,19 @@ public:
 
     const int MODE_STRUM = 0;
     const int MODE_PLUCK = 1;
+    const int MODE_BYPASS = 2;
     int mode = MODE_STRUM;
     int humanChannel = 1;
     int robotChannel = 2;
     int outputChannel = 1;
     juce::SortedSet<int> humanNotes;
-    juce::uint8 humanVelocities[128];
+    juce::uint8 humanVelocities[128] = {0};
     juce::SortedSet<int> robotNotes;
-    juce::uint8 robotVelocities[128];
+    juce::uint8 robotVelocities[128] = {0};
     juce::SortedSet<int> outputNotes;
-    juce::uint8 outputVelocities[128];
-    int outputHumanSourceNotes[128];
-    int outputRobotSourceNotes[128];
+    juce::uint8 outputVelocities[128] = {0};
+    int outputHumanSourceNotes[128] = {0};
+    int outputRobotSourceNotes[128] = {0};
 
 private:
     //==============================================================================
