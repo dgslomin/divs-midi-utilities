@@ -156,7 +156,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto robotVelocity = robotVelocities[robotNote];
 						auto outputNote = humanNote + robotNote - 60;
-						juce::uint8 outputVelocity = humanVelocity * robotVelocity / 128;
+						juce::uint8 outputVelocity = ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
 
 						if (outputVelocity >= outputVelocities[outputNote])
 						{
@@ -194,7 +194,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 							if (robotChordNote == humanNoteNumber)
 							{
 								auto outputNote = humanNote + (robotOctave * 12);
-								juce::uint8 outputVelocity = humanVelocity * robotVelocity / 128;
+								juce::uint8 outputVelocity = ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
 
 								if (outputVelocity >= outputVelocities[outputNote])
 								{
@@ -234,7 +234,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto humanVelocity = humanVelocities[humanNote];
 						auto outputNote = humanNote + robotNote - 60;
-						juce::uint8 outputVelocity = humanVelocity * robotVelocity / 128;
+						juce::uint8 outputVelocity = ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
 
 						if (outputVelocity >= outputVelocities[outputNote])
 						{

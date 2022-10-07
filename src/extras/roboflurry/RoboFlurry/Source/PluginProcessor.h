@@ -63,6 +63,7 @@ public:
     int humanChannel = 1;
     int robotChannel = 2;
     int outputChannel = 1;
+    float velocitySensitivity = 0.25;
     juce::SortedSet<int> humanNotes;
     juce::uint8 humanVelocities[128] = {0};
     juce::SortedSet<int> robotNotes;
