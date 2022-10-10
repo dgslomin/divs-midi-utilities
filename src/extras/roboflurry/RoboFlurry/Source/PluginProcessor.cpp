@@ -220,28 +220,20 @@ void RoboFlurryAudioProcessor::humanNoteOn(juce::MidiBuffer& processedMidi, int 
 	}
 	else if (mode == MODE_PLUCK)
 	{
-#if 0
 		// TODO
-		auto numberOfHumanNotes = humanNotes.size();
-
-		for (auto humanNoteNumber = 0; humanNoteNumber < numberOfHumanNotes; humanNoteNumber++)
+#if 0
+		for (auto robotNote : robotNotes)
 		{
+			auto robotVelocity = robotVelocities[robotNote];
+			auto robotNoteNumber = robotNote % 12;
+			auto robotOctave = (robotNote / 12) - 5;
+			auto numberOfHumanNotes = humanNotes.size();
+			auto humanNoteNumber = robotNoteNumber * numberOfHumanNotes / 12;
 			auto humanNote = humanNotes[humanNoteNumber];
 			auto humanVelocity = humanVelocities[humanNote];
-
-			for (auto robotNote : robotNotes)
-			{
-				auto robotVelocity = robotVelocities[robotNote];
-				int robotChordNote = round((robotNote % 12) * numberOfHumanNotes / 12.0);
-				auto robotOctave = (robotNote / 12) - 5;
-
-				if (robotChordNote == humanNoteNumber)
-				{
-					auto outputNote = humanNote + (robotOctave * 12);
-					auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
-					outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
-				}
-			}
+			auto outputNote = humanNote + (robotOctave * 12);
+			auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
+			outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 		}
 #endif
 	}
