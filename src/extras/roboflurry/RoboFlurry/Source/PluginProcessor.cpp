@@ -155,11 +155,14 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto robotVelocity = robotVelocities[robotNote];
 						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
+						auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
+						outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 					}
 				}
 				else if (mode == MODE_PLUCK)
 				{
+#if 0
+					// TODO
 					auto numberOfHumanNotes = humanNotes.size();
 
 					for (auto humanNoteNumber = 0; humanNoteNumber < numberOfHumanNotes; humanNoteNumber++)
@@ -176,14 +179,16 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 							if (robotChordNote == humanNoteNumber)
 							{
 								auto outputNote = humanNote + (robotOctave * 12);
-								outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
+								auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
+								outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 							}
 						}
 					}
+#endif
 				}
 				else if (mode == MODE_BYPASS)
 				{
-					processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, humanNote, humanVelocity), samplePosition);
+					outputNoteOn(processedMidi, samplePosition, humanNote, humanVelocity, humanNote, -1);
 				}
 			}
 			else if (channel == robotChannel)
@@ -199,7 +204,8 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto humanVelocity = humanVelocities[humanNote];
 						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
+						auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
+						outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 					}
 				}
 				else if (mode == MODE_PLUCK)
@@ -211,7 +217,8 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					auto humanNote = humanNotes[humanNoteNumber];
 					auto humanVelocity = humanVelocities[humanNote];
 					auto outputNote = humanNote + (robotOctave * 12);
-					outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
+					auto outputVelocity = combineVelocities(humanVelocity, robotVelocity);
+					outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 				}
 			}
 		}
@@ -223,20 +230,12 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				humanNotes.removeValue(humanNote);
 				humanVelocities[humanNote] = 0;
 
-				if (mode == MODE_STRUM)
+				for (auto outputNote : outputNotes)
 				{
-					for (auto robotNote : robotNotes)
+					if (outputHumanSourceNotes[outputNote] == humanNote)
 					{
-						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOff(processedMidi, samplePosition, outputNote, humanNote, robotNote);
+						outputNoteOff(processedMidi, samplePosition, outputNote);
 					}
-				}
-				else if (mode == MODE_PLUCK)
-				{
-				}
-				else if (mode == MODE_BYPASS)
-				{
-					processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, humanNote), samplePosition);
 				}
 			}
 			else if (channel == robotChannel)
@@ -245,23 +244,12 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				robotNotes.removeValue(robotNote);
 				robotVelocities[robotNote] = 0;
 
-				if (mode == MODE_STRUM)
+				for (auto outputNote : outputNotes)
 				{
-					for (auto humanNote : humanNotes)
+					if (outputRobotSourceNotes[outputNote] == robotNote)
 					{
-						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOff(processedMidi, samplePosition, outputNote, humanNote, robotNote);
+						outputNoteOff(processedMidi, samplePosition, outputNote);
 					}
-				}
-				else if (mode == MODE_PLUCK)
-				{
-					auto robotNoteNumber = robotNote % 12;
-					auto robotOctave = (robotNote / 12) - 5;
-					auto numberOfHumanNotes = humanNotes.size();
-					int humanNoteNumber = round(robotNoteNumber * numberOfHumanNotes / 12.0);
-					auto humanNote = humanNotes[humanNoteNumber];
-					auto outputNote = humanNote + (robotOctave * 12);
-					outputNoteOff(processedMidi, samplePosition, outputNote, humanNote, robotNote);
 				}
 			}
 		}
@@ -276,10 +264,13 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	midiMessages.swapWith(processedMidi);
 }
 
-void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote, int humanVelocity, int robotVelocity)
+int RoboFlurryAudioProcessor::combineVelocities(int humanVelocity, int robotVelocity)
 {
-	juce::uint8 outputVelocity = ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
+	return ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
+}
 
+void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote)
+{
 	if (outputVelocity >= outputVelocities[outputNote])
 	{
 		if (outputVelocities[outputNote])
@@ -294,20 +285,17 @@ void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int
 		outputVelocities[outputNote] = outputVelocity;
 		outputHumanSourceNotes[outputNote] = humanNote;
 		outputRobotSourceNotes[outputNote] = robotNote;
-		processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, outputNote, outputVelocity), samplePosition);
+		processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, outputNote, (juce::uint8)outputVelocity), samplePosition);
 	}
 }
 
-void RoboFlurryAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote)
+void RoboFlurryAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote)
 {
-	if ((outputHumanSourceNotes[outputNote] == humanNote) && (outputRobotSourceNotes[outputNote] == robotNote))
-	{
-		outputNotes.removeValue(outputNote);
-		outputVelocities[outputNote] = 0;
-		outputHumanSourceNotes[outputNote] = 0;
-		outputRobotSourceNotes[outputNote] = 0;
-		processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, outputNote), samplePosition);
-	}
+	outputNotes.removeValue(outputNote);
+	outputVelocities[outputNote] = 0;
+	outputHumanSourceNotes[outputNote] = 0;
+	outputRobotSourceNotes[outputNote] = 0;
+	processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, outputNote), samplePosition);
 }
 
 //==============================================================================

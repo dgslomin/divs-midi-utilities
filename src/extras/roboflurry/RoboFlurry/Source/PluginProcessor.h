@@ -57,8 +57,9 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote, int humanVelocity, int robotVelocity);
-    void outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote);
+    int combineVelocities(int humanVelocity, int robotVelocity);
+    void outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote);
+    void outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote);
 
     const int MODE_STRUM = 0;
     const int MODE_PLUCK = 1;
@@ -69,11 +70,11 @@ public:
     int outputChannel = 1;
     float velocitySensitivity = 0.25;
     juce::SortedSet<int> humanNotes;
-    juce::uint8 humanVelocities[128] = {0};
+    int humanVelocities[128] = {0};
     juce::SortedSet<int> robotNotes;
-    juce::uint8 robotVelocities[128] = {0};
+    int robotVelocities[128] = {0};
     juce::SortedSet<int> outputNotes;
-    juce::uint8 outputVelocities[128] = {0};
+    int outputVelocities[128] = {0};
     int outputHumanSourceNotes[128] = {0};
     int outputRobotSourceNotes[128] = {0};
 
