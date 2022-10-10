@@ -57,6 +57,10 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
+    void humanNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote, int humanVelocity);
+    void robotNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote, int robotVelocity);
+    void humanNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote);
+    void robotNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote);
     int combineVelocities(int humanVelocity, int robotVelocity);
     void outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote);
     void outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote);
@@ -64,7 +68,7 @@ public:
     const int MODE_STRUM = 0;
     const int MODE_PLUCK = 1;
     const int MODE_BYPASS = 2;
-    int mode = MODE_PLUCK;
+    int mode = MODE_STRUM;
     int humanChannel = 1;
     int robotChannel = 2;
     int outputChannel = 1;
