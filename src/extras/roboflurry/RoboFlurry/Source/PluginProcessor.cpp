@@ -256,7 +256,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				}
 			}
 		}
-		else if ((mode == MODE_BYPASS) && (channel == humanChannel))
+		else
 		{
 			auto outputMessage = juce::MidiMessage(message);
 			outputMessage.setChannel(outputChannel);
