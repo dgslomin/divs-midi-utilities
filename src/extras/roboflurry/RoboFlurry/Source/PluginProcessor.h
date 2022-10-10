@@ -57,7 +57,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanVelocity, int robotVelocity);
+    void outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote, int humanVelocity, int robotVelocity);
     void outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote);
 
     const int MODE_STRUM = 0;

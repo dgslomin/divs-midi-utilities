@@ -155,7 +155,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto robotVelocity = robotVelocities[robotNote];
 						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOn(processedMidi, samplePosition, outputNote, humanVelocity, robotVelocity);
+						outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
 					}
 				}
 				else if (mode == MODE_PLUCK)
@@ -176,7 +176,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 							if (robotChordNote == humanNoteNumber)
 							{
 								auto outputNote = humanNote + (robotOctave * 12);
-								outputNoteOn(processedMidi, samplePosition, outputNote, humanVelocity, robotVelocity);
+								outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
 							}
 						}
 					}
@@ -199,7 +199,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					{
 						auto humanVelocity = humanVelocities[humanNote];
 						auto outputNote = humanNote + robotNote - 60;
-						outputNoteOn(processedMidi, samplePosition, outputNote, humanVelocity, robotVelocity);
+						outputNoteOn(processedMidi, samplePosition, outputNote, humanNote, robotNote, humanVelocity, robotVelocity);
 					}
 				}
 				else if (mode == MODE_PLUCK)
@@ -261,7 +261,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	midiMessages.swapWith(processedMidi);
 }
 
-void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanVelocity, int robotVelocity)
+void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int humanNote, int robotNote, int humanVelocity, int robotVelocity)
 {
 	juce::uint8 outputVelocity = ((velocitySensitivity * humanVelocity / 128) + (1 - velocitySensitivity)) * robotVelocity;
 
