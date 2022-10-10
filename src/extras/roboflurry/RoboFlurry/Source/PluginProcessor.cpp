@@ -216,7 +216,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 					auto robotNoteNumber = robotNote % 12;
 					auto robotOctave = (robotNote / 12) - 5;
 					auto numberOfHumanNotes = humanNotes.size();
-					int humanNoteNumber = round(robotNoteNumber * numberOfHumanNotes / 12.0);
+					auto humanNoteNumber = robotNoteNumber * numberOfHumanNotes / 12;
 					auto humanNote = humanNotes[humanNoteNumber];
 					auto humanVelocity = humanVelocities[humanNote];
 					auto outputNote = humanNote + (robotOctave * 12);
@@ -274,22 +274,21 @@ int RoboFlurryAudioProcessor::combineVelocities(int humanVelocity, int robotVelo
 
 void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote)
 {
-	if (outputVelocity >= outputVelocities[outputNote])
-	{
-		if (outputVelocities[outputNote])
-		{
-			processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, outputNote), samplePosition);
-		}
-		else
-		{
-			outputNotes.add(outputNote);
-		}
+	if ((outputNote < 0) || (outputNote > 127) || (outputVelocity < outputVelocities[outputNote])) return;
 
-		outputVelocities[outputNote] = outputVelocity;
-		outputHumanSourceNotes[outputNote] = humanNote;
-		outputRobotSourceNotes[outputNote] = robotNote;
-		processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, outputNote, (juce::uint8)outputVelocity), samplePosition);
+	if (outputVelocities[outputNote])
+	{
+		processedMidi.addEvent(juce::MidiMessage::noteOff(outputChannel, outputNote), samplePosition);
 	}
+	else
+	{
+		outputNotes.add(outputNote);
+	}
+
+	outputVelocities[outputNote] = outputVelocity;
+	outputHumanSourceNotes[outputNote] = humanNote;
+	outputRobotSourceNotes[outputNote] = robotNote;
+	processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel, outputNote, (juce::uint8)outputVelocity), samplePosition);
 }
 
 void RoboFlurryAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote)

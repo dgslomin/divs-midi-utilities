@@ -64,7 +64,7 @@ public:
     const int MODE_STRUM = 0;
     const int MODE_PLUCK = 1;
     const int MODE_BYPASS = 2;
-    int mode = MODE_STRUM;
+    int mode = MODE_PLUCK;
     int humanChannel = 1;
     int robotChannel = 2;
     int outputChannel = 1;
