@@ -140,32 +140,56 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		auto samplePosition = metadata.samplePosition;
 		auto channel = message.getChannel();
 
-		if (message.isNoteOn())
+		if (message.isNoteOn() && (channel == humanChannel))
 		{
-			if (channel == humanChannel)
-			{
-				auto humanNote = message.getNoteNumber();
-				auto humanVelocity = message.getVelocity();
-				humanNoteOn(processedMidi, samplePosition, humanNote, humanVelocity);
-			}
-			else if (channel == robotChannel)
-			{
-				auto robotNote = message.getNoteNumber();
-				auto robotVelocity = message.getVelocity();
-				robotNoteOn(processedMidi, samplePosition, robotNote, robotVelocity);
-			}
+			auto humanNote = message.getNoteNumber();
+			auto humanVelocity = message.getVelocity();
+			humanNoteOn(processedMidi, samplePosition, humanNote, humanVelocity);
 		}
-		else if (message.isNoteOff())
+		else if (message.isNoteOn() && (channel == robotChannel))
 		{
-			if (channel == humanChannel)
+			auto robotNote = message.getNoteNumber();
+			auto robotVelocity = message.getVelocity();
+			robotNoteOn(processedMidi, samplePosition, robotNote, robotVelocity);
+		}
+		else if (message.isNoteOff() && (channel == humanChannel))
+		{
+			auto humanNote = message.getNoteNumber();
+
+			if (latch)
 			{
-				auto humanNote = message.getNoteNumber();
+				latched[humanNote] = true;
+			}
+			else
+			{
 				humanNoteOff(processedMidi, samplePosition, humanNote);
 			}
-			else if (channel == robotChannel)
+		}
+		else if (message.isNoteOff() && (channel == robotChannel))
+		{
+			auto robotNote = message.getNoteNumber();
+			robotNoteOff(processedMidi, samplePosition, robotNote);
+		}
+		else if (message.isSustainPedalOn() && (channel == humanChannel))
+		{
+			latch = true;
+		}
+		else if (message.isSustainPedalOff() && (channel == humanChannel))
+		{
+			if (latch)
 			{
-				auto robotNote = message.getNoteNumber();
-				robotNoteOff(processedMidi, samplePosition, robotNote);
+				auto humanNotesIterator = juce::SortedSet<int>(humanNotes);
+
+				for (auto humanNote : humanNotesIterator)
+				{
+					if (latched[humanNote])
+					{
+						humanNoteOff(processedMidi, samplePosition, humanNote);
+						latched[humanNote] = false;
+					}
+				}
+
+				latch = false;
 			}
 		}
 		else
@@ -263,9 +287,9 @@ void RoboFlurryAudioProcessor::humanNoteOff(juce::MidiBuffer& processedMidi, int
 {
 	humanNotes.removeValue(humanNote);
 	humanVelocities[humanNote] = 0;
-	auto outputNotesCopy = juce::SortedSet<int>(outputNotes); // workaround for removing elements during iteration
+	auto outputNotesIterator = juce::SortedSet<int>(outputNotes);
 
-	for (auto outputNote : outputNotesCopy)
+	for (auto outputNote : outputNotesIterator)
 	{
 		if (outputHumanSourceNotes[outputNote] == humanNote)
 		{
@@ -278,9 +302,9 @@ void RoboFlurryAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int
 {
 	robotNotes.removeValue(robotNote);
 	robotVelocities[robotNote] = 0;
-	auto outputNotesCopy = juce::SortedSet<int>(outputNotes); // workaround for removing elements during iteration
+	auto outputNotesIterator = juce::SortedSet<int>(outputNotes);
 
-	for (auto outputNote : outputNotesCopy)
+	for (auto outputNote : outputNotesIterator)
 	{
 		if (outputRobotSourceNotes[outputNote] == robotNote)
 		{

@@ -69,18 +69,20 @@ public:
     const int MODE_PLUCK = 1;
     const int MODE_BYPASS = 2;
     int mode = MODE_STRUM;
+    bool latch = false;
     int humanChannel = 1;
     int robotChannel = 2;
     int outputChannel = 1;
     float velocitySensitivity = 0.25;
     juce::SortedSet<int> humanNotes;
-    int humanVelocities[128] = {0};
+    int humanVelocities[128] = { 0 };
+    bool latched[128] = { false };
     juce::SortedSet<int> robotNotes;
-    int robotVelocities[128] = {0};
+    int robotVelocities[128] = { 0 };
     juce::SortedSet<int> outputNotes;
-    int outputVelocities[128] = {0};
-    int outputHumanSourceNotes[128] = {0};
-    int outputRobotSourceNotes[128] = {0};
+    int outputVelocities[128] = { 0 };
+    int outputHumanSourceNotes[128] = { 0 };
+    int outputRobotSourceNotes[128] = { 0 };
 
 private:
     //==============================================================================
