@@ -263,8 +263,9 @@ void RoboFlurryAudioProcessor::humanNoteOff(juce::MidiBuffer& processedMidi, int
 {
 	humanNotes.removeValue(humanNote);
 	humanVelocities[humanNote] = 0;
+	auto outputNotesCopy = juce::SortedSet<int>(outputNotes); // workaround for removing elements during iteration
 
-	for (auto outputNote : outputNotes)
+	for (auto outputNote : outputNotesCopy)
 	{
 		if (outputHumanSourceNotes[outputNote] == humanNote)
 		{
@@ -277,8 +278,9 @@ void RoboFlurryAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int
 {
 	robotNotes.removeValue(robotNote);
 	robotVelocities[robotNote] = 0;
+	auto outputNotesCopy = juce::SortedSet<int>(outputNotes); // workaround for removing elements during iteration
 
-	for (auto outputNote : outputNotes)
+	for (auto outputNote : outputNotesCopy)
 	{
 		if (outputRobotSourceNotes[outputNote] == robotNote)
 		{
