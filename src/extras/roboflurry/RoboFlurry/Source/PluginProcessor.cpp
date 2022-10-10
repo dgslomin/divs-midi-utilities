@@ -188,7 +188,10 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				}
 				else if (mode == MODE_BYPASS)
 				{
-					outputNoteOn(processedMidi, samplePosition, humanNote, humanVelocity, humanNote, -1);
+					auto outputNote = humanNote;
+					auto outputVelocity = humanVelocity;
+					auto robotNote = -1; // won't match any real ones
+					outputNoteOn(processedMidi, samplePosition, outputNote, outputVelocity, humanNote, robotNote);
 				}
 			}
 			else if (channel == robotChannel)
