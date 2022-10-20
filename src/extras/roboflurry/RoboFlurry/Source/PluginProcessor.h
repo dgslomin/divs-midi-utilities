@@ -68,12 +68,14 @@ public:
     const int MODE_STRUM = 0;
     const int MODE_PLUCK = 1;
     const int MODE_BYPASS = 2;
-    int mode = MODE_STRUM;
-    bool latch = false;
-    int humanChannel = 1;
-    int robotChannel = 2;
-    int outputChannel = 1;
-    float velocitySensitivity = 0.25;
+
+    juce::AudioParameterChoice* mode;
+    juce::AudioParameterBool* latch;
+    juce::AudioParameterInt* humanChannel;
+    juce::AudioParameterInt* robotChannel;
+    juce::AudioParameterInt* outputChannel;
+    juce::AudioParameterFloat* velocitySensitivity;
+
     juce::SortedSet<int> humanNotes;
     int humanVelocities[128] = { 0 };
     bool latched[128] = { false };
