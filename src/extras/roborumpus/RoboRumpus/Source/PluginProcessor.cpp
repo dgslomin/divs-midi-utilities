@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-RoboFlurryAudioProcessor::RoboFlurryAudioProcessor()
+RoboRumpusAudioProcessor::RoboRumpusAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
 	: AudioProcessor(BusesProperties()
 #if ! JucePlugin_IsMidiEffect
@@ -30,17 +30,17 @@ RoboFlurryAudioProcessor::RoboFlurryAudioProcessor()
 	addParameter(velocitySensitivity = new juce::AudioParameterFloat("velocitySensitivity", "Velocity sensitivity", 0.0, 1.0, 0.25));
 }
 
-RoboFlurryAudioProcessor::~RoboFlurryAudioProcessor()
+RoboRumpusAudioProcessor::~RoboRumpusAudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String RoboFlurryAudioProcessor::getName() const
+const juce::String RoboRumpusAudioProcessor::getName() const
 {
 	return JucePlugin_Name;
 }
 
-bool RoboFlurryAudioProcessor::acceptsMidi() const
+bool RoboRumpusAudioProcessor::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
 	return true;
@@ -49,7 +49,7 @@ bool RoboFlurryAudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool RoboFlurryAudioProcessor::producesMidi() const
+bool RoboRumpusAudioProcessor::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
 	return true;
@@ -58,7 +58,7 @@ bool RoboFlurryAudioProcessor::producesMidi() const
 #endif
 }
 
-bool RoboFlurryAudioProcessor::isMidiEffect() const
+bool RoboRumpusAudioProcessor::isMidiEffect() const
 {
 #if JucePlugin_IsMidiEffect
 	return true;
@@ -67,50 +67,50 @@ bool RoboFlurryAudioProcessor::isMidiEffect() const
 #endif
 }
 
-double RoboFlurryAudioProcessor::getTailLengthSeconds() const
+double RoboRumpusAudioProcessor::getTailLengthSeconds() const
 {
 	return 0.0;
 }
 
-int RoboFlurryAudioProcessor::getNumPrograms()
+int RoboRumpusAudioProcessor::getNumPrograms()
 {
 	return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
 	// so this should be at least 1, even if you're not really implementing programs.
 }
 
-int RoboFlurryAudioProcessor::getCurrentProgram()
+int RoboRumpusAudioProcessor::getCurrentProgram()
 {
 	return 0;
 }
 
-void RoboFlurryAudioProcessor::setCurrentProgram(int index)
+void RoboRumpusAudioProcessor::setCurrentProgram(int index)
 {
 }
 
-const juce::String RoboFlurryAudioProcessor::getProgramName(int index)
+const juce::String RoboRumpusAudioProcessor::getProgramName(int index)
 {
 	return {};
 }
 
-void RoboFlurryAudioProcessor::changeProgramName(int index, const juce::String& newName)
+void RoboRumpusAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void RoboFlurryAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void RoboRumpusAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
 }
 
-void RoboFlurryAudioProcessor::releaseResources()
+void RoboRumpusAudioProcessor::releaseResources()
 {
 	// When playback stops, you can use this as an opportunity to free up any
 	// spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool RoboFlurryAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+bool RoboRumpusAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
 #if JucePlugin_IsMidiEffect
 	juce::ignoreUnused(layouts);
@@ -135,7 +135,7 @@ bool RoboFlurryAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts
 }
 #endif
 
-void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void RoboRumpusAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
 	buffer.clear();
 	juce::MidiBuffer processedMidi;
@@ -209,7 +209,7 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	midiMessages.swapWith(processedMidi);
 }
 
-void RoboFlurryAudioProcessor::humanNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote, int humanVelocity)
+void RoboRumpusAudioProcessor::humanNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote, int humanVelocity)
 {
 	humanNotes.add(humanNote);
 	humanVelocities[humanNote] = humanVelocity;
@@ -252,7 +252,7 @@ void RoboFlurryAudioProcessor::humanNoteOn(juce::MidiBuffer& processedMidi, int 
 	}
 }
 
-void RoboFlurryAudioProcessor::robotNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote, int robotVelocity)
+void RoboRumpusAudioProcessor::robotNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote, int robotVelocity)
 {
 	robotNotes.add(robotNote);
 	robotVelocities[robotNote] = robotVelocity;
@@ -281,7 +281,7 @@ void RoboFlurryAudioProcessor::robotNoteOn(juce::MidiBuffer& processedMidi, int 
 	}
 }
 
-void RoboFlurryAudioProcessor::humanNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote)
+void RoboRumpusAudioProcessor::humanNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int humanNote)
 {
 	humanNotes.removeValue(humanNote);
 	humanVelocities[humanNote] = 0;
@@ -296,7 +296,7 @@ void RoboFlurryAudioProcessor::humanNoteOff(juce::MidiBuffer& processedMidi, int
 	}
 }
 
-void RoboFlurryAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote)
+void RoboRumpusAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int robotNote)
 {
 	robotNotes.removeValue(robotNote);
 	robotVelocities[robotNote] = 0;
@@ -311,12 +311,12 @@ void RoboFlurryAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int
 	}
 }
 
-int RoboFlurryAudioProcessor::combineVelocities(int humanVelocity, int robotVelocity)
+int RoboRumpusAudioProcessor::combineVelocities(int humanVelocity, int robotVelocity)
 {
 	return (int)(((velocitySensitivity->get() * humanVelocity / 128) + (1 - velocitySensitivity->get())) * robotVelocity);
 }
 
-void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote)
+void RoboRumpusAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote)
 {
 	if ((outputNote < 0) || (outputNote > 127) || (outputVelocity < outputVelocities[outputNote])) return;
 
@@ -335,7 +335,7 @@ void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int
 	processedMidi.addEvent(juce::MidiMessage::noteOn(outputChannel->get(), outputNote, (juce::uint8)outputVelocity), samplePosition);
 }
 
-void RoboFlurryAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote)
+void RoboRumpusAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote)
 {
 	outputNotes.removeValue(outputNote);
 	outputVelocities[outputNote] = 0;
@@ -345,18 +345,18 @@ void RoboFlurryAudioProcessor::outputNoteOff(juce::MidiBuffer& processedMidi, in
 }
 
 //==============================================================================
-bool RoboFlurryAudioProcessor::hasEditor() const
+bool RoboRumpusAudioProcessor::hasEditor() const
 {
 	return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* RoboFlurryAudioProcessor::createEditor()
+juce::AudioProcessorEditor* RoboRumpusAudioProcessor::createEditor()
 {
-	return new RoboFlurryAudioProcessorEditor(*this);
+	return new RoboRumpusAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void RoboFlurryAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
+void RoboRumpusAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
 	juce::ValueTree state { "Parameters", {
 		{ "mode", mode->getIndex() },
@@ -370,7 +370,7 @@ void RoboFlurryAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 	state.writeToStream(juce::MemoryOutputStream(destData, false));
 }
 
-void RoboFlurryAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+void RoboRumpusAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
 	juce::ValueTree state = juce::ValueTree::readFromData(data, static_cast<size_t>(sizeInBytes));
 	mode->setValueNotifyingHost(state.getProperty("mode", 0));
@@ -385,5 +385,5 @@ void RoboFlurryAudioProcessor::setStateInformation(const void* data, int sizeInB
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-	return new RoboFlurryAudioProcessor();
+	return new RoboRumpusAudioProcessor();
 }

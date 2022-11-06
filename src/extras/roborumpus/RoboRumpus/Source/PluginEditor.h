@@ -14,11 +14,11 @@
 //==============================================================================
 /**
 */
-class RoboFlurryAudioProcessorEditor  : public juce::AudioProcessorEditor
+class RoboRumpusAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    RoboFlurryAudioProcessorEditor (RoboFlurryAudioProcessor&);
-    ~RoboFlurryAudioProcessorEditor() override;
+    RoboRumpusAudioProcessorEditor (RoboRumpusAudioProcessor&);
+    ~RoboRumpusAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
@@ -40,7 +40,7 @@ public:
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
-    RoboFlurryAudioProcessor& audioProcessor;
+    RoboRumpusAudioProcessor& audioProcessor;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoboFlurryAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoboRumpusAudioProcessorEditor)
 };

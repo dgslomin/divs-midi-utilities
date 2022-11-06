@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-RoboFlurryAudioProcessorEditor::RoboFlurryAudioProcessorEditor(RoboFlurryAudioProcessor& p)
+RoboRumpusAudioProcessorEditor::RoboRumpusAudioProcessorEditor(RoboRumpusAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
     strumButton.setText("Strum", juce::dontSendNotification);
@@ -84,16 +84,16 @@ RoboFlurryAudioProcessorEditor::RoboFlurryAudioProcessorEditor(RoboFlurryAudioPr
     setSize(448, 189);
 }
 
-RoboFlurryAudioProcessorEditor::~RoboFlurryAudioProcessorEditor()
+RoboRumpusAudioProcessorEditor::~RoboRumpusAudioProcessorEditor()
 {
 }
 
 //==============================================================================
-void RoboFlurryAudioProcessorEditor::paint (juce::Graphics& g)
+void RoboRumpusAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll(juce::Colour(0xff202020));
 }
 
-void RoboFlurryAudioProcessorEditor::resized()
+void RoboRumpusAudioProcessorEditor::resized()
 {
 }

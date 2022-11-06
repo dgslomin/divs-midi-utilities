@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="NQyJJ3" name="RoboFlurry" projectType="audioplug" useAppConfig="0"
+<JUCERPROJECT id="NQyJJ3" name="RoboRumpus" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Sreal"
               companyWebsite="http://www.sreal.com/~div/midi-utilities/" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginProducesMidiOut,pluginWantsMidiIn"
               pluginManufacturerCode="Srea" pluginAUIsSandboxSafe="1" pluginVSTNumMidiInputs="1"
               pluginVSTNumMidiOutputs="1" pluginVST3Category="Fx,Instrument"
-              lv2Uri="tag:sreal.com,2022:RoboFlurry/20220926" pluginChannelConfigs="{0, 1}">
-  <MAINGROUP id="QizSLs" name="RoboFlurry">
+              lv2Uri="tag:sreal.com,2022:RoboRumpus/20220926" pluginChannelConfigs="{0, 1}">
+  <MAINGROUP id="QizSLs" name="RoboRumpus">
     <GROUP id="{470A58C7-05FF-5A32-C24C-2C5366FE391B}" name="Source">
       <FILE id="zqCPwd" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -21,8 +21,8 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="RoboFlurry"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="RoboFlurry"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="RoboRumpus"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="RoboRumpus"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../../../../../../Program Files/juce-7.0.2-windows/JUCE/modules"/>

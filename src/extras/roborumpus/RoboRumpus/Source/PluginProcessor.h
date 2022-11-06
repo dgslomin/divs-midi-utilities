@@ -13,15 +13,15 @@
 //==============================================================================
 /**
 */
-class RoboFlurryAudioProcessor  : public juce::AudioProcessor
+class RoboRumpusAudioProcessor  : public juce::AudioProcessor
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
 {
 public:
     //==============================================================================
-    RoboFlurryAudioProcessor();
-    ~RoboFlurryAudioProcessor() override;
+    RoboRumpusAudioProcessor();
+    ~RoboRumpusAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -88,5 +88,5 @@ public:
 
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoboFlurryAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoboRumpusAudioProcessor)
 };
