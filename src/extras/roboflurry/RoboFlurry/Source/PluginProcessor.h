@@ -70,7 +70,7 @@ public:
     const int MODE_BYPASS = 2;
 
     juce::AudioParameterChoice* mode;
-    juce::AudioParameterBool* latch;
+    juce::AudioParameterBool* hold;
     juce::AudioParameterInt* humanChannel;
     juce::AudioParameterInt* robotChannel;
     juce::AudioParameterInt* outputChannel;
@@ -78,7 +78,7 @@ public:
 
     juce::SortedSet<int> humanNotes;
     int humanVelocities[128] = { 0 };
-    bool latched[128] = { false };
+    bool held[128] = { false };
     juce::SortedSet<int> robotNotes;
     int robotVelocities[128] = { 0 };
     juce::SortedSet<int> outputNotes;

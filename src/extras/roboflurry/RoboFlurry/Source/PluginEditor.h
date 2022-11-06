@@ -24,6 +24,19 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    //==============================================================================
+    juce::Label strumButton;
+    juce::Label pluckButton;
+    juce::Label bypassButton;
+    juce::Label holdButton;
+    juce::Label settingsButton;
+    juce::Label humanLabel;
+    juce::Label humanLights;
+    juce::Label robotLabel;
+    juce::Label robotLights;
+    juce::Label outputLabel;
+    juce::Label outputLights;
+
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.

@@ -23,7 +23,7 @@ RoboFlurryAudioProcessor::RoboFlurryAudioProcessor()
 #endif
 {
 	addParameter(mode = new juce::AudioParameterChoice("mode", "Mode", { "Strum", "Pluck", "Bypass" }, MODE_STRUM));
-	addParameter(latch = new juce::AudioParameterBool("latch", "Latch", false));
+	addParameter(hold = new juce::AudioParameterBool("hold", "Hold", false));
 	addParameter(humanChannel = new juce::AudioParameterInt("humanChannel", "Human channel", 1, 16, 1));
 	addParameter(robotChannel = new juce::AudioParameterInt("robotChannel", "Robot channel", 1, 16, 2));
 	addParameter(outputChannel = new juce::AudioParameterInt("outputChannel", "Output channel", 1, 16, 1));
@@ -162,9 +162,9 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		{
 			auto humanNote = message.getNoteNumber();
 
-			if (latch->get())
+			if (hold->get())
 			{
-				latched[humanNote] = true;
+				held[humanNote] = true;
 			}
 			else
 			{
@@ -178,24 +178,24 @@ void RoboFlurryAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		}
 		else if (message.isSustainPedalOn() && (channel == humanChannel->get()))
 		{
-			latch->setValueNotifyingHost(true);
+			hold->setValueNotifyingHost(true);
 		}
 		else if (message.isSustainPedalOff() && (channel == humanChannel->get()))
 		{
-			if (latch->get())
+			if (hold->get())
 			{
 				auto humanNotesIterator = juce::SortedSet<int>(humanNotes);
 
 				for (auto humanNote : humanNotesIterator)
 				{
-					if (latched[humanNote])
+					if (held[humanNote])
 					{
 						humanNoteOff(processedMidi, samplePosition, humanNote);
-						latched[humanNote] = false;
+						held[humanNote] = false;
 					}
 				}
 
-				latch->setValueNotifyingHost(false);
+				hold->setValueNotifyingHost(false);
 			}
 		}
 		else
@@ -313,7 +313,7 @@ void RoboFlurryAudioProcessor::robotNoteOff(juce::MidiBuffer& processedMidi, int
 
 int RoboFlurryAudioProcessor::combineVelocities(int humanVelocity, int robotVelocity)
 {
-	return ((velocitySensitivity->get() * humanVelocity / 128) + (1 - velocitySensitivity->get())) * robotVelocity;
+	return (int)(((velocitySensitivity->get() * humanVelocity / 128) + (1 - velocitySensitivity->get())) * robotVelocity);
 }
 
 void RoboFlurryAudioProcessor::outputNoteOn(juce::MidiBuffer& processedMidi, int samplePosition, int outputNote, int outputVelocity, int humanNote, int robotNote)
@@ -360,7 +360,7 @@ void RoboFlurryAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
 	juce::ValueTree state { "Parameters", {
 		{ "mode", mode->getIndex() },
-		{ "latch", latch->get() },
+		{ "hold", hold->get() },
 		{ "humanChannel", humanChannel->get() },
 		{ "robotChannel", robotChannel->get() },
 		{ "outputChannel", outputChannel->get() },
@@ -374,7 +374,7 @@ void RoboFlurryAudioProcessor::setStateInformation(const void* data, int sizeInB
 {
 	juce::ValueTree state = juce::ValueTree::readFromData(data, static_cast<size_t>(sizeInBytes));
 	mode->setValueNotifyingHost(state.getProperty("mode", 0));
-	latch->setValueNotifyingHost(state.getProperty("latch", false));
+	hold->setValueNotifyingHost(state.getProperty("hold", false));
 	humanChannel->setValueNotifyingHost(state.getProperty("humanChannel", 1));
 	robotChannel->setValueNotifyingHost(state.getProperty("robotChannel", 2));
 	outputChannel->setValueNotifyingHost(state.getProperty("outputChannel", 1));
