@@ -13,8 +13,15 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
+all: ../../bin/routemidi ../../man/routemidi.1
+
 ../../bin/routemidi: routemidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/routemidi routemidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+	mkdir -p ../../bin
+	$(CC) $(LDFLAGS) -o $@ routemidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+
+../../man/routemidi.1:
+	mkdir -p ../../man
+	go-md2man -in=README.md -out=$@
 
 routemidi.o: routemidi.c
 	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c routemidi.c
@@ -44,4 +51,6 @@ clean:
 
 reallyclean: clean
 	rm -f ../../bin/routemidi
+	rm -f ../../man/routemidi.1
 
+distclean: reallyclean
