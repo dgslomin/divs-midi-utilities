@@ -875,7 +875,7 @@ export class Track
 
 	set endTick(endTick: number)
 	{
-		if ((this._lastEvent != null) && (endTick < this._lastEvent.tick)) return;
+		if (this._lastEvent && (endTick < this._lastEvent.tick)) return;
 		this._endTick = endTick;
 	}
 
@@ -1122,7 +1122,7 @@ export abstract class Event
 
 	set track(track: Track | null)
 	{
-		if (this._track != null)
+		if (this._track)
 		{
 			if (this._previousEventInTrack)
 			{
@@ -1167,13 +1167,13 @@ export abstract class Event
 			this._track = null;
 		}
 
-		if (track != null)
+		if (track)
 		{
 			this._track = track;
 
 			let event: Event | null = null;
 
-			for (event = this._track._lastEvent; (event != null) && (event._tick > this._tick); event = event._previousEventInTrack) {}
+			for (event = this._track._lastEvent; event && (event._tick > this._tick); event = event._previousEventInTrack) {}
 
 			this._previousEventInTrack = event;
 
@@ -1197,7 +1197,7 @@ export abstract class Event
 				this._track._lastEvent = this;
 			}
 
-			for (event = this._track._midiFile._lastEvent; (event != null) && (this._tick < event._tick); event = event._previousEventInFile) {}
+			for (event = this._track._midiFile._lastEvent; event && (this._tick < event._tick); event = event._previousEventInFile) {}
 
 			this._previousEventInFile = event;
 
