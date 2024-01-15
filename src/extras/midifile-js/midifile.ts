@@ -1854,7 +1854,7 @@ export class MetaEvent extends Event
 
 	static _createTempoEvent(track: Track | null, tick: number, tempo: number): MetaEvent
 	{
-		let event = new MetaEvent(track, tick, 0x51, new Uint8Array(0));
+		let event = new MetaEvent(track, tick, 0x51, new Uint8Array(3));
 		event.tempoEventTempo = tempo;
 		return event;
 	}
