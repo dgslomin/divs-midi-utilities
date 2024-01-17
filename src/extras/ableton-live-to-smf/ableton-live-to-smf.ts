@@ -23,7 +23,7 @@ function abletonLiveToSmf(alsFileBytes: Uint8Array): Uint8Array
 		].includes(jPath)
 	}).parse(zlib.gunzipSync(alsFileBytes));
 
-	if (!((alsFile?.Ableton?._attributes?.SchemaChangeCount == 3) && alsFile?.Ableton?.LiveSet)) throw new Error("not a recognized Ableton Live Set file");
+	if (!((parseInt(alsFile?.Ableton?._attributes?.SchemaChangeCount) == 3) && alsFile?.Ableton?.LiveSet)) throw new Error("not a recognized Ableton Live Set file");
 	let midiFile = new midifile.MidiFile();
 	let conductorTrack = midiFile.createTrack();
 	let alsTempoAutomationId = alsFile?.Ableton?.LiveSet?.MasterTrack?.DeviceChain?.Mixer?.Tempo?.AutomationTarget?._attributes?.Id;
@@ -59,7 +59,7 @@ function abletonLiveToSmf(alsFileBytes: Uint8Array): Uint8Array
 	
 		for (let alsKeyTrack of alsMidiTrack?.DeviceChain?.MainSequencer?.ClipTimeable?.ArrangerAutomation?.Events?.MidiClip?.Notes?.KeyTracks?.KeyTrack ?? [])
 		{
-			let note = alsKeyTrack?.MidiKey?._attributes?.Value;
+			let note = parseInt(alsKeyTrack?.MidiKey?._attributes?.Value);
 
 			for (let alsMidiNoteEvent of alsKeyTrack?.Notes?.MidiNoteEvent ?? [])
 			{
