@@ -1,0 +1,25 @@
+{
+	"name": "@sreal/ableton-live-to-smf",
+	"version": "0.0.0",
+	"description": "Exports all MIDI data from an Ableton Live Set arrangement to a multi-track MIDI file (SMF).",
+	"keywords": [
+		"ableton",
+		"live",
+		"export",
+		"midi",
+		"smf"
+	],
+	"homepage": "http://www.sreal.com/~div/midi-utilities/",
+	"license": "BSD-3-Clause",
+	"author": "Div Slomin <dgslomin@alumni.princeton.edu>",
+	"main": "ableton-live-to-smf.js",
+	"types": "ableton-live-to-smf.d.js",
+	"dependencies": {
+		"@sreal/midifile": "file:../midifile-js",
+		"@types/node": "20.11.3",
+		"fast-xml-parser": "^4.3.3",
+		"node": "^21.2.0",
+		"typescript": "^5.3.3"
+	},
+	"private": true
+}

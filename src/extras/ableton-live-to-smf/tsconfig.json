@@ -1,0 +1,4 @@
+{
+	"include": ["*.ts"],
+	"compilerOptions": {"lib": ["ES2017", "DOM"]}
+}
