@@ -1197,7 +1197,7 @@ export abstract class Event
 				this._track._lastEvent = this;
 			}
 
-			for (event = this._track._midiFile._lastEvent; event && (this._tick < event._tick); event = event._previousEventInFile) {}
+			for (event = this._track._midiFile._lastEvent; event && (event._tick > this._tick); event = event._previousEventInFile) {}
 
 			this._previousEventInFile = event;
 
