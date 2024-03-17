@@ -13,8 +13,11 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../bin/sendmidi: sendmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
+../../bin/sendmidi: ../../bin sendmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
 	$(CC) $(LDFLAGS) -o ../../bin/sendmidi sendmidi.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+
+../../bin:
+	mkdir ../../bin
 
 sendmidi.o: sendmidi.c
 	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c sendmidi.c
