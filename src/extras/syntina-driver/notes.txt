@@ -1,0 +1,18 @@
+
+Dependencies for Surge, Carla, and the Syntina driver:
+
+sudo apt install cmake g++ libgpiod-dev libxrandr-dev libxinerama-dev libxcursor-dev libfreetype-dev libasound2-dev libcurl4-openssl-dev libgtk-3-dev libwebkit2gtk-4.0-dev libjack-dev libjansson-dev
+
+
+
+Surge:
+
+cmake -Bbuild
+cmake --build build --config Release --target surge-staged-assets
+
+
+
+Syntina driver:
+
+https://github.com/yasir-shahzad/NAU7802/blob/master/src/NAU7802.cpp
+
