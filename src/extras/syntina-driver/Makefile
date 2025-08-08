@@ -6,8 +6,8 @@ LDFLAGS=-O
 LIBS=-lasound -lpthread -lstdc++ -li2c -ljansson
 MIDIUTILS_SRC=../../../src
 
-syntina-driver: syntina-driver.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o syntina-driver syntina-driver.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+syntina-driver: syntina-driver.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o NAU7802.o
+	$(CC) $(LDFLAGS) -o syntina-driver syntina-driver.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o NAU7802.o $(LIBS)
 
 syntina-driver.o: syntina-driver.c
 	$(CC) $(CFLAGS) -I$(MIDIUTILS_SRC)/midiutil -I$(MIDIUTILS_SRC)/3rdparty/rtmidi -c syntina-driver.c
@@ -27,6 +27,9 @@ RtMidi.o: $(MIDIUTILS_SRC)/3rdparty/rtmidi/RtMidi.cpp
 rtmidi_c.o: $(MIDIUTILS_SRC)/3rdparty/rtmidi/rtmidi_c.cpp
 	$(CXX) $(CFLAGS) -I$(MIDIUTILS_SRC)/3rdparty/rtmidi -c $(MIDIUTILS_SRC)/3rdparty/rtmidi/rtmidi_c.cpp
 
+NAU7802.o: 3rdparty/NAU7802/src/NAU7802.c
+	$(CC) $(CFLAGS) -I3rdparty/NAU7802/src -c 3rdparty/NAU7802/src/NAU7802.c
+
 clean:
 	rm -f syntina-driver.o
 	rm -f midiutil-common.o
@@ -34,6 +37,7 @@ clean:
 	rm -f midiutil-rtmidi.o
 	rm -f RtMidi.o
 	rm -f rtmidi_c.o
+	rm -f NAU7802.o
 
 reallyclean: clean
 	rm -f syntina-driver
