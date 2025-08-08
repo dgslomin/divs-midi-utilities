@@ -275,8 +275,8 @@ static void key_up(syntina_driver_t *syntina_driver, int key)
 
 	if (note >= 0)
 	{
-		send_note_off(syntina_driver->midi_out, 0, note);
 		syntina_driver->note_down_count[note]--;
+		if (syntina_driver->note_down_count[note] == 0) send_note_off(syntina_driver->midi_out, 0, note);
 		syntina_driver->key_down_note[key] = -1;
 		return;
 	}
