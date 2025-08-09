@@ -56,7 +56,7 @@ NAU7802_t NAU7802_new(uint8_t i2c_bus, uint8_t i2c_addr)
     NAU7802_t nau7802 = (NAU7802_t)(malloc(sizeof(struct NAU7802)));
     nau7802->i2c_addr = i2c_addr;
     nau7802->i2c_bus = i2c_bus;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &(nau7802->refTime));
+    clock_gettime(CLOCK_MONOTONIC_RAW, &(nau7802->refTime));
     return nau7802;
 }
 
@@ -460,16 +460,16 @@ bool NAU7802_setRegister(NAU7802_t nau7802, uint8_t registerAddress, uint8_t val
 }
 
 unsigned long NAU7802_millis(NAU7802_t nau7802) {
-	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-	unsigned long value_ms = (now.tv_sec - nau7802->refTime.tv_sec) * 1000 + (now.tv_nsec - nau7802->refTime.tv_nsec) / 1000000;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+    unsigned long value_ms = (now.tv_sec - nau7802->refTime.tv_sec) * 1000 + (now.tv_nsec - nau7802->refTime.tv_nsec) / 1000000;
     return value_ms;
 }
 
 unsigned long NAU7802_micros(NAU7802_t nau7802) {
-	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-	unsigned long value_us = (now.tv_sec - nau7802->refTime.tv_sec) * 1000000 + (now.tv_nsec - nau7802->refTime.tv_nsec) / 1000;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+    unsigned long value_us = (now.tv_sec - nau7802->refTime.tv_sec) * 1000000 + (now.tv_nsec - nau7802->refTime.tv_nsec) / 1000;
     return value_us;
 }
 

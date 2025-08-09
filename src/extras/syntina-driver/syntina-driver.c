@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -18,11 +19,12 @@
 #include <i2c/smbus.h>
 #include <rtmidi_c.h>
 #include <jansson.h>
+#include <NAU7802.h>
 #include <midiutil-common.h>
 #include <midiutil-rtmidi.h>
 
-#define LEFT_I2C_DEVICE_FILENAME "/dev/i2c-1"
-#define RIGHT_I2C_DEVICE_FILENAME "/dev/i2c-3"
+#define LEFT_I2C_BUS_NUMBER 1
+#define RIGHT_I2C_BUS_NUMBER 3
 #define KEYPAD_MATRIX_ADDRESS 0x34
 #define LOAD_CELL_ADDRESS 0x2A
 #define ACCELEROMETER_ADDRESS 0x19
@@ -41,13 +43,15 @@ static void performance_timer_elapsed(struct timespec *performance_timer, char *
 	fprintf(stderr, "%s%ld\n", prefix, elapsed);
 }
 
-static int open_keypad_matrix(char *i2c_device_filename)
+static int open_keypad_matrix(int i2c_bus_number)
 {
+	char i2c_device_filename[128];
+	sprintf(i2c_device_filename, "/dev/i2c-%d", i2c_bus_number);
 	int fd = open(i2c_device_filename, O_RDWR);
 
 	if (fd < 0)
 	{
-		fprintf(stderr, "Warning: cannot open keypad matrix on %s (bus not found)\n", i2c_device_filename);
+		fprintf(stderr, "Warning: cannot open keypad matrix on i2c bus %d\n (bus not found)", i2c_bus_number);
 		return -1;
 	}
 
@@ -56,7 +60,7 @@ static int open_keypad_matrix(char *i2c_device_filename)
 	if (i2c_smbus_read_byte_data(fd, 0x03) & 0x80 != 0)
 	{
 		close(fd);
-		fprintf(stderr, "Warning: cannot open keypad matrix on %s (target not found)\n", i2c_device_filename);
+		fprintf(stderr, "Warning: cannot open keypad matrix on i2c bus %d (target not found)\n", i2c_bus_number);
 		return -1;
 	}
 
@@ -98,35 +102,47 @@ static int read_keypad_matrix(int fd, int key_offset, int *key_p, int *down_p)
 	return 1;
 }
 
-static int open_load_cell(char *i2c_device_filename)
+static NAU7802_t open_load_cell(int i2c_bus_number)
 {
-	int fd = open(i2c_device_filename, O_RDWR);
+	NAU7802_t nau7802 = NAU7802_new(i2c_bus_number, LOAD_CELL_ADDRESS);
 
-	if (fd < 0)
+	if (!NAU7802_begin(nau7802, 1))
 	{
-		fprintf(stderr, "Warning: cannot open load cell on %s (bus not found)\n", i2c_device_filename);
-		return -1;
+		NAU7802_free(nau7802);
+		return NULL;
 	}
 
-	ioctl(fd, I2C_SLAVE, LOAD_CELL_ADDRESS);
-	return fd;
+   NAU7802_setSampleRate(nau7802, NAU7802_SPS_320);
+   NAU7802_calibrateAFE(nau7802);
+	NAU7802_calculateZeroOffset(nau7802, 8);
+	NAU7802_setCalibrationFactor(nau7802, 1500000);
+	return nau7802;
 }
 
-static void close_load_cell(int fd)
+static void close_load_cell(NAU7802_t nau7802)
 {
-	if (fd < 0) return;
-	close(fd);
+	if (nau7802 == NULL) return;
+	NAU7802_free(nau7802);
 }
 
-static int read_load_cell(int fd)
+static int read_load_cell(NAU7802_t nau7802)
 {
-	if (fd < 0) return -1;
-	// TODO
-	return -1;
+	if (nau7802 == NULL) return 0;
+	int val = NAU7802_getWeight(nau7802, 0, 4) * 128;
+	if (val > 127) val = 127;
+	return val;
 }
 
-static int open_accelerometer(char *i2c_device_filename)
+static void tare_load_cell(NAU7802_t nau7802)
 {
+	if (nau7802 == NULL) return;
+	NAU7802_calculateZeroOffset(nau7802, 8);
+}
+
+static int open_accelerometer(int i2c_bus_number)
+{
+	char i2c_device_filename[128];
+	sprintf(i2c_device_filename, "/dev/i2c-%d", i2c_bus_number);
 	int fd = open(i2c_device_filename, O_RDWR);
 
 	if (fd < 0)
@@ -203,11 +219,12 @@ typedef struct
 	json_t *config;
 	int left_keypad_matrix_fd;
 	int right_keypad_matrix_fd;
-	int load_cell_fd;
+	NAU7802_t load_cell_handle;
 	int accelerometer_fd;
 
 	int transpose;
 	int right_transpose;
+	int squeeze_cc;
 	int key_note[256];
 	int key_cc[256];
 
@@ -223,8 +240,10 @@ static void load_config_preset(syntina_driver_t *syntina_driver, char *preset_na
 	if (!preset_config) return;
 	json_t *transpose = json_object_get(preset_config, "transpose");
 	if (transpose) syntina_driver->transpose = json_integer_value(transpose);
-	json_t *right_transpose = json_object_get(preset_config, "rightTranspose");
+	json_t *right_transpose = json_object_get(preset_config, "right-transpose");
 	if (right_transpose) syntina_driver->right_transpose = json_integer_value(right_transpose);
+	json_t *squeeze_cc = json_object_get(preset_config, "squeeze-cc");
+	if (squeeze_cc) syntina_driver->squeeze_cc = json_integer_value(squeeze_cc);
 
 	for (int key = 0; key < 256; key++)
 	{
@@ -302,10 +321,10 @@ int main(int argc, char **argv)
 	syntina_driver_t syntina_driver;
 	syntina_driver.midi_out = NULL;
 	syntina_driver.config = NULL;
-	syntina_driver.left_keypad_matrix_fd = open_keypad_matrix(LEFT_I2C_DEVICE_FILENAME);
-	syntina_driver.right_keypad_matrix_fd = open_keypad_matrix(RIGHT_I2C_DEVICE_FILENAME);
-	syntina_driver.load_cell_fd = open_load_cell(LEFT_I2C_DEVICE_FILENAME);
-	syntina_driver.accelerometer_fd = open_accelerometer(RIGHT_I2C_DEVICE_FILENAME);
+	syntina_driver.left_keypad_matrix_fd = open_keypad_matrix(LEFT_I2C_BUS_NUMBER);
+	syntina_driver.right_keypad_matrix_fd = open_keypad_matrix(RIGHT_I2C_BUS_NUMBER);
+	syntina_driver.load_cell_handle = open_load_cell(LEFT_I2C_BUS_NUMBER);
+	syntina_driver.accelerometer_fd = open_accelerometer(RIGHT_I2C_BUS_NUMBER);
 	syntina_driver.transpose = 0;
 	syntina_driver.right_transpose = 0;
 	for (int key = 0; key < 256; key++) syntina_driver.key_note[key] = -1;
@@ -357,14 +376,14 @@ int main(int argc, char **argv)
 			if (down) key_down(&syntina_driver, key);
 		}
 
-		read_load_cell(syntina_driver.load_cell_fd);
-		read_accelerometer(syntina_driver.accelerometer_fd);
+		send_cc(syntina_driver.midi_out, 0, syntina_driver.squeeze_cc, read_load_cell(syntina_driver.load_cell_handle));
+		// read_accelerometer(syntina_driver.accelerometer_fd);
 	}
 
 	close_midi_out(syntina_driver.midi_out);
 	close_keypad_matrix(syntina_driver.left_keypad_matrix_fd);
 	close_keypad_matrix(syntina_driver.right_keypad_matrix_fd);
-	close_load_cell(syntina_driver.load_cell_fd);
+	close_load_cell(syntina_driver.load_cell_handle);
 	close_accelerometer(syntina_driver.accelerometer_fd);
 	json_decref(syntina_driver.config);
 }
