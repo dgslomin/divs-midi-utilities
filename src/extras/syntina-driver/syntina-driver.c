@@ -405,9 +405,6 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		struct timespec performance_timer;
-		performance_timer_start(&performance_timer);
-
 		int key, down;
 
 		while (read_keypad_matrix(syntina_driver.left_keypad_matrix_fd, 0, &key, &down))
@@ -431,8 +428,6 @@ int main(int argc, char **argv)
 		}
 
 		// read_accelerometer(syntina_driver.accelerometer_fd);
-
-		performance_timer_elapsed(&performance_timer, "main loop usecs: ");
 	}
 
 	close_midi_out(syntina_driver.midi_out);
