@@ -43,6 +43,44 @@ static void performance_timer_elapsed(struct timespec *performance_timer, char *
 	fprintf(stderr, "%s%ld\n", prefix, elapsed);
 }
 
+struct running_average
+{
+	int number_of_samples;
+	int sample_number;
+	float total;
+	float *samples;
+};
+
+typedef struct running_average *running_average_t;
+
+running_average_t new_running_average(int number_of_samples)
+{
+	running_average_t running_average = (running_average_t)(malloc(sizeof (struct running_average)));
+	running_average->number_of_samples = number_of_samples;
+	running_average->sample_number = 0;
+	running_average->total = 0;
+	running_average->samples = (float *)(malloc(number_of_samples * sizeof (float)));
+	return running_average;
+}
+
+void free_running_average(running_average_t running_average)
+{
+	free(running_average->samples);
+	free(running_average);
+}
+
+float add_running_average(running_average_t running_average, float sample)
+{
+	running_average->samples[running_average->sample_number] = sample;
+	running_average->sample_number = (running_average->sample_number + 1) % running_average->number_of_samples;
+	running_average->total = running_average->total + sample - running_average->samples[running_average->sample_number];
+}
+
+float get_running_average(running_average_t running_average)
+{
+	return running_average->total / running_average->number_of_samples;
+}
+
 static int open_keypad_matrix(int i2c_bus_number)
 {
 	char i2c_device_filename[128];
@@ -115,7 +153,7 @@ static NAU7802_t open_load_cell(int i2c_bus_number)
    NAU7802_setSampleRate(nau7802, NAU7802_SPS_320);
    NAU7802_calibrateAFE(nau7802);
 	NAU7802_calculateZeroOffset(nau7802, 8);
-	NAU7802_setCalibrationFactor(nau7802, 1500000);
+	NAU7802_setCalibrationFactor(nau7802, 1000000);
 	return nau7802;
 }
 
@@ -125,10 +163,11 @@ static void close_load_cell(NAU7802_t nau7802)
 	NAU7802_free(nau7802);
 }
 
-static int read_load_cell(NAU7802_t nau7802)
+static int read_load_cell(NAU7802_t nau7802, running_average_t running_average)
 {
 	if (nau7802 == NULL) return 0;
-	int val = NAU7802_getWeight(nau7802, 0, 4) * 128;
+	add_running_average(running_average, NAU7802_getWeight(nau7802, 0, 1));
+	int val = get_running_average(running_average) * 128;
 	if (val > 127) val = 127;
 	return val;
 }
@@ -220,6 +259,7 @@ typedef struct
 	int left_keypad_matrix_fd;
 	int right_keypad_matrix_fd;
 	NAU7802_t load_cell_handle;
+	running_average_t load_cell_running_average;
 	int accelerometer_fd;
 
 	int transpose;
@@ -231,6 +271,7 @@ typedef struct
 	int key_down_note[256];
 	int note_down_count[128];
 	int key_down_cc[256];
+	int load_cell_last_reading;
 }
 syntina_driver_t;
 
@@ -324,6 +365,7 @@ int main(int argc, char **argv)
 	syntina_driver.left_keypad_matrix_fd = open_keypad_matrix(LEFT_I2C_BUS_NUMBER);
 	syntina_driver.right_keypad_matrix_fd = open_keypad_matrix(RIGHT_I2C_BUS_NUMBER);
 	syntina_driver.load_cell_handle = open_load_cell(LEFT_I2C_BUS_NUMBER);
+	syntina_driver.load_cell_running_average = new_running_average(8);
 	syntina_driver.accelerometer_fd = open_accelerometer(RIGHT_I2C_BUS_NUMBER);
 	syntina_driver.transpose = 0;
 	syntina_driver.right_transpose = 0;
@@ -332,6 +374,7 @@ int main(int argc, char **argv)
 	for (int key = 0; key < 256; key++) syntina_driver.key_down_note[key] = -1;
 	for (int note = 0; note < 128; note++) syntina_driver.note_down_count[note] = 0;
 	for (int key = 0; key < 256; key++) syntina_driver.key_down_cc[key] = -1;
+	syntina_driver.load_cell_last_reading = 0;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -362,6 +405,9 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
+		struct timespec performance_timer;
+		performance_timer_start(&performance_timer);
+
 		int key, down;
 
 		while (read_keypad_matrix(syntina_driver.left_keypad_matrix_fd, 0, &key, &down))
@@ -376,14 +422,24 @@ int main(int argc, char **argv)
 			if (down) key_down(&syntina_driver, key);
 		}
 
-		send_cc(syntina_driver.midi_out, 0, syntina_driver.squeeze_cc, read_load_cell(syntina_driver.load_cell_handle));
+		int load_cell_reading = read_load_cell(syntina_driver.load_cell_handle, syntina_driver.load_cell_running_average);
+
+		if (load_cell_reading != syntina_driver.load_cell_last_reading)
+		{
+			send_cc(syntina_driver.midi_out, 0, syntina_driver.squeeze_cc, load_cell_reading);
+			syntina_driver.load_cell_last_reading = load_cell_reading;
+		}
+
 		// read_accelerometer(syntina_driver.accelerometer_fd);
+
+		performance_timer_elapsed(&performance_timer, "main loop usecs: ");
 	}
 
 	close_midi_out(syntina_driver.midi_out);
 	close_keypad_matrix(syntina_driver.left_keypad_matrix_fd);
 	close_keypad_matrix(syntina_driver.right_keypad_matrix_fd);
 	close_load_cell(syntina_driver.load_cell_handle);
+	free_running_average(syntina_driver.load_cell_running_average);
 	close_accelerometer(syntina_driver.accelerometer_fd);
 	json_decref(syntina_driver.config);
 }
