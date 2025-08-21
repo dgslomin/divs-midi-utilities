@@ -24,5 +24,8 @@ Surge:
 
 Syntina driver:
 
+	https://docs.kernel.org/i2c/dev-interface.html
+	https://github.com/torvalds/linux/blob/master/drivers/input/keyboard/tca8418_keypad.c
+	https://www.ti.com/document-viewer/TCA8418/datasheet
 	https://github.com/yasir-shahzad/NAU7802/blob/master/src/NAU7802.cpp
 
