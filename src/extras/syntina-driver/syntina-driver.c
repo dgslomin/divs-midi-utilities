@@ -263,6 +263,7 @@ typedef struct
 	int accelerometer_fd;
 
 	int transpose;
+	int left_transpose;
 	int right_transpose;
 	int squeeze_cc;
 	int key_note[256];
@@ -281,6 +282,8 @@ static void load_config_preset(syntina_driver_t *syntina_driver, char *preset_na
 	if (!preset_config) return;
 	json_t *transpose = json_object_get(preset_config, "transpose");
 	if (transpose) syntina_driver->transpose = json_integer_value(transpose);
+	json_t *left_transpose = json_object_get(preset_config, "left-transpose");
+	if (left_transpose) syntina_driver->left_transpose = json_integer_value(left_transpose);
 	json_t *right_transpose = json_object_get(preset_config, "right-transpose");
 	if (right_transpose) syntina_driver->right_transpose = json_integer_value(right_transpose);
 	json_t *squeeze_cc = json_object_get(preset_config, "squeeze-cc");
@@ -311,7 +314,7 @@ static void key_down(syntina_driver_t *syntina_driver, int key)
 
 	if (note >= 0)
 	{
-		note += syntina_driver->transpose + (key >= 100 ? syntina_driver->right_transpose : 0);
+		note += syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
 		if (syntina_driver->note_down_count[note] > 0) send_note_off(syntina_driver->midi_out, 0, note);
 		send_note_on(syntina_driver->midi_out, 0, note, 127);
 		syntina_driver->note_down_count[note]++;
@@ -368,6 +371,7 @@ int main(int argc, char **argv)
 	syntina_driver.load_cell_running_average = new_running_average(8);
 	syntina_driver.accelerometer_fd = open_accelerometer(RIGHT_I2C_BUS_NUMBER);
 	syntina_driver.transpose = 0;
+	syntina_driver.left_transpose = 0;
 	syntina_driver.right_transpose = 0;
 	for (int key = 0; key < 256; key++) syntina_driver.key_note[key] = -1;
 	for (int key = 0; key < 256; key++) syntina_driver.key_cc[key] = -1;
