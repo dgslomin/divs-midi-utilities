@@ -6,6 +6,19 @@
 #include "hardware.h"
 #include "midi.h"
 
+typedef struct SyntinaDriver *SyntinaDriver_t;
+
+typedef enum
+{
+	KEY_FUNCTION_TYPE_NONE = 0,
+	KEY_FUNCTION_TYPE_NOTE,
+	KEY_FUNCTION_TYPE_CC,
+	KEY_FUNCTION_TYPE_PANIC,
+	KEY_FUNCTION_TYPE_TRANSPOSE,
+	KEY_FUNCTION_TYPE_PRESET
+}
+KeyFunctionType_t;
+
 struct SyntinaDriver
 {
 	MidiOut_t midi_out;
@@ -20,15 +33,26 @@ struct SyntinaDriver
 	int right_transpose;
 	int squeeze_cc;
 	int tilt_cc;
-	int key_note[256];
-	int key_cc[256];
+
+	struct
+	{
+		KeyFunctionType_t type;
+
+		union
+		{
+			int note;
+			int cc;
+			int transpose;
+			const char *preset;
+		}
+		u;
+	}
+	key_function[256];
 
 	int key_down_note[256];
 	int note_down_count[128];
 	int key_down_cc[256];
 };
-
-typedef struct SyntinaDriver *SyntinaDriver_t;
 
 SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filename)
 {
@@ -43,8 +67,9 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	syntina_driver->transpose = 0;
 	syntina_driver->left_transpose = 0;
 	syntina_driver->right_transpose = 0;
-	for (int key = 0; key < 256; key++) syntina_driver->key_note[key] = -1;
-	for (int key = 0; key < 256; key++) syntina_driver->key_cc[key] = -1;
+	syntina_driver->squeeze_cc = 0;
+	syntina_driver->tilt_cc = 0;
+	for (int key = 0; key < 256; key++) syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_NONE;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_note[key] = -1;
 	for (int note = 0; note < 128; note++) syntina_driver->note_down_count[note] = 0;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_cc[key] = -1;
@@ -62,10 +87,18 @@ void SyntinaDriver_free(SyntinaDriver_t syntina_driver)
 	free(syntina_driver);
 }
 
-void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, char *preset_name)
+void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, const char *preset_name)
 {
 	json_t *preset_config = json_object_get(syntina_driver->config, preset_name);
 	if (!preset_config) return;
+
+	json_t *include = json_object_get(preset_config, "include");
+
+	for (int i = 0; i < json_array_size(include); i++)
+	{
+		const char *include_preset_name = json_string_value(json_array_get(include, 0));
+		SyntinaDriver_loadConfigPreset(syntina_driver, include_preset_name);
+	}
 
 	json_t *transpose = json_object_get(preset_config, "transpose");
 	if (transpose) syntina_driver->transpose = json_integer_value(transpose);
@@ -85,44 +118,80 @@ void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, char *preset
 	for (int key = 0; key < 256; key++)
 	{
 		char key_string[4];
-		sprintf(key_string, "%d", key);
+		sprintf(key_string, "key-%d", key);
 		json_t *key_config = json_object_get(preset_config, key_string);
+		if (!key_config) continue;
+
+		syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_NONE;
 
 		const char *key_function = json_string_value(json_object_get(key_config, "function"));
 		if (!key_function) continue;
 
 		if (strcmp(key_function, "note") == 0)
 		{
-			syntina_driver->key_note[key] = json_integer_value(json_object_get(key_config, "note"));
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_NOTE;
+			syntina_driver->key_function[key].u.note = json_integer_value(json_object_get(key_config, "note"));
 		}
 		else if (strcmp(key_function, "cc") == 0)
 		{
-			syntina_driver->key_cc[key] = json_integer_value(json_object_get(key_config, "cc"));
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_CC;
+			syntina_driver->key_function[key].u.cc = json_integer_value(json_object_get(key_config, "cc"));
+		}
+		else if (strcmp(key_function, "panic") == 0)
+		{
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_PANIC;
+		}
+		else if (strcmp(key_function, "transpose") == 0)
+		{
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_TRANSPOSE;
+			syntina_driver->key_function[key].u.transpose = json_integer_value(json_object_get(key_config, "transpose"));
+		}
+		else if (strcmp(key_function, "preset") == 0)
+		{
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_PRESET;
+			syntina_driver->key_function[key].u.preset = json_string_value(json_object_get(key_config, "preset"));
 		}
 	}
 }
 
 void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 {
-	int note = syntina_driver->key_note[key];
-
-	if (note >= 0)
+	switch (syntina_driver->key_function[key].type)
 	{
-		note += syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
-		if (syntina_driver->note_down_count[note] > 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
-		MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
-		syntina_driver->note_down_count[note]++;
-		syntina_driver->key_down_note[key] = note;
-		return;
-	}
-
-	int cc = syntina_driver->key_cc[key];
-
-	if (cc >= 0)
-	{
-		MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 127);
-		syntina_driver->key_down_cc[key] = cc;
-		return;
+		case KEY_FUNCTION_TYPE_NOTE:
+		{
+			int note = syntina_driver->key_function[key].u.note + syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
+			if (syntina_driver->note_down_count[note] > 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+			MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
+			syntina_driver->note_down_count[note]++;
+			syntina_driver->key_down_note[key] = note;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_CC:
+		{
+			int cc = syntina_driver->key_function[key].u.cc;
+			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 127);
+			syntina_driver->key_down_cc[key] = cc;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_TRANSPOSE:
+		{
+			syntina_driver->transpose += syntina_driver->key_function[key].u.transpose;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_PANIC:
+		{
+			for (int note = 0; note < 128; note++) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_PRESET:
+		{
+			SyntinaDriver_loadConfigPreset(syntina_driver, syntina_driver->key_function[key].u.preset);
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
