@@ -15,6 +15,8 @@ typedef enum
 	KEY_FUNCTION_TYPE_CC,
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_TRANSPOSE,
+	KEY_FUNCTION_TYPE_LEFT_TRANSPOSE,
+	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_PRESET
 }
 KeyFunctionType_t;
@@ -42,7 +44,28 @@ struct SyntinaDriver
 		{
 			int note;
 			int cc;
-			int transpose;
+
+			struct
+			{
+				int amount;
+				int relative;
+			}
+			transpose;
+
+			struct
+			{
+				int amount;
+				int relative;
+			}
+			left_transpose;
+
+			struct
+			{
+				int amount;
+				int relative;
+			}
+			right_transpose;
+
 			const char *preset;
 		}
 		u;
@@ -87,7 +110,7 @@ void SyntinaDriver_free(SyntinaDriver_t syntina_driver)
 	free(syntina_driver);
 }
 
-void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, const char *preset_name)
+void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset_name)
 {
 	json_t *preset_config = json_object_get(syntina_driver->config, preset_name);
 	if (!preset_config) return;
@@ -97,7 +120,7 @@ void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, const char *
 	for (int i = 0; i < json_array_size(include); i++)
 	{
 		const char *include_preset_name = json_string_value(json_array_get(include, 0));
-		SyntinaDriver_loadConfigPreset(syntina_driver, include_preset_name);
+		SyntinaDriver_loadPreset(syntina_driver, include_preset_name);
 	}
 
 	json_t *transpose = json_object_get(preset_config, "transpose");
@@ -144,7 +167,20 @@ void SyntinaDriver_loadConfigPreset(SyntinaDriver_t syntina_driver, const char *
 		else if (strcmp(key_function, "transpose") == 0)
 		{
 			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_TRANSPOSE;
-			syntina_driver->key_function[key].u.transpose = json_integer_value(json_object_get(key_config, "transpose"));
+			syntina_driver->key_function[key].u.transpose.amount = json_integer_value(json_object_get(key_config, "amount"));
+			syntina_driver->key_function[key].u.transpose.relative = json_boolean_value(json_object_get(key_config, "relative"));
+		}
+		else if (strcmp(key_function, "left-transpose") == 0)
+		{
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_LEFT_TRANSPOSE;
+			syntina_driver->key_function[key].u.left_transpose.amount = json_integer_value(json_object_get(key_config, "amount"));
+			syntina_driver->key_function[key].u.left_transpose.relative = json_boolean_value(json_object_get(key_config, "relative"));
+		}
+		else if (strcmp(key_function, "right-transpose") == 0)
+		{
+			syntina_driver->key_function[key].type = KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE;
+			syntina_driver->key_function[key].u.right_transpose.amount = json_integer_value(json_object_get(key_config, "amount"));
+			syntina_driver->key_function[key].u.right_transpose.relative = json_boolean_value(json_object_get(key_config, "relative"));
 		}
 		else if (strcmp(key_function, "preset") == 0)
 		{
@@ -176,7 +212,17 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		}
 		case KEY_FUNCTION_TYPE_TRANSPOSE:
 		{
-			syntina_driver->transpose += syntina_driver->key_function[key].u.transpose;
+			syntina_driver->transpose = (syntina_driver->key_function[key].u.transpose.relative ? syntina_driver->transpose : 0) + syntina_driver->key_function[key].u.transpose.amount;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_LEFT_TRANSPOSE:
+		{
+			syntina_driver->left_transpose = (syntina_driver->key_function[key].u.left_transpose.relative ? syntina_driver->left_transpose : 0) + syntina_driver->key_function[key].u.left_transpose.amount;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE:
+		{
+			syntina_driver->right_transpose = (syntina_driver->key_function[key].u.right_transpose.relative ? syntina_driver->right_transpose : 0) + syntina_driver->key_function[key].u.right_transpose.amount;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_PANIC:
@@ -186,7 +232,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		}
 		case KEY_FUNCTION_TYPE_PRESET:
 		{
-			SyntinaDriver_loadConfigPreset(syntina_driver, syntina_driver->key_function[key].u.preset);
+			SyntinaDriver_loadPreset(syntina_driver, syntina_driver->key_function[key].u.preset);
 		}
 		default:
 		{
@@ -219,7 +265,7 @@ void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
 
 void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 {
-	SyntinaDriver_loadConfigPreset(syntina_driver, "default");
+	SyntinaDriver_loadPreset(syntina_driver, "default");
 
 	while (1)
 	{
