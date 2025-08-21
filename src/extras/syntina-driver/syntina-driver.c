@@ -299,7 +299,7 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage: %s --out <port> --config <syntina.conf>\n", program_name);
+	fprintf(stderr, "Usage: %s --out <port> --config <syntina-driver.conf>\n", program_name);
 	exit(1);
 }
 
