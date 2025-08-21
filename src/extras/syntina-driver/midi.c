@@ -20,7 +20,7 @@ MidiOut_t MidiOut_open(char *port_name)
 	{
 		midi_out->rtmidi_out = rtmidi_open_out_port("syntina", port_name, "syntina");
 
-		if (midi_out->rtmidi_out == NULL)
+		if (midi_out->rtmidi_out != NULL)
 		{
 			fprintf(stderr, "Info: connected to MIDI output %s\n", port_name);
 			return midi_out;
