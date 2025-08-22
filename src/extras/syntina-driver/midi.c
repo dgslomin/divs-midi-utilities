@@ -59,3 +59,11 @@ void MidiOut_sendControlChange(MidiOut_t midi_out, int channel, int number, int 
 	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_CONTROL_CHANGE);
 }
 
+void MidiOut_sendProgramChange(MidiOut_t midi_out, int channel, int number)
+{
+	if (midi_out == NULL) return;
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE];
+	MidiUtilMessage_setProgramChange(message, channel, number);
+	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE);
+}
+

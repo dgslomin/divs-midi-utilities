@@ -146,6 +146,9 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		SyntinaDriver_loadPreset(syntina_driver, include_preset_name);
 	}
 
+	json_t *program_json = json_object_get(preset_json, "program");
+	if (program_json) MidiOut_sendProgramChange(syntina_driver->midi_out, 0, json_integer_value(program_json));
+
 	json_t *transpose_json = json_object_get(preset_json, "transpose");
 	if (transpose_json) syntina_driver->transpose = json_integer_value(transpose_json);
 
