@@ -348,6 +348,7 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if ((midi_out_port_name == NULL) || (config_filename == NULL)) usage(argv[0]);
 	SyntinaDriver_t syntina_driver = SyntinaDriver_new(midi_out_port_name, config_filename);
 	SyntinaDriver_run(syntina_driver);
 	SyntinaDriver_free(syntina_driver);
