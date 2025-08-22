@@ -5,6 +5,10 @@
 #include <jansson.h>
 #include "hardware.h"
 #include "midi.h"
+#include "utils.h"
+
+#define MAX_RETRIG_TIME 0.05
+#define RETRIG_VELOCITY 64
 
 typedef struct SyntinaDriver *SyntinaDriver_t;
 
@@ -12,6 +16,7 @@ typedef enum
 {
 	KEY_FUNCTION_TYPE_NONE = 0,
 	KEY_FUNCTION_TYPE_NOTE,
+	KEY_FUNCTION_TYPE_RETRIG,
 	KEY_FUNCTION_TYPE_CC,
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_ALT,
@@ -57,10 +62,13 @@ struct SyntinaDriver
 
 	int key_down_note[256];
 	int note_down_count[128];
+	float note_off_time[128];
 	int key_down_cc[256];
 	int alt;
 	int key_down_alt[256];
 	int alt_down_count;
+	int note_retrig_count[128];
+	int key_down_retrig[256];
 };
 
 SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filename)
@@ -86,10 +94,13 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_note[key] = -1;
 	for (int note = 0; note < 128; note++) syntina_driver->note_down_count[note] = 0;
+	for (int note = 0; note < 128; note++) syntina_driver->note_off_time[note] = 0;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_cc[key] = -1;
 	syntina_driver->alt = 0;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_alt[key] = 0;
 	syntina_driver->alt_down_count = 0;
+	for (int note = 0; note < 128; note++) syntina_driver->note_retrig_count[note] = 0;
+	for (int key = 0; key < 256; key++) syntina_driver->key_down_retrig[key] = 0;
 	return syntina_driver;
 }
 
@@ -159,6 +170,10 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_NOTE;
 			syntina_driver->key_function[key][alt].u.note = json_integer_value(json_object_get(to_json, "note"));
 		}
+		else if (strcmp(key_function, "retrig") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_RETRIG;
+		}
 		else if (strcmp(key_function, "cc") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC;
@@ -207,6 +222,35 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
 			syntina_driver->note_down_count[note]++;
 			syntina_driver->key_down_note[key] = note;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_RETRIG:
+		{
+			float current_time = Time_getTime();
+
+			for (int note = 0; note < 128; note++)
+			{
+				int should_retrig = 0;
+
+				if (syntina_driver->note_down_count[note] > 0)
+				{
+					MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+					should_retrig = 1;
+				}
+				else if (current_time - syntina_driver->note_off_time[note] < MAX_RETRIG_TIME)
+				{
+					should_retrig = 1;
+				}
+
+				if (should_retrig)
+				{
+					MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, RETRIG_VELOCITY);
+					syntina_driver->note_down_count[note]++;
+					syntina_driver->note_retrig_count[note]++;
+				}
+			}
+
+			syntina_driver->key_down_retrig[key] = 1;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_CC:
@@ -262,8 +306,34 @@ void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
 	if (note >= 0)
 	{
 		syntina_driver->note_down_count[note]--;
-		if (syntina_driver->note_down_count[note] == 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+
+		if (syntina_driver->note_down_count[note] == 0)
+		{
+			MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+			syntina_driver->note_off_time[note] = Time_getTime();
+		}
+
 		syntina_driver->key_down_note[key] = -1;
+		return;
+	}
+
+	if (syntina_driver->key_down_retrig[key])
+	{
+		for (int note = 0; note < 128; note++)
+		{
+			if (syntina_driver->note_retrig_count[note] > 0)
+			{
+				syntina_driver->note_retrig_count[note]--;
+				syntina_driver->note_down_count[note]--;
+
+				if (syntina_driver->note_down_count[note] == 0)
+				{
+					MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+				}
+			}
+		}
+
+		syntina_driver->key_down_retrig[key] = 0;
 		return;
 	}
 

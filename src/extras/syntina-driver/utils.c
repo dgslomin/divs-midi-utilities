@@ -4,33 +4,11 @@
 #include <time.h>
 #include "utils.h"
 
-struct PerformanceTimer
+float Time_getTime(void)
 {
-	struct timespec start;
-};
-
-typedef struct PerformanceTimer *PerformanceTimer_t;
-
-PerformanceTimer_t PerformanceTimer_new(void)
-{
-	return (PerformanceTimer_t)(malloc(sizeof (struct PerformanceTimer)));
-}
-
-void PerformanceTimer_free(PerformanceTimer_t performance_timer)
-{
-	free(performance_timer);
-}
-
-void PerformanceTimer_start(PerformanceTimer_t performance_timer)
-{
-	clock_gettime(CLOCK_MONOTONIC_RAW, &(performance_timer->start));
-}
-
-float PerformanceTimer_elapsed(PerformanceTimer_t performance_timer)
-{
-	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-	return ((now.tv_sec - performance_timer->start.tv_sec) * 1.0) + ((now.tv_nsec - performance_timer->start.tv_nsec) / 1000000000.0);
+	struct timespec time;
+	clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+	return (time.tv_sec * 1.0) + (time.tv_nsec / 1000000000.0);
 }
 
 struct Smoother
