@@ -162,7 +162,7 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		else if (strcmp(key_function, "cc") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC;
-			syntina_driver->key_function[key][alt].u.cc = json_integer_value(json_object_get(to_json, "cc"));
+			syntina_driver->key_function[key][alt].u.cc = json_integer_value(json_object_get(to_json, "number"));
 		}
 		else if (strcmp(key_function, "panic") == 0)
 		{
@@ -171,7 +171,7 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		else if (strcmp(key_function, "alt") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_ALT;
-			syntina_driver->key_function[key][alt].u.alt = json_integer_value(json_object_get(to_json, "alt"));
+			syntina_driver->key_function[key][alt].u.alt = json_integer_value(json_object_get(to_json, "number"));
 		}
 		else if (strcmp(key_function, "transpose") == 0)
 		{
@@ -191,7 +191,7 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		else if (strcmp(key_function, "preset") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_PRESET;
-			syntina_driver->key_function[key][alt].u.preset = json_string_value(json_object_get(to_json, "preset"));
+			syntina_driver->key_function[key][alt].u.preset = json_string_value(json_object_get(to_json, "name"));
 		}
 	}
 }
