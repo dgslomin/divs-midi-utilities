@@ -16,7 +16,6 @@ typedef enum
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_ALT,
 	KEY_FUNCTION_TYPE_TRANSPOSE,
-	KEY_FUNCTION_TYPE_SECONDARY_TRANSPOSE,
 	KEY_FUNCTION_TYPE_LEFT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_PRESET
@@ -33,7 +32,6 @@ struct SyntinaDriver
 	TiltSensor_t tilt_sensor;
 
 	int transpose;
-	int secondary_transpose;
 	int left_transpose;
 	int right_transpose;
 	int squeeze_cc;
@@ -48,35 +46,9 @@ struct SyntinaDriver
 			int note;
 			int cc;
 			int alt;
-
-			struct
-			{
-				int amount;
-				int relative;
-			}
-			transpose;
-
-			struct
-			{
-				int amount;
-				int relative;
-			}
-			secondary_transpose;
-
-			struct
-			{
-				int amount;
-				int relative;
-			}
-			left_transpose;
-
-			struct
-			{
-				int amount;
-				int relative;
-			}
-			right_transpose;
-
+			int transpose;
+			int left_transpose;
+			int right_transpose;
 			const char *preset;
 		}
 		u;
@@ -102,7 +74,6 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	syntina_driver->squeeze_sensor = SqueezeSensor_open();
 	syntina_driver->tilt_sensor = TiltSensor_open();
 	syntina_driver->transpose = 0;
-	syntina_driver->secondary_transpose = 0;
 	syntina_driver->left_transpose = 0;
 	syntina_driver->right_transpose = 0;
 	syntina_driver->squeeze_cc = 0;
@@ -151,9 +122,6 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 
 	json_t *transpose_json = json_object_get(preset_json, "transpose");
 	if (transpose_json) syntina_driver->transpose = json_integer_value(transpose_json);
-
-	json_t *secondary_transpose_json = json_object_get(preset_json, "secondary-transpose");
-	if (secondary_transpose_json) syntina_driver->secondary_transpose = json_integer_value(secondary_transpose_json);
 
 	json_t *left_transpose_json = json_object_get(preset_json, "left-transpose");
 	if (left_transpose_json) syntina_driver->left_transpose = json_integer_value(left_transpose_json);
@@ -208,26 +176,17 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		else if (strcmp(key_function, "transpose") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_TRANSPOSE;
-			syntina_driver->key_function[key][alt].u.transpose.amount = json_integer_value(json_object_get(to_json, "amount"));
-			syntina_driver->key_function[key][alt].u.transpose.relative = json_boolean_value(json_object_get(to_json, "relative"));
-		}
-		else if (strcmp(key_function, "secondary-transpose") == 0)
-		{
-			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_SECONDARY_TRANSPOSE;
-			syntina_driver->key_function[key][alt].u.secondary_transpose.amount = json_integer_value(json_object_get(to_json, "amount"));
-			syntina_driver->key_function[key][alt].u.secondary_transpose.relative = json_boolean_value(json_object_get(to_json, "relative"));
+			syntina_driver->key_function[key][alt].u.transpose = json_integer_value(json_object_get(to_json, "amount"));
 		}
 		else if (strcmp(key_function, "left-transpose") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_LEFT_TRANSPOSE;
-			syntina_driver->key_function[key][alt].u.left_transpose.amount = json_integer_value(json_object_get(to_json, "amount"));
-			syntina_driver->key_function[key][alt].u.left_transpose.relative = json_boolean_value(json_object_get(to_json, "relative"));
+			syntina_driver->key_function[key][alt].u.left_transpose = json_integer_value(json_object_get(to_json, "amount"));
 		}
 		else if (strcmp(key_function, "right-transpose") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE;
-			syntina_driver->key_function[key][alt].u.right_transpose.amount = json_integer_value(json_object_get(to_json, "amount"));
-			syntina_driver->key_function[key][alt].u.right_transpose.relative = json_boolean_value(json_object_get(to_json, "relative"));
+			syntina_driver->key_function[key][alt].u.right_transpose = json_integer_value(json_object_get(to_json, "amount"));
 		}
 		else if (strcmp(key_function, "preset") == 0)
 		{
@@ -243,12 +202,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 	{
 		case KEY_FUNCTION_TYPE_NOTE:
 		{
-			int note =
-				syntina_driver->key_function[key][syntina_driver->alt].u.note +
-				syntina_driver->transpose +
-				syntina_driver->secondary_transpose +
-				(key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
-
+			int note = syntina_driver->key_function[key][syntina_driver->alt].u.note + syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
 			if (syntina_driver->note_down_count[note] > 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
 			MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
 			syntina_driver->note_down_count[note]++;
@@ -271,34 +225,17 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		}
 		case KEY_FUNCTION_TYPE_TRANSPOSE:
 		{
-			syntina_driver->transpose =
-				(syntina_driver->key_function[key][syntina_driver->alt].u.transpose.relative ? syntina_driver->transpose : 0) +
-				syntina_driver->key_function[key][syntina_driver->alt].u.transpose.amount;
-
-			break;
-		}
-		case KEY_FUNCTION_TYPE_SECONDARY_TRANSPOSE:
-		{
-			syntina_driver->secondary_transpose =
-				(syntina_driver->key_function[key][syntina_driver->alt].u.secondary_transpose.relative ? syntina_driver->secondary_transpose : 0) +
-				syntina_driver->key_function[key][syntina_driver->alt].u.secondary_transpose.amount;
-
+			syntina_driver->transpose = syntina_driver->key_function[key][syntina_driver->alt].u.transpose;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_LEFT_TRANSPOSE:
 		{
-			syntina_driver->left_transpose =
-				(syntina_driver->key_function[key][syntina_driver->alt].u.left_transpose.relative ? syntina_driver->left_transpose : 0) +
-				syntina_driver->key_function[key][syntina_driver->alt].u.left_transpose.amount;
-
+			syntina_driver->left_transpose = syntina_driver->key_function[key][syntina_driver->alt].u.left_transpose;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE:
 		{
-			syntina_driver->right_transpose =
-				(syntina_driver->key_function[key][syntina_driver->alt].u.right_transpose.relative ? syntina_driver->right_transpose : 0) +
-				syntina_driver->key_function[key][syntina_driver->alt].u.right_transpose.amount;
-
+			syntina_driver->right_transpose = syntina_driver->key_function[key][syntina_driver->alt].u.right_transpose;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_PANIC:
