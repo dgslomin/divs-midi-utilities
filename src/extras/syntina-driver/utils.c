@@ -26,6 +26,7 @@ Smoother_t Smoother_new(int number_of_samples)
 	smoother->sample_number = 0;
 	smoother->total = 0;
 	smoother->samples = (float *)(malloc(number_of_samples * sizeof (float)));
+	for (int sample_number = 0; sample_number < number_of_samples; sample_number++) smoother->samples[sample_number] = 0;
 	return smoother;
 }
 
@@ -37,9 +38,9 @@ void Smoother_free(Smoother_t smoother)
 
 void Smoother_addSample(Smoother_t smoother, float sample)
 {
+	smoother->total = smoother->total + sample - smoother->samples[smoother->sample_number];
 	smoother->samples[smoother->sample_number] = sample;
 	smoother->sample_number = (smoother->sample_number + 1) % smoother->number_of_samples;
-	smoother->total = smoother->total + sample - smoother->samples[smoother->sample_number];
 }
 
 float Smoother_getAverage(Smoother_t smoother)

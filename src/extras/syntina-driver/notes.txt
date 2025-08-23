@@ -29,3 +29,6 @@ Syntina driver:
 	https://www.ti.com/document-viewer/TCA8418/datasheet
 	https://github.com/yasir-shahzad/NAU7802/blob/master/src/NAU7802.cpp
 
+In progress:
+
+	Carla isn't sending program change messages to Surge.  There's an option for this in its GUI (under "edit plugin") but it's grayed out.
