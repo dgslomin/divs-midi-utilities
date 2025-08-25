@@ -23,7 +23,8 @@ typedef enum
 	KEY_FUNCTION_TYPE_TRANSPOSE,
 	KEY_FUNCTION_TYPE_LEFT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
-	KEY_FUNCTION_TYPE_PRESET
+	KEY_FUNCTION_TYPE_PRESET,
+	KEY_FUNCTION_TYPE_TARE
 }
 KeyFunctionType_t;
 
@@ -208,6 +209,10 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_PRESET;
 			syntina_driver->key_function[key][alt].u.preset = json_string_value(json_object_get(to_json, "name"));
 		}
+		else if (strcmp(key_function, "tare") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_TARE;
+		}
 	}
 }
 
@@ -294,6 +299,12 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		case KEY_FUNCTION_TYPE_PRESET:
 		{
 			SyntinaDriver_loadPreset(syntina_driver, syntina_driver->key_function[key][syntina_driver->alt].u.preset);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_TARE:
+		{
+			SqueezeSensor_tare(syntina_driver->squeeze_sensor);
+			TiltSensor_tare(syntina_driver->tilt_sensor);
 			break;
 		}
 		default:
