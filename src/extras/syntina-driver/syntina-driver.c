@@ -285,14 +285,10 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		case KEY_FUNCTION_TYPE_PANIC:
 		{
 			for (int note = 0; note < 128; note++) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
-			Keyboard_close(syntina_driver->left_keyboard);
-			Keyboard_close(syntina_driver->right_keyboard);
-			SqueezeSensor_close(syntina_driver->squeeze_sensor);
-			TiltSensor_close(syntina_driver->tilt_sensor);
-			syntina_driver->left_keyboard = Keyboard_openLeft();
-			syntina_driver->right_keyboard = Keyboard_openRight();
-			syntina_driver->squeeze_sensor = SqueezeSensor_open();
-			syntina_driver->tilt_sensor = TiltSensor_open();
+			Keyboard_reconnect(syntina_driver->left_keyboard);
+			Keyboard_reconnect(syntina_driver->right_keyboard);
+			SqueezeSensor_reconnect(syntina_driver->squeeze_sensor);
+			TiltSensor_reconnect(syntina_driver->tilt_sensor);
 			break;
 		}
 		case KEY_FUNCTION_TYPE_PRESET:

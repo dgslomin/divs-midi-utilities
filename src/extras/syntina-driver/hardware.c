@@ -24,34 +24,37 @@
 
 struct Keyboard
 {
+	int i2c_bus_number;
 	int key_offset;
 	int fd;
 };
 
-static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
+static void Keyboard_disconnect(Keyboard_t keyboard)
 {
-	Keyboard_t keyboard = (Keyboard_t)(malloc(sizeof (struct Keyboard)));
-	keyboard->key_offset = key_offset;
+	if (keyboard->fd < 0) return;
+	close(keyboard->fd);
+	keyboard->fd = -1;
+}
 
+static void Keyboard_connect(Keyboard_t keyboard)
+{
 	char i2c_device_filename[128];
-	sprintf(i2c_device_filename, "/dev/i2c-%d", i2c_bus_number);
+	sprintf(i2c_device_filename, "/dev/i2c-%d", keyboard->i2c_bus_number);
 	keyboard->fd = open(i2c_device_filename, O_RDWR);
 
 	if (keyboard->fd < 0)
 	{
-		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d\n (bus not found)", i2c_bus_number);
-		free(keyboard);
-		return NULL;
+		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d\n (bus not found)", keyboard->i2c_bus_number);
+		return;
 	}
 
 	ioctl(keyboard->fd, I2C_SLAVE, KEYBOARD_I2C_DEVICE_NUMBER);
 
 	if (i2c_smbus_read_byte_data(keyboard->fd, 0x03) & 0x80 != 0)
 	{
-		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d (device not found)\n", i2c_bus_number);
-		close(keyboard->fd);
-		free(keyboard);
-		return NULL;
+		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d (device not found)\n", keyboard->i2c_bus_number);
+		Keyboard_disconnect(keyboard);
+		return;
 	}
 
 #ifdef SWAP_ROWS_AND_COLUMNS
@@ -63,7 +66,14 @@ static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
 #endif
 
 	i2c_smbus_write_byte_data(keyboard->fd, 0x1F, 0x00); /* 0 additional columns */
+}
 
+static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
+{
+	Keyboard_t keyboard = (Keyboard_t)(malloc(sizeof (struct Keyboard)));
+	keyboard->i2c_bus_number = i2c_bus_number;
+	keyboard->key_offset = key_offset;
+	Keyboard_connect(keyboard);
 	return keyboard;
 }
 
@@ -79,14 +89,19 @@ Keyboard_t Keyboard_openRight(void)
 
 void Keyboard_close(Keyboard_t keyboard)
 {
-	if (keyboard == NULL) return;
-	close(keyboard->fd);
+	Keyboard_disconnect(keyboard);
 	free(keyboard);
+}
+
+void Keyboard_reconnect(Keyboard_t keyboard)
+{
+	if (keyboard->fd >= 0) close(keyboard->fd);
+	Keyboard_connect(keyboard);
 }
 
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
-	if (keyboard == NULL) return 0;
+	if (keyboard->fd < 0) return 0;
 	uint8_t data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
 	if (!data) return 0;
 
@@ -105,42 +120,70 @@ int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 
 struct SqueezeSensor
 {
-	NAU7802_t nau7802;
 	Smoother_t smoother;
+	NAU7802_t nau7802;
+	int zero_offset_saved;
+	int zero_offset;
 	int last_reading;
 };
 
-SqueezeSensor_t SqueezeSensor_open(void)
+static void SqueezeSensor_disconnect(SqueezeSensor_t squeeze_sensor)
 {
-	SqueezeSensor_t squeeze_sensor = (SqueezeSensor_t)(malloc(sizeof (struct SqueezeSensor)));
+	if (squeeze_sensor->nau7802 == NULL) return;
+	free(squeeze_sensor->nau7802);
+	squeeze_sensor->nau7802 = NULL;
+}
+
+static void SqueezeSensor_connect(SqueezeSensor_t squeeze_sensor)
+{
 	squeeze_sensor->nau7802 = NAU7802_new(LEFT_I2C_BUS_NUMBER, SQUEEZE_SENSOR_I2C_DEVICE_NUMBER);
 
 	if (!NAU7802_begin(squeeze_sensor->nau7802, 1))
 	{
-		NAU7802_free(squeeze_sensor->nau7802);
-		return NULL;
+		SqueezeSensor_disconnect(squeeze_sensor);
+		return;
 	}
 
    NAU7802_setSampleRate(squeeze_sensor->nau7802, NAU7802_SPS_320);
    NAU7802_calibrateAFE(squeeze_sensor->nau7802);
-	NAU7802_calculateZeroOffset(squeeze_sensor->nau7802, SMOOTHER_SAMPLES);
-	NAU7802_setCalibrationFactor(squeeze_sensor->nau7802, SQUEEZE_SENSOR_CALIBRATION_FACTOR);
 
+	if (squeeze_sensor->zero_offset_saved)
+	{
+		NAU7802_setZeroOffset(squeeze_sensor->nau7802, squeeze_sensor->zero_offset);
+	}
+	else
+	{
+		SqueezeSensor_tare(squeeze_sensor);
+	}
+
+	NAU7802_setCalibrationFactor(squeeze_sensor->nau7802, SQUEEZE_SENSOR_CALIBRATION_FACTOR);
+}
+
+SqueezeSensor_t SqueezeSensor_open(void)
+{
+	SqueezeSensor_t squeeze_sensor = (SqueezeSensor_t)(malloc(sizeof (struct SqueezeSensor)));
 	squeeze_sensor->smoother = Smoother_new(SMOOTHER_SAMPLES);
+	squeeze_sensor->zero_offset_saved = 0;
+	SqueezeSensor_connect(squeeze_sensor);
 	return squeeze_sensor;
 }
 
 void SqueezeSensor_close(SqueezeSensor_t squeeze_sensor)
 {
-	if (squeeze_sensor == NULL) return;
-	NAU7802_free(squeeze_sensor->nau7802);
 	Smoother_free(squeeze_sensor->smoother);
+	SqueezeSensor_disconnect(squeeze_sensor);
 	free(squeeze_sensor);
+}
+
+void SqueezeSensor_reconnect(SqueezeSensor_t squeeze_sensor)
+{
+	SqueezeSensor_disconnect(squeeze_sensor);
+	SqueezeSensor_connect(squeeze_sensor);
 }
 
 int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, int *value_p)
 {
-	if (squeeze_sensor == NULL) return 0;
+	if (squeeze_sensor->nau7802 == NULL) return 0;
 	Smoother_addSample(squeeze_sensor->smoother, fmax(fmin(NAU7802_getWeight(squeeze_sensor->nau7802, 0, 1), 1.0), 0.0));
 	*value_p = (int)(roundf(Smoother_getAverage(squeeze_sensor->smoother) * 127.0));
 	if (*value_p == squeeze_sensor->last_reading) return 0;
@@ -150,20 +193,27 @@ int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, int *value_p)
 
 void SqueezeSensor_tare(SqueezeSensor_t squeeze_sensor)
 {
-	if (squeeze_sensor == NULL) return;
+	if (squeeze_sensor->nau7802 == NULL) return;
 	NAU7802_calculateZeroOffset(squeeze_sensor->nau7802, SMOOTHER_SAMPLES);
+	squeeze_sensor->zero_offset = NAU7802_getZeroOffset(squeeze_sensor->nau7802);
+	squeeze_sensor->zero_offset_saved = 1;
 }
 
 struct TiltSensor
 {
-	int fd;
 	Smoother_t smoother;
+	int fd;
 };
 
-TiltSensor_t TiltSensor_open(void)
+static void TiltSensor_disconnect(TiltSensor_t tilt_sensor)
 {
-	TiltSensor_t tilt_sensor = (TiltSensor_t)(malloc(sizeof (struct TiltSensor)));
+	if (tilt_sensor->fd < 0) return;
+	close(tilt_sensor->fd);
+	tilt_sensor->fd = -1;
+}
 
+static void TiltSensor_connect(TiltSensor_t tilt_sensor)
+{
 	char i2c_device_filename[128];
 	sprintf(i2c_device_filename, "/dev/i2c-%d", RIGHT_I2C_BUS_NUMBER);
 	tilt_sensor->fd = open(i2c_device_filename, O_RDWR);
@@ -171,33 +221,43 @@ TiltSensor_t TiltSensor_open(void)
 	if (tilt_sensor->fd < 0)
 	{
 		fprintf(stderr, "Warning: cannot open tilt sensor on %s (bus not found)\n", i2c_device_filename);
-		free(tilt_sensor);
-		return NULL;
+		return;
 	}
 
 	ioctl(tilt_sensor->fd, I2C_SLAVE, TILT_SENSOR_I2C_DEVICE_NUMBER);
+}
 
+TiltSensor_t TiltSensor_open(void)
+{
+	TiltSensor_t tilt_sensor = (TiltSensor_t)(malloc(sizeof (struct TiltSensor)));
 	tilt_sensor->smoother = Smoother_new(SMOOTHER_SAMPLES);
+	TiltSensor_connect(tilt_sensor);
 	return tilt_sensor;
 }
 
 void TiltSensor_close(TiltSensor_t tilt_sensor)
 {
-	if (tilt_sensor == NULL) return;
-	close(tilt_sensor->fd);
 	Smoother_free(tilt_sensor->smoother);
+	TiltSensor_disconnect(tilt_sensor);
 	free(tilt_sensor);
+}
+
+void TiltSensor_reconnect(TiltSensor_t tilt_sensor)
+{
+	TiltSensor_disconnect(tilt_sensor);
+	TiltSensor_connect(tilt_sensor);
 }
 
 int TiltSensor_read(TiltSensor_t tilt_sensor, int *value_p)
 {
-	if (tilt_sensor == NULL) return 0;
+	if (tilt_sensor->fd < 0) return 0;
 	// TODO
 	return 0;
 }
 
 void TiltSensor_tare(TiltSensor_t tilt_sensor)
 {
+	if (tilt_sensor->fd < 0) return 0;
 	// TODO
 }
 
