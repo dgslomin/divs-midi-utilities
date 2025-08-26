@@ -44,7 +44,7 @@ static void Keyboard_connect(Keyboard_t keyboard)
 
 	if (keyboard->fd < 0)
 	{
-		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d\n (bus not found)", keyboard->i2c_bus_number);
+		fprintf(stderr, "Warning: cannot connect to keyboard on %s\n (bus not found)", i2c_device_filename);
 		return;
 	}
 
@@ -52,7 +52,7 @@ static void Keyboard_connect(Keyboard_t keyboard)
 
 	if (i2c_smbus_read_byte_data(keyboard->fd, 0x03) & 0x80 != 0)
 	{
-		fprintf(stderr, "Warning: cannot open keyboard on i2c bus %d (device not found)\n", keyboard->i2c_bus_number);
+		fprintf(stderr, "Warning: cannot connect to keyboard on %s (device not found)\n", i2c_device_filename);
 		Keyboard_disconnect(keyboard);
 		return;
 	}
@@ -66,6 +66,8 @@ static void Keyboard_connect(Keyboard_t keyboard)
 #endif
 
 	i2c_smbus_write_byte_data(keyboard->fd, 0x1F, 0x00); /* 0 additional columns */
+
+	fprintf(stderr, "Info: connected keyboard on %s\n", i2c_device_filename);
 }
 
 static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
@@ -102,8 +104,8 @@ void Keyboard_reconnect(Keyboard_t keyboard)
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
 	if (keyboard->fd < 0) return 0;
-	uint8_t data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
-	if (!data) return 0;
+	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
+	if (data <= 0) return 0;
 
 #ifdef SWAP_ROWS_AND_COLUMNS
 	int row = 4 - (((data & 0x7F) % 10) - 1);
@@ -220,11 +222,13 @@ static void TiltSensor_connect(TiltSensor_t tilt_sensor)
 
 	if (tilt_sensor->fd < 0)
 	{
-		fprintf(stderr, "Warning: cannot open tilt sensor on %s (bus not found)\n", i2c_device_filename);
+		fprintf(stderr, "Warning: cannot connect to tilt sensor on %s (bus not found)\n", i2c_device_filename);
 		return;
 	}
 
 	ioctl(tilt_sensor->fd, I2C_SLAVE, TILT_SENSOR_I2C_DEVICE_NUMBER);
+
+	fprintf(stderr, "Info: connected tilt sensor on %s\n", i2c_device_filename);
 }
 
 TiltSensor_t TiltSensor_open(void)
@@ -257,7 +261,7 @@ int TiltSensor_read(TiltSensor_t tilt_sensor, int *value_p)
 
 void TiltSensor_tare(TiltSensor_t tilt_sensor)
 {
-	if (tilt_sensor->fd < 0) return 0;
+	if (tilt_sensor->fd < 0) return;
 	// TODO
 }
 
