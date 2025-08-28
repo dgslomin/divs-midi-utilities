@@ -301,11 +301,30 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		}
 		case KEY_FUNCTION_TYPE_PANIC:
 		{
-			for (int note = 0; note < 128; note++) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+			for (int note = 0; note < 128; note++)
+			{
+				MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+				syntina_driver->note_down_count[note] = 0;
+				syntina_driver->note_off_time[note] = 0;
+				syntina_driver->note_retrig_count[note] = 0;
+			}
+
+			for (int key = 0; key < 256; key++)
+			{
+				syntina_driver->key_down_note[key] = -1;
+				syntina_driver->key_down_cc[key] = -1;
+				syntina_driver->key_down_alt[key] = -1;
+				syntina_driver->key_down_retrig[key] = 0;
+			}
+
+			syntina_driver->alt = 0;
+			syntina_driver->alt_down_count = 0;
+
 			Keyboard_reconnect(syntina_driver->left_keyboard);
 			Keyboard_reconnect(syntina_driver->right_keyboard);
 			SqueezeSensor_reconnect(syntina_driver->squeeze_sensor);
 			TiltSensor_reconnect(syntina_driver->tilt_sensor);
+
 			break;
 		}
 		case KEY_FUNCTION_TYPE_PRESET:
