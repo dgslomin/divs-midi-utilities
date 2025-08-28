@@ -20,6 +20,7 @@ typedef enum
 	KEY_FUNCTION_TYPE_CC,
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_ALT,
+	KEY_FUNCTION_TYPE_PROGRAM,
 	KEY_FUNCTION_TYPE_TRANSPOSE,
 	KEY_FUNCTION_TYPE_LEFT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
@@ -52,6 +53,7 @@ struct SyntinaDriver
 			int note;
 			int cc;
 			int alt;
+			int program;
 			int transpose;
 			int left_transpose;
 			int right_transpose;
@@ -189,6 +191,11 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_ALT;
 			syntina_driver->key_function[key][alt].u.alt = json_integer_value(json_object_get(to_json, "number"));
 		}
+		else if (strcmp(key_function, "program") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_PROGRAM;
+			syntina_driver->key_function[key][alt].u.program = json_integer_value(json_object_get(to_json, "number"));
+		}
 		else if (strcmp(key_function, "transpose") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_TRANSPOSE;
@@ -270,6 +277,11 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			syntina_driver->alt = syntina_driver->key_function[key][syntina_driver->alt].u.alt;
 			syntina_driver->alt_down_count++;
 			syntina_driver->key_down_alt[key] = 1;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_PROGRAM:
+		{
+			MidiOut_sendProgramChange(syntina_driver->midi_out, 0, syntina_driver->key_function[key][syntina_driver->alt].u.program);
 			break;
 		}
 		case KEY_FUNCTION_TYPE_TRANSPOSE:
