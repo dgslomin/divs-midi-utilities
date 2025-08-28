@@ -104,7 +104,13 @@ void Keyboard_reconnect(Keyboard_t keyboard)
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
 	if (keyboard->fd < 0) return 0;
-	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
+	int data;
+
+	// We should just be able to read the key value register (0x04) but it seems to work more reliably if we read the key count register (0x03) first.
+	data = i2c_smbus_read_byte_data(keyboard->fd, 0x03);
+	if (data < 0 || data & 0x05 == 0) return 0;
+
+	data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
 	if (data <= 0) return 0;
 
 #ifdef SWAP_ROWS_AND_COLUMNS
