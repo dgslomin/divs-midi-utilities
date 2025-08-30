@@ -313,7 +313,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			{
 				syntina_driver->key_down_note[key] = -1;
 				syntina_driver->key_down_cc[key] = -1;
-				syntina_driver->key_down_alt[key] = -1;
+				syntina_driver->key_down_alt[key] = 0;
 				syntina_driver->key_down_retrig[key] = 0;
 			}
 
