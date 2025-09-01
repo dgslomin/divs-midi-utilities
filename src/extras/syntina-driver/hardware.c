@@ -17,7 +17,7 @@
 #define RIGHT_I2C_BUS_NUMBER 3
 #define KEYBOARD_I2C_DEVICE_NUMBER 0x34
 #define SQUEEZE_SENSOR_I2C_DEVICE_NUMBER 0x2A
-#define TILT_SENSOR_I2C_DEVICE_NUMBER 0x19
+#define TILT_SENSOR_I2C_DEVICE_NUMBER 0x18
 #define SWAP_ROWS_AND_COLUMNS
 #define SMOOTHER_SAMPLES 8
 #define SQUEEZE_SENSOR_CALIBRATION_FACTOR 800000
@@ -50,7 +50,7 @@ static void Keyboard_connect(Keyboard_t keyboard)
 
 	ioctl(keyboard->fd, I2C_SLAVE, KEYBOARD_I2C_DEVICE_NUMBER);
 
-	if (i2c_smbus_read_byte_data(keyboard->fd, 0x03) & 0x80 != 0)
+	if (i2c_smbus_read_byte_data(keyboard->fd, 0x03) & 0x80 != 0) /* reserved bit of the status register is always zero on this device */
 	{
 		fprintf(stderr, "Warning: cannot connect to keyboard on %s (device not found)\n", i2c_device_filename);
 		Keyboard_disconnect(keyboard);
@@ -226,6 +226,15 @@ static void TiltSensor_connect(TiltSensor_t tilt_sensor)
 
 	ioctl(tilt_sensor->fd, I2C_SLAVE, TILT_SENSOR_I2C_DEVICE_NUMBER);
 
+	if (i2c_smbus_read_byte_data(tilt_sensor->fd, 0x0F) != 0x33) /* "who am I" identification for this device */
+	{
+		TiltSensor_disconnect(tilt_sensor);
+		fprintf(stderr, "Warning: cannot connect to tilt sensor on %s (device not found)\n", i2c_device_filename);
+		return;
+	}
+
+	i2c_smbus_write_byte_data(tilt_sensor->fd, 0x20, 0x5F); /* 100 Hz, 8 bit, 3 axis */
+
 	fprintf(stderr, "Info: connected tilt sensor on %s\n", i2c_device_filename);
 }
 
@@ -252,8 +261,22 @@ void TiltSensor_reconnect(TiltSensor_t tilt_sensor)
 
 int TiltSensor_read(TiltSensor_t tilt_sensor, int *value_p)
 {
+	/* Note that the syntina has the accelerometer oriented so that +x is down, +y is back, and +z is left.  We will use the standard definitions of pitch and roll, which makes the terms of the calculations a little different from normal. */
+
 	if (tilt_sensor->fd < 0) return 0;
-	// TODO
+
+	int raw_x = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x29);
+	int raw_y = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x2B);
+	int raw_z = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x2D);
+	if (raw_x < 0 || raw_y < 0 || raw_z < 0) return 0;
+	/* The syntina has the accelerometer mounted so that +raw_x is down, +raw_y is back, and +raw_z is left.  Convert those to standard terminology. */
+	float x = (int8_t)(raw_y);
+	float y = (int8_t)(raw_z);
+	float z = -(int8_t)(raw_x);
+	float roll = atan2(y, z);
+	float pitch = atan2(-x, sqrt((y * y) + (z * z)));
+	fprintf(stderr, "Info: pitch = %f, roll = %f\n", pitch, roll);
+
 	return 0;
 }
 

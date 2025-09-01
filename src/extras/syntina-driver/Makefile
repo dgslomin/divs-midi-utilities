@@ -3,7 +3,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-O -D__LINUX_ALSA__ -DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
 LDFLAGS=-O
-LIBS=-lasound -lpthread -lstdc++ -li2c -ljansson
+LIBS=-lm -lasound -lpthread -lstdc++ -li2c -ljansson
 MIDIUTILS_SRC=../../../src
 NAU7802_SRC=3rdparty/NAU7802/src
 
