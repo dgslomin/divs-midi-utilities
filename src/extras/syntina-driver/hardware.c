@@ -201,7 +201,12 @@ void SqueezeSensor_tare(SqueezeSensor_t squeeze_sensor)
 
 struct TiltSensor
 {
-	Smoother_t smoother;
+	Smoother_t raw_tilt_x_smoother;
+	Smoother_t raw_tilt_y_smoother;
+	float raw_tilt_x_zero;
+	float raw_tilt_y_zero;
+	int last_tilt_x;
+	int last_tilt_y;
 	int fd;
 };
 
@@ -241,14 +246,21 @@ static void TiltSensor_connect(TiltSensor_t tilt_sensor)
 TiltSensor_t TiltSensor_open(void)
 {
 	TiltSensor_t tilt_sensor = (TiltSensor_t)(malloc(sizeof (struct TiltSensor)));
-	tilt_sensor->smoother = Smoother_new(SMOOTHER_SAMPLES);
+	tilt_sensor->raw_tilt_x_smoother = Smoother_new(SMOOTHER_SAMPLES);
+	tilt_sensor->raw_tilt_y_smoother = Smoother_new(SMOOTHER_SAMPLES);
+	tilt_sensor->raw_tilt_x_zero = 0;
+	tilt_sensor->raw_tilt_y_zero = 0;
+	tilt_sensor->last_tilt_x = -1;
+	tilt_sensor->last_tilt_y = -1;
 	TiltSensor_connect(tilt_sensor);
+	TiltSensor_tare(tilt_sensor);
 	return tilt_sensor;
 }
 
 void TiltSensor_close(TiltSensor_t tilt_sensor)
 {
-	Smoother_free(tilt_sensor->smoother);
+	Smoother_free(tilt_sensor->raw_tilt_x_smoother);
+	Smoother_free(tilt_sensor->raw_tilt_y_smoother);
 	TiltSensor_disconnect(tilt_sensor);
 	free(tilt_sensor);
 }
@@ -259,30 +271,51 @@ void TiltSensor_reconnect(TiltSensor_t tilt_sensor)
 	TiltSensor_connect(tilt_sensor);
 }
 
-int TiltSensor_read(TiltSensor_t tilt_sensor, int *value_p)
+static int TiltSensor_readRaw(TiltSensor_t tilt_sensor, float *raw_tilt_x_p, float *raw_tilt_y_p)
 {
-	/* Note that the syntina has the accelerometer oriented so that +x is down, +y is back, and +z is left.  We will use the standard definitions of pitch and roll, which makes the terms of the calculations a little different from normal. */
-
 	if (tilt_sensor->fd < 0) return 0;
-
 	int raw_x = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x29);
 	int raw_y = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x2B);
 	int raw_z = i2c_smbus_read_byte_data(tilt_sensor->fd, 0x2D);
 	if (raw_x < 0 || raw_y < 0 || raw_z < 0) return 0;
-	/* The syntina has the accelerometer mounted so that +raw_x is down, +raw_y is back, and +raw_z is left.  Convert those to standard terminology. */
+	/* The syntina has the accelerometer mounted so that +raw_x is down, +raw_y is back, and +raw_z is left; convert to standard terms while fixing up the sign bit. */
 	float x = (int8_t)(raw_y);
 	float y = (int8_t)(raw_z);
 	float z = -(int8_t)(raw_x);
-	float roll = atan2(y, z);
-	float pitch = atan2(-x, sqrt((y * y) + (z * z)));
-	fprintf(stderr, "Info: pitch = %f, roll = %f\n", pitch, roll);
+	*raw_tilt_x_p = atan2(y, z); /* sometimes called "roll" */
+	*raw_tilt_y_p = atan2(-x, sqrt((y * y) + (z * z))); /* sometimes called "pitch" */
+	return 1;
+}
 
-	return 0;
+int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p)
+{
+	if (tilt_sensor->fd < 0) return 0;
+	float raw_tilt_x, raw_tilt_y;
+	if (!TiltSensor_readRaw(tilt_sensor, &raw_tilt_x, &raw_tilt_y)) return 0;
+	Smoother_addSample(tilt_sensor->raw_tilt_x_smoother, raw_tilt_x);
+	Smoother_addSample(tilt_sensor->raw_tilt_y_smoother, raw_tilt_y);
+	*tilt_x_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / M_PI * 127.0), 64.0), -63.0)) + 63;
+	*tilt_y_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_y_smoother) / M_PI * 127.0), 64.0), -63.0)) + 63;
+	if ((*tilt_x_p == tilt_sensor->last_tilt_x) && (*tilt_y_p == tilt_sensor->last_tilt_y)) return 0;
+	tilt_sensor->last_tilt_x = *tilt_x_p;
+	tilt_sensor->last_tilt_y = *tilt_y_p;
+	return 1;
 }
 
 void TiltSensor_tare(TiltSensor_t tilt_sensor)
 {
 	if (tilt_sensor->fd < 0) return;
-	// TODO
+	float raw_tilt_x_total = 0, raw_tilt_y_total = 0;
+
+	for (int sample_number = 0; sample_number < SMOOTHER_SAMPLES; sample_number++)
+	{
+		float raw_tilt_x, raw_tilt_y;
+		if (!TiltSensor_readRaw(tilt_sensor, &raw_tilt_x, &raw_tilt_y)) return;
+		raw_tilt_x_total += raw_tilt_x;
+		raw_tilt_y_total += raw_tilt_y;
+	}
+
+	tilt_sensor->raw_tilt_x_zero = raw_tilt_x_total / SMOOTHER_SAMPLES;
+	tilt_sensor->raw_tilt_y_zero = raw_tilt_y_total / SMOOTHER_SAMPLES;
 }
 

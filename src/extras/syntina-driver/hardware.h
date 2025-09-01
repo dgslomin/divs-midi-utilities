@@ -19,7 +19,7 @@ typedef struct TiltSensor *TiltSensor_t;
 TiltSensor_t TiltSensor_open(void);
 void TiltSensor_close(TiltSensor_t tilt_sensor);
 void TiltSensor_reconnect(TiltSensor_t tilt_sensor);
-int TiltSensor_read(TiltSensor_t tilt_sensor, int *value_p);
+int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p);
 void TiltSensor_tare(TiltSensor_t tilt_sensor);
 
 #endif

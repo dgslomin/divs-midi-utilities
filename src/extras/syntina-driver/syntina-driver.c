@@ -42,7 +42,8 @@ struct SyntinaDriver
 	int left_transpose;
 	int right_transpose;
 	int squeeze_cc;
-	int tilt_cc;
+	int tilt_x_cc;
+	int tilt_y_cc;
 
 	struct
 	{
@@ -87,8 +88,9 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	syntina_driver->transpose = 0;
 	syntina_driver->left_transpose = 0;
 	syntina_driver->right_transpose = 0;
-	syntina_driver->squeeze_cc = 0;
-	syntina_driver->tilt_cc = 0;
+	syntina_driver->squeeze_cc = -1;
+	syntina_driver->tilt_x_cc = -1;
+	syntina_driver->tilt_y_cc = -1;
 
 	for (int alt = 0; alt < 16; alt++)
 	{
@@ -146,8 +148,11 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 	json_t *squeeze_cc_json = json_object_get(preset_json, "squeeze-cc");
 	if (squeeze_cc_json) syntina_driver->squeeze_cc = json_integer_value(squeeze_cc_json);
 
-	json_t *tilt_cc_json = json_object_get(preset_json, "tilt-cc");
-	if (tilt_cc_json) syntina_driver->tilt_cc = json_integer_value(tilt_cc_json);
+	json_t *tilt_x_cc_json = json_object_get(preset_json, "tilt-x-cc");
+	if (tilt_x_cc_json) syntina_driver->tilt_x_cc = json_integer_value(tilt_x_cc_json);
+
+	json_t *tilt_y_cc_json = json_object_get(preset_json, "tilt-y-cc");
+	if (tilt_y_cc_json) syntina_driver->tilt_y_cc = json_integer_value(tilt_y_cc_json);
 
 	json_t *mappings_json = json_object_get(preset_json, "mappings");
 
@@ -425,12 +430,15 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 
 		if (SqueezeSensor_read(syntina_driver->squeeze_sensor, &value))
 		{
-			MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->squeeze_cc, value);
+			if (syntina_driver->squeeze_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->squeeze_cc, value);
 		}
 
-		if (TiltSensor_read(syntina_driver->tilt_sensor, &value))
+		int tilt_x, tilt_y;
+
+		if (TiltSensor_read(syntina_driver->tilt_sensor, &tilt_x, &tilt_y))
 		{
-			MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_cc, value);
+			if (syntina_driver->tilt_x_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_x_cc, tilt_x);
+			if (syntina_driver->tilt_y_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_y_cc, tilt_y);
 		}
 	}
 }
