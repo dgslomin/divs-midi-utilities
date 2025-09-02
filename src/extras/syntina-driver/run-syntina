@@ -1,0 +1,6 @@
+#!/bin/bash
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+./syntina-driver --out 0 --config syntina-driver.conf &
+# ../../../bin/qwertymidi --out 0 --map ../../../share/qwertymidi/hayden-wide.xml &
+# ../../../../../xfr/Carla-main/source/frontend/carla syntina.carxp
+../../../../../xfr/surge/build/surge_xt_products/Surge\ XT

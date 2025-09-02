@@ -1,0 +1,31 @@
+
+Raspberry Pi setup:
+
+	/boot/firmware/config.txt:
+
+		dtparam=i2c_arm=on
+		dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=23,i2c_gpio_scl=24
+
+	~/.config/pipewire/pipewire.conf.d/10-quantum.conf:
+
+		context.properties = {
+			default.clock.min-quantum = 128
+			default.clock.max-quantum = 128
+		}
+
+Dependencies for Surge, Carla, and the Syntina driver:
+
+	sudo apt install cmake g++ libgpiod-dev libxrandr-dev libxinerama-dev libxcursor-dev libfreetype-dev libasound2-dev libcurl4-openssl-dev libgtk-3-dev libwebkit2gtk-4.0-dev libjack-dev libjansson-dev
+
+Surge:
+
+	cmake -Bbuild
+	cmake --build build --config Release --target surge-staged-assets
+
+Syntina driver:
+
+	https://docs.kernel.org/i2c/dev-interface.html
+	https://github.com/torvalds/linux/blob/master/drivers/input/keyboard/tca8418_keypad.c
+	https://www.ti.com/document-viewer/TCA8418/datasheet
+	https://github.com/yasir-shahzad/NAU7802/blob/master/src/NAU7802.cpp
+
