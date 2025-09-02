@@ -11,6 +11,7 @@
 static char *midi_in_port = NULL;
 static char *prefix = "brainstorm-";
 static int timeout_msecs = 5000;
+static char *start_confirmation_command = NULL;
 static char *confirmation_command_pattern = NULL;
 static MidiUtilAlarm_t alarm;
 static RtMidiInPtr midi_in;
@@ -20,7 +21,7 @@ static long start_time_msecs;
 
 static void usage(char *program_name)
 {
-	fprintf(stderr, "Usage: %s --in <port> [ --prefix <filename prefix> ] [ --timeout <seconds> ] [ --confirmation <command line> ]\n", program_name);
+	fprintf(stderr, "Usage: %s --in <port> [ --prefix <filename prefix> ] [ --timeout <seconds> ] [ --start-confirmation <command line> ] [ --confirmation <command line> ]\n", program_name);
 	exit(1);
 }
 
@@ -34,6 +35,7 @@ static void create_midi_file_for_first_event(void)
 	MidiFileTrack_createTempoEvent(track, 0, 100.0);
 	track = MidiFile_createTrack(midi_file); /* main track */
 	start_time_msecs = MidiUtil_getCurrentTimeMsecs();
+	if (start_confirmation_command != NULL) system(start_confirmation_command);
 }
 
 static long get_current_tick(void)
@@ -175,6 +177,11 @@ int main(int argc, char **argv)
 		{
 			if (++i == argc) usage(argv[0]);
 			timeout_msecs = atol(argv[i]) * 1000;
+		}
+		else if (strcmp(argv[i], "--start-confirmation") == 0)
+		{
+			if (++i == argc) usage(argv[0]);
+			start_confirmation_command = argv[i];
 		}
 		else if (strcmp(argv[i], "--confirmation") == 0)
 		{
