@@ -154,6 +154,9 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 	json_t *tilt_y_cc_json = json_object_get(preset_json, "tilt-y-cc");
 	if (tilt_y_cc_json) syntina_driver->tilt_y_cc = json_integer_value(tilt_y_cc_json);
 
+	json_t *tilt_x_dead_zone_json = json_object_get(preset_json, "tilt-x-dead-zone");
+	if (tilt_x_dead_zone_json) TiltSensor_setDeadZoneSize(syntina_driver->tilt_sensor, json_real_value(tilt_x_dead_zone_json));
+
 	json_t *mappings_json = json_object_get(preset_json, "mappings");
 
 	for (int mapping_number = 0; mapping_number < json_array_size(mappings_json); mapping_number++)

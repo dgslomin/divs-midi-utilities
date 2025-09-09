@@ -204,6 +204,7 @@ struct TiltSensor
 {
 	Smoother_t raw_tilt_x_smoother;
 	Smoother_t raw_tilt_y_smoother;
+	float dead_zone_size;
 	float raw_tilt_x_zero;
 	float raw_tilt_y_zero;
 	int last_tilt_x;
@@ -249,6 +250,7 @@ TiltSensor_t TiltSensor_open(void)
 	TiltSensor_t tilt_sensor = (TiltSensor_t)(malloc(sizeof (struct TiltSensor)));
 	tilt_sensor->raw_tilt_x_smoother = Smoother_new(TILT_SENSOR_SMOOTHER_SAMPLES);
 	tilt_sensor->raw_tilt_y_smoother = Smoother_new(TILT_SENSOR_SMOOTHER_SAMPLES);
+	tilt_sensor->dead_zone_size = 0;
 	tilt_sensor->raw_tilt_x_zero = 0;
 	tilt_sensor->raw_tilt_y_zero = 0;
 	tilt_sensor->last_tilt_x = -1;
@@ -296,16 +298,16 @@ int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p)
 	Smoother_addSample(tilt_sensor->raw_tilt_x_smoother, raw_tilt_x - tilt_sensor->raw_tilt_x_zero);
 	Smoother_addSample(tilt_sensor->raw_tilt_y_smoother, raw_tilt_y - tilt_sensor->raw_tilt_y_zero);
 
-	/* range -45 to -15 and 15 to 45 degrees */
+	/* range -45 to 45 degrees with a dead zone in the middle */
 	float fractional_tilt_x = fmin(fmax(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / (M_PI / 4.0), -1.0), 1.0);
 
-	if (fractional_tilt_x > (15.0 / 45.0))
+	if (fractional_tilt_x > tilt_sensor->dead_zone_size)
 	{
-		*tilt_x_p = (int)(roundf((fractional_tilt_x - (15.0 / 45.0)) * (45.0 / 30.0) * 63.5 + 63.5));
+		*tilt_x_p = (int)(roundf((fractional_tilt_x - tilt_sensor->dead_zone_size) / (1.0 - tilt_sensor->dead_zone_size) * 63.5 + 63.5));
 	}
-	else if (fractional_tilt_x < (-15.0 / 45.0))
+	else if (fractional_tilt_x < -(tilt_sensor->dead_zone_size))
 	{
-		*tilt_x_p = (int)(roundf((fractional_tilt_x + (15.0 / 45.0)) * (45.0 / 30.0) * 63.5 + 63.5));
+		*tilt_x_p = (int)(roundf((fractional_tilt_x + tilt_sensor->dead_zone_size) / (1.0 - tilt_sensor->dead_zone_size) * 63.5 + 63.5));
 	}
 	else
 	{
@@ -336,5 +338,10 @@ void TiltSensor_tare(TiltSensor_t tilt_sensor)
 
 	tilt_sensor->raw_tilt_x_zero = raw_tilt_x_total / TILT_SENSOR_SMOOTHER_SAMPLES;
 	tilt_sensor->raw_tilt_y_zero = raw_tilt_y_total / TILT_SENSOR_SMOOTHER_SAMPLES;
+}
+
+void TiltSensor_setDeadZoneSize(TiltSensor_t tilt_sensor, float dead_zone_size)
+{
+	tilt_sensor->dead_zone_size = dead_zone_size;
 }
 

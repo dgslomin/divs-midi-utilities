@@ -21,5 +21,6 @@ void TiltSensor_close(TiltSensor_t tilt_sensor);
 void TiltSensor_reconnect(TiltSensor_t tilt_sensor);
 int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p);
 void TiltSensor_tare(TiltSensor_t tilt_sensor);
+void TiltSensor_setDeadZoneSize(TiltSensor_t tilt_sensor, float dead_zone_size);
 
 #endif
