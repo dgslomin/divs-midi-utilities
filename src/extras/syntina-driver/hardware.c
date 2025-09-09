@@ -295,8 +295,26 @@ int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p)
 	if (!TiltSensor_readRaw(tilt_sensor, &raw_tilt_x, &raw_tilt_y)) return 0;
 	Smoother_addSample(tilt_sensor->raw_tilt_x_smoother, raw_tilt_x - tilt_sensor->raw_tilt_x_zero);
 	Smoother_addSample(tilt_sensor->raw_tilt_y_smoother, raw_tilt_y - tilt_sensor->raw_tilt_y_zero);
-	*tilt_x_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / M_PI * 256.0), 64.0), -63.0)) + 63;
-	*tilt_y_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_y_smoother) / M_PI * 512.0), 128.0), 0));
+
+	/* range -45 to -15 and 15 to 45 degrees */
+	float fractional_tilt_x = fmin(fmax(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / (M_PI / 4.0), -1.0), 1.0);
+
+	if (fractional_tilt_x > (15.0 / 45.0))
+	{
+		*tilt_x_p = (int)(roundf((fractional_tilt_x - (15.0 / 45.0)) * (45.0 / 30.0) * 63.5 + 63.5));
+	}
+	else if (fractional_tilt_x < (-15.0 / 45.0))
+	{
+		*tilt_x_p = (int)(roundf((fractional_tilt_x + (15.0 / 45.0)) * (45.0 / 30.0) * 63.5 + 63.5));
+	}
+	else
+	{
+		*tilt_x_p = 64;
+	}
+
+	/* range 0 to 45 degrees */
+	*tilt_y_p = (int)(roundf(fmin(fmax(Smoother_getAverage(tilt_sensor->raw_tilt_y_smoother) / (M_PI / 4.0), 0.0), 1.0) * 127.0));
+
 	if ((*tilt_x_p == tilt_sensor->last_tilt_x) && (*tilt_y_p == tilt_sensor->last_tilt_y)) return 0;
 	tilt_sensor->last_tilt_x = *tilt_x_p;
 	tilt_sensor->last_tilt_y = *tilt_y_p;
