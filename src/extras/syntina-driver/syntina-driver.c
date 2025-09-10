@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <jansson.h>
 #include "hardware.h"
 #include "midi.h"
@@ -50,7 +51,7 @@ struct SyntinaDriver
 	int left_transpose;
 	int right_transpose;
 	int squeeze_cc;
-	int tilt_x_cc;
+	int tilt_x_pitch_bend;
 	int tilt_y_cc;
 
 	struct
@@ -82,6 +83,9 @@ struct SyntinaDriver
 	int note_retrig_count[128];
 	int key_down_retrig[256];
 	int program;
+	int last_squeeze_amount;
+	int last_tilt_x_amount;
+	int last_tilt_y_amount;
 };
 
 SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filename)
@@ -98,7 +102,7 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	syntina_driver->left_transpose = 0;
 	syntina_driver->right_transpose = 0;
 	syntina_driver->squeeze_cc = -1;
-	syntina_driver->tilt_x_cc = -1;
+	syntina_driver->tilt_x_pitch_bend = 0;
 	syntina_driver->tilt_y_cc = -1;
 
 	for (int alt = 0; alt < 16; alt++)
@@ -163,14 +167,14 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 	json_t *squeeze_cc_json = json_object_get(preset_json, "squeeze-cc");
 	if (squeeze_cc_json) syntina_driver->squeeze_cc = json_integer_value(squeeze_cc_json);
 
-	json_t *tilt_x_cc_json = json_object_get(preset_json, "tilt-x-cc");
-	if (tilt_x_cc_json) syntina_driver->tilt_x_cc = json_integer_value(tilt_x_cc_json);
-
-	json_t *tilt_y_cc_json = json_object_get(preset_json, "tilt-y-cc");
-	if (tilt_y_cc_json) syntina_driver->tilt_y_cc = json_integer_value(tilt_y_cc_json);
+	json_t *tilt_x_pitch_bend_json = json_object_get(preset_json, "tilt-x-pitch-bend");
+	if (tilt_x_pitch_bend_json) syntina_driver->tilt_x_pitch_bend = json_boolean_value(tilt_x_pitch_bend_json);
 
 	json_t *tilt_x_dead_zone_json = json_object_get(preset_json, "tilt-x-dead-zone");
 	if (tilt_x_dead_zone_json) TiltSensor_setDeadZoneSize(syntina_driver->tilt_sensor, json_real_value(tilt_x_dead_zone_json));
+
+	json_t *tilt_y_cc_json = json_object_get(preset_json, "tilt-y-cc");
+	if (tilt_y_cc_json) syntina_driver->tilt_y_cc = json_integer_value(tilt_y_cc_json);
 
 	json_t *mappings_json = json_object_get(preset_json, "mappings");
 
@@ -527,19 +531,50 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 			if (down) SyntinaDriver_keyDown(syntina_driver, key);
 		}
 
-		int value;
-
-		if (SqueezeSensor_read(syntina_driver->squeeze_sensor, &value))
+		if (syntina_driver->squeeze_cc >= 0)
 		{
-			if (syntina_driver->squeeze_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->squeeze_cc, value);
+			float raw_squeeze_amount;
+
+			if (SqueezeSensor_read(syntina_driver->squeeze_sensor, &raw_squeeze_amount))
+			{
+				int squeeze_amount = roundf(raw_squeeze_amount * 127.0);
+
+				if (squeeze_amount != syntina_driver->last_squeeze_amount)
+				{
+					MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->squeeze_cc, squeeze_amount);
+					syntina_driver->last_squeeze_amount = squeeze_amount;
+				}
+			}
 		}
 
-		int tilt_x, tilt_y;
-
-		if (TiltSensor_read(syntina_driver->tilt_sensor, &tilt_x, &tilt_y))
+		if (syntina_driver->tilt_x_pitch_bend || syntina_driver->tilt_y_cc >= 0)
 		{
-			if (syntina_driver->tilt_x_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_x_cc, tilt_x);
-			if (syntina_driver->tilt_y_cc >= 0) MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_y_cc, tilt_y);
+			float raw_tilt_x_amount, raw_tilt_y_amount;
+
+			if (TiltSensor_read(syntina_driver->tilt_sensor, &raw_tilt_x_amount, &raw_tilt_y_amount))
+			{
+				if (syntina_driver->tilt_x_pitch_bend)
+				{
+					int tilt_x_amount = (int)(roundf(raw_tilt_x_amount * 8191.5 + 8191.5));
+
+					if (tilt_x_amount != syntina_driver->last_tilt_x_amount)
+					{
+						MidiOut_sendPitchBend(syntina_driver->midi_out, 0, tilt_x_amount);
+						syntina_driver->last_tilt_x_amount = tilt_x_amount;
+					}
+				}
+
+				if (syntina_driver->tilt_y_cc >= 0)
+				{
+					int tilt_y_amount = (int)(roundf(raw_tilt_y_amount * 127.0));
+
+					if (tilt_y_amount != syntina_driver->last_tilt_y_amount)
+					{
+						MidiOut_sendControlChange(syntina_driver->midi_out, 0, syntina_driver->tilt_y_cc, tilt_y_amount);
+						syntina_driver->last_tilt_y_amount = tilt_y_amount;
+					}
+				}
+			}
 		}
 	}
 }

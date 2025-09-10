@@ -67,3 +67,11 @@ void MidiOut_sendProgramChange(MidiOut_t midi_out, int channel, int number)
 	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE);
 }
 
+void MidiOut_sendPitchBend(MidiOut_t midi_out, int channel, int amount)
+{
+	if (midi_out == NULL) return;
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL];
+	MidiUtilMessage_setPitchWheel(message, channel, amount);
+	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL);
+}
+

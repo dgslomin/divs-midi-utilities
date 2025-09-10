@@ -12,14 +12,14 @@ typedef struct SqueezeSensor *SqueezeSensor_t;
 SqueezeSensor_t SqueezeSensor_open(void);
 void SqueezeSensor_close(SqueezeSensor_t squeeze_sensor);
 void SqueezeSensor_reconnect(SqueezeSensor_t squeeze_sensor);
-int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, int *value_p);
+int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, float *value_p);
 void SqueezeSensor_tare(SqueezeSensor_t squeeze_sensor);
 
 typedef struct TiltSensor *TiltSensor_t;
 TiltSensor_t TiltSensor_open(void);
 void TiltSensor_close(TiltSensor_t tilt_sensor);
 void TiltSensor_reconnect(TiltSensor_t tilt_sensor);
-int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p);
+int TiltSensor_read(TiltSensor_t tilt_sensor, float *tilt_x_p, float *tilt_y_p);
 void TiltSensor_tare(TiltSensor_t tilt_sensor);
 void TiltSensor_setDeadZoneSize(TiltSensor_t tilt_sensor, float dead_zone_size);
 
