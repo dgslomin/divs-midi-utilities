@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "utils.h"
 
@@ -46,5 +47,22 @@ void Smoother_addSample(Smoother_t smoother, float sample)
 float Smoother_getAverage(Smoother_t smoother)
 {
 	return smoother->total / smoother->number_of_samples;
+}
+
+int YesNoToggle_parse(const char *s)
+{
+	if (s == NULL) return -1;
+	if (strcmp(s, "no") == 0) return 0;
+	if (strcmp(s, "yes") == 0) return 1;
+	if (strcmp(s, "toggle") == 0) return 2;
+	return -1;
+}
+
+int YesNoToggle_apply(int current_value, int yes_no_toggle)
+{
+	if (yes_no_toggle == 0) return 0;
+	if (yes_no_toggle == 1) return 1;
+	if (yes_no_toggle == 2) return !current_value;
+	return current_value;
 }
 

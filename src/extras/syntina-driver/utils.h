@@ -9,4 +9,7 @@ void Smoother_free(Smoother_t smoother);
 void Smoother_addSample(Smoother_t smoother, float sample);
 float Smoother_getAverage(Smoother_t smoother);
 
+int YesNoToggle_parse(const char *s);
+int YesNoToggle_apply(int current_value, int yes_no_toggle);
+
 #endif

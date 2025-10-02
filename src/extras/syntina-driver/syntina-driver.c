@@ -26,7 +26,8 @@ typedef enum
 	KEY_FUNCTION_TYPE_LEFT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_PRESET,
-	KEY_FUNCTION_TYPE_TARE
+	KEY_FUNCTION_TYPE_TARE,
+	KEY_FUNCTION_TYPE_TILT_ENABLE
 }
 KeyFunctionType_t;
 
@@ -43,7 +44,8 @@ struct SyntinaDriver
 	int left_transpose;
 	int right_transpose;
 	int squeeze_cc;
-	int tilt_x_pitch_bend;
+	int tilt_x_enable;
+	int tilt_y_enable;
 	int tilt_y_cc;
 
 	struct
@@ -85,6 +87,13 @@ struct SyntinaDriver
 			right_transpose;
 
 			const char *preset;
+
+			struct
+			{
+				int x;
+				int y;
+			}
+			tilt_enable;
 		}
 		u;
 	}
@@ -119,7 +128,8 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	syntina_driver->left_transpose = 0;
 	syntina_driver->right_transpose = 0;
 	syntina_driver->squeeze_cc = -1;
-	syntina_driver->tilt_x_pitch_bend = 0;
+	syntina_driver->tilt_x_enable = 0;
+	syntina_driver->tilt_y_enable = 0;
 	syntina_driver->tilt_y_cc = -1;
 
 	for (int alt = 0; alt < 16; alt++)
@@ -184,11 +194,14 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 	json_t *squeeze_cc_json = json_object_get(preset_json, "squeeze-cc");
 	if (squeeze_cc_json) syntina_driver->squeeze_cc = json_integer_value(squeeze_cc_json);
 
-	json_t *tilt_x_pitch_bend_json = json_object_get(preset_json, "tilt-x-pitch-bend");
-	if (tilt_x_pitch_bend_json) syntina_driver->tilt_x_pitch_bend = json_boolean_value(tilt_x_pitch_bend_json);
+	json_t *tilt_x_enable_json = json_object_get(preset_json, "tilt-x-enable");
+	if (tilt_x_enable_json) syntina_driver->tilt_x_enable = json_boolean_value(tilt_x_enable_json);
 
 	json_t *tilt_x_dead_zone_json = json_object_get(preset_json, "tilt-x-dead-zone");
 	if (tilt_x_dead_zone_json) TiltSensor_setDeadZoneSize(syntina_driver->tilt_sensor, json_real_value(tilt_x_dead_zone_json));
+
+	json_t *tilt_y_enable_json = json_object_get(preset_json, "tilt-y-enable");
+	if (tilt_y_enable_json) syntina_driver->tilt_y_enable = json_boolean_value(tilt_y_enable_json);
 
 	json_t *tilt_y_cc_json = json_object_get(preset_json, "tilt-y-cc");
 	if (tilt_y_cc_json) syntina_driver->tilt_y_cc = json_integer_value(tilt_y_cc_json);
@@ -267,6 +280,12 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		else if (strcmp(key_function, "tare") == 0)
 		{
 			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_TARE;
+		}
+		else if (strcmp(key_function, "tilt-enable") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_TILT_ENABLE;
+			syntina_driver->key_function[key][alt].u.tilt_enable.x = YesNoToggle_parse(json_string_value(json_object_get(to_json, "x")));
+			syntina_driver->key_function[key][alt].u.tilt_enable.y = YesNoToggle_parse(json_string_value(json_object_get(to_json, "y")));
 		}
 	}
 }
@@ -389,6 +408,12 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			TiltSensor_tare(syntina_driver->tilt_sensor);
 			break;
 		}
+		case KEY_FUNCTION_TYPE_TILT_ENABLE:
+		{
+			syntina_driver->tilt_x_enable = YesNoToggle_apply(syntina_driver->tilt_x_enable, syntina_driver->key_function[key][syntina_driver->alt].u.tilt_enable.x);
+			syntina_driver->tilt_y_enable = YesNoToggle_apply(syntina_driver->tilt_y_enable, syntina_driver->key_function[key][syntina_driver->alt].u.tilt_enable.y);
+			break;
+		}
 		default:
 		{
 			break;
@@ -488,13 +513,13 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 			}
 		}
 
-		if (syntina_driver->tilt_x_pitch_bend || syntina_driver->tilt_y_cc >= 0)
+		if (syntina_driver->tilt_x_enable || syntina_driver->tilt_y_enable)
 		{
 			float raw_tilt_x_amount, raw_tilt_y_amount;
 
 			if (TiltSensor_read(syntina_driver->tilt_sensor, &raw_tilt_x_amount, &raw_tilt_y_amount))
 			{
-				if (syntina_driver->tilt_x_pitch_bend)
+				if (syntina_driver->tilt_x_enable)
 				{
 					int tilt_x_amount = (int)(roundf(raw_tilt_x_amount * 8191.5 + 8191.5));
 
@@ -505,7 +530,7 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 					}
 				}
 
-				if (syntina_driver->tilt_y_cc >= 0)
+				if (syntina_driver->tilt_y_enable && syntina_driver->tilt_y_cc >= 0)
 				{
 					int tilt_y_amount = (int)(roundf(raw_tilt_y_amount * 127.0));
 
