@@ -18,16 +18,30 @@
 #define KEYBOARD_I2C_DEVICE_NUMBER 0x34
 #define SQUEEZE_SENSOR_I2C_DEVICE_NUMBER 0x2A
 #define TILT_SENSOR_I2C_DEVICE_NUMBER 0x18
-#define SWAP_ROWS_AND_COLUMNS
 #define SQUEEZE_SENSOR_SMOOTHER_SAMPLES 8
 #define SQUEEZE_SENSOR_CALIBRATION_FACTOR 800000
 #define TILT_SENSOR_SMOOTHER_SAMPLES 64
+
+#ifdef SWAP_ROWS_AND_COLUMNS
+#define NUMBER_OF_ROWS 7
+#define NUMBER_OF_COLUMNS 5
+#else
+#define NUMBER_OF_ROWS 5
+#define NUMBER_OF_COLUMNS 7
+#endif
 
 struct Keyboard
 {
 	int i2c_bus_number;
 	int key_offset;
 	int fd;
+
+#ifdef MANUAL_MATRIX_SCANNING
+	int key_down[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+	int row_number;
+	int column_number;
+	int column_status;
+#endif
 };
 
 static void Keyboard_disconnect(Keyboard_t keyboard)
@@ -58,13 +72,17 @@ static void Keyboard_connect(Keyboard_t keyboard)
 		return;
 	}
 
-#ifdef SWAP_ROWS_AND_COLUMNS
-	i2c_smbus_write_byte_data(keyboard->fd, 0x1D, 0x7F); /* 7 rows */
-	i2c_smbus_write_byte_data(keyboard->fd, 0x1E, 0x1F); /* 5 columns */
-#else
-	i2c_smbus_write_byte_data(keyboard->fd, 0x1D, 0x1F); /* 5 rows */
-	i2c_smbus_write_byte_data(keyboard->fd, 0x1E, 0x7F); /* 7 columns */
-#endif
+	#ifdef MANUAL_MATRIX_SCANNING
+		// set the columns as plain gpio outputs (rows are plain gpio inputs by default)
+		i2c_smbus_write_byte_data(keyboard->fd, 0x24, (1 << NUMBER_OF_COLUMNS) - 1);
+		// disable debouncing
+		i2c_smbus_write_byte_data(keyboard->fd, 0x29, (1 << NUMBER_OF_ROWS) - 1);
+		i2c_smbus_write_byte_data(keyboard->fd, 0x30, (1 << NUMBER_OF_COLUMNS) - 1);
+	#else
+		// set the rows and columns as keys in the hardware scanning matrix and event queue
+		i2c_smbus_write_byte_data(keyboard->fd, 0x1D, (1 << NUMBER_OF_ROWS) - 1);
+		i2c_smbus_write_byte_data(keyboard->fd, 0x1E, (1 << NUMBER_OF_COLUMNS) - 1);
+	#endif
 
 	fprintf(stderr, "Info: connected keyboard on %s\n", i2c_device_filename);
 }
@@ -74,6 +92,21 @@ static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
 	Keyboard_t keyboard = (Keyboard_t)(malloc(sizeof (struct Keyboard)));
 	keyboard->i2c_bus_number = i2c_bus_number;
 	keyboard->key_offset = key_offset;
+
+	#ifdef MANUAL_MATRIX_SCANNING
+		for (int row_number = 0; row_number < NUMBER_OF_ROWS; row_number++)
+		{
+			for (int column_number = 0; column_number < NUMBER_OF_COLUMNS; column_number++)
+			{
+				keyboard->key_down[row_number][column_number] = 0;
+			}
+		}
+
+		keyboard->column_number = NUMBER_OF_COLUMNS - 1;
+		keyboard->row_number = NUMBER_OF_ROWS - 1;
+		keyboard->column_status = 0;
+	#endif
+
 	Keyboard_connect(keyboard);
 	return keyboard;
 }
@@ -100,23 +133,84 @@ void Keyboard_reconnect(Keyboard_t keyboard)
 	Keyboard_connect(keyboard);
 }
 
+static int Keyboard_next(Keyboard_t keyboard)
+{
+}
+
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
 	if (keyboard->fd < 0) return 0;
-	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
-	if (data <= 0) return 0;
 
-#ifdef SWAP_ROWS_AND_COLUMNS
-	int row = 4 - (((data & 0x7F) % 10) - 1);
-	int column = (data & 0x7F) / 10;
-#else
-	int row = 4 - ((data & 0x7F) / 10);
-	int column = ((data & 0x7F) % 10) - 1;
-#endif
+	#ifdef MANUAL_MATRIX_SCANNING
+		for (int keys_checked = 0; keys_checked < NUMBER_OF_COLUMNS * NUMBER_OF_ROWS; keys_checked++)
+		{
+			keyboard->row_number++;
 
-	*key_p = (row * 10) + column + keyboard->key_offset;
-	*down_p = ((data & 0x80) != 0);
-	return 1;
+			if (keyboard->row_number == NUMBER_OF_ROWS)
+			{
+				keyboard->row_number = 0;
+				keyboard->column_number++;
+			}
+
+			if (keyboard->column_number == NUMBER_OF_COLUMNS)
+			{
+				keyboard->column_number = 0;
+			}
+
+			#ifdef SWAP_ROWS_AND_COLUMNS
+				*key_p = (4 - keyboard->column_number) * 10 + keyboard->row_number + keyboard->key_offset;
+			#else
+				*key_p = (4 - keyboard->row_number) * 10 + keyboard->column_number + keyboard->key_offset;
+			#endif
+
+			if (keyboard->row_number == 0)
+			{
+				i2c_smbus_write_byte_data(keyboard->fd, 0x18, 1 << keyboard->column_number);
+
+				do
+				{
+					keyboard->column_status = i2c_smbus_read_byte_data(keyboard->fd, 0x14);
+				}
+				while (keyboard->column_status < 0);
+			}
+
+			if (keyboard->column_status & (1 << keyboard->row_number))
+			{
+				if (!keyboard->key_down[keyboard->row_number][keyboard->column_number])
+				{
+					keyboard->key_down[keyboard->row_number][keyboard->column_number] = 1;
+					*down_p = 1;
+					return 1;
+				}
+			}
+			else
+			{
+				if (keyboard->key_down[keyboard->row_number][keyboard->column_number])
+				{
+					keyboard->key_down[keyboard->row_number][keyboard->column_number] = 0;
+					*down_p = 0;
+					return 1;
+				}
+			}
+		}
+
+		return 0;
+	#else
+		int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
+		if (data <= 0) return 0;
+
+		#ifdef SWAP_ROWS_AND_COLUMNS
+			int row = 4 - (((data & 0x7F) % 10) - 1);
+			int column = (data & 0x7F) / 10;
+		#else
+			int row = 4 - ((data & 0x7F) / 10);
+			int column = ((data & 0x7F) % 10) - 1;
+		#endif
+
+		*key_p = (row * 10) + column + keyboard->key_offset;
+		*down_p = ((data & 0x80) != 0);
+		return 1;
+	#endif
 }
 
 struct SqueezeSensor
