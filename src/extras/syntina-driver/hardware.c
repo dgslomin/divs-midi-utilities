@@ -22,12 +22,14 @@
 #define SQUEEZE_SENSOR_SMOOTHER_SAMPLES 8
 #define SQUEEZE_SENSOR_CALIBRATION_FACTOR 800000
 #define TILT_SENSOR_SMOOTHER_SAMPLES 64
+#define KEYBOARD_MIN_TIME_BETWEEN_SAMPLES 0.01
 
 struct Keyboard
 {
 	int i2c_bus_number;
 	int key_offset;
 	int fd;
+	float last_sample_time;
 };
 
 static void Keyboard_disconnect(Keyboard_t keyboard)
@@ -74,6 +76,7 @@ static Keyboard_t Keyboard_open(int i2c_bus_number, int key_offset)
 	Keyboard_t keyboard = (Keyboard_t)(malloc(sizeof (struct Keyboard)));
 	keyboard->i2c_bus_number = i2c_bus_number;
 	keyboard->key_offset = key_offset;
+	keyboard->last_sample_time = 0;
 	Keyboard_connect(keyboard);
 	return keyboard;
 }
@@ -103,6 +106,11 @@ void Keyboard_reconnect(Keyboard_t keyboard)
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
 	if (keyboard->fd < 0) return 0;
+
+	float now = Time_getTime();
+	if (now - keyboard->last_sample_time < KEYBOARD_MIN_TIME_BETWEEN_SAMPLES) return 0;
+	keyboard->last_sample_time = now;
+
 	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
 	if (data <= 0) return 0;
 
