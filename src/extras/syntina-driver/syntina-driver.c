@@ -27,7 +27,8 @@ typedef enum
 	KEY_FUNCTION_TYPE_RIGHT_TRANSPOSE,
 	KEY_FUNCTION_TYPE_PRESET,
 	KEY_FUNCTION_TYPE_TARE,
-	KEY_FUNCTION_TYPE_TILT_ENABLE
+	KEY_FUNCTION_TYPE_TILT_ENABLE,
+	KEY_FUNCTION_TYPE_SYSTEM_COMMAND,
 }
 KeyFunctionType_t;
 
@@ -94,6 +95,8 @@ struct SyntinaDriver
 				int y;
 			}
 			tilt_enable;
+
+			const char *system_command;
 		}
 		u;
 	}
@@ -287,6 +290,11 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 			syntina_driver->key_function[key][alt].u.tilt_enable.x = YesNoToggle_parse(json_string_value(json_object_get(to_json, "x")));
 			syntina_driver->key_function[key][alt].u.tilt_enable.y = YesNoToggle_parse(json_string_value(json_object_get(to_json, "y")));
 		}
+		else if (strcmp(key_function, "system") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_SYSTEM_COMMAND;
+			syntina_driver->key_function[key][alt].u.system_command = json_string_value(json_object_get(to_json, "command"));
+		}
 	}
 }
 
@@ -412,6 +420,11 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		{
 			syntina_driver->tilt_x_enable = YesNoToggle_apply(syntina_driver->tilt_x_enable, syntina_driver->key_function[key][syntina_driver->alt].u.tilt_enable.x);
 			syntina_driver->tilt_y_enable = YesNoToggle_apply(syntina_driver->tilt_y_enable, syntina_driver->key_function[key][syntina_driver->alt].u.tilt_enable.y);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_SYSTEM_COMMAND:
+		{
+			system(syntina_driver->key_function[key][syntina_driver->alt].u.system_command);
 			break;
 		}
 		default:
