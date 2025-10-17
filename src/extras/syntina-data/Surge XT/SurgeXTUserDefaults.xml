@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- User Defaults for Surge XT Synthesizer -->
+<defaults version="1">
+  <default key="defaultSkin" value="Teal.surge-skin/" type="1"/>
+  <default key="defaultSkinRootType" value="2" type="2"/>
+  <default key="touchMouseMode" value="0" type="2"/>
+  <default key="initialPatchName" value="00 Concertina 2" type="1"/>
+  <default key="initialPatchCategory" value="MIDI Programs" type="1"/>
+  <default key="initialPatchCategoryType" value="User" type="1"/>
+  <default key="useKeyboardShortcutsPlugin" value="1" type="2"/>
+  <default key="menuAndEditKeybindingsFollowKeyboardFocus" value="0" type="2"/>
+  <default key="showVirtualKeyboardPlugin" value="1" type="2"/>
+  <default key="showVirtualKeyboardStandalone" value="1" type="2"/>
+  <default key="use3DWavetableView" value="1" type="2"/>
+  <default key="modListValueDisplay" value="1" type="2"/>
+  <default key="lastWavetablePath" value="/home/syntina/personal/wavetable" type="1"/>
+  <default key="modlistOverlayLocation" firstvalue="91" secondvalue="59" type="3"/>
+  <default key="msegOverlayLocation" firstvalue="155" secondvalue="134" type="3"/>
+  <default key="formulaOverlayLocation" firstvalue="0" secondvalue="57" type="3"/>
+  <default key="oscilloscopeOverlayLocation" firstvalue="305" secondvalue="149" type="3"/>
+  <default key="modlistOverlayLocationTearOut" firstvalue="960" secondvalue="82" type="3"/>
+  <default key="msegOverlayLocationTearOut" firstvalue="139" secondvalue="433" type="3"/>
+  <default key="formulaOverlayLocationTearOut" firstvalue="380" secondvalue="285" type="3"/>
+  <default key="oscilloscopeOverlayLocationTearOut" firstvalue="792" secondvalue="137" type="3"/>
+  <default key="modlistOverlaySizeTearOut" firstvalue="873" secondvalue="900" type="3"/>
+  <default key="formulaOverlaySizeTearOut" firstvalue="1449" secondvalue="598" type="3"/>
+  <default key="oscilloscopeOverlaySizeTearOut" firstvalue="1100" secondvalue="865" type="3"/>
+  <default key="modlistOverlayTearOutAlwaysOnTop" value="0" type="2"/>
+</defaults>

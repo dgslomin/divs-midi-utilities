@@ -1,0 +1,544 @@
+<surge-skin name="Orange" category="Andromeda" author="Leo Nordmann" version="2">
+    <globals>
+		<window-size x="905" y="570"/>
+
+		<color id="trans" value="#ffffff00"/>
+		<color id="text" value="#eeeeee"/>
+		<color id="text50" value="#eeeeee80"/>
+		<color id="white" value="#FFFFFF"/>
+		<color id="white10" value="#ffffff1a"/>
+		<color id="white20" value="#ffffff33"/>
+		<color id="white25" value="#ffffff40"/>
+		<color id="white50" value="#ffffff80"/>
+		<color id="white75" value="#ffffffbf"/>
+		<color id="black" value="#000000"/>
+		<color id="black10" value="#0000000a"/>
+		<color id="black25" value="#00000040"/>
+		<color id="black40" value="#00000066"/>
+		<color id="black50" value="#00000080"/>
+		<color id="base" value="#313131"/>
+		<color id="bg" value="#262626"/>
+		<color id="bg_box" value="#3e3e3e"/>
+		<color id="bg_border" value="#1d1d1d"/>
+		<color id="orange" value="#FF9000"/>
+		<color id="orange10" value="#FF90001a"/>
+		<color id="orange40" value="#FF900066"/>
+		<color id="orange_light" value="#ffc67e"/>
+		<color id="orange_light10" value="#ffc67e1a"/>
+		<color id="orange_light40" value="#ffc67e66"/>
+		<color id="blue" value="#4998dd"/>
+		<color id="blue_light" value="#4998dd1d"/>
+		<color id="green" value="#0FB7EC"/>
+		<color id="green10" value="#0FB7EC1a"/>
+
+		<!-- Header -->
+		<color id="vumeter.background" value="bg"/>
+		<color id="vumeter.border" value="bg_border"/>
+		<color id="vumeter.unavailabletext" value="white"/>
+
+		<color id="patchbrowser.text" value="text"/>
+		<color id="patchbrowser.typeahead.background" value="bg_box"/>
+		<color id="patchbrowser.typeahead.background.highlight" value="white20"/>
+		<color id="patchbrowser.typeahead.border" value="black40"/>
+		<color id="patchbrowser.typeahead.seperator" value="white10"/>
+		<color id="patchbrowser.typeahead.subtext" value="white50"/>
+		<color id="patchbrowser.typeahead.subtext.highlight" value="white"/>
+		<color id="patchbrowser.typeahead.text" value="white75"/>
+		<color id="patchbrowser.typeahead.text.highlight" value="white"/>
+
+		<!-- Global -->
+
+		<color id="slider.dark.label" value="text"/>
+		<color id="slider.light.label" value="text"/>
+		<color id="menu.name" value="text"/>
+		<color id="menu.name.hover" value="white"/>
+		<color id="menu.name.deactivated" value="white25"/>
+		<color id="menu.value" value="text"/>
+		<color id="menu.value.hover" value="white"/>
+		<color id="menu.value.deactivated" value="white25"/>
+		<color id="multiswitch.hover.fill" value="trans"/>
+
+		<!-- Scene -->
+		<color id="scene.split_poly.text" value="text50"/>
+		<color id="scene.split_poly.text.hover" value="white"/>
+		<color id="scene.pbrange.text" value="text50"/>
+		<color id="scene.pbrange.text.hover" value="white"/>
+		<color id="scene.keytrackroot.text" value="text50"/>
+		<color id="scene.keytrackroot.text.hover" value="white"/>
+
+		<!-- OSC -->
+		<color id="osc.wavename.background" value="#333333"/>
+		<color id="osc.wavename.background.hover" value="#4a4a4a"/>
+		<color id="osc.wavename.frame" value="#333333"/>
+		<color id="osc.wavename.frame.hover" value="#4a4a4a"/>
+		<color id="osc.wavename.text" value="text"/>
+		<color id="osc.wavename.text.hover" value="white"/>
+
+		<color id="osc.type.text" value="orange"/>
+		<color id="osc.waveform.background" value="trans"/>
+		<color id="osc.waveform" value="orange"/>
+		<color id="osc.waveform.dots" value="trans"/>
+
+		<color id="osc.waveform3d.current" value="orange"/>
+		<color id="osc.waveform3d.gradient.start" value="orange_light40"/>
+		<color id="osc.waveform3d.gradient.end" value="orange_light10"/>
+		<color id="osc.waveform3d.fill.gradient.start" value="orange40"/>
+		<color id="osc.waveform3d.fill.gradient.end" value="orange10"/>
+
+
+		<color id="slider.modulation.positive" value="green"/>
+		<color id="slider.modulation.negative" value="green"/>
+
+		<!-- Filter & Waveshaper -->
+		<color id="filtermenu.value" value="orange"/>
+		<color id="filter.subtype_1" value="orange"/>
+		<color id="filter.subtype_1" value="orange"/>
+
+		<color id="waveshaper.preview.background" value="bg"/>
+		<color id="waveshaper.preview.border" value="white25"/>
+		<color id="waveshaper.preview.text" value="text"/>
+
+		<color id="waveshaper.text" value="white25"/>
+		<color id="waveshaper.text.hover" value="white"/>
+
+		<color id="waveshaper.waveform" value="orange"/>
+		<color id="waveshaper.waveform.dots" value="trans"/>
+		<color id="waveshaper.waveform.hover" value="orange_light"/>
+
+		<!-- LFO -->
+		<color id="lfo.title.text" value="text"/>
+
+		<color id="lfo.type.selected.background" value="white25"/>
+		<color id="lfo.type.selected.text" value="text"/>
+		<color id="lfo.type.unselected.text" value="white25"/>
+
+		<color id="lfo.waveform.background" value="trans"/>
+		<color id="lfo.waveform.bounds" value="white25"/>
+		<color id="lfo.waveform.wave" value="orange"/>
+		<color id="lfo.waveform.wave.ghosted" value="orange_light40"/>
+		<color id="lfo.waveform.ruler.text" value="white25"/>
+		<color id="lfo.waveform.ruler.ticks" value="trans"/>
+		<color id="lfo.waveform.ruler.ticks.small" value="trans"/>
+		<color id="lfo.waveform.ruler.ticks.extended" value="trans"/>
+		<color id="lfo.waveform.center" value="#ffffff55"/>
+		<color id="lfo.waveform.dots" value="trans"/>
+		<color id="lfo.waveform.envelope" value="white50"/>
+
+		<color id="lfo.stepseq.background" value="#ffffff00"/>
+
+		<color id="lfo.stepseq.button.arrow" value="white25"/>
+		<color id="lfo.stepseq.button.arrow.hover" value="white"/>
+		<color id="lfo.stepseq.button.background" value="trans"/>
+		<color id="lfo.stepseq.button.border" value="trans"/>
+		<color id="lfo.stepseq.button.hover" value="white20"/>
+
+		<color id="lfo.stepseq.loop.markers" value="blue"/>
+		<color id="lfo.stepseq.loop.step.primary" value="#ffffff0a"/>
+		<color id="lfo.stepseq.loop.step.secondary" value="#ffffff1a"/>
+		<color id="lfo.stepseq.loop.outside.step.primary" value="#ffffff05"/>
+		<color id="lfo.stepseq.loop.outside.step.secondary" value="#ffffff0a"/>
+
+		<color id="lfo.stepseq.step.fill" value="orange40"/>
+		<color id="lfo.stepseq.step.fill.outside" value="white10"/>
+		<color id="lfo.stepseq.step.fill.deactivated" value="black"/>
+
+		<color id="lfo.stepseq.wave" value="orange"/>
+		<color id="lfo.stepseq.envelope" value="white50"/>
+		<color id="lfo.stepseq.drag.line" value="white"/>
+		<color id="lfo.stepseq.column.shadow" value="trans"/>
+
+		<!-- MSEG editor -->
+		<color id="msegeditor.background" value="bg"/>
+
+		<color id="msegeditor.axis.line" value="white25"/>
+		<color id="msegeditor.axis.text" value="text50"/>
+		<color id="msegeditor.axis.text.secondary" value="white25"/>
+
+		<color id="msegeditor.curve" value="#FBC40188"/>
+		<color id="msegeditor.curve.deformed" value="white25"/>
+		<color id="msegeditor.curve.highlight" value="white50"/>
+
+		<color id="msegeditor.fill.gradient.start" value="orange40"/>
+		<color id="msegeditor.fill.gradient.end" value="orange10"/>
+
+		<color id="msegeditor.grid.primary" value="white25"/>
+		<color id="msegeditor.grid.secondary.horizontal" value="white10"/>
+		<color id="msegeditor.grid.secondary.vertical" value="white10"/>
+
+		<color id="msegeditor.loop.marker" value="blue"/>
+		<color id="msegeditor.loop.region.axis" value="#4998dd2a"/>
+		<color id="msegeditor.loop.region.border" value="blue"/>
+		<color id="msegeditor.loop.region.fill" value="#ffffff08"/>
+
+		<color id="msegeditor.numberfield.text" value="white50"/>
+		<color id="msegeditor.numberfield.text.hover" value="white"/>
+
+		<color id="msegeditor.panel" value="bg_border"/>
+		<color id="msegeditor.panel.text" value="text"/>
+
+		<!-- Modlist -->
+		<color id="modlist.arrows" value="white"/>
+		<color id="modlist.border" value="bg_border"/>
+		<color id="modlist.text" value="text"/>
+		<color id="modlist.text.dimmed" value="white25"/>
+
+		<!-- Modwindow -->
+		<color id="modbutton.selected.fill" value="white10"/>
+		<color id="modbutton.selected.frame" value="text"/>
+		<color id="modbutton.selected.text" value="text"/>
+		<color id="modbutton.selected.text.hover" value="white"/>
+		<color id="modbutton.selected.frame.hover" value="white"/>
+
+		<color id="modbutton.selected.used.frame" value="orange_light"/>
+		<color id="modbutton.selected.used.frame.hover" value="white"/>
+		<color id="modbutton.selected.used.fill" value="orange10"/>
+		<color id="modbutton.selected.used.text" value="text"/>
+		<color id="modbutton.selected.used.text.hover" value="white"/>
+		<color id="modbutton.selected.text.usedmod.hover" value="green"/>
+
+		<color id="modbutton.used.frame.hover" value="orange_light"/>
+		<color id="modbutton.used.frame" value="orange"/>
+		<color id="modbutton.used.fill" value="trans"/>
+		<color id="modbutton.used.text" value="white50"/>
+		<color id="modbutton.used.text.hover" value="white"/>
+		<color id="modbutton.used.text.usedmod.hover" value="green"/>
+
+		<color id="modbutton.unused.fill" value="trans"/>
+		<color id="modbutton.unused.frame" value="white10"/>
+		<color id="modbutton.unused.text" value="white50"/>
+		<color id="modbutton.unused.text.hover" value="white"/>
+		<color id="modbutton.unused.frame.hover" value="white"/>
+
+		<color id="modbutton.armed.frame" value="green"/>
+		<color id="modbutton.armed.fill" value="green10"/>
+		<color id="modbutton.armed.text" value="text"/>
+		<color id="modbutton.armed.text.hover" value="white"/>
+		<color id="modbutton.armed.text.usedmod.hover" value="orange_light"/>
+
+		<color id="modbutton.macro.slider.background" value="white10"/>
+		<color id="modbutton.macro.slider.currentvalue" value="white"/>
+		<color id="modbutton.macro.slider.fill" value="#ffffff55"/>
+		<color id="modbutton.macro.slider.frame" value="white"/>
+		<color id="modbutton.macro.slider.border" value="trans"/>
+
+		<!-- Effect Grid -->
+		<color id="effect.label.text" value="text"/>
+		<color id="effect.label.presetname" value="text"/>
+
+		<color id="effect.menu.text" value="text"/>
+		<color id="effect.menu.text.hover" value="white"/>
+
+		<color id="effect.grid.border" value="white25"/>
+
+		<color id="effect.grid.bypassed.border" value="#ff493e88"/>
+		<color id="effect.grid.bypassed.border.hover" value="#ff7e7688"/>
+		<color id="effect.grid.bypassed.background" value="trans"/>
+		<color id="effect.grid.bypassed.background.hover" value="white20"/>
+		<color id="effect.grid.bypassed.selected.border" value="#ff493e"/>
+		<color id="effect.grid.bypassed.selected.border.hover" value="#ff7e76"/>
+		<color id="effect.grid.bypassed.selected.background" value="black10"/>
+		<color id="effect.grid.bypassed.selected.background.hover" value="white20"/>
+		<color id="effect.grid.bypassed.selected.text" value="text"/>
+		<color id="effect.grid.bypassed.selected.text.hover" value="white"/>
+
+		<color id="effect.grid.scene.background" value="trans"/>
+		<color id="effect.grid.scene.background.hover" value="white20"/>
+		<color id="effect.grid.scene.border" value="white25"/>
+		<color id="effect.grid.scene.border.hover" value="white20"/>
+		<color id="effect.grid.scene.text" value="text"/>
+		<color id="effect.grid.scene.text.hover" value="white"/>
+
+		<color id="effect.grid.selected.background" value="black10"/>
+		<color id="effect.grid.selected.background.hover" value="white20"/>
+		<color id="effect.grid.selected.border" value="white"/>
+		<color id="effect.grid.selected.border.hover" value="white20"/>
+		<color id="effect.grid.selected.text" value="text"/>
+		<color id="effect.grid.selected.text.hover" value="white"/>
+
+		<color id="effect.grid.unselected.background" value="trans"/>
+		<color id="effect.grid.unselected.background.hover" value="white20"/>
+		<color id="effect.grid.unselected.border" value="white25"/>
+		<color id="effect.grid.unselected.border.hover" value="white"/>
+		<color id="effect.grid.unselected.text" value="text50"/>
+		<color id="effect.grid.unselected.text.hover" value="white20"/>
+
+		<!-- Dialog Windows	-->
+		<color id="dialog.background" value="bg_box"/>
+		<color id="dialog.border" value="white"/>
+		<color id="dialog.hover.background" value="white20"/>
+
+		<color id="dialog.button.background" value="bg"/>
+		<color id="dialog.button.border" value="trans"/>
+		<color id="dialog.button.text" value="text"/>
+		<color id="dialog.button.hover.background" value="white20"/>
+		<color id="dialog.button.hover.border" value="white20"/>
+		<color id="dialog.button.hover.text" value="white"/>
+		<color id="dialog.button.pressed.background" value="black10"/>
+		<color id="dialog.button.pressed.border" value="trans"/>
+		<color id="dialog.button.pressed.text" value="text"/>
+
+		<color id="dialog.checkbox.tick" value="text"/>
+
+		<color id="dialog.label.text" value="text"/>
+		<color id="dialog.titlebar.text" value="black"/>
+
+		<color id="dialog.textfield.background" value="black25"/>
+		<color id="dialog.textfield.border" value="black40"/>
+		<color id="dialog.textfield.caret" value="white50"/>
+		<color id="dialog.textfield.focus" value="white20"/>
+		<color id="dialog.textfield.text" value="white"/>
+
+		<!-- Formula Editor -->
+		<color id="formulaeditor.background" value="bg"/>
+		<color id="formulaeditor.linenumber.background" value="white10"/>
+		<color id="formulaeditor.linenumber.text" value="white50"/>
+		<color id="formulaeditor.text" value="text"/>
+
+		<color id="formulaeditor.lua.identifier" value="#64b8e8"/>
+		<color id="formulaeditor.lua.interpunction" value="text"/>
+		<color id="formulaeditor.lua.keyword" value="#a9ef76"/>
+		<color id="formulaeditor.lua.number" value="#ff6471"/>
+		<color id="formulaeditor.lua.string" value="#edae56"/>
+		<color id="formulaeditor.lua.bracket" value="white"/>
+
+		<color id="formulaeditor.debugger.row.primary" value="#ffffff0a"/>
+		<color id="formulaeditor.debugger.row.secondary" value="#ffffff1a"/>
+		<color id="formulaeditor.debugger.text" value="white50"/>
+		<color id="formulaeditor.debugger.text.subscriptions" value="white25"/>
+
+		<!-- Multiswitch -->
+		<color id="multiswitch.background" value="bg"/>
+		<color id="multiswitch.border" value="white25"/>
+		<color id="multiswitch.separator" value="trans"/>
+		<color id="multiswitch.text" value="text"/>
+		<color id="multiswitch.text.deactivated" value="white25"/>
+
+		<color id="multiswitch.hover.fill" value="white20"/>
+		<color id="multiswitch.hover.text" value="text"/>
+		<color id="multiswitch.hoveron.border" value="white20"/>
+		<color id="multiswitch.hoveron.text" value="white"/>
+		<color id="multiswitch.hoveron.fill" value="white20"/>
+
+		<color id="multiswitch.on.fill" value="white10"/>
+		<color id="multiswitch.on.text" value="text"/>
+
+		<defaultimage directory="SVG/"/>
+
+		<image id="hover-v" resource="SVG/vslider_hover.svg"/>
+		<image id="ts-v" resource="SVG/vslider_ts.svg"/>
+		<image id="hover-h" resource="SVG/hslider_hover.svg"/>
+		<image id="ts-h" resource="SVG/hslider_ts.svg"/>
+
+		<image id="env-norm-v" resource="SVG/vslider_env.svg"/>
+
+		<image id="flt-norm-h" resource="SVG/hslider_flt.svg"/>
+
+		<image id="flt-norm-v" resource="SVG/vslider_flt.svg"/>
+
+		<image id="lfo-norm-h" resource="SVG/hslider_lfo.svg"/>
+		<image id="lfo-norm-v" resource="SVG/vslider_lfo.svg"/>
+
+
+		<image id="fx-norm-h" resource="SVG/hslider_fx.svg"/>
+		<image id="fx-norm-v" resource="SVG/vslider_fx.svg"/>
+
+		<image id="osc-norm-h" resource="SVG/hslider_osc.svg"/>
+		<image id="osc-norm-v" resource="SVG/vslider_osc.svg"/>
+
+		<image id="global-norm-h" resource="SVG/hslider_global.svg"/>
+
+		<image id="scene-norm-h" resource="SVG/hslider_scene.svg"/>
+		<image id="scene-norm-v" resource="SVG/vslider_scene.svg"/>
+
+    </globals>
+    <component-classes>
+		<class name="env-vslider" parent="CSurgeSlider" handle_image="env-norm-v" handle_hover_image="hover-v" handle_temposync_image="ts-v"/>
+		<class name="flt-hslider" parent="CSurgeSlider" handle_image="flt-norm-h" handle_hover_image="hover-h"/>
+		<class name="flt-vslider" parent="CSurgeSlider" handle_image="flt-norm-v" handle_hover_image="hover-v"/>
+		<class name="lfo-hslider" parent="CSurgeSlider" handle_image="lfo-norm-h" handle_hover_image="hover-h" handle_temposync_image="ts-h"/>
+		<class name="lfo-vslider" parent="CSurgeSlider" handle_image="lfo-norm-v" handle_hover_image="hover-v" handle_temposync_image="ts-v"/>
+		<class name="fx-hslider" parent="CSurgeSlider" handle_image="fx-norm-h" handle_hover_image="hover-h" handle_temposync_image="ts-h"/>
+		<class name="fx-vslider" parent="CSurgeSlider" handle_image="fx-normv" handle_hover_image="hover-v"/>
+		<class name="osc-hslider" parent="CSurgeSlider" handle_image="osc-norm-h" handle_hover_image="hover-h"/>
+		<class name="osc-vslider" parent="CSurgeSlider" handle_image="osc-norm-v" handle_hover_image="hover-v"/>
+		<class name="global-hslider" parent="CSurgeSlider" handle_image="global-norm-h" handle_hover_image="hover-h"/>
+		<class name="scene-hslider" parent="CSurgeSlider" handle_image="scene-norm-h" handle_hover_image="hover-h"/>
+		<class name="scene-vslider" parent="CSurgeSlider" handle_image="scene-norm-v" handle_hover_image="hover-v"/>
+	</component-classes>
+	<controls>
+		<!-- Global -->
+		<control ui_identifier="global.active_scene" x="6" y="13" w="40" h="41"/>
+		<control ui_identifier="global.scene_mode" x="55" y="13" h="41"/>
+		<control ui_identifier="global.volume" class="global-hslider" x="759"/>
+		<control ui_identifier="global.fx1_return" class="fx-hslider" x="759"/>
+		<control ui_identifier="global.fx2_return" class="fx-hslider" x="759"/>
+		<control ui_identifier="global.fx3_return" class="fx-hslider" x="759"/>
+		<control ui_identifier="global.fx4_return" class="fx-hslider" x="759"/>
+
+		<!-- Scene -->
+		<control ui_identifier="scene.output.panel" x="608"/>
+		<control ui_identifier="scene.drift" class="scene-hslider"/>
+		<control ui_identifier="scene.noise_color" class="scene-hslider"/>
+		<control ui_identifier="scene.pitch" class="scene-hslider"/>
+		<control ui_identifier="scene.portamento" class="scene-hslider"/>
+		<control ui_identifier="scene.polylimit" x="102" y="41"/>
+		<control ui_identifier="scene.splitpoint" x="102" y="12"/>
+		<control ui_identifier="scene.playmode" x="169" y="84"w="50" h="57"/>
+		<control ui_identifier="scene.pbrange_dn" x="247" y="122"/>
+		<control ui_identifier="scene.pbrange_up" x="247" y="102"/>
+		<control ui_identifier="scene.octave" x="168" y="194" w="106" h="14"/>
+		<control ui_identifier="scene.fmrouting" x="310" y="85" h="69"/>
+		<control ui_identifier="scene.fmdepth" x="308" y="157" class="osc-hslider"/>
+		<control ui_identifier="scene.velocity_sensitivity" class="scene-vslider"/>
+		<control ui_identifier="scene.gain" class="scene-vslider"/>
+
+		<control ui_identifier="scene.send_fx_1" class="scene-hslider"/>
+		<control ui_identifier="scene.send_fx_2" class="scene-hslider"/>
+		<control ui_identifier="scene.send_fx_3" class="scene-hslider"/>
+		<control ui_identifier="scene.send_fx_4" class="scene-hslider"/>
+
+		<control ui_identifier="scene.width" class="scene-hslider"/>
+		<control ui_identifier="scene.pan" class="scene-hslider"/>
+		<control ui_identifier="scene.volume" class="scene-hslider"/>
+		<control ui_identifier="scene.keytrack_root" x="309"/>
+
+		<!-- Mixer -->
+		<control ui_identifier="mixer.mute_o1" x="2" y="2" w="16" h="12"/>
+		<control ui_identifier="mixer.mute_o2" x="22" y="2" w="16" h="12"/>
+		<control ui_identifier="mixer.mute_o3" x="42" y="2" w="16" h="12"/>
+		<control ui_identifier="mixer.mute_ring12" x="62" y="2" w="16" h="12"/>
+		<control ui_identifier="mixer.mute_ring23" x="82" y="2" w="16" h="12"/>
+		<control ui_identifier="mixer.mute_noise" x="102" y="2" w="16" h="12"/>
+
+		<control ui_identifier="mixer.solo_o1" x="2" y="16" w="16" h="12"/>
+		<control ui_identifier="mixer.solo_o2" x="22" y="16" w="16" h="12"/>
+		<control ui_identifier="mixer.solo_o3" x="42" y="16" w="16" h="12"/>
+		<control ui_identifier="mixer.solo_ring12" x="62" y="16" w="16" h="12"/>
+		<control ui_identifier="mixer.solo_ring23" x="82" y="16" w="16" h="12"/>
+		<control ui_identifier="mixer.solo_noise" x="102" y="16" w="16" h="12"/>
+
+		<control ui_identifier="mixer.route_o1" x="2" y="30" w="16" h="9"/>
+		<control ui_identifier="mixer.route_o2" x="22" y="30" w="16" h="9"/>
+		<control ui_identifier="mixer.route_o3" x="42" y="30" w="16" h="9"/>
+		<control ui_identifier="mixer.route_ring12" x="62" y="30" w="16" h="9"/>
+		<control ui_identifier="mixer.route_ring23" x="82" y="30" w="16" h="9"/>
+		<control ui_identifier="mixer.route_noise" x="102" y="30" w="16" h="9"/>
+
+		<control ui_identifier="mixer.panel" y="263"/>
+		<control ui_identifier="mixer.level_o1" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_o2" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_o3" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_ring12" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_ring23" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_noise" class="scene-vslider"/>
+		<control ui_identifier="mixer.level_prefiltergain" class="scene-vslider" y="38"/>
+
+		<!-- OSC -->
+		<control ui_identifier="osc.display" y="92"/>
+		<control ui_identifier="osc.keytrack" x="110" y="194" h="14" w="18"/>
+		<control ui_identifier="osc.retrigger" x="128" y="194" h="14" w="18"/>
+		<control ui_identifier="osc.select" x="3" y="77" h="15" w="81"/>
+		<control ui_identifier="osc.type" x="85" y="76" w="60" text_allcaps="false" />
+		<control ui_identifier="osc.octave" x="3" y="194" w="106" h="14"/>
+		<control ui_identifier="osc.pitch" class="osc-hslider"/>
+		<control ui_identifier="osc.param_1" class="osc-hslider"/>
+		<control ui_identifier="osc.param_2" class="osc-hslider" text_voffset="0" text_hoffset="10"/>
+		<control ui_identifier="osc.param_3" class="osc-hslider"/>
+		<control ui_identifier="osc.param_4" class="osc-hslider"/>
+		<control ui_identifier="osc.param_5" class="osc-hslider"/>
+		<control ui_identifier="osc.param_6" class="osc-hslider"/>
+		<control ui_identifier="osc.param_7" class="osc-hslider"/>
+
+		<!-- Filter -->
+		<control ui_identifier="filter.waveshaper_drive" class="flt-vslider" y="301"/>
+		<control ui_identifier="filter.waveshaper_preview" x="387" y="372" w="31" h="12"/>
+		<control ui_identifier="filter.waveshaper_type" x="385" y="305" w="35" h="50"/>
+
+		<control ui_identifier="filter.filter_preview" w="31" h="12" x="511" y="220"/>
+		<control ui_identifier="filter.type_1" x="305" y="190"/>
+		<control ui_identifier="filter.subtype_1" x="430" y="194" w="13" h="14"/>
+		<control ui_identifier="filter.type_2" x="605" y="190"/>
+		<control ui_identifier="filter.subtype_2" x="730" y="194" w="13" h="14"/>
+
+		<control ui_identifier="filter.config" x="460" y="85" h="69"/>
+		<control ui_identifier="filter.cutoff_1" x="308" class="flt-hslider"/>
+		<control ui_identifier="filter.resonance_1" x="308" class="flt-hslider"/>
+		<control ui_identifier="filter.cutoff_2" class="flt-hslider"/>
+		<control ui_identifier="filter.resonance_2" class="flt-hslider"/>
+		<control ui_identifier="filter.balance" x="458" y="234" class="flt-hslider"/>
+		<control ui_identifier="filter.feedback" x="458" class="flt-hslider" y="157"/>
+
+		<control ui_identifier="filter.f2_link_resonance" w="14" h="12" x="732" y="240"/>
+		<control ui_identifier="filter.f2_offset_mode" w="14" h="12" x="732" y="218"/>
+
+		<control ui_identifier="filter.envmod_1" class="flt-vslider" x="551" y="301"/>
+		<control ui_identifier="filter.envmod_2" class="flt-vslider" x="571" y="301"/>
+
+		<control ui_identifier="filter.keytrack_1" class="flt-vslider"/>
+		<control ui_identifier="filter.keytrack_2" class="flt-vslider"/>
+		<control ui_identifier="filter.highpass" class="flt-vslider"/>
+
+		<!-- FEG -->
+		<control ui_identifier="feg.panel" y="266"/>
+		<control ui_identifier="feg.mode" cols="2" rows="1" x="59" y="2" h="12" w="24"/>
+		<control ui_identifier="feg.attack_shape" x="3" y="16"/>
+		<control ui_identifier="feg.decay_shape" x="23" y="16"/>
+		<control ui_identifier="feg.release_shape" x="63" y="16"/>
+		<control ui_identifier="feg.attack" class="env-vslider" x="-3" y="35"/>
+		<control ui_identifier="feg.decay" class="env-vslider" x="17" y="35"/>
+		<control ui_identifier="feg.sustain" class="env-vslider" x="37" y="35"/>
+		<control ui_identifier="feg.release" class="env-vslider" x="57" y="35"/>
+
+		<!-- AEG -->
+		<control ui_identifier="aeg.panel" y="266"/>
+		<control ui_identifier="aeg.mode" cols="2" rows="1" x="59" y="2" h="12" w="24"/>
+		<control ui_identifier="aeg.attack_shape" x="3" y="16"/>
+		<control ui_identifier="aeg.decay_shape" x="23" y="16"/>
+		<control ui_identifier="aeg.release_shape" x="63" y="16"/>
+		<control ui_identifier="aeg.attack" class="env-vslider" x="-3" y="35"/>
+		<control ui_identifier="aeg.decay" class="env-vslider" x="17" y="35"/>
+		<control ui_identifier="aeg.sustain" class="env-vslider" x="37" y="35"/>
+		<control ui_identifier="aeg.release" class="env-vslider" x="57" y="35"/>
+
+		<!-- LFO -->
+		<control ui_identifier="lfo.main.panel" x="29"/>
+		<control ui_identifier="lfo.title" x="8" y="495"/>
+		<control ui_identifier="lfo.presets" x="8" y="480" w="12" h="12"/>
+		<control ui_identifier="lfo.rate" class="lfo-hslider"/>
+		<control ui_identifier="lfo.phase" class="lfo-hslider"/>
+		<control ui_identifier="lfo.deform" class="lfo-hslider"/>
+		<control ui_identifier="lfo.amplitude" class="lfo-hslider"/>
+
+		<control ui_identifier="lfo.envelope.panel" x="614"/>
+		<control ui_identifier="lfo.delay" class="lfo-vslider"/>
+		<control ui_identifier="lfo.attack" class="lfo-vslider"/>
+		<control ui_identifier="lfo.hold" class="lfo-vslider"/>
+		<control ui_identifier="lfo.decay" class="lfo-vslider"/>
+		<control ui_identifier="lfo.sustain" class="lfo-vslider"/>
+		<control ui_identifier="lfo.release" class="lfo-vslider"/>
+		<control ui_identifier="lfo.trigger_mode" w="50" h="39"/>
+		<control ui_identifier="lfo.unipolar" w="50" h="14"/>
+
+		<control ui_identifier="lfo.mseg_editor" w="0" h="0"/>
+
+		<!-- FX -->
+		<control ui_identifier="fx.selector" x="756" y="85"/>
+		<control ui_identifier="fx.type" x="761" y="192"/>
+		<control ui_identifier="fx.param.panel" x="759" y="230"/>
+		<control ui_identifier="fx.preset.name" x="765" y="215"/>
+		<control ui_identifier="fx.preset.prevnext" x="862" y="215"/>
+		<control ui_identifier="fx.param_1" class="fx-hslider"/>
+		<control ui_identifier="fx.param_2" class="fx-hslider"/>
+		<control ui_identifier="fx.param_3" class="fx-hslider"/>
+		<control ui_identifier="fx.param_4" class="fx-hslider"/>
+		<control ui_identifier="fx.param_5" class="fx-hslider"/>
+		<control ui_identifier="fx.param_6" class="fx-hslider"/>
+		<control ui_identifier="fx.param_7" class="fx-hslider"/>
+		<control ui_identifier="fx.param_8" class="fx-hslider"/>
+		<control ui_identifier="fx.param_9" class="fx-hslider"/>
+		<control ui_identifier="fx.param_10" class="fx-hslider"/>
+		<control ui_identifier="fx.param_11" class="fx-hslider"/>
+		<control ui_identifier="fx.param_12" class="fx-hslider"/>
+
+	</controls>
+</surge-skin>
