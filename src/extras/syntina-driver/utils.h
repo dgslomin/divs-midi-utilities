@@ -12,4 +12,6 @@ float Smoother_getAverage(Smoother_t smoother);
 int YesNoToggle_parse(const char *s);
 int YesNoToggle_apply(int current_value, int yes_no_toggle);
 
+int clamp_int(int value, int min, int max);
+
 #endif

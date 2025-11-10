@@ -18,7 +18,10 @@ typedef enum
 	KEY_FUNCTION_TYPE_NONE = 0,
 	KEY_FUNCTION_TYPE_NOTE,
 	KEY_FUNCTION_TYPE_RETRIG,
-	KEY_FUNCTION_TYPE_CC,
+	KEY_FUNCTION_TYPE_MOMENTARY_CC,
+	KEY_FUNCTION_TYPE_ABSOLUTE_CC,
+	KEY_FUNCTION_TYPE_RELATIVE_CC,
+	KEY_FUNCTION_TYPE_SPEED_CC,
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_ALT,
 	KEY_FUNCTION_TYPE_PROGRAM,
@@ -56,7 +59,29 @@ struct SyntinaDriver
 		union
 		{
 			int note;
-			int cc;
+			int momentary_cc;
+
+			struct
+			{
+				int number;
+				int value;
+			}
+			absolute_cc;
+
+			struct
+			{
+				int number;
+				int amount;
+			}
+			relative_cc;
+
+			struct
+			{
+				int number;
+				float speed;
+			}
+			speed_cc;
+
 			int alt;
 
 			struct
@@ -105,7 +130,7 @@ struct SyntinaDriver
 	int key_down_note[256];
 	int note_down_count[128];
 	float note_off_time[128];
-	int key_down_cc[256];
+	int key_down_momentary_cc[256];
 	int alt;
 	int key_down_alt[256];
 	int alt_down_count;
@@ -115,6 +140,7 @@ struct SyntinaDriver
 	int last_squeeze_amount;
 	int last_tilt_x_amount;
 	int last_tilt_y_amount;
+	int cc_value[128];
 };
 
 SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filename)
@@ -143,13 +169,14 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_note[key] = -1;
 	for (int note = 0; note < 128; note++) syntina_driver->note_down_count[note] = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_off_time[note] = 0;
-	for (int key = 0; key < 256; key++) syntina_driver->key_down_cc[key] = -1;
+	for (int key = 0; key < 256; key++) syntina_driver->key_down_momentary_cc[key] = -1;
 	syntina_driver->alt = 0;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_alt[key] = 0;
 	syntina_driver->alt_down_count = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_retrig_count[note] = 0;
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_retrig[key] = 0;
 	syntina_driver->program = 0;
+	for (int cc = 0; cc < 128; cc++) syntina_driver->cc_value[cc] = 0;
 	return syntina_driver;
 }
 
@@ -239,8 +266,32 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 		}
 		else if (strcmp(key_function, "cc") == 0)
 		{
-			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC;
-			syntina_driver->key_function[key][alt].u.cc = json_integer_value(json_object_get(to_json, "number"));
+			const char *behavior = json_string_value(json_object_get(to_json, "behavior"));
+			if (!behavior) behavior = "momentary";
+
+			if (strcmp(behavior, "momentary") == 0)
+			{
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_MOMENTARY_CC;
+				syntina_driver->key_function[key][alt].u.momentary_cc = json_integer_value(json_object_get(to_json, "number"));
+			}
+			else if (strcmp(behavior, "absolute") == 0)
+			{
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_ABSOLUTE_CC;
+				syntina_driver->key_function[key][alt].u.absolute_cc.number = json_integer_value(json_object_get(to_json, "number"));
+				syntina_driver->key_function[key][alt].u.absolute_cc.value = json_integer_value(json_object_get(to_json, "value"));
+			}
+			else if (strcmp(behavior, "relative") == 0)
+			{
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_RELATIVE_CC;
+				syntina_driver->key_function[key][alt].u.relative_cc.number = json_integer_value(json_object_get(to_json, "number"));
+				syntina_driver->key_function[key][alt].u.relative_cc.amount = json_integer_value(json_object_get(to_json, "amount"));
+			}
+			else if (strcmp(behavior, "speed") == 0)
+			{
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_SPEED_CC;
+				syntina_driver->key_function[key][alt].u.speed_cc.number = json_integer_value(json_object_get(to_json, "number"));
+				syntina_driver->key_function[key][alt].u.speed_cc.speed = json_real_value(json_object_get(to_json, "speed"));
+			}
 		}
 		else if (strcmp(key_function, "panic") == 0)
 		{
@@ -340,11 +391,31 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			syntina_driver->key_down_retrig[key] = 1;
 			break;
 		}
-		case KEY_FUNCTION_TYPE_CC:
+		case KEY_FUNCTION_TYPE_MOMENTARY_CC:
 		{
-			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.cc;
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.momentary_cc;
+			syntina_driver->cc_value[cc] = 127;
+			syntina_driver->key_down_momentary_cc[key] = cc;
 			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 127);
-			syntina_driver->key_down_cc[key] = cc;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_ABSOLUTE_CC:
+		{
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.absolute_cc.number;
+			syntina_driver->cc_value[cc] = syntina_driver->key_function[key][syntina_driver->alt].u.absolute_cc.value;
+			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_RELATIVE_CC:
+		{
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.relative_cc.number;
+			syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] + syntina_driver->key_function[key][syntina_driver->alt].u.relative_cc.amount, 0, 127);
+			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_SPEED_CC:
+		{
+			// TODO
 			break;
 		}
 		case KEY_FUNCTION_TYPE_ALT:
@@ -356,9 +427,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 		}
 		case KEY_FUNCTION_TYPE_PROGRAM:
 		{
-			syntina_driver->program = (syntina_driver->key_function[key][syntina_driver->alt].u.program.relative ? syntina_driver->program : 0) + syntina_driver->key_function[key][syntina_driver->alt].u.program.value;
-			if (syntina_driver->program < 0) syntina_driver->program = 0;
-			if (syntina_driver->program > 127) syntina_driver->program = 127;
+			syntina_driver->program = clamp_int((syntina_driver->key_function[key][syntina_driver->alt].u.program.relative ? syntina_driver->program : 0) + syntina_driver->key_function[key][syntina_driver->alt].u.program.value, 0, 127);
 			MidiOut_sendProgramChange(syntina_driver->midi_out, 0, syntina_driver->program);
 			break;
 		}
@@ -390,7 +459,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			for (int key = 0; key < 256; key++)
 			{
 				syntina_driver->key_down_note[key] = -1;
-				syntina_driver->key_down_cc[key] = -1;
+				syntina_driver->key_down_momentary_cc[key] = -1;
 				syntina_driver->key_down_alt[key] = 0;
 				syntina_driver->key_down_retrig[key] = 0;
 			}
@@ -472,12 +541,13 @@ void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
 		return;
 	}
 
-	int cc = syntina_driver->key_down_cc[key];
+	int cc = syntina_driver->key_down_momentary_cc[key];
 
 	if (cc >= 0)
 	{
 		MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 0);
-		syntina_driver->key_down_cc[key] = -1;
+		syntina_driver->cc_value[cc] = 0;
+		syntina_driver->key_down_momentary_cc[key] = -1;
 		return;
 	}
 
