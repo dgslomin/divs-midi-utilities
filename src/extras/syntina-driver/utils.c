@@ -49,6 +49,69 @@ float Smoother_getAverage(Smoother_t smoother)
 	return smoother->total / smoother->number_of_samples;
 }
 
+struct Set
+{
+	int size;
+	int count;
+	int *values;
+	int *positions;
+};
+
+Set_t Set_new(int size)
+{
+	Set_t set = (Set_t)(malloc(sizeof (struct Set)));
+	set->size = size;
+	set->count = 0;
+	set->values = (int *)(malloc(size * sizeof (int)));
+	set->positions = (int *)(malloc(size * sizeof (int)));
+	for (int i = 0; i < size; i++) set->positions[i] = -1;
+	return set;
+}
+
+void Set_free(Set_t set)
+{
+	free(set->values);
+	free(set->positions);
+	free(set);
+}
+
+void Set_clear(Set_t set)
+{
+	set->count = 0;
+	for (int i = 0; i < set->size; i++) set->positions[i] = -1;
+}
+
+void Set_add(Set_t set, int value)
+{
+	if (set->positions[value] >= 0) return;
+	set->positions[value] = set->count;
+	set->values[set->count] = value;
+	(set->count)++;
+}
+
+void Set_remove(Set_t set, int value)
+{
+	if (set->positions[value] < 0) return;
+	if (set->count > 1) set->values[set->positions[value]] = set->values[set->count - 1];
+	(set->count)--;
+	set->positions[value] = -1;
+}
+
+int Set_has(Set_t set, int value)
+{
+	return (set->positions[value] >= 0);
+}
+
+int Set_count(Set_t set)
+{
+	return set->count;
+}
+
+int Set_nth(Set_t set, int number)
+{
+	return set->values[number];
+}
+
 int YesNoToggle_parse(const char *s)
 {
 	if (s == NULL) return -1;

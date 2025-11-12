@@ -10,18 +10,21 @@
 
 #define MAX_RETRIG_TIME 0.05
 #define RETRIG_VELOCITY 64
+#define FINE_CHANGE_TIME 0.5
+#define COARSE_CHANGE_TIME 0.025
 
 typedef struct SyntinaDriver *SyntinaDriver_t;
+typedef struct KeyFunction *KeyFunction_t;
 
 typedef enum
 {
 	KEY_FUNCTION_TYPE_NONE = 0,
 	KEY_FUNCTION_TYPE_NOTE,
 	KEY_FUNCTION_TYPE_RETRIG,
-	KEY_FUNCTION_TYPE_MOMENTARY_CC,
-	KEY_FUNCTION_TYPE_ABSOLUTE_CC,
-	KEY_FUNCTION_TYPE_RELATIVE_CC,
-	KEY_FUNCTION_TYPE_SPEED_CC,
+	KEY_FUNCTION_TYPE_CC_MOMENTARY,
+	KEY_FUNCTION_TYPE_CC_INCREASE,
+	KEY_FUNCTION_TYPE_CC_DECREASE,
+	KEY_FUNCTION_TYPE_FINE,
 	KEY_FUNCTION_TYPE_PANIC,
 	KEY_FUNCTION_TYPE_ALT,
 	KEY_FUNCTION_TYPE_PROGRAM,
@@ -35,6 +38,60 @@ typedef enum
 }
 KeyFunctionType_t;
 
+struct KeyFunction
+{
+	KeyFunctionType_t type;
+
+	union
+	{
+		int note;
+		int cc_momentary;
+		int cc_increase;
+		int cc_decrease;
+		int alt;
+
+		struct
+		{
+			int relative;
+			int value;
+		}
+		program;
+
+		struct
+		{
+			int relative;
+			int value;
+		}
+		transpose;
+
+		struct
+		{
+			int relative;
+			int value;
+		}
+		left_transpose;
+
+		struct
+		{
+			int relative;
+			int value;
+		}
+		right_transpose;
+
+		const char *preset;
+
+		struct
+		{
+			int x;
+			int y;
+		}
+		tilt_enable;
+
+		const char *system_command;
+	}
+	u;
+};
+
 struct SyntinaDriver
 {
 	MidiOut_t midi_out;
@@ -43,7 +100,6 @@ struct SyntinaDriver
 	Keyboard_t right_keyboard;
 	SqueezeSensor_t squeeze_sensor;
 	TiltSensor_t tilt_sensor;
-
 	int transpose;
 	int left_transpose;
 	int right_transpose;
@@ -51,96 +107,23 @@ struct SyntinaDriver
 	int tilt_x_enable;
 	int tilt_y_enable;
 	int tilt_y_cc;
-
-	struct
-	{
-		KeyFunctionType_t type;
-
-		union
-		{
-			int note;
-			int momentary_cc;
-
-			struct
-			{
-				int number;
-				int value;
-			}
-			absolute_cc;
-
-			struct
-			{
-				int number;
-				int amount;
-			}
-			relative_cc;
-
-			struct
-			{
-				int number;
-				float speed;
-			}
-			speed_cc;
-
-			int alt;
-
-			struct
-			{
-				int relative;
-				int value;
-			}
-			program;
-
-			struct
-			{
-				int relative;
-				int value;
-			}
-			transpose;
-
-			struct
-			{
-				int relative;
-				int value;
-			}
-			left_transpose;
-
-			struct
-			{
-				int relative;
-				int value;
-			}
-			right_transpose;
-
-			const char *preset;
-
-			struct
-			{
-				int x;
-				int y;
-			}
-			tilt_enable;
-
-			const char *system_command;
-		}
-		u;
-	}
-	key_function[256][16];
-
-	int key_down_note[256];
+	struct KeyFunction key_function[256][16];
+	KeyFunction_t key_down_function[256];
 	int note_down_count[128];
 	float note_off_time[128];
-	int key_down_momentary_cc[256];
 	int alt;
-	int key_down_alt[256];
 	int alt_down_count;
 	int note_retrig_count[128];
-	int key_down_retrig[256];
 	int program;
 	int last_squeeze_amount;
 	int last_tilt_x_amount;
 	int last_tilt_y_amount;
 	int cc_value[128];
+	Set_t cc_increase_set;
+	float cc_increase_time[128];
+	Set_t cc_decrease_set;
+	float cc_decrease_time[128];
+	int fine_down_count;
 };
 
 SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filename)
@@ -166,17 +149,19 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 		for (int key = 0; key < 256; key++) syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_NONE;
 	}
 
-	for (int key = 0; key < 256; key++) syntina_driver->key_down_note[key] = -1;
+	for (int key = 0; key < 256; key++) syntina_driver->key_down_function[key] = NULL;
 	for (int note = 0; note < 128; note++) syntina_driver->note_down_count[note] = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_off_time[note] = 0;
-	for (int key = 0; key < 256; key++) syntina_driver->key_down_momentary_cc[key] = -1;
 	syntina_driver->alt = 0;
-	for (int key = 0; key < 256; key++) syntina_driver->key_down_alt[key] = 0;
 	syntina_driver->alt_down_count = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_retrig_count[note] = 0;
-	for (int key = 0; key < 256; key++) syntina_driver->key_down_retrig[key] = 0;
 	syntina_driver->program = 0;
 	for (int cc = 0; cc < 128; cc++) syntina_driver->cc_value[cc] = 0;
+	syntina_driver->cc_increase_set = Set_new(128);
+	for (int cc = 0; cc < 128; cc++) syntina_driver->cc_increase_time[cc] = 0;
+	syntina_driver->cc_decrease_set = Set_new(128);
+	for (int cc = 0; cc < 128; cc++) syntina_driver->cc_decrease_time[cc] = 0;
+	syntina_driver->fine_down_count = 0;
 	return syntina_driver;
 }
 
@@ -188,6 +173,8 @@ void SyntinaDriver_free(SyntinaDriver_t syntina_driver)
 	Keyboard_close(syntina_driver->right_keyboard);
 	SqueezeSensor_close(syntina_driver->squeeze_sensor);
 	TiltSensor_close(syntina_driver->tilt_sensor);
+	Set_free(syntina_driver->cc_increase_set);
+	Set_free(syntina_driver->cc_decrease_set);
 	free(syntina_driver);
 }
 
@@ -271,27 +258,23 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 
 			if (strcmp(behavior, "momentary") == 0)
 			{
-				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_MOMENTARY_CC;
-				syntina_driver->key_function[key][alt].u.momentary_cc = json_integer_value(json_object_get(to_json, "number"));
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC_MOMENTARY;
+				syntina_driver->key_function[key][alt].u.cc_momentary = json_integer_value(json_object_get(to_json, "number"));
 			}
-			else if (strcmp(behavior, "absolute") == 0)
+			else if (strcmp(behavior, "increase") == 0)
 			{
-				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_ABSOLUTE_CC;
-				syntina_driver->key_function[key][alt].u.absolute_cc.number = json_integer_value(json_object_get(to_json, "number"));
-				syntina_driver->key_function[key][alt].u.absolute_cc.value = json_integer_value(json_object_get(to_json, "value"));
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC_INCREASE;
+				syntina_driver->key_function[key][alt].u.cc_increase = json_integer_value(json_object_get(to_json, "number"));
 			}
-			else if (strcmp(behavior, "relative") == 0)
+			else if (strcmp(behavior, "decrease") == 0)
 			{
-				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_RELATIVE_CC;
-				syntina_driver->key_function[key][alt].u.relative_cc.number = json_integer_value(json_object_get(to_json, "number"));
-				syntina_driver->key_function[key][alt].u.relative_cc.amount = json_integer_value(json_object_get(to_json, "amount"));
+				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_CC_DECREASE;
+				syntina_driver->key_function[key][alt].u.cc_decrease = json_integer_value(json_object_get(to_json, "number"));
 			}
-			else if (strcmp(behavior, "speed") == 0)
-			{
-				syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_SPEED_CC;
-				syntina_driver->key_function[key][alt].u.speed_cc.number = json_integer_value(json_object_get(to_json, "number"));
-				syntina_driver->key_function[key][alt].u.speed_cc.speed = json_real_value(json_object_get(to_json, "speed"));
-			}
+		}
+		else if (strcmp(key_function, "fine") == 0)
+		{
+			syntina_driver->key_function[key][alt].type = KEY_FUNCTION_TYPE_FINE;
 		}
 		else if (strcmp(key_function, "panic") == 0)
 		{
@@ -359,7 +342,6 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			if (syntina_driver->note_down_count[note] > 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
 			MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
 			syntina_driver->note_down_count[note]++;
-			syntina_driver->key_down_note[key] = note;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_RETRIG:
@@ -388,41 +370,35 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 				}
 			}
 
-			syntina_driver->key_down_retrig[key] = 1;
 			break;
 		}
-		case KEY_FUNCTION_TYPE_MOMENTARY_CC:
+		case KEY_FUNCTION_TYPE_CC_MOMENTARY:
 		{
-			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.momentary_cc;
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.cc_momentary;
 			syntina_driver->cc_value[cc] = 127;
-			syntina_driver->key_down_momentary_cc[key] = cc;
 			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 127);
 			break;
 		}
-		case KEY_FUNCTION_TYPE_ABSOLUTE_CC:
+		case KEY_FUNCTION_TYPE_CC_INCREASE:
 		{
-			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.absolute_cc.number;
-			syntina_driver->cc_value[cc] = syntina_driver->key_function[key][syntina_driver->alt].u.absolute_cc.value;
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.cc_increase;
+			syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] + 1, 0, 127);
+			Set_add(syntina_driver->cc_increase_set, cc);
 			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
 			break;
 		}
-		case KEY_FUNCTION_TYPE_RELATIVE_CC:
+		case KEY_FUNCTION_TYPE_CC_DECREASE:
 		{
-			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.relative_cc.number;
-			syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] + syntina_driver->key_function[key][syntina_driver->alt].u.relative_cc.amount, 0, 127);
+			int cc = syntina_driver->key_function[key][syntina_driver->alt].u.cc_decrease;
+			syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] - 1, 0, 127);
+			Set_add(syntina_driver->cc_decrease_set, cc);
 			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
-			break;
-		}
-		case KEY_FUNCTION_TYPE_SPEED_CC:
-		{
-			// TODO
 			break;
 		}
 		case KEY_FUNCTION_TYPE_ALT:
 		{
 			syntina_driver->alt = syntina_driver->key_function[key][syntina_driver->alt].u.alt;
 			syntina_driver->alt_down_count++;
-			syntina_driver->key_down_alt[key] = 1;
 			break;
 		}
 		case KEY_FUNCTION_TYPE_PROGRAM:
@@ -446,6 +422,11 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			syntina_driver->right_transpose = (syntina_driver->key_function[key][syntina_driver->alt].u.right_transpose.relative ? syntina_driver->right_transpose : 0) + syntina_driver->key_function[key][syntina_driver->alt].u.right_transpose.value;
 			break;
 		}
+		case KEY_FUNCTION_TYPE_FINE:
+		{
+			syntina_driver->fine_down_count++;
+			break;
+		}
 		case KEY_FUNCTION_TYPE_PANIC:
 		{
 			for (int note = 0; note < 128; note++)
@@ -458,14 +439,13 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 
 			for (int key = 0; key < 256; key++)
 			{
-				syntina_driver->key_down_note[key] = -1;
-				syntina_driver->key_down_momentary_cc[key] = -1;
-				syntina_driver->key_down_alt[key] = 0;
-				syntina_driver->key_down_retrig[key] = 0;
+				syntina_driver->key_down_function[key] = NULL;
 			}
 
 			syntina_driver->alt = 0;
 			syntina_driver->alt_down_count = 0;
+			Set_clear(syntina_driver->cc_increase_set);
+			Set_clear(syntina_driver->cc_decrease_set);
 
 			Keyboard_reconnect(syntina_driver->left_keyboard);
 			Keyboard_reconnect(syntina_driver->right_keyboard);
@@ -501,63 +481,85 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			break;
 		}
 	}
+
+	syntina_driver->key_down_function[key] = &(syntina_driver->key_function[key][syntina_driver->alt]);
 }
 
 void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
 {
-	int note = syntina_driver->key_down_note[key];
+	KeyFunction_t key_function = syntina_driver->key_down_function[key];
+	if (!key_function) return;
 
-	if (note >= 0)
+	switch (key_function->type)
 	{
-		syntina_driver->note_down_count[note]--;
-
-		if (syntina_driver->note_down_count[note] == 0)
+		case KEY_FUNCTION_TYPE_NOTE:
 		{
-			MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
-			syntina_driver->note_off_time[note] = Time_getTime();
-		}
+			int note = key_function->u.note;
+			syntina_driver->note_down_count[note]--;
 
-		syntina_driver->key_down_note[key] = -1;
-		return;
-	}
-
-	if (syntina_driver->key_down_retrig[key])
-	{
-		for (int note = 0; note < 128; note++)
-		{
-			if (syntina_driver->note_retrig_count[note] > 0)
+			if (syntina_driver->note_down_count[note] == 0)
 			{
-				syntina_driver->note_retrig_count[note]--;
-				syntina_driver->note_down_count[note]--;
+				MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+				syntina_driver->note_off_time[note] = Time_getTime();
+			}
 
-				if (syntina_driver->note_down_count[note] == 0)
+			break;
+		}
+		case KEY_FUNCTION_TYPE_RETRIG:
+		{
+			for (int note = 0; note < 128; note++)
+			{
+				if (syntina_driver->note_retrig_count[note] > 0)
 				{
-					MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+					syntina_driver->note_retrig_count[note]--;
+					syntina_driver->note_down_count[note]--;
+	
+					if (syntina_driver->note_down_count[note] == 0)
+					{
+						MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
+					}
 				}
 			}
+
+			break;
 		}
-
-		syntina_driver->key_down_retrig[key] = 0;
-		return;
+		case KEY_FUNCTION_TYPE_CC_MOMENTARY:
+		{
+			int cc = key_function->u.cc_momentary;
+			MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 0);
+			syntina_driver->cc_value[cc] = 0;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_CC_INCREASE:
+		{
+			int cc = key_function->u.cc_increase;
+			Set_remove(syntina_driver->cc_increase_set, cc);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_CC_DECREASE:
+		{
+			int cc = key_function->u.cc_decrease;
+			Set_remove(syntina_driver->cc_decrease_set, cc);
+			break;
+		}
+		case KEY_FUNCTION_TYPE_ALT:
+		{
+			syntina_driver->alt_down_count--;
+			if (syntina_driver->alt_down_count == 0) syntina_driver->alt = 0;
+			break;
+		}
+		case KEY_FUNCTION_TYPE_FINE:
+		{
+			syntina_driver->fine_down_count--;
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 
-	int cc = syntina_driver->key_down_momentary_cc[key];
-
-	if (cc >= 0)
-	{
-		MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, 0);
-		syntina_driver->cc_value[cc] = 0;
-		syntina_driver->key_down_momentary_cc[key] = -1;
-		return;
-	}
-
-	if (syntina_driver->key_down_alt[key])
-	{
-		syntina_driver->alt_down_count--;
-		if (syntina_driver->alt_down_count == 0) syntina_driver->alt = 0;
-		syntina_driver->key_down_alt[key] = 0;
-		return;
-	}
+	syntina_driver->key_down_function[key] = NULL;
 }
 
 void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
@@ -623,6 +625,32 @@ void SyntinaDriver_run(SyntinaDriver_t syntina_driver)
 						syntina_driver->last_tilt_y_amount = tilt_y_amount;
 					}
 				}
+			}
+		}
+
+		for (int i = 0; i < Set_count(syntina_driver->cc_increase_set); i++)
+		{
+			int cc = Set_nth(syntina_driver->cc_increase_set, i);
+			float now = Time_getTime();
+
+			if (now - syntina_driver->cc_increase_time[cc] > (syntina_driver->fine_down_count == 0 ? COARSE_CHANGE_TIME : FINE_CHANGE_TIME))
+			{
+				syntina_driver->cc_increase_time[cc] = now;
+				syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] + 1, 0, 127);
+				MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
+			}
+		}
+
+		for (int i = 0; i < Set_count(syntina_driver->cc_decrease_set); i++)
+		{
+			int cc = Set_nth(syntina_driver->cc_decrease_set, i);
+			float now = Time_getTime();
+
+			if (now - syntina_driver->cc_increase_time[cc] > (syntina_driver->fine_down_count == 0 ? COARSE_CHANGE_TIME : FINE_CHANGE_TIME))
+			{
+				syntina_driver->cc_increase_time[cc] = now;
+				syntina_driver->cc_value[cc] = clamp_int(syntina_driver->cc_value[cc] - 1, 0, 127);
+				MidiOut_sendControlChange(syntina_driver->midi_out, 0, cc, syntina_driver->cc_value[cc]);
 			}
 		}
 	}
