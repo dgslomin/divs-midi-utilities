@@ -109,6 +109,7 @@ struct SyntinaDriver
 	int tilt_y_cc;
 	struct KeyFunction key_function[256][16];
 	KeyFunction_t key_down_function[256];
+	int key_down_transpose[256];
 	int note_down_count[128];
 	float note_off_time[128];
 	int alt;
@@ -150,6 +151,7 @@ SyntinaDriver_t SyntinaDriver_new(char *midi_out_port_name, char *config_filenam
 	}
 
 	for (int key = 0; key < 256; key++) syntina_driver->key_down_function[key] = NULL;
+	for (int key = 0; key < 256; key++) syntina_driver->key_down_transpose[key] = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_down_count[note] = 0;
 	for (int note = 0; note < 128; note++) syntina_driver->note_off_time[note] = 0;
 	syntina_driver->alt = 0;
@@ -338,7 +340,8 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 	{
 		case KEY_FUNCTION_TYPE_NOTE:
 		{
-			int note = syntina_driver->key_function[key][syntina_driver->alt].u.note + syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
+			syntina_driver->key_down_transpose[key] = syntina_driver->transpose + (key < 100 ? syntina_driver->left_transpose : syntina_driver->right_transpose);
+			int note = syntina_driver->key_function[key][syntina_driver->alt].u.note + syntina_driver->key_down_transpose[key];
 			if (syntina_driver->note_down_count[note] > 0) MidiOut_sendNoteOff(syntina_driver->midi_out, 0, note, 0);
 			MidiOut_sendNoteOn(syntina_driver->midi_out, 0, note, 127);
 			syntina_driver->note_down_count[note]++;
@@ -440,6 +443,7 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			for (int key = 0; key < 256; key++)
 			{
 				syntina_driver->key_down_function[key] = NULL;
+				syntina_driver->key_down_transpose[key] = 0;
 			}
 
 			syntina_driver->alt = 0;
@@ -494,7 +498,7 @@ void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
 	{
 		case KEY_FUNCTION_TYPE_NOTE:
 		{
-			int note = key_function->u.note;
+			int note = key_function->u.note + syntina_driver->key_down_transpose[key];
 			syntina_driver->note_down_count[note]--;
 
 			if (syntina_driver->note_down_count[note] == 0)
