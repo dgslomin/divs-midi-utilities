@@ -11,6 +11,7 @@
   <default key="menuAndEditKeybindingsFollowKeyboardFocus" value="0" type="2"/>
   <default key="showVirtualKeyboardPlugin" value="1" type="2"/>
   <default key="showVirtualKeyboardStandalone" value="1" type="2"/>
+  <default key="MIDISoftTakeover" value="1" type="2"/>
   <default key="use3DWavetableView" value="1" type="2"/>
   <default key="modListValueDisplay" value="1" type="2"/>
   <default key="lastWavetablePath" value="/home/syntina/personal/wavetable" type="1"/>

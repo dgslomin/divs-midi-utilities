@@ -336,6 +336,8 @@ void SyntinaDriver_loadPreset(SyntinaDriver_t syntina_driver, const char *preset
 
 void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 {
+	syntina_driver->key_down_function[key] = &(syntina_driver->key_function[key][syntina_driver->alt]);
+
 	switch (syntina_driver->key_function[key][syntina_driver->alt].type)
 	{
 		case KEY_FUNCTION_TYPE_NOTE:
@@ -485,8 +487,6 @@ void SyntinaDriver_keyDown(SyntinaDriver_t syntina_driver, int key)
 			break;
 		}
 	}
-
-	syntina_driver->key_down_function[key] = &(syntina_driver->key_function[key][syntina_driver->alt]);
 }
 
 void SyntinaDriver_keyUp(SyntinaDriver_t syntina_driver, int key)
