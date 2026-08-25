@@ -36,8 +36,8 @@ static int rtmidi_open_port_helper(RtMidiPtr device, char *port_name, char *virt
 
 RtMidiInPtr rtmidi_open_in_port(char *client_name, char *port_name, char *virtual_port_name, void (*callback)(double timestamp, const unsigned char *message, size_t message_size, void *user_data), void *user_data)
 {
-	RtMidiInPtr midi_in = rtmidi_in_create(RTMIDI_API_UNSPECIFIED, (const char *)(client_name), 100);
-	rtmidi_in_set_callback(midi_in, callback, user_data);
+	RtMidiInPtr midi_in = rtmidi_in_create(RTMIDI_API_UNSPECIFIED, (const char *)(client_name), 1024);
+	if (callback != NULL) rtmidi_in_set_callback(midi_in, callback, user_data);
 
 	if (rtmidi_open_port_helper(midi_in, port_name, virtual_port_name) < 0)
 	{

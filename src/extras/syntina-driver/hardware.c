@@ -19,8 +19,9 @@
 #define SQUEEZE_SENSOR_I2C_DEVICE_NUMBER 0x2A
 #define TILT_SENSOR_I2C_DEVICE_NUMBER 0x18
 #define SWAP_ROWS_AND_COLUMNS
-#define SMOOTHER_SAMPLES 8
+#define SQUEEZE_SENSOR_SMOOTHER_SAMPLES 8
 #define SQUEEZE_SENSOR_CALIBRATION_FACTOR 800000
+#define TILT_SENSOR_SMOOTHER_SAMPLES 64
 
 struct Keyboard
 {
@@ -102,7 +103,13 @@ void Keyboard_reconnect(Keyboard_t keyboard)
 int Keyboard_read(Keyboard_t keyboard, int *key_p, int *down_p)
 {
 	if (keyboard->fd < 0) return 0;
-	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
+
+	// Read the key event count.  This should be redundant with reading the key event itself, but skipping it results in occasional dropped events.
+	int data = i2c_smbus_read_byte_data(keyboard->fd, 0x03);
+	if (data < 0 || (data & 0x0F) == 0) return 0;
+
+	// Read the first key event from the queue.
+	data = i2c_smbus_read_byte_data(keyboard->fd, 0x04);
 	if (data <= 0) return 0;
 
 #ifdef SWAP_ROWS_AND_COLUMNS
@@ -124,7 +131,6 @@ struct SqueezeSensor
 	NAU7802_t nau7802;
 	int zero_offset_saved;
 	int zero_offset;
-	int last_reading;
 };
 
 static void SqueezeSensor_disconnect(SqueezeSensor_t squeeze_sensor)
@@ -162,7 +168,7 @@ static void SqueezeSensor_connect(SqueezeSensor_t squeeze_sensor)
 SqueezeSensor_t SqueezeSensor_open(void)
 {
 	SqueezeSensor_t squeeze_sensor = (SqueezeSensor_t)(malloc(sizeof (struct SqueezeSensor)));
-	squeeze_sensor->smoother = Smoother_new(SMOOTHER_SAMPLES);
+	squeeze_sensor->smoother = Smoother_new(SQUEEZE_SENSOR_SMOOTHER_SAMPLES);
 	squeeze_sensor->zero_offset_saved = 0;
 	SqueezeSensor_connect(squeeze_sensor);
 	return squeeze_sensor;
@@ -181,20 +187,18 @@ void SqueezeSensor_reconnect(SqueezeSensor_t squeeze_sensor)
 	SqueezeSensor_connect(squeeze_sensor);
 }
 
-int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, int *value_p)
+int SqueezeSensor_read(SqueezeSensor_t squeeze_sensor, float *value_p)
 {
 	if (squeeze_sensor->nau7802 == NULL) return 0;
-	Smoother_addSample(squeeze_sensor->smoother, fmax(fmin(NAU7802_getWeight(squeeze_sensor->nau7802, 0, 1), 1.0), 0.0));
-	*value_p = (int)(roundf(Smoother_getAverage(squeeze_sensor->smoother) * 127.0));
-	if (*value_p == squeeze_sensor->last_reading) return 0;
-	squeeze_sensor->last_reading = *value_p;
+	Smoother_addSample(squeeze_sensor->smoother, fmin(fmax(NAU7802_getWeight(squeeze_sensor->nau7802, 0, 1), 0.0), 1.0));
+	*value_p = Smoother_getAverage(squeeze_sensor->smoother);
 	return 1;
 }
 
 void SqueezeSensor_tare(SqueezeSensor_t squeeze_sensor)
 {
 	if (squeeze_sensor->nau7802 == NULL) return;
-	NAU7802_calculateZeroOffset(squeeze_sensor->nau7802, SMOOTHER_SAMPLES);
+	NAU7802_calculateZeroOffset(squeeze_sensor->nau7802, SQUEEZE_SENSOR_SMOOTHER_SAMPLES);
 	squeeze_sensor->zero_offset = NAU7802_getZeroOffset(squeeze_sensor->nau7802);
 	squeeze_sensor->zero_offset_saved = 1;
 }
@@ -203,10 +207,9 @@ struct TiltSensor
 {
 	Smoother_t raw_tilt_x_smoother;
 	Smoother_t raw_tilt_y_smoother;
+	float dead_zone_size;
 	float raw_tilt_x_zero;
 	float raw_tilt_y_zero;
-	int last_tilt_x;
-	int last_tilt_y;
 	int fd;
 };
 
@@ -246,12 +249,11 @@ static void TiltSensor_connect(TiltSensor_t tilt_sensor)
 TiltSensor_t TiltSensor_open(void)
 {
 	TiltSensor_t tilt_sensor = (TiltSensor_t)(malloc(sizeof (struct TiltSensor)));
-	tilt_sensor->raw_tilt_x_smoother = Smoother_new(SMOOTHER_SAMPLES);
-	tilt_sensor->raw_tilt_y_smoother = Smoother_new(SMOOTHER_SAMPLES);
+	tilt_sensor->raw_tilt_x_smoother = Smoother_new(TILT_SENSOR_SMOOTHER_SAMPLES);
+	tilt_sensor->raw_tilt_y_smoother = Smoother_new(TILT_SENSOR_SMOOTHER_SAMPLES);
+	tilt_sensor->dead_zone_size = 0;
 	tilt_sensor->raw_tilt_x_zero = 0;
 	tilt_sensor->raw_tilt_y_zero = 0;
-	tilt_sensor->last_tilt_x = -1;
-	tilt_sensor->last_tilt_y = -1;
 	TiltSensor_connect(tilt_sensor);
 	TiltSensor_tare(tilt_sensor);
 	return tilt_sensor;
@@ -287,18 +289,32 @@ static int TiltSensor_readRaw(TiltSensor_t tilt_sensor, float *raw_tilt_x_p, flo
 	return 1;
 }
 
-int TiltSensor_read(TiltSensor_t tilt_sensor, int *tilt_x_p, int *tilt_y_p)
+int TiltSensor_read(TiltSensor_t tilt_sensor, float *tilt_x_p, float *tilt_y_p)
 {
 	if (tilt_sensor->fd < 0) return 0;
 	float raw_tilt_x, raw_tilt_y;
 	if (!TiltSensor_readRaw(tilt_sensor, &raw_tilt_x, &raw_tilt_y)) return 0;
-	Smoother_addSample(tilt_sensor->raw_tilt_x_smoother, raw_tilt_x);
-	Smoother_addSample(tilt_sensor->raw_tilt_y_smoother, raw_tilt_y);
-	*tilt_x_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / M_PI * 127.0), 64.0), -63.0)) + 63;
-	*tilt_y_p = (int)(fmax(fmin(roundf(Smoother_getAverage(tilt_sensor->raw_tilt_y_smoother) / M_PI * 127.0), 64.0), -63.0)) + 63;
-	if ((*tilt_x_p == tilt_sensor->last_tilt_x) && (*tilt_y_p == tilt_sensor->last_tilt_y)) return 0;
-	tilt_sensor->last_tilt_x = *tilt_x_p;
-	tilt_sensor->last_tilt_y = *tilt_y_p;
+	Smoother_addSample(tilt_sensor->raw_tilt_x_smoother, raw_tilt_x - tilt_sensor->raw_tilt_x_zero);
+	Smoother_addSample(tilt_sensor->raw_tilt_y_smoother, raw_tilt_y - tilt_sensor->raw_tilt_y_zero);
+
+	/* range -45 to 45 degrees with a dead zone in the middle */
+	float tilt_x = fmin(fmax(Smoother_getAverage(tilt_sensor->raw_tilt_x_smoother) / (M_PI / 4.0), -1.0), 1.0);
+
+	if (tilt_x > tilt_sensor->dead_zone_size)
+	{
+		*tilt_x_p = (tilt_x - tilt_sensor->dead_zone_size) / (1.0 - tilt_sensor->dead_zone_size);
+	}
+	else if (tilt_x < -(tilt_sensor->dead_zone_size))
+	{
+		*tilt_x_p = (tilt_x + tilt_sensor->dead_zone_size) / (1.0 - tilt_sensor->dead_zone_size);
+	}
+	else
+	{
+		*tilt_x_p = 0;
+	}
+
+	/* range 0 to 45 degrees */
+	*tilt_y_p = fmin(fmax(Smoother_getAverage(tilt_sensor->raw_tilt_y_smoother) / (M_PI / 4.0), 0.0), 1.0);
 	return 1;
 }
 
@@ -307,7 +323,7 @@ void TiltSensor_tare(TiltSensor_t tilt_sensor)
 	if (tilt_sensor->fd < 0) return;
 	float raw_tilt_x_total = 0, raw_tilt_y_total = 0;
 
-	for (int sample_number = 0; sample_number < SMOOTHER_SAMPLES; sample_number++)
+	for (int sample_number = 0; sample_number < TILT_SENSOR_SMOOTHER_SAMPLES; sample_number++)
 	{
 		float raw_tilt_x, raw_tilt_y;
 		if (!TiltSensor_readRaw(tilt_sensor, &raw_tilt_x, &raw_tilt_y)) return;
@@ -315,7 +331,12 @@ void TiltSensor_tare(TiltSensor_t tilt_sensor)
 		raw_tilt_y_total += raw_tilt_y;
 	}
 
-	tilt_sensor->raw_tilt_x_zero = raw_tilt_x_total / SMOOTHER_SAMPLES;
-	tilt_sensor->raw_tilt_y_zero = raw_tilt_y_total / SMOOTHER_SAMPLES;
+	tilt_sensor->raw_tilt_x_zero = raw_tilt_x_total / TILT_SENSOR_SMOOTHER_SAMPLES;
+	tilt_sensor->raw_tilt_y_zero = raw_tilt_y_total / TILT_SENSOR_SMOOTHER_SAMPLES;
+}
+
+void TiltSensor_setDeadZoneSize(TiltSensor_t tilt_sensor, float dead_zone_size)
+{
+	tilt_sensor->dead_zone_size = dead_zone_size;
 }
 

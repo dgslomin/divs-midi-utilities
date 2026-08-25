@@ -1,0 +1,18 @@
+<svg width="56" height="48" viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="12.5" y="31.5" width="2.5" height="2" fill="black"/>
+<rect x="12" y="32" width="3" height="1" fill="#EEEEEE"/>
+<rect width="2.5" height="2" transform="matrix(-1 0 0 1 10.5 31.5)" fill="black"/>
+<rect width="3" height="1" transform="matrix(-1 0 0 1 11 32)" fill="#EEEEEE"/>
+<rect x="12.5" y="7.5" width="2.5" height="2" fill="black"/>
+<rect x="12" y="8" width="3" height="1" fill="#EEEEEE"/>
+<rect width="2.5" height="2" transform="matrix(-1 0 0 1 10.5 7.5)" fill="black"/>
+<rect width="3" height="1" transform="matrix(-1 0 0 1 11 8)" fill="#EEEEEE"/>
+<rect x="40.5" y="7.5" width="2.5" height="2" fill="black"/>
+<rect x="40" y="8" width="3" height="1" fill="#EEEEEE"/>
+<rect width="2.5" height="2" transform="matrix(-1 0 0 1 38.5 7.5)" fill="black"/>
+<rect width="3" height="1" transform="matrix(-1 0 0 1 39 8)" fill="#EEEEEE"/>
+<rect x="40.5" y="31.5" width="2.5" height="2" fill="black"/>
+<rect x="40" y="32" width="3" height="1" fill="#EEEEEE"/>
+<rect width="2.5" height="2" transform="matrix(-1 0 0 1 38.5 31.5)" fill="black"/>
+<rect width="3" height="1" transform="matrix(-1 0 0 1 39 32)" fill="#EEEEEE"/>
+</svg>

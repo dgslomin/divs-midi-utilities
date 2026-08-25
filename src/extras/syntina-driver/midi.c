@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <rtmidi_c.h>
 #include <midiutil-common.h>
@@ -9,30 +10,31 @@
 
 struct MidiOut
 {
+	// a little gratuitous to wrap it, but provides some abstraction
 	RtMidiOutPtr rtmidi_out;
 };
 
 MidiOut_t MidiOut_open(char *port_name)
 {
-	MidiOut_t midi_out = (MidiOut_t)(malloc(sizeof (struct MidiOut)));
+	RtMidiOutPtr rtmidi_out = rtmidi_open_out_port("syntina", (char *)(port_name), "syntina");
 
-	while (1)
+	if (rtmidi_out == NULL)
 	{
-		midi_out->rtmidi_out = rtmidi_open_out_port("syntina", port_name, "syntina");
-
-		if (midi_out->rtmidi_out != NULL)
-		{
-			fprintf(stderr, "Info: connected to MIDI output %s\n", port_name);
-			return midi_out;
-		}
-
-		sleep(0.5);
+		fprintf(stderr, "Warning: failed to open MIDI port %s\n", port_name);
+		return NULL;
 	}
+
+	MidiOut_t midi_out = (MidiOut_t)(malloc(sizeof (struct MidiOut)));
+	midi_out->rtmidi_out = rtmidi_out;
+	return midi_out;
 }
 
 void MidiOut_close(MidiOut_t midi_out)
 {
+	if (midi_out == NULL) return;
 	rtmidi_close_port(midi_out->rtmidi_out);
+	rtmidi_out_free(midi_out->rtmidi_out);
+	free(midi_out);
 }
 
 void MidiOut_sendNoteOn(MidiOut_t midi_out, int channel, int note, int velocity)
@@ -65,5 +67,25 @@ void MidiOut_sendProgramChange(MidiOut_t midi_out, int channel, int number)
 	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE];
 	MidiUtilMessage_setProgramChange(message, channel, number);
 	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_PROGRAM_CHANGE);
+}
+
+void MidiOut_sendPitchBend(MidiOut_t midi_out, int channel, int amount)
+{
+	if (midi_out == NULL) return;
+	unsigned char message[MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL];
+	MidiUtilMessage_setPitchWheel(message, channel, amount);
+	rtmidi_out_send_message(midi_out->rtmidi_out, message, MIDI_UTIL_MESSAGE_SIZE_PITCH_WHEEL);
+}
+
+void MidiOut_sendLoadSoundbankSysex(MidiOut_t midi_out, char *soundbank_filename)
+{
+	if ((midi_out == NULL) || (soundbank_filename == NULL)) return;
+	int soundbank_filename_length = strlen(soundbank_filename);
+	unsigned char message[1024];
+	message[0] = 0xF0;
+	message[1] = 0x7D;
+	memcpy(message + 2, soundbank_filename, soundbank_filename_length);
+	message[soundbank_filename_length + 2] = 0xF7;
+	rtmidi_out_send_message(midi_out->rtmidi_out, message, soundbank_filename_length + 3);
 }
 

@@ -1,5 +1,6 @@
 
 all:
+	test -d ../bin || mkdir ../bin
 	cd align-clicks && make -f Makefile.unix
 ifeq ("$(shell uname -s)", "Linux")
 	cd alsamidicable && make

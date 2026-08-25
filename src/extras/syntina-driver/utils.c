@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "utils.h"
 
@@ -46,5 +47,92 @@ void Smoother_addSample(Smoother_t smoother, float sample)
 float Smoother_getAverage(Smoother_t smoother)
 {
 	return smoother->total / smoother->number_of_samples;
+}
+
+struct Set
+{
+	int size;
+	int count;
+	int *values;
+	int *positions;
+};
+
+Set_t Set_new(int size)
+{
+	Set_t set = (Set_t)(malloc(sizeof (struct Set)));
+	set->size = size;
+	set->count = 0;
+	set->values = (int *)(malloc(size * sizeof (int)));
+	set->positions = (int *)(malloc(size * sizeof (int)));
+	for (int i = 0; i < size; i++) set->positions[i] = -1;
+	return set;
+}
+
+void Set_free(Set_t set)
+{
+	free(set->values);
+	free(set->positions);
+	free(set);
+}
+
+void Set_clear(Set_t set)
+{
+	set->count = 0;
+	for (int i = 0; i < set->size; i++) set->positions[i] = -1;
+}
+
+void Set_add(Set_t set, int value)
+{
+	if (set->positions[value] >= 0) return;
+	set->positions[value] = set->count;
+	set->values[set->count] = value;
+	(set->count)++;
+}
+
+void Set_remove(Set_t set, int value)
+{
+	if (set->positions[value] < 0) return;
+	if (set->count > 1) set->values[set->positions[value]] = set->values[set->count - 1];
+	(set->count)--;
+	set->positions[value] = -1;
+}
+
+int Set_has(Set_t set, int value)
+{
+	return (set->positions[value] >= 0);
+}
+
+int Set_count(Set_t set)
+{
+	return set->count;
+}
+
+int Set_nth(Set_t set, int number)
+{
+	return set->values[number];
+}
+
+int YesNoToggle_parse(const char *s)
+{
+	if (s == NULL) return -1;
+	if (strcmp(s, "no") == 0) return 0;
+	if (strcmp(s, "yes") == 0) return 1;
+	if (strcmp(s, "toggle") == 0) return 2;
+	return -1;
+}
+
+int YesNoToggle_apply(int current_value, int yes_no_toggle)
+{
+	if (yes_no_toggle == 0) return 0;
+	if (yes_no_toggle == 1) return 1;
+	if (yes_no_toggle == 2) return !current_value;
+	return current_value;
+}
+
+int clamp_int(int value, int min, int max)
+{
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
 }
 
