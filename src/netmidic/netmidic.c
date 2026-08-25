@@ -3,21 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <winsock.h>
-#else
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <sys/fcntl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#endif
-
 #include <rtmidi_c.h>
 #include <midiutil-common.h>
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
+#include <midiutil-sockets.h>
 
 static RtMidiInPtr midi_in = NULL;
 static int socket_to_server;
@@ -37,10 +27,12 @@ static void handle_exit(void *user_data)
 {
 	rtmidi_close_port(midi_in);
 	shutdown(socket_to_server, 2);
+	MidiUtilSockets_free();
 }
 
 int main(int argc, char **argv)
 {
+	MidiUtilSockets_init();
 	char *server_hostname = NULL;
 	int server_port = -1;
 	int i;

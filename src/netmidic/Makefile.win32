@@ -1,6 +1,6 @@
 
-..\..\bin\netmidic.exe: netmidic.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj
-	cl /nologo /Fe..\..\bin\netmidic.exe netmidic.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib wsock32.lib
+..\..\bin\netmidic.exe: netmidic.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj midiutil-sockets.obj RtMidi.obj rtmidi_c.obj
+	cl /nologo /Fe..\..\bin\netmidic.exe netmidic.obj midiutil-common.obj midiutil-system.obj midiutil-rtmidi.obj midiutil-sockets.obj RtMidi.obj rtmidi_c.obj winmm.lib kernel32.lib wsock32.lib
 
 netmidic.obj: netmidic.c
 	cl /nologo /I..\midiutil /I..\3rdparty\rtmidi /c netmidic.c
@@ -13,6 +13,9 @@ midiutil-system.obj: ..\midiutil\midiutil-system.c
 
 midiutil-rtmidi.obj: ..\midiutil\midiutil-rtmidi.c
 	cl /nologo /I..\3rdparty\rtmidi /I..\midiutil /c ..\midiutil\midiutil-rtmidi.c
+
+midiutil-sockets.obj: ..\midiutil\midiutil-sockets.c
+	cl /nologo /I..\3rdparty\rtmidi /I..\midiutil /c ..\midiutil\midiutil-sockets.c
 
 RtMidi.obj: ..\3rdparty\rtmidi\RtMidi.cpp
 	cl /nologo /EHsc /D__WINDOWS_MM__ /DRTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES /DRTMIDI_DO_NOT_WARN_ABOUT_NO_DEVICES_FOUND /I..\3rdparty\rtmidi /c ..\3rdparty\rtmidi\RtMidi.cpp

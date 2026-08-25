@@ -3,21 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <winsock.h>
-#else
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <sys/fcntl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#endif
-
 #include <rtmidi_c.h>
 #include <midiutil-common.h>
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
+#include <midiutil-sockets.h>
 
 static int should_shutdown = 0;
 
@@ -34,6 +24,8 @@ static void handle_interrupt(void *user_data)
 
 int main(int argc, char **argv)
 {
+	MidiUtilSockets_init();
+
 	int listen_port = -1;
 	RtMidiOutPtr midi_out = NULL;
 	int i;
@@ -126,6 +118,7 @@ int main(int argc, char **argv)
 	}
 
 	rtmidi_close_port(midi_out);
+	MidiUtilSockets_free();
 	return 0;
 }
 

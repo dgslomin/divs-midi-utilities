@@ -13,8 +13,8 @@ LDFLAGS=
 LIBS=-lasound -lpthread -lstdc++
 endif
 
-../../bin/netmidic: netmidic.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o
-	$(CC) $(LDFLAGS) -o ../../bin/netmidic netmidic.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o RtMidi.o rtmidi_c.o $(LIBS)
+../../bin/netmidic: netmidic.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o midiutil-sockets.o RtMidi.o rtmidi_c.o
+	$(CC) $(LDFLAGS) -o ../../bin/netmidic netmidic.o midiutil-common.o midiutil-system.o midiutil-rtmidi.o midiutil-sockets.o RtMidi.o rtmidi_c.o $(LIBS)
 
 netmidic.o: netmidic.c
 	$(CC) $(CFLAGS) -I../midiutil -I../3rdparty/rtmidi -c netmidic.c
@@ -27,6 +27,9 @@ midiutil-system.o: ../midiutil/midiutil-system.c
 
 midiutil-rtmidi.o: ../midiutil/midiutil-rtmidi.c
 	$(CC) $(CFLAGS) -I../3rdparty/rtmidi -I../midiutil -c ../midiutil/midiutil-rtmidi.c
+
+midiutil-sockets.o: ../midiutil/midiutil-sockets.c
+	$(CC) $(CFLAGS) -I../3rdparty/rtmidi -I../midiutil -c ../midiutil/midiutil-sockets.c
 
 RtMidi.o: ../3rdparty/rtmidi/RtMidi.cpp
 	$(CXX) $(CFLAGS) -I../3rdparty/rtmidi -c ../3rdparty/rtmidi/RtMidi.cpp
