@@ -1,0 +1,19 @@
+
+CC=gcc
+
+../../bin/midi-velocity-compressor: midi-velocity-compressor.o midifile.o
+	$(CC) -o../../bin/midi-velocity-compressor midi-velocity-compressor.o midifile.o
+
+midi-velocity-compressor.o: midi-velocity-compressor.c ../midifile/midifile.h
+	$(CC) -I../midifile -c midi-velocity-compressor.c
+
+midifile.o: ../midifile/midifile.c ../midifile/midifile.h
+	$(CC) -I../midifile -c ../midifile/midifile.c
+
+clean:
+	rm -f midi-velocity-compressor.o
+	rm -f midifile.o
+
+reallyclean: clean
+	rm -f ../../bin/midi-velocity-compressor
+
