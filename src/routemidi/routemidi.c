@@ -7,6 +7,8 @@
 #include <midiutil-system.h>
 #include <midiutil-rtmidi.h>
 
+const char* CLIENT_NAME = "routemidi";
+
 struct Bus
 {
 	int number_of_midi_ins;
@@ -24,7 +26,26 @@ static struct Bus busses[16];
 
 static void usage(char *program_name)
 {
+	int port_number;
+
 	fprintf(stderr, "Usage:  %s [ --bus | --in <port> | --out <port> | --virtual-in <port> | --virtual-out <port> | --channel <input bus number> <input channel number> <output bus number> <output channel number> ] ...\n", program_name);
+	fprintf(stderr, "\nAvailable ports (<port> can be either ID or NAME):\nI/O  ID    NAME\n");
+	RtMidiInPtr midi_in = rtmidi_in_create(RTMIDI_API_UNSPECIFIED, CLIENT_NAME, 100);
+	int number_of_ports = rtmidi_get_port_count(midi_in);
+
+	for (port_number = 0; port_number < number_of_ports; port_number++)
+	{
+		fprintf(stderr, "in  %2d     '%s'\n",port_number,rtmidi_get_port_name(midi_in, port_number));
+	}
+	rtmidi_close_port(midi_in);
+	RtMidiOutPtr midi_out = rtmidi_out_create(RTMIDI_API_UNSPECIFIED, CLIENT_NAME);
+	number_of_ports = rtmidi_get_port_count(midi_out);
+
+	for (port_number = 0; port_number < number_of_ports; port_number++)
+	{
+		fprintf(stderr, "out %2d     '%s'\n",port_number,rtmidi_get_port_name(midi_out, port_number));
+	}
+	rtmidi_close_port(midi_out);
 	exit(1);
 }
 
@@ -71,6 +92,7 @@ static void handle_exit(void *user_data)
 
 int main(int argc, char **argv)
 {
+	if (argc <= 1) usage(argv[0]);
 	int i;
 
 	{
